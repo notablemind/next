@@ -1,0 +1,18 @@
+div {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    min-height: 0;
+    min-width: 0;
+    box-sizing: border-box;
+    align-items: stretch;
+    font-family: sans-serif;
+}
+
+#root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
