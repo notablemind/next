@@ -118,6 +118,12 @@ class ListView extends Component {
 
   render() {
     return <div>
+      <button onClick={() => this.state.store.undo()}>
+        Undo
+      </button>
+      <button onClick={() => this.state.store.redo()}>
+        Redo!
+      </button>
       List view!
       <ListItem store={this.state.store} id={this.state.store.state.root} />
     </div>
@@ -166,8 +172,8 @@ class ListItem extends Component {
 
   onBlur = () => {
     // HACK to prevent flicker
+    this.props.store.actions.setContent(this.props.id, this.state.tmpText)
     this.state.node.content = this.state.tmpText
-    // this.props.store.actions.setContent(this.props.id, this.state.tmpText)
     this.props.store.actions.normalMode()
   }
 

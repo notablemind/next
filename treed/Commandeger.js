@@ -50,8 +50,8 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
 
   redo = (args: Args) => {
     if (this.histpos >= this.history.length) return
-    this.histpos += 1
     const last = this.history[this.histpos]
+    this.histpos += 1
     const changes = this._redo(last.changes, args)
     return [].concat.apply([], changes.map(c => c.events || []))
   }

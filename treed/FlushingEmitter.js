@@ -17,6 +17,7 @@ export default class FlushingEmitter {
   }
 
   emit = (evt) => {
+    if (!evt) return
     this._waitingEvents.add(evt)
     if (!this._emitTimeout) {
       this._emitTimeout = setImmediate(this._flush)
@@ -24,7 +25,7 @@ export default class FlushingEmitter {
   }
 
   emitMany = (evts) => {
-    if (!evts.length) return
+    if (!evts || !evts.length) return
     evts.forEach(evt => this._waitingEvents.add(evt))
     if (!this._emitTimeout) {
       this._emitTimeout = setImmediate(this._flush)
