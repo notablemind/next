@@ -6,27 +6,19 @@ import {css, StyleSheet} from 'aphrodite'
 import {Router, Route, IndexRoute, hashHistory} from 'react-router'
 
 import Header from './Header'
+import {baseURL} from './config'
+
+import login from './login'
 
 import PouchDB from 'pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
 PouchDB.plugin(require('pouchdb-adapter-idb'))
-// PouchDB.plugin(require('pouchdb-replication'))
 
-/*
-const RxDB = require('rxdb')
-try {
-RxDB.plugin(require('pouchdb-adapter-idb'))
-RxDB.plugin(require('pouchdb-replication'))
-} catch(e) {
-  // HMR fix
-}
-*/
+import type {User} from './types'
 
 window.pouchdb = PouchDB
-// window.rxdb = RxDB
 
 const USER_KEY = 'notablemind:user'
-const baseURL = 'http://localhost:6102'
 
 const ensureUserDb = (done) => {
   fetch(`${baseURL}/api/ensure-user`, {
@@ -39,18 +31,10 @@ const ensureUserDb = (done) => {
   )
 }
 
-const userByEmail = (email, done) => {
-  fetch(`${baseURL}/api/user-by-email?email=${email}`)
-    .then(res => res.json())
-    .then(
-      res => done(null, res.id),
-      err => done(err)
-    )
-}
-
 const getUser = () => {
+  let val = localStorage[USER_KEY]
   try {
-    return JSON.parse(localStorage[USER_KEY])
+    return val ? JSON.parse(val) : null
   } catch (e) {
     return null
   }
@@ -73,16 +57,29 @@ const userSchema = {
   }
 }
 
+type State = {
+    user: User,
+    loading: bool,
+    online: bool,
+    remoteUserDb: any,
+    userDb: any,
+    title: string,
+    settings: ?any,
+    loginError: ?string,
+  }
+
 export default class Wrapper extends Component {
+  state: State
+
   constructor() {
     super()
     const user = getUser()
     this.state = {
       user,
-      loading: user,
+      loading: !!user,
       loginError: null,
       online: true,
-      remoteDb: null,
+      remoteUserDb: null,
       userDb: new PouchDB('notablemind_user'),
       title: 'Notablemind',
       settings: null, // do I need the settings?
@@ -134,8 +131,8 @@ export default class Wrapper extends Component {
      */
 
     if (user) {
-      const remoteDb = new PouchDB(`${baseURL}/user_${user.id}`)
-      remoteDb.getSession((err, res) => {
+      const remoteUserDb = new PouchDB(`${baseURL}/user_${user.id}`)
+      remoteUserDb.getSession((err, res) => {
         if (err) {
           console.log('network error', err)
           // TODO try to connect periodically.
@@ -150,7 +147,7 @@ export default class Wrapper extends Component {
           clearUser()
           this.setState({
             user: null,
-            remoteDb: null,
+            remoteUserDb: null,
           })
         }
         ensureUserDb(res => {
@@ -159,91 +156,42 @@ export default class Wrapper extends Component {
         console.log(res)
         this.setState({
           loading: false,
-          remoteDb,
+          remoteUserDb,
         })
       })
     }
   }
 
-  componentDidUpdate(_, prevState) {
-    if (this.state.userDb && this.state.remoteDb && !(prevState.userDb && prevState.remoteDb)) {
-      this.state.userDb.sync(this.state.remoteDb)
+  componentDidUpdate(_: {}, prevState: State) {
+    if (this.state.userDb && this.state.remoteUserDb && !(prevState.userDb && prevState.remoteUserDb)) {
+      console.log('starting sync')
+      this.state.userDb.sync(this.state.remoteUserDb)
     }
   }
 
-  onLogin = (email, pwd) => {
-    userByEmail(email, (err, id) => {
-      if (err) {
-        console.error(err)
-        return Toast.show('Unable to log you in - you might be offline')
+  onLogin = (email: string, pwd: string) => {
+    login(email, pwd, (err, user, remoteUserDb) => {
+      if (err) this.setState({loginError: err})
+      else {
+        saveUser(user)
+        ensureUserDb(res => { console.log('ensured') })
+        this.setState({user, remoteUserDb})
       }
-      if (!id) {
-        // this is a new user, or a different email address
-        return this.setState({
-          loginError: 'No user found for that email',
-        })
-      }
-      const remoteDb = new PouchDB(`${baseURL}/user_${id}`)
-      remoteDb.getSession((err, res) => {
-        if (err) {
-          return this.setState({
-            loginError: 'No user found for that email',
-          })
-        }
-        if (res.userCtx && res.userCtx.name === id) {
-          ensureUserDb(res => {
-            console.log('ensured')
-          })
-          return this.setState({
-            user: {
-              id,
-              metadata: {email}, // TODO name
-            },
-            remoteDb,
-          })
-        }
-        remoteDb.login(id, pwd, (err, response) => {
-          if (err && err.name === 'unauthorized') {
-            return this.setState({
-              loginError: 'Wrong password',
-            })
-          }
-          if (err) {
-            return this.setState({
-              loginError: 'Unable to communicate with headquarters',
-            })
-          }
-          if (response.ok && response.name === id) {
-            ensureUserDb(res => {
-              console.log('ensured')
-            })
-            const user = {
-              id,
-              metadata: {email},
-            }
-            saveUser(user)
-            this.setState({
-              user: user,
-              remoteDb,
-            })
-          }
-        })
-      })
     })
   }
 
   onLogout = () => {
-    if (this.state.remoteDb) {
-      this.state.remoteDb.logout()
+    if (this.state.remoteUserDb) {
+      this.state.remoteUserDb.logout()
     }
     clearUser()
     this.setState({
       user: null,
-      remoteDb: null,
+      remoteUserDb: null,
     })
   }
 
-  setTitle = title => {
+  setTitle = (title: string) => {
     this.setState({title})
   }
 

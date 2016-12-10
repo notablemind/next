@@ -6,7 +6,18 @@ import {css, StyleSheet} from 'aphrodite'
 import Popup from '../../components/Popup'
 import LoginForm from './LoginForm'
 
-const LoginStatus = ({user, loading, online, loginError, onLogin, onLogout}) => {
+import type {User} from './types'
+
+type Props = {
+  user: User,
+  loading: bool,
+  online: bool,
+  loginError: ?string,
+  onLogin: (email: string, pwd: string) => void,
+  onLogout: () => void,
+}
+
+const LoginStatus = ({user, loading, online, loginError, onLogin, onLogout}: Props) => {
   if (user) {
     return <Popup key="logged-in">
       {(isOpen, setOpen, ref) =>

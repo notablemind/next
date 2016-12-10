@@ -4,6 +4,10 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 export default class LoginForm extends Component {
+  state: {
+    email: string,
+    pwd: string,
+  }
   constructor() {
     super()
     this.state = {

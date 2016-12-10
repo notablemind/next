@@ -2,7 +2,15 @@
 
 import React, {Component} from 'react'
 
+type Props = {
+}
+
+type State = {isOpen: boolean}
+type E = {}
+
 export default class Popup extends Component {
+  state: State
+  node: any
   constructor() {
     super()
     this.state = {
@@ -10,7 +18,7 @@ export default class Popup extends Component {
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: {}, prevState: State) {
     if (this.state.isOpen && !prevState.isOpen) {
       window.addEventListener('mousedown', this.onClose, true)
     }
@@ -23,7 +31,7 @@ export default class Popup extends Component {
     window.removeEventListener('mousedown', this.onClose, true)
   }
 
-  onClose = (e) => {
+  onClose = (e: any) => {
     // TODO check if we're within the target. if so, we can go w/ capture
     if (this.node) {
       let node = e.target
@@ -37,7 +45,7 @@ export default class Popup extends Component {
     this.setState({isOpen: false})
   }
 
-  setOpen = isOpen => {
+  setOpen = (isOpen: bool) => {
     if (isOpen == null) isOpen = !this.state.isOpen
     this.setState({isOpen})
   }
