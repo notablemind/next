@@ -25,3 +25,24 @@ I think that's it?
 - hit an endpoint "make me a database" with username & db name
 - then the database is made, and it's added to
 
+## Data formatting
+
+User db
+- `settings` -> user settings
+- {type: 'folder', id: string, title: string, folder: string}
+- {type: 'doc', id: string, title: string, ...}
+- {type: 'theme', } // custom theming
+
+Doc db
+- `settings`
+  - latest view config (might to something w/ having multiple view configs?)
+  - any theme stuff
+  - plugin configs
+  - ???
+- {type: 'node', ...}
+- {type: 'tag', ...}
+- {type: ..., ...} open to storing other types of things if plugins want to.
+
+Any other DBs?
+maybe not.
+

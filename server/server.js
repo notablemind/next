@@ -3,8 +3,9 @@ const path = require('path')
 
 app.use(require('cors')({origin: true, credentials: true}))
 app.use(require('cookie-parser')())
+app.use(require('body-parser').json())
 
-const PouchDB = require('pouchdb').defaults({prefix: path.join(__dirname, 'data')})
+const PouchDB = require('pouchdb').defaults({prefix: path.join(__dirname, 'data/')})
 PouchDB.plugin(require('pouchdb-auth'))
 PouchDB.plugin(require('pouchdb-security'))
 PouchDB.plugin(require('pouchdb-find'))
@@ -24,7 +25,6 @@ const checkAuth = (username, password, done) => {
 }
 
 const getUsersDB = (req) => {
-  // console.log('pdb', PouchDB)
   return require('express-pouchdb/lib/utils').getUsersDB(pouchApp, PouchDB)
 }
 
@@ -113,24 +113,37 @@ const isMyDoc = (id, userId) => {
   return id.indexOf(`doc_${userId}_`) === 0
 }
 
+const userByEmail = (email, done) => {
+  users.find({selector: {'email': email}})
+    .then(users => {
+      if (!users || !users.docs.length) {
+        console.log('no users?', users, email)
+        return done(null, null)
+      }
+      done(null, users.docs[0].name)
+    }, err => {
+      console.log('fail', err, email)
+      done(500)
+    })
+}
+
 app.get('/api/user-by-email', (req, res) => {
   if (!req.query.email) {
     res.status(400)
     return res.end()
   }
-  users.find({selector: {'email': req.query.email}})
-    .then(users => {
-      if (!users || !users.docs.length) {
-        console.log('no users?', users)
-        res.status(404)
-        return res.end()
-      }
-      return res.end(JSON.stringify({id: users.docs[0].name}))
-    }, err => {
-      console.log('fail', err)
+  userByEmail(req.query.email, (err, userId) => {
+    if (err) {
+      console.log('Server fail', err)
       res.status(500)
-      res.end()
-    })
+      return res.end()
+    }
+    if (!userId) {
+      res.status (404)
+      return res.end()
+    }
+    return res.end(JSON.stringify({id: userId}))
+  })
 })
 
 app.post('/api/create-doc', authMiddleware, (req, res) => {
@@ -178,6 +191,26 @@ app.post('/api/remove-collaborator', authMiddleware, (req, res) => {
 app.post('/api/ensure-user', authMiddleware, (req, res) => {
   ensureMemberAccess('user_' + req.pouchUserId, req.pouchUserId, err => {
     finish(res, !err)
+  })
+})
+
+app.put('/_users/:name', (req, res, next) => {
+  const email = req.body.email // TODO case insensitive
+  userByEmail(email, (err, userId) => {
+    if (err) {
+      res.status(500)
+      return res.end()
+    }
+    if (!userId) {
+      return next() // good, that email is not taken
+    }
+    res.status(409)
+    res.end(JSON.stringify({
+      error: 'conflict',
+      reason: 'Document creation conflict',
+      status: 409,
+      message: 'Document creation conflict',
+    }))
   })
 })
 

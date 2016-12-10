@@ -9,13 +9,21 @@ import Header from './Header'
 
 import PouchDB from 'pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
+PouchDB.plugin(require('pouchdb-adapter-idb'))
+// PouchDB.plugin(require('pouchdb-replication'))
 
+/*
 const RxDB = require('rxdb')
+try {
 RxDB.plugin(require('pouchdb-adapter-idb'))
 RxDB.plugin(require('pouchdb-replication'))
+} catch(e) {
+  // HMR fix
+}
+*/
 
 window.pouchdb = PouchDB
-window.rxdb = RxDB
+// window.rxdb = RxDB
 
 const USER_KEY = 'notablemind:user'
 const baseURL = 'http://localhost:6102'
@@ -57,6 +65,7 @@ const clearUser = () => {
 }
 
 const userSchema = {
+  additionalProperties: true,
   title: 'User Doc Schema',
   type: 'object',
   properties: {
@@ -74,31 +83,55 @@ export default class Wrapper extends Component {
       loginError: null,
       online: true,
       remoteDb: null,
+      userDb: new PouchDB('notablemind_user'),
       title: 'Notablemind',
-      settings: null,
+      settings: null, // do I need the settings?
     }
 
+    /**
+     * This will contain
+     * - the settings blob
+     * - entries for all of your documents
+     *   {id: docid,
+     *    folder: ?folderid,
+     *    title: string,
+     *    type: 'doc',
+     *    size: number,
+     *    last_modified: number(date),
+     *    last_updated: number(date),
+     *    }
+     *   on the server, document ids will be `doc_userid_docid`, but locally,
+     *   they will be `doc_docid` b/c you don't intrinsically have a userid
+     *   anyway, these things will be a little denormalized between the doc
+     *   db and this list, but I don't think we can avoid that.
+     * - entries for all of your folders
+     *   {id: string, title: string, folder: string, type: 'folder'} // anything else? don't think so
+     * - what are the kinds of configuration things that files can have?
+     *   these will live *in* the collection, under a special key, like
+     *   `settings`
+     *    view configuration (windows, panes, etc)
+     *    plugin config
+     *    - OOhh maybe this will need to be readable too
+     *    - orr actually maybe it'll just be a document in the doc collection.
+     *      yeah!
+     * - how about system-wide settings?
+     * - themes!
+     *   if you're using a custom theme, you'll have to share the theme
+     *   but the default will be to use a built-in theme & make small
+     *   modifications. A custom theme could be a single document that you
+     *   fetch from a user's db; and others who are listed in the document
+     *   would have read-only access to it. I think that will work.
+     *   so I can probably worry about themes later.
+     *
+    const db = new PouchDB('notablemind_user', 'idb')
     RxDB.create('notablemind', 'idb', null, true).then(db => {
       this.setState({localDb: db})
       return db.collection('user', userSchema).then(userCol => {
         this.setState({userCol})
-        userCol.query().$.subscribe(items => {
-          if (!items) return
-          let settings = {}
-          let docs = items.filter(item => {
-            if (item.id === 'settings') {
-              settings = item
-              return false
-            }
-            return true
-          })
-          this.setState({
-            settings,
-            docs,
-          })
-        })
+        // TODO do I need the settings here?
       })
     }, err => console.log('er', err))
+     */
 
     if (user) {
       const remoteDb = new PouchDB(`${baseURL}/user_${user.id}`)
@@ -133,8 +166,8 @@ export default class Wrapper extends Component {
   }
 
   componentDidUpdate(_, prevState) {
-    if (this.state.userCol && this.state.remoteDb && !(prevState.userCol && prevState.remoteDb)) {
-      this.state.userCol.sync(this.state.remoteDb)
+    if (this.state.userDb && this.state.remoteDb && !(prevState.userDb && prevState.remoteDb)) {
+      this.state.userDb.sync(this.state.remoteDb)
     }
   }
 
@@ -210,6 +243,10 @@ export default class Wrapper extends Component {
     })
   }
 
+  setTitle = title => {
+    this.setState({title})
+  }
+
   render() {
     return <div className={css(styles.container)}>
       <Header
@@ -221,7 +258,10 @@ export default class Wrapper extends Component {
         onLogout={this.onLogout}
         loginError={this.state.loginError}
       />
-      {this.props.children}
+      {React.cloneElement(this.props.children, {
+        userDb: this.state.userDb,
+        setTitle: this.setTitle,
+      })}
     </div>
   }
 }

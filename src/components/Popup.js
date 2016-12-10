@@ -10,9 +10,6 @@ export default class Popup extends Component {
     }
   }
 
-  componentDidMount() {
-  }
-
   componentDidUpdate(prevProps, prevState) {
     if (this.state.isOpen && !prevState.isOpen) {
       window.addEventListener('mousedown', this.onClose, true)
