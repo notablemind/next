@@ -6,38 +6,6 @@ import PouchDB from 'pouchdb'
 import Treed from 'treed'
 import treedPouch from 'treed/pouch'
 
-/*
-const makeTreed = db => {
-  const data = {}
-  const listeners = {}
-
-  const onChange = change => {
-    if (change.doc._deleted) {
-      delete data[change.doc._id]
-    } else {
-      data[change.doc._id] = change.doc
-    }
-  }
-
-  db.changes({
-    live: true,
-    include_docs: true,
-    since: 'now',
-  }).on('change', onChange)
-    .on('error', err => console.log('doc sync err', err))
-
-  db.allDocs({include_docs: true}).then(({rows}) => {
-    rows.forEach(({doc}) => {
-      if (doc._id === 'settings') {
-        settings = doc
-        return
-      }
-      data[doc._id] = doc
-    })
-  })
-}
-*/
-
 export default class Document extends Component {
   state: {
     db: any,
@@ -51,6 +19,10 @@ export default class Document extends Component {
       treed: null,
     }
 
+    if (props.makeRemoteDocDb) {
+      props.makeRemoteDocDb(props.params.id)
+      .then(db => this.state.db.sync(db, {live: true, retry: true}))
+    }
     this.makeTreed(this.state.db)
   }
 
@@ -73,6 +45,13 @@ export default class Document extends Component {
         db: db,
       })
       this.makeTreed(db)
+      if (nextProps.makeRemoteDocDb) {
+        nextProps.makeRemoteDocDb(nextProps.params.id)
+        .then(db => this.state.db.sync(db, {live: true, retry: true}))
+      }
+    } else if (nextProps.makeRemoteDocDb && !this.props.makeRemoteDocDb) {
+      nextProps.makeRemoteDocDb(nextProps.params.id)
+      .then(db => this.state.db.sync(db, {live: true, retry: true}))
     }
   }
 

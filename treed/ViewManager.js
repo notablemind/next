@@ -91,31 +91,11 @@ export default class ViewManager {
         }
       },
 
-      /*
-      undo() {
-        this.emitter.emitMany(this.cmd.undo(args))
-      },
-      redo() {
-        this.emitter.emitMany(this.cmd.redo(args))
-      },
-
-      execute(command) {
-        this.emitter.emitMany(this.cmd.execute(command, args))
-      },
-      executeMany(commands) {
-        this.emitter.emitMany(this.cmd.executeMany(commands, args))
-      },
-
-      append(idx, command) {
-        this.emitter.emitMany(this.cmd.append(idx, command, args))
-      },
-      appendMany(idx, commands) {
-        this.emitter.emitMany(this.cmd.appendMany(idx, commands, args))
-      },
-      */
+      undo: () => this.emitter.emitMany(this.cmd.undo(args)),
+      redo: () => this.emitter.emitMany(this.cmd.redo(args)),
     }
 
-    const proxied = ['undo', 'redo', 'execute', 'executeMany', 'append', 'appendMany']
+    const proxied = ['execute', 'executeMany', 'append', 'appendMany']
     proxied.forEach(name => store[name] = (...proxiedArgs) => {
       this.emitter.emitMany(this.cmd[name](...proxiedArgs, args))
     })

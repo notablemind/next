@@ -154,7 +154,7 @@ app.post('/api/create-doc', authMiddleware, (req, res) => {
     res.status(401)
     return res.end()
   }
-  ensureMemberAccess('doc_' + req.query.id, req.pouchUserId, err => {
+  ensureMemberAccess(req.query.id, req.pouchUserId, err => {
     finish(res, !err)
   })
 })
@@ -168,7 +168,7 @@ app.post('/api/add-collaborator', authMiddleware, (req, res) => {
     res.status(401)
     return res.end()
   }
-  ensureMemberAccess('doc_' + req.query.id, req.query.user, err => {
+  ensureMemberAccess(req.query.id, req.query.user, err => {
     finish(res, !err)
   })
 })
@@ -182,7 +182,7 @@ app.post('/api/remove-collaborator', authMiddleware, (req, res) => {
     res.status(401)
     return res.end()
   }
-  ensureMemberAccess('doc_' + req.query.id, req.query.user, err => {
+  ensureMemberAccess(req.query.id, req.query.user, err => {
     finish(res, !err)
   })
 })

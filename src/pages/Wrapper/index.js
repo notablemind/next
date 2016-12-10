@@ -32,6 +32,17 @@ const ensureUserDb = (done) => {
   )
 }
 
+const ensureDocDb = id => {
+  return fetch(`${baseURL}/api/create-doc?id=${id}`, {
+    method: 'POST',
+    mode: 'cors',
+    credentials: 'include',
+  }).then(
+    res => console.log('good', res),
+    err => console.log('bad')
+  )
+}
+
 const getUser = () => {
   let val = localStorage[USER_KEY]
   try {
@@ -184,6 +195,12 @@ export default class Wrapper extends Component {
         loginError={this.state.loginError}
       />
       {React.cloneElement(this.props.children, {
+        makeRemoteDocDb: this.state.remoteUserDb && (
+          id => {
+            const doc = `doc_${this.state.user.id}_${id}`
+            return ensureDocDb(doc).then(() => new PouchDB(`${baseURL}/${doc}`))
+          }
+        ),
         remoteUser: this.state.user,
         userDb: this.state.userDb,
         setTitle: this.setTitle,
