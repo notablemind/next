@@ -3,6 +3,7 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 import uuid from '../../utils/uuid'
+import {hashHistory} from 'react-router'
 
 const organizeFolders = (rows) => {
   const map = {}
@@ -27,14 +28,14 @@ const organizeFolders = (rows) => {
 }
 
 type FolderT = {
-  id: string,
+  _id: string,
   type: 'folder',
   folder: ?string,
   title: string,
 }
 
 type DocT = {
-  id: string,
+  _id: string,
   type: 'doc',
   folder: ?string,
   title: string,
@@ -75,6 +76,7 @@ export default class Browse extends Component {
   }
 
   onChange = (change: PouchChange) => {
+    console.log('on change!', change)
     const id = change.doc._id
     if (change.doc._deleted) {
       const map = {...this.state.map}
@@ -147,8 +149,8 @@ export default class Browse extends Component {
       title: 'New document',
       folder: null,
       size: 0,
-      last_updated: Date.now(),
-      last_opened: Date.now(),
+      modified: Date.now(),
+      opened: Date.now(),
     })
   }
 
@@ -159,9 +161,13 @@ export default class Browse extends Component {
       title: 'New folder',
       folder: null,
       size: 0,
-      last_updated: Date.now(),
-      last_opened: Date.now(),
+      modified: Date.now(),
+      opened: Date.now(),
     })
+  }
+
+  onOpen = (id: string) => {
+    hashHistory.push('/doc/' + id)
   }
 
   render() {
@@ -182,27 +188,38 @@ export default class Browse extends Component {
       <Folder
         map={this.state.map}
         children={this.state.children}
-        folder={{id: 'root', title: 'All Documents'}}
+        folder={{_id: 'root', title: 'All Documents'}}
+        onOpen={this.onOpen}
       />
     </div>
   }
 }
 
-const Folder = ({map, children, folder}) => (
+const Folder = ({map, children, folder, onOpen}) => (
   <div className={css(styles.folderContainer)}>
     <div className={css(styles.item, styles.folder)}>{folder.title}</div>
-    <div className={css(styles.children, folder.id === 'root' && styles.rootChildren)}>
-      {(children[folder.id] || []).map(id => (
+    <div className={css(styles.children, folder._id === 'root' && styles.rootChildren)}>
+      {(children[folder._id] || []).map(id => (
         map[id].type === 'folder' ?
-          <Folder key={id} map={map} children={children} folder={map[id]} /> :
-          <Doc key={id} doc={map[id]} />
+          <Folder
+            key={id}
+            map={map}
+            onOpen={onOpen}
+            children={children}
+            folder={map[id]}
+          /> :
+          <Doc
+            key={id}
+            doc={map[id]}
+            onOpen={onOpen}
+          />
       ))}
     </div>
   </div>
 )
 
-const Doc = ({doc}) => (
-  <div className={css(styles.item, styles.doc)}>
+const Doc = ({doc, onOpen}) => (
+  <div className={css(styles.item, styles.doc)} onClick={() => onOpen(doc._id)}>
     {doc.title}
   </div>
 )

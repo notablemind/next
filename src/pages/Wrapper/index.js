@@ -13,6 +13,7 @@ import {login, signup} from './login'
 import PouchDB from 'pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
 PouchDB.plugin(require('pouchdb-adapter-idb'))
+PouchDB.plugin(require('pouchdb-upsert'))
 
 import type {User} from './types'
 
@@ -116,9 +117,13 @@ export default class Wrapper extends Component {
   }
 
   componentDidUpdate(_: {}, prevState: State) {
-    if (this.state.userDb && this.state.remoteUserDb && !(prevState.userDb && prevState.remoteUserDb)) {
+    if (this.state.userDb && this.state.remoteUserDb &&
+        !(prevState.userDb && prevState.remoteUserDb)) {
       console.log('starting sync')
-      this.state.userDb.sync(this.state.remoteUserDb)
+      this.state.userDb.sync(this.state.remoteUserDb, {
+        live: true,
+        retry: true,
+      })
     }
   }
 

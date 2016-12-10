@@ -18,6 +18,12 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
   ],
+  resolve: {
+    alias: {
+      treed: path.join(__dirname, '..', 'treed'),
+      formative: path.join(__dirname, '..', 'formative'),
+    },
+  },
   module: {
     loaders: [{
       test: /\.js$/,

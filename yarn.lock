@@ -2625,7 +2625,7 @@ pouchdb-collections@6.0.7:
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/pouchdb-collections/-/pouchdb-collections-6.0.7.tgz#1fe47a80e96ae2c504a8a5787a8e98020a0dd776"
 
-pouchdb-core@6.0.7:
+pouchdb-core, pouchdb-core@6.0.7:
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/pouchdb-core/-/pouchdb-core-6.0.7.tgz#0dcf8245b1637f34310cea9b823f5eed539bb967"
   dependencies:
@@ -2740,7 +2740,7 @@ pouchdb-replication:
     pouchdb-promise "6.0.7"
     pouchdb-utils "6.0.7"
 
-pouchdb-upsert@~2.0.1:
+pouchdb-upsert, pouchdb-upsert@~2.0.1:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/pouchdb-upsert/-/pouchdb-upsert-2.0.2.tgz#c746cc9945e52d8c78e42f63ade0666777996712"
   dependencies:
