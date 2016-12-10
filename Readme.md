@@ -46,3 +46,50 @@ Doc db
 Any other DBs?
 maybe not.
 
+
+
+
+    /**
+     * This will contain
+     * - the settings blob
+     * - entries for all of your documents
+     *   {id: docid,
+     *    folder: ?folderid,
+     *    title: string,
+     *    type: 'doc',
+     *    size: number,
+     *    last_modified: number(date),
+     *    last_updated: number(date),
+     *    }
+     *   on the server, document ids will be `doc_userid_docid`, but locally,
+     *   they will be `doc_docid` b/c you don't intrinsically have a userid
+     *   anyway, these things will be a little denormalized between the doc
+     *   db and this list, but I don't think we can avoid that.
+     * - entries for all of your folders
+     *   {id: string, title: string, folder: string, type: 'folder'} // anything else? don't think so
+     * - what are the kinds of configuration things that files can have?
+     *   these will live *in* the collection, under a special key, like
+     *   `settings`
+     *    view configuration (windows, panes, etc)
+     *    plugin config
+     *    - OOhh maybe this will need to be readable too
+     *    - orr actually maybe it'll just be a document in the doc collection.
+     *      yeah!
+     * - how about system-wide settings?
+     * - themes!
+     *   if you're using a custom theme, you'll have to share the theme
+     *   but the default will be to use a built-in theme & make small
+     *   modifications. A custom theme could be a single document that you
+     *   fetch from a user's db; and others who are listed in the document
+     *   would have read-only access to it. I think that will work.
+     *   so I can probably worry about themes later.
+     *
+    const db = new PouchDB('notablemind_user', 'idb')
+    RxDB.create('notablemind', 'idb', null, true).then(db => {
+      this.setState({localDb: db})
+      return db.collection('user', userSchema).then(userCol => {
+        this.setState({userCol})
+        // TODO do I need the settings here?
+      })
+    }, err => console.log('er', err))
+     */

@@ -8,7 +8,7 @@ import {Router, Route, IndexRoute, hashHistory} from 'react-router'
 import Header from './Header'
 import {baseURL} from './config'
 
-import login from './login'
+import {login, signup} from './login'
 
 import PouchDB from 'pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
@@ -58,15 +58,15 @@ const userSchema = {
 }
 
 type State = {
-    user: User,
-    loading: bool,
-    online: bool,
-    remoteUserDb: any,
-    userDb: any,
-    title: string,
-    settings: ?any,
-    loginError: ?string,
-  }
+  user: ?User,
+  loading: bool,
+  online: bool,
+  remoteUserDb: any,
+  userDb: any,
+  title: string,
+  settings: ?any,
+  loginError: ?string,
+}
 
 export default class Wrapper extends Component {
   state: State
@@ -85,51 +85,6 @@ export default class Wrapper extends Component {
       settings: null, // do I need the settings?
     }
 
-    /**
-     * This will contain
-     * - the settings blob
-     * - entries for all of your documents
-     *   {id: docid,
-     *    folder: ?folderid,
-     *    title: string,
-     *    type: 'doc',
-     *    size: number,
-     *    last_modified: number(date),
-     *    last_updated: number(date),
-     *    }
-     *   on the server, document ids will be `doc_userid_docid`, but locally,
-     *   they will be `doc_docid` b/c you don't intrinsically have a userid
-     *   anyway, these things will be a little denormalized between the doc
-     *   db and this list, but I don't think we can avoid that.
-     * - entries for all of your folders
-     *   {id: string, title: string, folder: string, type: 'folder'} // anything else? don't think so
-     * - what are the kinds of configuration things that files can have?
-     *   these will live *in* the collection, under a special key, like
-     *   `settings`
-     *    view configuration (windows, panes, etc)
-     *    plugin config
-     *    - OOhh maybe this will need to be readable too
-     *    - orr actually maybe it'll just be a document in the doc collection.
-     *      yeah!
-     * - how about system-wide settings?
-     * - themes!
-     *   if you're using a custom theme, you'll have to share the theme
-     *   but the default will be to use a built-in theme & make small
-     *   modifications. A custom theme could be a single document that you
-     *   fetch from a user's db; and others who are listed in the document
-     *   would have read-only access to it. I think that will work.
-     *   so I can probably worry about themes later.
-     *
-    const db = new PouchDB('notablemind_user', 'idb')
-    RxDB.create('notablemind', 'idb', null, true).then(db => {
-      this.setState({localDb: db})
-      return db.collection('user', userSchema).then(userCol => {
-        this.setState({userCol})
-        // TODO do I need the settings here?
-      })
-    }, err => console.log('er', err))
-     */
-
     if (user) {
       const remoteUserDb = new PouchDB(`${baseURL}/user_${user.id}`)
       remoteUserDb.getSession((err, res) => {
@@ -140,9 +95,9 @@ export default class Wrapper extends Component {
             loading: false,
             online: false,
           })
-          // maybe network error? It's fine to leave things
           return
         }
+
         if (!res.userCtx || res.userCtx.name !== user.id) {
           clearUser()
           this.setState({
@@ -150,10 +105,8 @@ export default class Wrapper extends Component {
             remoteUserDb: null,
           })
         }
-        ensureUserDb(res => {
-          console.log('ensured')
-        })
-        console.log(res)
+
+        ensureUserDb(res => { console.log('ensured') })
         this.setState({
           loading: false,
           remoteUserDb,
@@ -169,14 +122,32 @@ export default class Wrapper extends Component {
     }
   }
 
-  onLogin = (email: string, pwd: string) => {
-    login(email, pwd, (err, user, remoteUserDb) => {
-      if (err) this.setState({loginError: err})
-      else {
-        saveUser(user)
-        ensureUserDb(res => { console.log('ensured') })
-        this.setState({user, remoteUserDb})
+  getUser = (id: string, remoteUserDb: any) => {
+    remoteUserDb.getUser(id, (err, res) => {
+      console.log(err, res)
+      const user = {
+        id,
+        email: res.email,
+        realName: res.realName,
       }
+      saveUser(user)
+      ensureUserDb(res => { console.log('ensured') })
+      this.setState({user, remoteUserDb})
+    })
+  }
+
+  onLogin = (email: string, pwd: string) => {
+    login(email, pwd, (err, id, remoteUserDb) => {
+      if (err) this.setState({loginError: err})
+      else this.getUser(id, remoteUserDb)
+
+    })
+  }
+
+  onSignUp = (name: string, email: string, pwd: string) => {
+    signup(name, email, pwd, (err, id, remoteUserDb) => {
+      if (err) this.setState({loginError: err})
+      else this.getUser(id, remoteUserDb)
     })
   }
 
@@ -204,9 +175,11 @@ export default class Wrapper extends Component {
         online={this.state.online}
         onLogin={this.onLogin}
         onLogout={this.onLogout}
+        onSignUp={this.onSignUp}
         loginError={this.state.loginError}
       />
       {React.cloneElement(this.props.children, {
+        remoteUser: this.state.user,
         userDb: this.state.userDb,
         setTitle: this.setTitle,
       })}

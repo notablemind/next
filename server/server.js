@@ -3,7 +3,6 @@ const path = require('path')
 
 app.use(require('cors')({origin: true, credentials: true}))
 app.use(require('cookie-parser')())
-app.use(require('body-parser').json())
 
 const PouchDB = require('pouchdb').defaults({prefix: path.join(__dirname, 'data/')})
 PouchDB.plugin(require('pouchdb-auth'))
@@ -194,7 +193,7 @@ app.post('/api/ensure-user', authMiddleware, (req, res) => {
   })
 })
 
-app.put('/_users/:name', (req, res, next) => {
+app.put('/_users/:name', require('body-parser').json(), (req, res, next) => {
   const email = req.body.email // TODO case insensitive
   userByEmail(email, (err, userId) => {
     if (err) {

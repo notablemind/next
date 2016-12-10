@@ -14,10 +14,14 @@ type Props = {
   online: bool,
   loginError: ?string,
   onLogin: (email: string, pwd: string) => void,
+  onSignUp: (name: string, email: string, pwd: string) => void,
   onLogout: () => void,
 }
 
-const LoginStatus = ({user, loading, online, loginError, onLogin, onLogout}: Props) => {
+const LoginStatus = ({
+  user, loading, online, loginError,
+  onLogin, onSignUp, onLogout
+}: Props) => {
   if (user) {
     return <Popup key="logged-in">
       {(isOpen, setOpen, ref) =>
@@ -26,7 +30,7 @@ const LoginStatus = ({user, loading, online, loginError, onLogin, onLogout}: Pro
             onClick={() => setOpen()}
             className={css(styles.email, !online && styles.offline)}
           >
-            {user.metadata.email}
+            {user.realName || user.email}
           </div>
           {isOpen && <div className={css(styles.profile)}>
             <button onClick={onLogout}>
@@ -53,6 +57,7 @@ const LoginStatus = ({user, loading, online, loginError, onLogin, onLogout}: Pro
         <div className={css(styles.loginForm)}>
           <LoginForm
             onLogin={onLogin}
+            onSignUp={onSignUp}
             loginError={loginError}
             loading={loading}
           />

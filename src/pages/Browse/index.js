@@ -4,22 +4,6 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 import uuid from '../../utils/uuid'
 
-/*
-const organizeFolders = (folders, docs, sortBy, sortDir) => {
-  const map = {root: {children: []}}
-  folders.forEach(folder => {
-    map[folder.id] = {folder, children: []}
-  })
-  folders.forEach(folder => {
-    map[folder.folder || 'root'].children.push(folder)
-  })
-  docs.forEach(doc => {
-    map[doc.folder || 'root'].children.push(doc)
-  })
-  return map
-}
-*/
-
 const organizeFolders = (rows) => {
   const map = {}
   const children = {root: []}
@@ -205,19 +189,36 @@ export default class Browse extends Component {
 }
 
 const Folder = ({map, children, folder}) => (
-  <div>
-    <div>{folder.title}</div>
-    {(children[folder.id] || []).map(id => (
-      map[id].type === 'folder' ?
-        <Folder key={id} map={map} children={children} folder={map[id]} /> :
-        <Doc key={id} doc={map[id]} />
-    ))}
+  <div className={css(styles.folderContainer)}>
+    <div className={css(styles.item, styles.folder)}>{folder.title}</div>
+    <div className={css(styles.children, folder.id === 'root' && styles.rootChildren)}>
+      {(children[folder.id] || []).map(id => (
+        map[id].type === 'folder' ?
+          <Folder key={id} map={map} children={children} folder={map[id]} /> :
+          <Doc key={id} doc={map[id]} />
+      ))}
+    </div>
   </div>
 )
 
 const Doc = ({doc}) => (
-  <div>{doc.title}</div>
+  <div className={css(styles.item, styles.doc)}>
+    {doc.title}
+  </div>
 )
 
+const styles = StyleSheet.create({
+  item: {
+    padding: '20px 40px',
+    cursor: 'pointer',
+
+    ':hover': {
+      backgroundColor: '#ccc',
+    },
+  },
+
+  folder: {
+  },
+})
 
 

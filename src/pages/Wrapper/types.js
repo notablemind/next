@@ -1,8 +1,8 @@
+// @flow
 
 export type User = {
   id: string,
-  metadata: {
-    email: string,
-  }
+  realName: string,
+  email: string,
 }
 
