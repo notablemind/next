@@ -47,14 +47,14 @@ export default class Treed {
         const now = Date.now()
         return this.db.db.save({
           _id: 'root',
-          parent: null,
-          content: '',
-          children: [],
           created: now,
           modified: now,
-          collapsed: true,
+          parent: null,
+          children: [],
           type: 'normal',
+          content: '',
           plugins: {},
+          types: {},
           views: {},
         })
       }

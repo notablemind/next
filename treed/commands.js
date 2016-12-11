@@ -74,14 +74,14 @@ const commands: {[key: string]: Command<*, *>} = {
       const children = db.data[pid].children.slice()
       const prom = db.saveMany([{
         _id: id,
-        parent: pid,
-        content: '',
-        children: [],
-        collapsed: true,
         created: now,
         modified: now,
+        parent: pid,
+        children: [],
         type: 'normal',
+        content: '',
         plugins: {},
+        types: {},
         views: {},
         ...data,
       }, {

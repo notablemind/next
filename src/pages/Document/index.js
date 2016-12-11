@@ -30,12 +30,8 @@ export default class Document extends Component {
     if (this.state.treed) {
       // TODO this.state.treed.destroy()
     }
-    db.get('settings')
-    .catch(err => ({}))
-    .then(doc => {
-      const treed = new Treed(doc, treedPouch(this.state.db))
-      treed.ready.then(() => this.setState({treed}))
-    })
+    const treed = new Treed(treedPouch(this.state.db), [])
+    treed.ready.then(() => this.setState({treed}))
   }
 
   componentWillReceiveProps(nextProps: any) {
@@ -133,6 +129,7 @@ class ListItem extends Component {
       store.events.nodeView(id),
     ], () => {
       const next = stateFromStore(store)
+      console.log('next', next.node.content)
       if (next.editState && !this.state.editState) {
         next.tmpText = next.node.content
       }
@@ -150,9 +147,7 @@ class ListItem extends Component {
   }
 
   onBlur = () => {
-    // HACK to prevent flicker
     this.props.store.actions.setContent(this.props.id, this.state.tmpText)
-    this.state.node.content = this.state.tmpText
     this.props.store.actions.normalMode()
   }
 

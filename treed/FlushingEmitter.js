@@ -1,4 +1,6 @@
 
+const pauseMs = 10
+
 export default class FlushingEmitter {
   constructor() {
     this.listeners = {}
@@ -20,7 +22,7 @@ export default class FlushingEmitter {
     if (!evt) return
     this._waitingEvents.add(evt)
     if (!this._emitTimeout) {
-      this._emitTimeout = setImmediate(this._flush)
+      this._emitTimeout = setTimeout(this._flush, pauseMs)
     }
   }
 
@@ -28,14 +30,21 @@ export default class FlushingEmitter {
     if (!evts || !evts.length) return
     evts.forEach(evt => this._waitingEvents.add(evt))
     if (!this._emitTimeout) {
-      this._emitTimeout = setImmediate(this._flush)
+      this._emitTimeout = setTimeout(this._flush, pauseMs)
     }
   }
 
   _flush = () => {
+    const called = new Set()
+    console.log('flushing', this._waitingEvents)
     for (let evt of this._waitingEvents) {
       if (this.listeners[evt]) {
-        this.listeners[evt].forEach(fn => fn())
+        this.listeners[evt].forEach(fn => {
+          if (!called.has(fn)) {
+            called.add(fn)
+            fn()
+          }
+        })
       }
     }
     this._waitingEvents = new Set()
