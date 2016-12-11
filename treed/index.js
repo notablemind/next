@@ -23,12 +23,13 @@ export default class Treed {
   emitter: FlushingEmitter
   commands: Commandeger<*, *>
   viewManager: ViewManager
+  ready: Promise<void>
   db: Database
 
-  constructor(settings: any, db: any) {
+  constructor(db: any, plugins: any) {
     this.emitter = new FlushingEmitter()
     this.commands = new Commandeger(commands)
-    this.db = new Database(db, settings, this.emitter)
+    this.db = new Database(db, plugins, id => this.emitter.emit('node:' + id), this.settingsChanged)
     this.viewManager = new ViewManager(
       this.db,
       this.commands,
@@ -40,6 +41,7 @@ export default class Treed {
         plugins: [],
       },
     )
+
     this.ready = this.db.ready.then(() => {
       if (!this.db.data.root) {
         const now = Date.now()
@@ -57,6 +59,10 @@ export default class Treed {
         })
       }
     })
+  }
+
+  settingsChanged = () => {
+    console.log('TODO proces settings change')
   }
 
   registerView(root: string, type: string) {

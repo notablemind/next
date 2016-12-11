@@ -3,13 +3,13 @@
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 import PouchDB from 'pouchdb'
-import Treed from 'treed'
-import treedPouch from 'treed/pouch'
+import Treed from '../../../treed'
+import treedPouch from '../../../treed/pouch'
 
 export default class Document extends Component {
   state: {
     db: any,
-    treed: Treed,
+    treed: ?Treed,
   }
 
   constructor(props: any) {

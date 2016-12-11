@@ -197,6 +197,7 @@ export default class Wrapper extends Component {
       {React.cloneElement(this.props.children, {
         makeRemoteDocDb: this.state.remoteUserDb && (
           id => {
+            if (!this.state.user) return
             const doc = `doc_${this.state.user.id}_${id}`
             return ensureDocDb(doc).then(() => new PouchDB(`${baseURL}/${doc}`))
           }

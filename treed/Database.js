@@ -1,38 +1,50 @@
+// @flow
 
 export default class Database {
-  constructor(db, settings, emitter, plugins) {
+  db: any
+  plugins: any
+  settings: any
+  data: any
+  _onReady: () => void
+  _onNotReady: () => void
+  ready: Promise<void>
+  onNodeChanged: (id: string) => void
+  onSettingsChanged: () => void
+
+  constructor(db: any, plugins: any, onNodeChanged: any, onSettingsChanged: any) {
     this.data = {}
-    this.emitter = emitter
-    this.settings = settings
     this.ready = new Promise((res, rej) => {
       this._onReady = res
       this._onNotReady = rej
     })
     this.db = db
     this.plugins = plugins
+    this.onNodeChanged = onNodeChanged
+    this.onSettingsChanged = onSettingsChanged
     this.db.sync(this._onDump, this._onChange, this._onError)
   }
 
-  set = (id, attr, value) => {
+  set = (id: string, attr: string, value: any) => {
     return this.db.upsert(id, doc => ({...doc, [attr]: value}))
   }
-  update = (id, update) => {
+  update = (id: string, update: any) => {
     return this.db.upsert(id, doc => ({...doc, ...update}))
   }
-  save = doc => this.db.save(doc)
-  saveMany = docs => this.db.saveMany(docs)
-  delete = doc => this.db.delete(doc)
+  save = (doc: any) => this.db.save(doc)
+  saveMany = (docs: any) => this.db.saveMany(docs)
+  delete = (doc: any) => this.db.delete(doc)
 
-  _onDump = (data) => {
+  _onDump = (data: any, settings: any) => {
+    this.settings = settings
     this.data = data
     this._onReady()
   }
 
-  _onChange = (id, doc) => {
+  _onChange = (id: string, doc: any) => {
     if (id === 'settings') {
-      if (doc.modified > this.settings.modified) {
-        return this.updateSettings(doc)
-      }
+      this.settings = doc
+      this.onSettingsChanged()
+      return
     }
 
     if (!doc) {
@@ -43,11 +55,11 @@ export default class Database {
       // if (!this.data[id] || this.data[id].modified < doc.modified) {
       // }
       this.data[id] = doc
-      this.emitter.emit('node:' + id)
+      this.onNodeChanged(id)
     }
   }
 
-  _onError = err => {
+  _onError = (err: Error) => {
     console.log('sync error')
     console.error(err)
     this._onNotReady(err)
