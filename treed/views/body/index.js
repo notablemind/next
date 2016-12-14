@@ -58,13 +58,6 @@ const styles = StyleSheet.create({
     lineHeight: '1.2em',
   },
 
-  /*
-  textRoot: {
-    fontSize: '1.5em',
-    fontWeight: '400',
-  },
-  */
-
   outline: {
     padding: '4px 5px',
   },
@@ -72,7 +65,6 @@ const styles = StyleSheet.create({
   empty: {
     borderBottom: '2px dotted #ccc',
     height: '1.2em',
-    // marginTop: 2,
   },
 
   container: {

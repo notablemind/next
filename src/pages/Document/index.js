@@ -30,8 +30,7 @@ export default class Document extends Component {
     }
 
     if (props.makeRemoteDocDb) {
-      props.makeRemoteDocDb(props.params.id)
-      .then(db => this.state.db.sync(db, {live: true, retry: true}))
+      this.setupSync(props.makeRemoteDocDb, props.params.id)
     }
     // TODO actually get the user shortcuts
     const userShortcuts = {}
@@ -91,13 +90,18 @@ export default class Document extends Component {
       })
       this.makeTreed(db)
       if (nextProps.makeRemoteDocDb) {
-        nextProps.makeRemoteDocDb(nextProps.params.id)
-        .then(db => this.state.db.sync(db, {live: true, retry: true}))
+        this.setupSync(nextProps.makeRemoteDocDb, nextProps.params.id)
       }
     } else if (nextProps.makeRemoteDocDb && !this.props.makeRemoteDocDb) {
-      nextProps.makeRemoteDocDb(nextProps.params.id)
-      .then(db => this.state.db.sync(db, {live: true, retry: true}))
+      this.setupSync(nextProps.makeRemoteDocDb, nextProps.params.id)
     }
+  }
+
+  setupSync(makeRemoteDocDb, id) {
+    makeRemoteDocDb(id).then(
+      db => this.state.db.sync(db, {live: true, retry: true})
+        .on('error', e => console.error('sync fail', e))
+    )
   }
 
   componentWillUnmount() {
@@ -112,7 +116,7 @@ export default class Document extends Component {
     if (!this.state.treed) return <div>Loading...</div>
     return <div className={css(styles.container)}>
       <Sidebar
-
+        treed={this.state.treed}
       />
       <div className={css(styles.document)}>
         <div className={css(styles.treedContainer) + ' Theme_basic'}>
@@ -128,6 +132,7 @@ export default class Document extends Component {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    flex: 1,
   },
 
   document: {
