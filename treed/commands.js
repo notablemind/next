@@ -169,7 +169,7 @@ const commands: {[key: string]: Command<*, *>} = {
         }
       }
       if (opid === pid) {
-        if (oidx < idx) idx--
+        // if (oidx > idx) idx--
         ochildren.splice(idx, 0, id)
         const old = {id, oidx, opid, pid}
         const prom = viewsDirty ?

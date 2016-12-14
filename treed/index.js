@@ -30,6 +30,8 @@ export default class Treed {
     this.emitter = new FlushingEmitter()
     this.commands = new Commandeger(commands, this.setActive)
     this.db = new Database(db, plugins, id => this.emitter.emit('node:' + id), this.settingsChanged)
+    this.events = baseEvents
+    this.getters = baseGetters
     this.viewManager = new ViewManager(
       this.db,
       this.commands,

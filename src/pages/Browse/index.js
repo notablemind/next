@@ -124,7 +124,7 @@ export default class Browse extends Component {
   }
 
   listen(userDb: any) {
-    userDb.changes({
+    this.changes = userDb.changes({
       include_docs: true,
       live: true,
       since: 'now',
@@ -140,6 +140,10 @@ export default class Browse extends Component {
     }, err => {
       console.log('failed to get docs list', err)
     })
+  }
+
+  componentWillUnmount() {
+    this.changes.cancel()
   }
 
   onNewFile = () => {

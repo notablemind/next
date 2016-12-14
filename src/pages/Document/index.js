@@ -74,9 +74,33 @@ export default class Document extends Component {
   makeTreed(db: any) {
     if (this.state.treed) {
       this.state.treed.destroy()
+      this._unsub && this._unsub()
     }
     const treed = window._treed = new Treed(treedPouch(this.state.db), [])
-    treed.ready.then(() => this.setState({treed}))
+    this._unsub = treed.on(['node:root'], () => {
+      document.title = treed.db.data.root.content
+      this.onTitleChange(treed.db.data.root.content)
+    })
+    treed.ready.then(() => {
+      if (treed.db.data.root) {
+        document.title = treed.db.data.root.content
+        this.onTitleChange(treed.db.data.root.content)
+      }
+      this.setState({treed})
+    })
+  }
+
+  onTitleChange(title) {
+    const id = this.props.params.id
+    this.props.userDb.get(id).then(doc => {
+      if (doc.title !== title) {
+        console.log('saving title')
+        this.props.userDb.put({
+          ...doc,
+          title,
+        })
+      }
+    })
   }
 
   componentWillReceiveProps(nextProps: any) {
@@ -109,6 +133,9 @@ export default class Document extends Component {
     window.removeEventListener('keydown', this.onKeyDown)
     if (this.state.treed) {
       this.state.treed.destroy()
+    }
+    if (this._unsub) {
+      this._unsub()
     }
   }
 

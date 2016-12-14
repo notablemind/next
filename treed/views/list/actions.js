@@ -78,8 +78,8 @@ export default {
 
   indent: {
     shortcuts: {
-      normal: 'tab',
-      insert: 'tab',
+      normal: 'tab, alt+shift+l, alt+shift+right',
+      insert: 'tab, alt+shift+l, alt+shift+right',
     },
     description: 'Indent',
     alias: 'makePrevSiblingsLastChild',
@@ -87,8 +87,8 @@ export default {
 
   dedent: {
     shortcuts: {
-      normal: 'shift+tab',
-      insert: 'shift+tab',
+      normal: 'shift+tab, alt+shift+h, alt+shift+left',
+      insert: 'shift+tab, alt+shift+h, alt+shift+left',
     },
     descript: 'Un-indent',
     alias: 'makeParentsNextSibling',
@@ -134,15 +134,6 @@ export default {
     },
   },
 
-  /*
-  visualMode: {
-    shortcuts: {
-      normal: 'v',
-    },
-    description: 'begin multiple selection',
-    alias: 'visualMode',
-  },
-
   moveDown: {
     shortcuts: {
       normal: 'alt+shift+j, alt+shift+down',
@@ -153,8 +144,37 @@ export default {
   },
 
   moveUp: {
+    shortcuts: {
+      normal: 'alt+shift+k, alt+shift+up',
+      insert: 'alt+shift+k, alt+shift+up',
+    },
+    description: 'move item up',
     alias: 'movePrev',
   },
+
+  focusFirstSibling: {
+    shortcuts: {
+      normal: '{',
+    },
+    alias: 'focusFirstSibling',
+  },
+
+  focusLastSibling: {
+    shortcuts: {
+      normal: '}',
+    },
+    alias: 'focusLastSibling',
+  },
+
+  /*
+  visualMode: {
+    shortcuts: {
+      normal: 'v',
+    },
+    description: 'begin multiple selection',
+    alias: 'visualMode',
+  },
+
  */
 }
 

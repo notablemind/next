@@ -48,10 +48,12 @@ export const nextSibRec = (id, nodes, root) => {
   return nextSibRec(node.parent, nodes, root)
 }
 
-export const next = (id, nodes, root, view) => {
+const isCol = (node, viewType) => node.views[viewType] && node.views[viewType].collapsed
+
+export const next = (id, nodes, root, viewType) => {
   const node = nodes[id]
   if (!node) return
-  if (node.children.length && (!node.views[view] || !node.views[view].collapsed)) {
+  if (node.children.length && !isCol(node, viewType)) {
     return node.children[0]
   }
   return nextSibRec(id, nodes, root)

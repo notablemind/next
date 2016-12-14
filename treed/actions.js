@@ -4,6 +4,7 @@
 
 import uuid from '../src/utils/uuid'
 import * as nav from './nav'
+import * as move from './move'
 
 type Mode = 'normal' | 'insert' | 'visual'
 type Store = {
@@ -262,6 +263,59 @@ const actions = {
     if (!id) return
     store.state.root = id
     store.emit(store.events.root())
+  },
+
+  movePrev(store: Store, id: string=store.state.active) {
+    if (id === store.state.root) return
+    const res = move.movePrev(id, store.db.data, store.state.root, store.state.viewType)
+    console.log('move', res)
+    if (!res) return
+    store.execute({
+      type: 'move',
+      args: {
+        id,
+        pid: res.pid,
+        expandParent: false,
+        idx: res.idx,
+        viewType: store.state.viewType
+      }
+    })
+  },
+
+  moveNext(store: Store, id: string=store.state.active) {
+    if (id === store.state.root) return
+    const res = move.moveNext(id, store.db.data, store.state.root, store.state.viewType)
+    console.log('move', res)
+    if (!res) return
+    store.execute({
+      type: 'move',
+      args: {
+        id,
+        pid: res.pid,
+        expandParent: false,
+        idx: res.idx,
+        viewType: store.state.viewType
+      }
+    })
+  },
+
+  focusFirstSibling(store: Store, id: string=store.state.active) {
+    if (id === store.state.root) return
+    let nid = store.db.data[store.db.data[id].parent].children[0]
+    if (nid === id) nid = store.db.data[id].parent
+    store.actions.setActive(nid)
+  },
+
+  focusLastSibling(store: Store, id: string=store.state.active) {
+    let nid
+    if (id !== store.state.root) {
+      const sibs = store.db.data[store.db.data[id].parent].children
+      if (sibs[sibs.length - 1] !== id) {
+        nid = sibs[sibs.length - 1]
+      }
+    }
+    if (!nid) nid = nav.next(id, store.db.data, store.state.root, store.state.viewType)
+    store.actions.setActive(nid)
   },
 
 }

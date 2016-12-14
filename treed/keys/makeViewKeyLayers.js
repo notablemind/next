@@ -14,12 +14,12 @@ export default (config, namePrefix, userShortcuts, store) => {
       if (config[name].alias) {
         action = store.actions[config[name].alias]
         if (!action) {
-          throw new Error(`Trying to alias to a nonexistant action: ${config[name].alias}`)
+          console.error(`Trying to alias to a nonexistant action: ${config[name].alias}`)
         }
       } else {
         let customAction = config[name].action
         if (!customAction) {
-          throw new Error(`No action for ${name}`)
+          console.error(`No action for ${name}`)
         }
         action = () => customAction(store)
       }
