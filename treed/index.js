@@ -24,11 +24,11 @@ export default class Treed {
   commands: Commandeger<*, *>
   viewManager: ViewManager
   ready: Promise<void>
-  db: Database
+  db: Database<*>
 
   constructor(db: any, plugins: any) {
     this.emitter = new FlushingEmitter()
-    this.commands = new Commandeger(commands)
+    this.commands = new Commandeger(commands, this.setActive)
     this.db = new Database(db, plugins, id => this.emitter.emit('node:' + id), this.settingsChanged)
     this.viewManager = new ViewManager(
       this.db,
@@ -61,12 +61,37 @@ export default class Treed {
     })
   }
 
+  setActive = (view: string, id: string) => {
+    this.viewManager.viewStores[view].actions.setActive(id)
+  }
+
+  getCurrentKeyLayer(): any {
+    return this.viewManager.getCurrentKeyLayer()
+  }
+
+  handleKey(e: any) {
+    return this.viewManager.handleKey(e)
+  }
+
   settingsChanged = () => {
     console.log('TODO proces settings change')
   }
 
-  registerView(root: string, type: string) {
-    return this.viewManager.registerView(root, type)
+  registerView(root: string, type: string, viewActions: any) {
+    return this.viewManager.registerView(root, type, viewActions)
+  }
+
+  unregisterView(id: string) {
+    return this.viewManager.unregisterView(id)
+  }
+
+  activeView(): any {
+    return this.viewManager.activeView
+  }
+
+  isCurrentViewInInsertMode() {
+    const current = this.viewManager.activeView
+    return current && current.state.mode === 'insert'
   }
 
   on(evts: Array<string>, fn: Function) {
@@ -77,5 +102,9 @@ export default class Treed {
     return () => {
       evts.forEach(evt => this.emitter.off(evt, fn))
     }
+  }
+
+  destroy() {
+    // TODO
   }
 }

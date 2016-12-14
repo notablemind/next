@@ -26,9 +26,9 @@ export default db => ({
       onDump(data, settings)
     }, err => onError(err))
   },
-  upsert: (id, update) => db.upsert(id, update),
-  save: (doc) => db.put(doc),
-  saveMany: docs => db.bulkDocs(docs),
+  upsert: (id, update) => db.upsert(id, update), // .then(r => (console.log('upsert', r))),
+  save: (doc) => db.put(doc), // .then(r => (console.log('save', r), r)),
+  saveMany: docs => db.bulkDocs(docs), // .then(r => (console.log('savemany', r), r)),
   delete: doc => db.remove(doc),
 })
 

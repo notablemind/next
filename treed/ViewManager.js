@@ -1,5 +1,7 @@
 // @-flow
 
+import makeViewKeyLayers from './keys/makeViewKeyLayers'
+
 type Db = any
 type Commandeger = any
 type Plugins = any
@@ -10,6 +12,7 @@ export default class ViewManager {
   db: any
   cmd: any
   emitter: any
+  keys: any
   // viewState: any
   viewStores: any
   nextViewId: number
@@ -36,6 +39,7 @@ export default class ViewManager {
     this.config = config
     // this.viewState = {}
     this.viewStores = {}
+    this.keys = {}
     this.nextViewId = 1
     this.globalState = {
       activeView: 1,
@@ -46,15 +50,27 @@ export default class ViewManager {
     return this.viewStores[this.globalState.activeView]
   }
 
+  getCurrentKeyLayer() {
+    const mode = this.viewStores[this.globalState.activeView].state.mode
+    return this.keys[this.globalState.activeView][mode]
+  }
+
+  handleKey(e: any) {
+    throw new Error('not impl')
+  }
+
   unregisterView(id) {
     delete this.viewStores[id]
     if (id === this.globalState.activeView) {
-      this.globalState.activeView = +Object.keys(this.viewStores)[0]
-      this.emitter.emit(this.events.activeView())
+      const keys = Object.keys(this.viewStores)
+      if (keys.length) {
+        this.globalState.activeView = +keys[0]
+        this.emitter.emit(this.config.events.activeView())
+      }
     }
   }
 
-  registerView(root: string, type: string) {
+  registerView(root: string, type: string, viewActions: any) {
     const id = this.nextViewId++
     if (!root || !this.db.data[root]) root = 'root'
 
@@ -66,7 +82,7 @@ export default class ViewManager {
       editPos: null,
       mode: 'normal',
       minorMode: null,
-      type,
+      viewType: type,
     }
 
     const events = {}
@@ -77,6 +93,7 @@ export default class ViewManager {
       getters: {},
       actions: {},
       emit: this.emitter.emit,
+      emitMany: this.emitter.emitMany,
       state, // : this.viewState[id],
       globalState: this.globalState,
       db: this.db,
@@ -93,8 +110,19 @@ export default class ViewManager {
 
       undo: () => this.emitter.emitMany(this.cmd.undo(args)),
       redo: () => this.emitter.emitMany(this.cmd.redo(args)),
-      execute: cmd => this.emitter.emitMany(this.cmd.execute(cmd, args).events),
-      executeMany: cmds => this.emitter.emitMany(this.cmd.executeMany(cmds, args).events),
+
+      execute: (cmd, preActive?: string=store.state.active, postActive?: string=store.state.active) => {
+        const res = this.cmd.execute(cmd, args, store.id, preActive, postActive)
+        this.emitter.emitMany(res.events)
+        return res.idx
+      },
+
+      executeMany: (cmds, preActive?: string=store.state.active, postActive?: string=store.state.active) => {
+        const res = this.cmd.executeMany(cmds, args, store.id, preActive, postActive)
+        this.emitter.emitMany(res.events)
+        return res.idx
+      },
+
       append: (idx, cmd) => this.emitter.emitMany(this.cmd.append(idx, cmd, args)),
       appendMany: (idx, cmds) => this.emitter.emitMany(this.cmd.appendMany(idx, cmds, args)),
     }
@@ -110,6 +138,12 @@ export default class ViewManager {
     Object.keys(this.config.actions).forEach(name => {
       store.actions[name] = this.config.actions[name].bind(null, store)
     })
+
+    this.keys[store.id] = makeViewKeyLayers(viewActions, `views.${type}.`, {}, store)
+
+    this.globalState.activeView = store.id
+    this.emitter.emit(this.config.events.activeView())
+
     return store
   }
 }

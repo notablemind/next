@@ -14,22 +14,24 @@ type Change = {
 }
 
 type HistoryItem = {
+  view: string,
+  preActive: string,
+  postActive: string,
   date: number,
   changes: Array<Change>,
 }
 
 export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
   history: Array<HistoryItem>
+  setActive: (view: string, id: string) => void
   commands: Commands
   histpos: number
 
-  constructor(commands: Commands) {
+  constructor(commands: Commands, setActive: (view: string, id: string) => void) {
     this.history = []
     this.histpos = 0
     this.commands = commands
-    // this.changed = changed
-    // this.setActive =
-    // this._transaction_ix = null
+    this.setActive = setActive
     // TODO maybe transactions?
   }
 
@@ -45,6 +47,7 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
     this.histpos -= 1
     const last = this.history[this.histpos]
     const changes = this._undo(last.changes, args)
+    this.setActive(last.view, last.preActive)
     return [].concat.apply([], changes.map(c => c.events || []))
   }
 
@@ -53,18 +56,22 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
     const last = this.history[this.histpos]
     this.histpos += 1
     const changes = this._redo(last.changes, args)
+    this.setActive(last.view, last.postActive)
     return [].concat.apply([], changes.map(c => c.events || []))
   }
 
-  execute(command: Command, args: Args) {
-    return this.executeMany([command], args)
+  execute(command: Command, args: Args, view: string, preActive: string, postActive: string) {
+    return this.executeMany([command], args, view, preActive, postActive)
   }
 
   // TODO care about the "prom"s?
-  executeMany(commands: Array<Command>, args: Args) {
+  executeMany(commands: Array<Command>, args: Args, view: string, preActive: string, postActive: string) {
     const date = Date.now()
     const changes = this._do(commands, args)
     this.history = this.history.slice(0, this.histpos).concat([{
+      view,
+      preActive,
+      postActive,
       date,
       changes,
     }])
@@ -95,11 +102,16 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
   }
 
   _undo(changes: Array<Change>, extra: Args) {
-    return changes.map(config => ({
-      ...config,
-      events: null,
-      ...this.commands[config.type].undo(config.old, ...extra),
-    }))
+    const res = []
+    // gotta undo these backwards
+    for (let i = changes.length - 1; i >= 0; i--) {
+      res.push({
+        ...changes[i],
+        events: null,
+        ...this.commands[changes[i].type].undo(changes[i].old, ...extra),
+      })
+    }
+    return res
   }
 
   _redo(changes: Array<Change>, extra: Args) {

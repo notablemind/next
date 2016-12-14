@@ -24,6 +24,7 @@ module.exports = {
       formative: path.join(__dirname, '..', 'formative'),
     },
   },
+
   module: {
     loaders: [{
       test: /\.js$/,
@@ -33,6 +34,10 @@ module.exports = {
         path.join(__dirname, '..', 'treed'),
         path.join(__dirname, '..', 'formative'),
       ],
+    }, {
+      test: /\.less$/,
+      loader: 'style-loader!css-loader!less-loader',
+      include: [path.join(__dirname, '..', 'src')],
     }]
   }
 };

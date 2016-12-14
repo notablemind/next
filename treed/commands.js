@@ -1,13 +1,6 @@
 // @flow
 
-type Db<D> = {
-  data: {[key: string]: D},
-  save: (doc: any) => Promise<void>,
-  saveMany: (docs: Array<any>) => Promise<void>,
-  update: (id: string, doc: any) => Promise<void>,
-  set: (id: string, attr: string, value: any) => Promise<void>,
-  delete: (doc: any) => Promise<void>,
-}
+import type {Db} from './types'
 type Events = any
 
 type Command<T, D> = {
@@ -67,11 +60,30 @@ const commands: {[key: string]: Command<*, *>} = {
     },
   },
 
+  setNested: {
+    apply({id, attrs, value}, db, events) {
+      const old = {
+        id,
+        attrs,
+        value: attrs.reduce((o, a) => o ? o[a] : undefined, db.data[id]),
+      }
+      const prom = db.setNested(id, attrs, value)
+      return {old, prom}
+    },
+    undo({id, attrs, value}, db, events) {
+      // TODO this undo is a little incomplete, b/c setNested will construct
+      // intermediate objects if they don't exist. if any code is looking for
+      // the existance of these intermediate objects, this undo will be wrong.
+      return {prom: db.setNested(id, attrs, value)}
+    },
+  },
+
   create: {
     apply({id, pid, ix, data}, db, events) {
       const now = Date.now()
       if (!id || !db.data[pid]) return null
       const children = db.data[pid].children.slice()
+      children.splice(ix, 0, id)
       const prom = db.saveMany([{
         _id: id,
         created: now,
@@ -86,7 +98,7 @@ const commands: {[key: string]: Command<*, *>} = {
         ...data,
       }, {
         ...db.data[pid],
-        children: children.splice(ix, 0, id),
+        children,
       }])
       return {old: id}
     },
@@ -96,15 +108,118 @@ const commands: {[key: string]: Command<*, *>} = {
       if (!id || !node || !db.data[node.parent]) return null
       const parent = db.data[node.parent]
       const children = parent.children.slice()
+      children.splice(children.indexOf(id), 1)
       return {prom: db.saveMany([{
         ...parent,
-        children: children.splice(children.indexOf(id), 1),
+        children,
       }, {
         ...node,
         _deleted: true,
       }])}
     }
+  },
 
+  remove: {
+    apply({id}, db, events) {
+      const now = Date.now()
+      if (!id || !db.data[id]) return null
+      const node = db.data[id]
+      if (!node.parent) return null
+      const children = db.data[node.parent].children.slice()
+      const idx = children.indexOf(id)
+      children.splice(idx, 1)
+      return {
+        old: {node, idx},
+        prom: db.saveMany([{
+          ...db.data[node.parent],
+          children,
+        }, {
+          ...node,
+          _deleted: true,
+        }])
+      }
+    },
+
+    undo({idx, node}, db, events) {
+      const children = db.data[node.parent].children.slice()
+      children.splice(idx, 0, node._id)
+      return {prom: db.saveMany([{
+        ...db.data[node.parent],
+        children,
+      }, node])}
+    },
+  },
+
+  move: {
+    apply({id, pid, idx, expandParent, viewType}, db, events) {
+      const opid = db.data[id].parent
+      const ochildren = db.data[opid].children.slice()
+      const oidx = ochildren.indexOf(id)
+      ochildren.splice(oidx, 1)
+      let pviews = db.data[pid].views
+      let viewsDirty = false
+      if (expandParent && pviews[viewType] && pviews[viewType].collapsed) {
+        viewsDirty = true
+        pviews = {
+          ...pviews,
+          [viewType]: {
+            ...pviews[viewType],
+            collapsed: false,
+          },
+        }
+      }
+      if (opid === pid) {
+        if (oidx < idx) idx--
+        ochildren.splice(idx, 0, id)
+        const old = {id, oidx, opid, pid}
+        const prom = viewsDirty ?
+          db.update(pid, {children: ochildren, views: pviews})
+          : db.set(pid, 'children', ochildren)
+        return {prom, old}
+      }
+      const children = db.data[pid].children.slice()
+      if (idx === -1) {
+        children.push(id)
+      } else {
+        children.splice(idx, 0, id)
+      }
+      // TODO expandParent
+      return {prom: db.saveMany([{
+        ...db.data[opid],
+        children: ochildren,
+      }, {
+        ...db.data[pid],
+        views: pviews,
+        children,
+      }, {
+        ...db.data[id],
+        parent: pid,
+      }]), old: {id, oidx, opid, pid}}
+    },
+
+    undo({id, oidx, opid}, db, events) {
+      const pid = db.data[id].parent
+      const children = db.data[pid].children.slice()
+      const idx = children.indexOf(id)
+      children.splice(idx, 1)
+      if (pid === opid) {
+        if (idx < oidx) oidx--
+        children.splice(oidx, 0, id)
+        return {prom: db.set(pid, 'children', children)}
+      }
+      const ochildren = db.data[opid].children.slice()
+      ochildren.splice(oidx, 0, id)
+      return {prom: db.saveMany([{
+        ...db.data[opid],
+        children: ochildren,
+      }, {
+        ...db.data[pid],
+        children,
+      }, {
+        ...db.data[id],
+        parent: opid,
+      }])}
+    },
   },
 
   // TODO setMany

@@ -1,4 +1,12 @@
 
+export const MODS = {
+  91: 'meta',
+  93: 'meta',
+  18: 'alt',
+  17: 'ctrl',
+  16: 'shift',
+}
+
 export const KEYS = {
   8: 'backspace',
   9: 'tab',
@@ -58,7 +66,7 @@ export const SHIFT_KEYS = {
   '(': '9',
   ')': '0',
   '_': '-',
-  '+': '=',
+  'plus': '=',
   '~': '`',
   '{': '[',
   '}': ']',

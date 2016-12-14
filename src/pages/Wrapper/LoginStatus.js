@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 10,
     right: 10,
+    zIndex: 100,
   },
 
   loginForm: {
@@ -99,6 +100,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 10,
     right: 10,
+    zIndex: 100,
   },
 
   offline: {

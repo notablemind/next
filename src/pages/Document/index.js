@@ -3,14 +3,24 @@
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 import PouchDB from 'pouchdb'
+import {hashHistory} from 'react-router'
+
 import Treed from '../../../treed'
 import treedPouch from '../../../treed/pouch'
+import makeKeyLayer from '../../../treed/keys/makeKeyLayer'
+import KeyManager from '../../../treed/keys/Manager'
+import Sidebar from './Sidebar'
+
+import listView from '../../../treed/views/list'
+
+import './themes.less'
 
 export default class Document extends Component {
   state: {
     db: any,
     treed: ?Treed,
   }
+  keyManager: KeyManager
 
   constructor(props: any) {
     super()
@@ -23,20 +33,59 @@ export default class Document extends Component {
       props.makeRemoteDocDb(props.params.id)
       .then(db => this.state.db.sync(db, {live: true, retry: true}))
     }
+    // TODO actually get the user shortcuts
+    const userShortcuts = {}
+    const globalLayer = makeKeyLayer({
+      goHome: {
+        shortcut: 'g q',
+        description: 'Go back to the documents screen',
+        action: this.goHome,
+      },
+      undo: {
+        shortcut: 'u',
+        description: 'Undo the last action',
+        action: () => this.state.treed && this.state.treed.activeView().undo(),
+      },
+      redo: {
+        shortcut: 'R',
+        description: 'Redo the last action',
+        action: () => this.state.treed && this.state.treed.activeView().redo(),
+      },
+    }, 'global', userShortcuts)
+    // TODO maybe let plugins register "global actions" that aren't tied to a
+    // view
+    this.keyManager = new KeyManager([
+      () => this.state.treed && this.state.treed.isCurrentViewInInsertMode() ?
+        null : globalLayer,
+      () => this.state.treed && this.state.treed.getCurrentKeyLayer(),
+    ])
+
     this.makeTreed(this.state.db)
+    window.addEventListener('keydown', this.onKeyDown)
+  }
+
+  goHome = () => {
+    hashHistory.push('/')
+  }
+
+  onKeyDown = (e: any) => {
+    this.keyManager.handle(e)
   }
 
   makeTreed(db: any) {
     if (this.state.treed) {
-      // TODO this.state.treed.destroy()
+      this.state.treed.destroy()
     }
-    const treed = new Treed(treedPouch(this.state.db), [])
+    const treed = window._treed = new Treed(treedPouch(this.state.db), [])
     treed.ready.then(() => this.setState({treed}))
   }
 
   componentWillReceiveProps(nextProps: any) {
     if (nextProps.params.id !== this.props.params.id) {
       const db = new PouchDB('doc_' + nextProps.params.id)
+      if (this.state.treed) {
+        this.state.treed.destroy()
+      }
       this.setState({
         db: db,
       })
@@ -53,128 +102,40 @@ export default class Document extends Component {
 
   componentWillUnmount() {
     this.state.db.close()
-    // TODO this.state.treed.destroy()
+    window.removeEventListener('keydown', this.onKeyDown)
+    if (this.state.treed) {
+      this.state.treed.destroy()
+    }
   }
 
   render() {
     if (!this.state.treed) return <div>Loading...</div>
-    return <div>
-      <ListView
-        treed={this.state.treed}
+    return <div className={css(styles.container)}>
+      <Sidebar
+
       />
-    </div>
-  }
-}
-
-class ListView extends Component {
-  state: any
-  _unsub: () => void
-
-  constructor(props) {
-    super()
-    const store = props.treed.registerView('root', 'list')
-    const stateFromStore = store => ({
-      root: store.getters.root(),
-    })
-    this.state = {
-      store: store,
-      ...stateFromStore(store),
-    }
-
-    this._unsub = store.on([
-      store.events.root(),
-      // store.events.activeView(),
-    ], () => this.setState(stateFromStore(store)))
-  }
-
-  componentWillUnmount() {
-    this._unsub()
-  }
-
-  render() {
-    return <div>
-      <button onClick={() => this.state.store.undo()}>
-        Undo
-      </button>
-      <button onClick={() => this.state.store.redo()}>
-        Redo!
-      </button>
-      List view!
-      <ListItem store={this.state.store} id={this.state.store.state.root} />
-    </div>
-  }
-}
-
-
-class ListItem extends Component {
-  _unsub: () => void
-  state: any
-
-  constructor({store, id}) {
-    super()
-
-    const stateFromStore = store => ({
-      node: store.getters.node(id),
-      isActive: store.getters.isActive(id),
-      editState: store.getters.editState(id),
-    })
-
-    this.state = stateFromStore(store)
-    if (this.state.node) {
-      this.state.tmpText = this.state.node.content
-    }
-
-    this._unsub = store.on([
-      store.events.node(id),
-      store.events.nodeView(id),
-    ], () => {
-      const next = stateFromStore(store)
-      console.log('next', next.node.content)
-      if (next.editState && !this.state.editState) {
-        next.tmpText = next.node.content
-      }
-
-      if (!next.editState && this.state.editState &&
-          this.state.tmpText !== next.node.content) {
-        store.actions.setContent(id, this.state.tmpText)
-      }
-      this.setState(next)
-    })
-  }
-
-  componentWillUnmount() {
-    this._unsub()
-  }
-
-  onBlur = () => {
-    this.props.store.actions.setContent(this.props.id, this.state.tmpText)
-    this.props.store.actions.normalMode()
-  }
-
-  onClick = () => {
-    this.props.store.actions.edit(this.props.id)
-  }
-
-  render() {
-    if (!this.state.node) {
-      return <div>loading...</div>
-    }
-    if (this.state.editState) {
-      return <div>
-        <input
-          value={this.state.tmpText}
-          onChange={e => this.setState({tmpText: e.target.value})}
-          onBlur={this.onBlur}
-        />
+      <div className={css(styles.document)}>
+        <div className={css(styles.treedContainer) + ' Theme_basic'}>
+          <listView.Component
+            treed={this.state.treed}
+          />
+        </div>
       </div>
-    }
-    return <div onClick={this.onClick}>
-      Item {this.state.node.content}
     </div>
   }
 }
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
+  },
+
+  document: {
+    flex: 1,
+    alignItems: 'center',
+  },
+
+  treedContainer: {
+    width: 1000,
   },
 })

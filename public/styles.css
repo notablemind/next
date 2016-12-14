@@ -7,6 +7,13 @@ div {
     box-sizing: border-box;
     align-items: stretch;
     font-family: sans-serif;
+    font-weight: 200;
+}
+
+input {
+    font-family: sans-serif;
+    font-weight: 200;
+    box-sizing: border-box;
 }
 
 #root {

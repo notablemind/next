@@ -45,12 +45,14 @@ export default class LoginForm extends Component {
           value={this.state.name}
           placeholder="Name"
           className={css(styles.input)}
+          onKeyDown={e => e.stopPropagation()}
           onChange={e => this.setState({name: e.target.value})}
         />}
       <input
         value={this.state.email}
         placeholder="Email"
         className={css(styles.input)}
+        onKeyDown={e => e.stopPropagation()}
         onChange={e => this.setState({email: e.target.value})}
       />
       <input
@@ -58,6 +60,7 @@ export default class LoginForm extends Component {
         placeholder="Password"
         type="password"
         className={css(styles.input)}
+        onKeyDown={e => e.stopPropagation()}
         onChange={e => this.setState({pwd: e.target.value})}
       />
       <button
