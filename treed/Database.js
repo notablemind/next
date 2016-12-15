@@ -204,16 +204,21 @@ export default class Database<D> {
     return this._add({type: 'delete', doc})
   }
 
-  _onDump = (data: any, settings: any) => {
-    this.settings = settings
+  _onDump = (data: any) => {
     this.data = data
     this._onReady()
   }
 
   _onChange = (id: string, doc: any) => {
     if (id === 'settings') {
-      this.settings = doc
-      this.onSettingsChanged()
+      setTimeout(() => {
+        if (this.myrevs.has(doc._rev)) {
+          this.myrevs.delete(doc._rev)
+          return
+        }
+        this.data.settings = doc
+        this.onSettingsChanged()
+      }, 10)
       return
     }
 
@@ -233,13 +238,12 @@ export default class Database<D> {
           // this was my change, plz ignore
         }
         // console.log('onchange', id, doc && doc._rev)
-      if (!this.data[id] || this.data[id].modified !== doc.modified) {
-        this.data[id] = doc
-        this.onNodeChanged(id)
-      } else {
-        this.data[id]._rev = doc._rev
-      }
-
+        if (!this.data[id] || this.data[id].modified !== doc.modified) {
+          this.data[id] = doc
+          this.onNodeChanged(id)
+        } else {
+          this.data[id]._rev = doc._rev
+        }
       }, 10)
     }
   }

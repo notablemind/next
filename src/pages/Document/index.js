@@ -10,6 +10,7 @@ import treedPouch from '../../../treed/pouch'
 import makeKeyLayer from '../../../treed/keys/makeKeyLayer'
 import KeyManager from '../../../treed/keys/Manager'
 import Sidebar from './Sidebar'
+import ThemeManager, {defaultThemeSettings} from './ThemeManager'
 
 import listView from '../../../treed/views/list'
 
@@ -34,23 +35,7 @@ export default class Document extends Component {
     }
     // TODO actually get the user shortcuts
     const userShortcuts = {}
-    const globalLayer = makeKeyLayer({
-      goHome: {
-        shortcut: 'g q',
-        description: 'Go back to the documents screen',
-        action: this.goHome,
-      },
-      undo: {
-        shortcut: 'u',
-        description: 'Undo the last action',
-        action: () => this.state.treed && this.state.treed.activeView().undo(),
-      },
-      redo: {
-        shortcut: 'R',
-        description: 'Redo the last action',
-        action: () => this.state.treed && this.state.treed.activeView().redo(),
-      },
-    }, 'global', userShortcuts)
+    const globalLayer = makeKeyLayer(this.keyLayerConfig, 'global', userShortcuts)
     // TODO maybe let plugins register "global actions" that aren't tied to a
     // view
     this.keyManager = new KeyManager([
@@ -61,6 +46,24 @@ export default class Document extends Component {
 
     this.makeTreed(this.state.db)
     window.addEventListener('keydown', this.onKeyDown)
+  }
+
+  keyLayerConfig = {
+    goHome: {
+      shortcut: 'g q',
+      description: 'Go back to the documents screen',
+      action: this.goHome,
+    },
+    undo: {
+      shortcut: 'u',
+      description: 'Undo the last action',
+      action: () => this.state.treed && this.state.treed.activeView().undo(),
+    },
+    redo: {
+      shortcut: 'R',
+      description: 'Redo the last action',
+      action: () => this.state.treed && this.state.treed.activeView().redo(),
+    },
   }
 
   goHome = () => {
@@ -86,6 +89,7 @@ export default class Document extends Component {
         document.title = treed.db.data.root.content
         this.onTitleChange(treed.db.data.root.content)
       }
+      this.themeManager = new ThemeManager((treed.db.data.settings || {}).theme || defaultThemeSettings)
       this.setState({treed})
     })
   }

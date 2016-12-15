@@ -166,6 +166,20 @@ export default {
     alias: 'focusLastSibling',
   },
 
+  focusLastVisibleChild: {
+    shortcuts: {
+      normal: 'G',
+    },
+    alias: 'focusLastVisibleChild',
+  },
+
+  focusRoot: {
+    shortcuts: {
+      normal: 'g g',
+    },
+    alias: 'focusRoot',
+  },
+
   /*
   visualMode: {
     shortcuts: {

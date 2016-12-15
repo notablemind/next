@@ -15,15 +15,10 @@ export default db => ({
 
     db.allDocs({include_docs: true}).then(({rows}) => {
       const data = {}
-      let settings = {}
       rows.forEach(({doc}) => {
-        if (doc._id === 'settings') {
-          settings = doc
-          return
-        }
         data[doc._id] = doc
       })
-      onDump(data, settings)
+      onDump(data)
     }, err => onError(err))
   },
   upsert: (id, update) => db.upsert(id, update), // .then(r => (console.log('upsert', r))),

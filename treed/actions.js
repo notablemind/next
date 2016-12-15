@@ -318,6 +318,13 @@ const actions = {
     store.actions.setActive(nid)
   },
 
+  focusRoot(store: Store) {
+    store.actions.setActive(store.state.root)
+  },
+
+  focusLastVisibleChild(store: Store) {
+    store.actions.setActive(nav.last(store.state.root, store.db.data, store.state.viewType))
+  },
 }
 
 export default actions
