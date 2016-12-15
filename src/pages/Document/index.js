@@ -16,12 +16,16 @@ import listView from '../../../treed/views/list'
 
 import './themes.less'
 
+type DbT = any
+
 export default class Document extends Component {
   state: {
     db: any,
     treed: ?Treed,
   }
+  themeManager: ThemeManager
   keyManager: KeyManager
+  _unsub: () => void
 
   constructor(props: any) {
     super()
@@ -94,7 +98,7 @@ export default class Document extends Component {
     })
   }
 
-  onTitleChange(title) {
+  onTitleChange(title: string) {
     const id = this.props.params.id
     this.props.userDb.get(id).then(doc => {
       if (doc.title !== title) {
@@ -125,7 +129,7 @@ export default class Document extends Component {
     }
   }
 
-  setupSync(makeRemoteDocDb, id) {
+  setupSync(makeRemoteDocDb: () => Promise<DbT>, id: string) {
     makeRemoteDocDb(id).then(
       db => this.state.db.sync(db, {live: true, retry: true})
         .on('error', e => console.error('sync fail', e))

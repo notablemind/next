@@ -56,6 +56,8 @@ export default class Browse extends Component {
     map: {[key: string]: FolderT | DocT},
   }
 
+  changes: any
+
   constructor(props: Props) {
     super()
     this.state = {

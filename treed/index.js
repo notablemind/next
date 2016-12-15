@@ -25,6 +25,8 @@ export default class Treed {
   viewManager: ViewManager
   ready: Promise<void>
   db: Database<*>
+  events: any
+  getters: any
 
   constructor(db: any, plugins: any) {
     this.emitter = new FlushingEmitter()

@@ -10,11 +10,19 @@ const isAncestor = (pid, id, data) => {
 }
 
 class MiniItem extends Component {
+  state: {
+    node: any,
+    root: string,
+    activePath?: bool,
+  }
+  _unsub: () => void
+
   constructor({store, id}: any) {
     super()
     const sfs = store => ({
       node: store.getters.node(id),
       root: store.getters.root(),
+      activePath: false,
     })
     this.state = sfs(store)
     this.state.activePath = isAncestor(id, this.state.root, store.db.data)
@@ -78,6 +86,12 @@ const events = store => [
 ]
 
 export default class MiniMap extends Component {
+  state: {
+    root: string,
+    activeView?: string,
+  }
+  _unsub: () => void
+
   constructor({store}: any) {
     super()
     this.state = stateFromStore(store)

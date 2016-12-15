@@ -6,7 +6,14 @@ import {css, StyleSheet} from 'aphrodite'
 import MiniMap from './MiniMap'
 import Themer from './Themer'
 
+type Store = any
+
 export default class Sidebar extends Component {
+  state: {
+    store: Store
+  }
+  _unsub: () => void
+
   constructor({treed}: any) {
     super()
     this.state = {store: treed.activeView()}
