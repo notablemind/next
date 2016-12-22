@@ -21,6 +21,8 @@ export default class ListView extends Component {
       ...stateFromStore(store),
     }
 
+    this._nodes = {}
+
     this._unsub = store.on([
       store.events.root(),
       // store.events.activeView(),
@@ -40,6 +42,7 @@ export default class ListView extends Component {
         id={root}
         key={root}
         depth={depth}
+        nodeMap={this._nodes}
         store={this.state.store}
       />
     </div>

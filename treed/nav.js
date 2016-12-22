@@ -53,7 +53,7 @@ export const nextSibRec = (id, nodes, root) => {
 export const next = (id, nodes, root, viewType) => {
   const node = nodes[id]
   if (!node) return
-  if (node.children.length && !isCol(node, viewType)) {
+  if (node.children.length && (id === root || !isCol(node, viewType))) {
     return node.children[0]
   }
   return nextSibRec(id, nodes, root)

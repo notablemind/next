@@ -79,7 +79,7 @@ export default {
   indent: {
     shortcuts: {
       normal: 'tab, alt+shift+l, alt+shift+right',
-      insert: 'tab, alt+shift+l, alt+shift+right',
+      insert: 'tab, alt+shift+l',
     },
     description: 'Indent',
     alias: 'makePrevSiblingsLastChild',
@@ -88,10 +88,17 @@ export default {
   dedent: {
     shortcuts: {
       normal: 'shift+tab, alt+shift+h, alt+shift+left',
-      insert: 'shift+tab, alt+shift+h, alt+shift+left',
+      insert: 'shift+tab, alt+shift+h',
     },
     descript: 'Un-indent',
     alias: 'makeParentsNextSibling',
+  },
+
+  createBefore: {
+    shortcuts: {
+      normal: 'O',
+    },
+    alias: 'createBefore',
   },
 
   createAfter: {
@@ -137,7 +144,7 @@ export default {
   moveDown: {
     shortcuts: {
       normal: 'alt+shift+j, alt+shift+down',
-      insert: 'alt+shift+j, alt+shift+down',
+      insert: 'alt+shift+j',
     },
     description: 'move down',
     alias: 'moveNext',
@@ -146,7 +153,7 @@ export default {
   moveUp: {
     shortcuts: {
       normal: 'alt+shift+k, alt+shift+up',
-      insert: 'alt+shift+k, alt+shift+up',
+      insert: 'alt+shift+k',
     },
     description: 'move item up',
     alias: 'movePrev',

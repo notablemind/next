@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
   document: {
     flex: 1,
     alignItems: 'center',
+    overflow: 'auto',
   },
 
   treedContainer: {

@@ -9,6 +9,12 @@ const isAncestor = (pid, id, data) => {
   return isAncestor(pid, data[id].parent, data)
 }
 
+const maxLen = 30
+const shortened = txt => {
+  if (!txt || txt.length < maxLen) return txt
+  return txt.slice(0, maxLen) + '...'
+}
+
 class MiniItem extends Component {
   state: {
     node: any,
@@ -60,7 +66,7 @@ class MiniItem extends Component {
           root === id && styles.active,
         )}
       >
-        {node.content || '<blank>'}
+        {shortened(node.content) || '<blank>'}
       </div>
       <div className={css(styles.children)}>
         {activePath && node.children.map(

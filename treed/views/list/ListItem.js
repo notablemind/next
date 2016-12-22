@@ -4,9 +4,11 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import Body from '../body'
+import ensureInView from '../../ensureInView'
 
 export default class ListItem extends Component {
   _unsub: () => void
+  _div: any
   state: any
 
   constructor({store, id}: any) {
@@ -34,15 +36,30 @@ export default class ListItem extends Component {
     return nextState !== this.state
   }
 
+  componentDidMount() {
+    if (this.state.isActive && this._div) {
+      ensureInView(this._div)
+    }
+  }
+
+  componentDidUpdate(_, prevState) {
+    if (!prevState.isActive && this.state.isActive && this._div) {
+      ensureInView(this._div)
+    }
+  }
+
   render() {
     if (!this.state.node) {
       return <div>loading...</div>
     }
 
     const collapsed = this.state.node.views.list && this.state.node.views.list.collapsed
-    const isRoot = this.props.depth === 0
+    const isRoot = this.props.store.state.root === this.props.id
     return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth}` + (isRoot ? ' Node_root' : '')}>
-      <div className={css(styles.top) + ' Node_top'}>
+      <div className={css(styles.top) + ' Node_top'} ref={node => {
+        this._div = node
+        this.props.nodeMap[this.props.id] = node
+      }}>
         {!isRoot && this.state.node.children.length > 0 &&
           <div
             className={css(styles.collapser,
@@ -58,10 +75,11 @@ export default class ListItem extends Component {
         />
       </div>
       <div className={css(styles.children) + ' Node_children'}>
-        {!collapsed && this.state.node.children.map(id => (
+        {(!collapsed || isRoot) && this.state.node.children.map(id => (
           <ListItem
             store={this.props.store}
             depth={this.props.depth + 1}
+            nodeMap={this.props.nodeMap}
             id={id}
             key={id}
           />

@@ -137,6 +137,20 @@ const actions = {
     store.actions.setMode('insert')
   },
 
+  createBefore(store: Store, id: string=store.state.active, content: string='') {
+    if (!id || !store.db.data[id]) return
+    let pid = store.db.data[id].parent
+    if (!pid || id === 'root') return
+    const idx = store.db.data[pid].children.indexOf(id)
+    const nid = uuid()
+    store.execute({
+      type: 'create',
+      args: {id: nid, pid, ix: idx, data: {content}},
+    }, id, nid)
+    store.actions.editStart(nid)
+    return nid
+  },
+
   createAfter(store: Store, id: string=store.state.active, content: string='') {
     if (!id || !store.db.data[id]) return
     let pid = store.db.data[id].parent
@@ -263,6 +277,17 @@ const actions = {
     if (!id) return
     store.state.root = id
     store.emit(store.events.root())
+    // Ensure that the selected node is visible, given collapsednesses
+    let active = store.state.active
+    let tmp = active
+    while (tmp && tmp !== id) {
+      const node = store.db.data[tmp]
+      if (node.views[store.state.viewType] && node.views[store.state.viewType].collapsed) {
+        active = tmp
+      }
+      tmp = node.parent
+    }
+    store.actions.setActive(active)
   },
 
   movePrev(store: Store, id: string=store.state.active) {
