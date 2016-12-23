@@ -1,0 +1,69 @@
+
+.Themefeature_indent--lines {
+  // nothing to see here, b/c this is the default
+}
+
+/*
+.Node_body_level_0 {
+  > .Node_rendered,
+  > .Node_input {
+    font-size: 1.5em!important;
+    font-weight: 400!important;
+  }
+}
+*/
+
+.Node_top:hover > .Node_collapser {
+  opacity: 1!important;
+}
+
+.Themefeature_indent--bullets {
+
+  .Node_children {
+    border-left: none!important;
+  }
+
+  .Node_item:not(.Node_root)::before {
+    content: '●';
+    color: #aaa;
+    position: absolute;
+    right: 100%;
+    margin-right: 10px;
+    top: 3px;
+  }
+
+  .Node_item {
+    position: relative;
+  }
+
+}
+
+/*
+
+  .Node_body {
+    font-weight: bold;
+  }
+
+  .Node_root_input,
+  .Node_root_rendered {
+    font-size: 24px!important;
+  }
+
+  // Level 2
+  .Node_root > div > .Node_item > div > .Node_body {
+    font-weight: normal;
+  }
+
+  // Level 3
+  .Node_root > div > .Node_item > div > .Node_item > div > .Node_body {
+    color: green;
+  }
+
+*/
+
+// the basic theme has no changes.
+.Theme_basic {
+
+}
+
+

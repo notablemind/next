@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-  // devtool: 'cheap-module-source-map',
+  devtool: 'cheap-module-source-map',
   entry: [
     // NOTE: in prod mode, I'll ditch the react-hot-loader, and I can also
     // (maybe) ditch transform-es2015-classes...

@@ -61,6 +61,10 @@ const actions = {
     store.actions.set(id, 'content', content)
   },
 
+  setPluginData(store: Store, id: string, plugin: string, data: any) {
+    store.actions.setNested(id, ['plugins', plugin], data)
+  },
+
   setActiveView(store: Store) {
     if (store.id !== store.globalState.activeView) {
       store.globalState.activeView = store.id

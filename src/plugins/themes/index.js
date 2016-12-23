@@ -125,7 +125,7 @@ const themeToCss = (settings: ThemeSettings): string => {
       ''
   ).join('\n') +
   Object.keys(settings.individualStyles).map(
-    key => styleToRules(styleClassName(key), settings.individualStyles[key])
+    key => styleToRules('.' + styleClassName(key), settings.individualStyles[key])
   ).join('\n')
 }
 
@@ -167,16 +167,14 @@ export default {
   leftSidePane: SidePane,
 
   node: {
-    // pluginData, store, globalPluginState, globalPluginConfig
-    className: (pluginData, node, store, globalPluginState, globalPluginConfig) =>
+    className: (pluginData, node, store) =>
       pluginData && makeClassNames(pluginData),
 
-    // contextMenu(documentConfig, pluginData, id, store) {
-    contextMenu(pluginData, node, store, globalPluginState, globalPluginConfig) {
-      return Object.keys(globalPluginConfig.individualStyles).map(name => ({
+    contextMenu(pluginData, node, store) {
+      return Object.keys(store.getters.pluginConfig(PLUGIN_ID).individualStyles).map(name => ({
         name,
         checked: pluginData && pluginData[name],
-        action: () => store.actions.setPluginData('themes', {
+        action: () => store.actions.setPluginData(node._id, PLUGIN_ID, {
           ...pluginData,
           [name]: !(pluginData && pluginData[name])
         }),
@@ -186,8 +184,8 @@ export default {
 
   view: {
     list: {
-      className(store, globalPluginState, globalPluginConfig) {
-        if (globalPluginConfig.indentType === 'dots') {
+      className(store) {
+        if (store.getters.pluginConfig(PLUGIN_ID).indentType === 'dots') {
           return 'Themefeature_indent--bullets'
         }
         return ''

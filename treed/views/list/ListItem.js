@@ -56,6 +56,7 @@ export default class ListItem extends Component {
 
     const collapsed = this.state.node.views.list && this.state.node.views.list.collapsed
     const isRoot = this.props.store.state.root === this.props.id
+
     return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth}` + (isRoot ? ' Node_root' : '')}>
       <div className={css(styles.top) + ' Node_top'} ref={node => {
         this._div = node
@@ -73,6 +74,7 @@ export default class ListItem extends Component {
           isActive={this.state.isActive}
           editState={this.state.editState}
           actions={this.props.store.actions}
+          store={this.props.store}
         />
       </div>
       <div className={css(styles.children) + ' Node_children'}>

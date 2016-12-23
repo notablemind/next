@@ -36,6 +36,22 @@ const bindStoreProxies = (store, config) => {
   })
 }
 
+const organizePlugins = plugins => {
+  const classNameGetters = plugins.filter(p => p.node && p.node.className)
+  .map(p => (node, store) => p.node.className(
+    node.plugins[p.id],
+    node,
+    store
+  ))
+  return {
+    node: {
+      className: classNameGetters.length === 1 ? classNameGetters[0] :
+        (classNameGetters.length === 0 ? null :
+         (node, store) => classNameGetters.map(f => f(node, store)).join(' '))
+    },
+  }
+}
+
 export default class Treed {
   emitter: FlushingEmitter
   commands: Commandeger<*, *>
@@ -173,6 +189,7 @@ export default class Treed {
       actions: {},
       emit: this.emitter.emit,
       emitMany: this.emitter.emitMany,
+      plugins: organizePlugins(this.config.plugins),
       state,
       globalState: this.globalState,
       db: this.db,

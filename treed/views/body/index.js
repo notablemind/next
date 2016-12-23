@@ -14,11 +14,14 @@ export default class Body extends Component {
 
   render() {
     const {depth, isActive, editState} = this.props
+    const pluginCls = this.props.store.plugins.node.className ?
+      this.props.store.plugins.node.className(this.props.node, this.props.store) :
+        ''
     const cls = css(
       styles.outline,
       isActive && styles.active,
       editState && styles.editing,
-    ) + ` Node_body Node_body_level_${depth}`
+    ) + ` Node_body Node_body_level_${depth} ${pluginCls}`
     if (editState) {
       return <div className={css(styles.container)}>
         <div className={cls}>
