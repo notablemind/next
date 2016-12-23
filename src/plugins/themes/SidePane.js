@@ -2,10 +2,18 @@
 
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
+import type ThemeSettings from './'
+
 
 const PLUGIN_ID = 'themes'
 
 class IndividualStyles extends Component {
+  state: {
+    id: string,
+    data: any,
+  }
+  _sub: any
+
   constructor({store}: any) {
     super()
 
@@ -60,6 +68,7 @@ class IndividualStyles extends Component {
 }
 
 export default class SidePane extends Component {
+  state: ThemeSettings
   _sub: any
   constructor({store}: any) {
     super()
@@ -79,13 +88,13 @@ export default class SidePane extends Component {
     this._sub.stop()
   }
 
-  update(state) {
+  update(state: ThemeSettings) {
     this.props.store.actions.setGlobalPluginConfig(PLUGIN_ID, state)
     // this.props.store.getters.pluginState(PLUGIN_ID).preview(state)
     this.setState(state)
   }
 
-  toggleHeaderEnabled(hi) {
+  toggleHeaderEnabled(hi: number) {
     this.update({
       ...this.state,
       headerStyles: this.state.headerStyles.map(

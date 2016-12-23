@@ -10,6 +10,7 @@ import baseGetters from './getters'
 import baseEvents from './events'
 
 import makeViewKeyLayers from './keys/makeViewKeyLayers'
+import KeyManager from './keys/Manager'
 
 type ViewId = number
 
@@ -67,6 +68,7 @@ export default class Treed {
   nextViewId: number
   viewStores: any
   globalState: any
+  keyManager: KeyManager
 
   constructor(db: any, plugins: any) {
     this.emitter = new FlushingEmitter()
@@ -90,6 +92,9 @@ export default class Treed {
       activeView: 1,
       plugins: {},
     }
+    this.keyManager = new KeyManager([
+      () => this.getCurrentKeyLayer(),
+    ])
 
     // TODO maybe plugins will want a say in the db stuff?
     this.ready = this.db.ready.then(() => {
@@ -158,7 +163,12 @@ export default class Treed {
   }
 
   handleKey(e: any) {
-    throw new Error('not impl')
+    this.keyManager.handle(e)
+    // throw new Error('not impl')
+  }
+
+  addKeyLayer(layer: Function | any): () => void {
+    return this.keyManager.addLayer(layer)
   }
 
   settingsChanged = () => {

@@ -27,7 +27,7 @@ export default class Document extends Component {
     treed: ?Treed,
   }
   // themeManager: ThemeManager
-  keyManager: KeyManager
+  // keyManager: KeyManager
   _unsub: () => void
 
   constructor(props: any) {
@@ -40,16 +40,15 @@ export default class Document extends Component {
     if (props.makeRemoteDocDb) {
       this.setupSync(props.makeRemoteDocDb, props.params.id)
     }
-    // TODO actually get the user shortcuts
-    const userShortcuts = {}
-    const globalLayer = makeKeyLayer(this.keyLayerConfig, 'global', userShortcuts)
     // TODO maybe let plugins register "global actions" that aren't tied to a
     // view
+    /*
     this.keyManager = new KeyManager([
       () => this.state.treed && this.state.treed.isCurrentViewInInsertMode() ?
         null : globalLayer,
       () => this.state.treed && this.state.treed.getCurrentKeyLayer(),
     ])
+    */
   }
 
   componentDidMount() {
@@ -57,15 +56,11 @@ export default class Document extends Component {
     this.makeTreed(this.state.db)
   }
 
-  goHome = () => {
-    hashHistory.push('/')
-  }
-
   keyLayerConfig = {
     goHome: {
       shortcut: 'g q',
       description: 'Go back to the documents screen',
-      action: this.goHome,
+      action: () => hashHistory.push('/'),
     },
     undo: {
       shortcut: 'u',
@@ -80,7 +75,10 @@ export default class Document extends Component {
   }
 
   onKeyDown = (e: any) => {
-    this.keyManager.handle(e)
+    if (this.state.treed) {
+      this.state.treed.handleKey(e)
+    }
+    // this.keyManager.handle(e)
   }
 
   makeTreed(db: any) {
@@ -93,6 +91,10 @@ export default class Document extends Component {
       document.title = treed.db.data.root.content
       this.onTitleChange(treed.db.data.root.content)
     })
+    // TODO actually get the user shortcuts
+    const userShortcuts = {}
+    const globalLayer = makeKeyLayer(this.keyLayerConfig, 'global', userShortcuts)
+    treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
     treed.ready.then(() => {
       if (treed.db.data.root) {
         document.title = treed.db.data.root.content

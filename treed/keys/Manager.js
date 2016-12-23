@@ -16,7 +16,7 @@ export default class KeyManager {
 
   addLayer(layer) {
     this.layers.push(layer)
-    return () => this.removeLayer(handler)
+    return () => this.removeLayer(layer)
   }
   removeLayer(layer) {
     this.layers = this.layers.filter(l => l !== layer)
