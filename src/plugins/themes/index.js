@@ -1,5 +1,8 @@
 
 import React from 'react'
+import './themes.less'
+
+import SidePane from './SidePane'
 
 type Style = {
   backgroundColor?: ?string,
@@ -144,6 +147,9 @@ export default {
     styleNode.textContent = themeToCss(globalPluginConfig)
     return {
       styleNode,
+      preview(config) {
+        styleNode.textContent = themeToCss(config)
+      },
     }
   },
 
@@ -158,11 +164,7 @@ export default {
     styleNode.parentNode.removeChild(styleNode)
   },
 
-  leftSidePane(store) {
-    return <div key="themes">
-      Themeing in the here
-    </div>
-  },
+  leftSidePane: SidePane,
 
   node: {
     // pluginData, store, globalPluginState, globalPluginConfig
@@ -179,6 +181,17 @@ export default {
           [name]: !(pluginData && pluginData[name])
         }),
       }))
+    },
+  },
+
+  view: {
+    list: {
+      className(store, globalPluginState, globalPluginConfig) {
+        if (globalPluginConfig.indentType === 'dots') {
+          return 'Themefeature_indent--bullets'
+        }
+        return ''
+      }
     },
   },
 

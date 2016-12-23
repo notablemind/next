@@ -2,8 +2,11 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-  devtool: 'cheap-module-source-map',
+  // devtool: 'cheap-module-source-map',
   entry: [
+    // NOTE: in prod mode, I'll ditch the react-hot-loader, and I can also
+    // (maybe) ditch transform-es2015-classes...
+    // I want to be able to dev just for latest chrome :P
     'react-hot-loader/patch',
     'webpack-hot-middleware/client',
     path.join(__dirname, '..', 'src'),

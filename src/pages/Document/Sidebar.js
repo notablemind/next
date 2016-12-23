@@ -17,8 +17,11 @@ export default class Sidebar extends Component {
   constructor({treed, plugins}: any) {
     super()
     this.state = {store: treed.activeView()}
-    this._unsub = treed.on([treed.config.events.activeView()], () => {
-      this.setState({store: treed.activeView()})
+  }
+
+  componentWillMount() {
+    this._unsub = this.props.treed.on([this.props.treed.config.events.activeView()], () => {
+      this.setState({store: this.props.treed.activeView()})
     })
   }
 
@@ -32,7 +35,7 @@ export default class Sidebar extends Component {
       <MiniMap store={this.state.store} />
       {this.props.plugins.map(
         plugin => plugin.leftSidePane ?
-          plugin.leftSidePane(this.state.store) :
+          <plugin.leftSidePane store={this.state.store} key={plugin.id} /> :
           null
       )}
     </div>

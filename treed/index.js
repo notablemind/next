@@ -78,9 +78,12 @@ export default class Treed {
     // TODO maybe plugins will want a say in the db stuff?
     this.ready = this.db.ready.then(() => {
       // first run
+      const now = Date.now()
       if (!this.db.data.root) {
-        const now = Date.now()
-        return this.db.db.save({
+        const pluginSettings = plugins.reduce((settings, plugin) => (
+          settings[plugin.id] = plugin.defaultGlobalConfig, settings
+        ), {})
+        return this.db.db.saveMany([{
           _id: 'root',
           created: now,
           modified: now,
@@ -91,6 +94,27 @@ export default class Treed {
           plugins: {},
           types: {},
           views: {},
+        }], [{
+          _id: 'settings',
+          created: now,
+          modified: now,
+          plugins: pluginSettings,
+          views: {},
+          // TODO what other things go in settings?
+        }])
+      }
+      // backfill: TODO remove
+      if (!this.db.data.settings) {
+        const pluginSettings = plugins.reduce((settings, plugin) => (
+          settings[plugin.id] = plugin.defaultGlobalConfig, settings
+        ), {})
+        return this.db.db.save({
+          _id: 'settings',
+          created: now,
+          modified: now,
+          plugins: pluginSettings,
+          views: {},
+          // TODO what other things go in settings?
         })
       }
     }).then(() => {
@@ -121,6 +145,7 @@ export default class Treed {
   }
 
   settingsChanged = () => {
+    this.emitter.emit(this.config.events.settingsChanged())
     console.log('TODO proces settings change')
   }
 
@@ -159,6 +184,28 @@ export default class Treed {
         evts.forEach(evt => this.emitter.on(evt, fn))
         return () => {
           evts.forEach(evt => this.emitter.off(evt, fn))
+        }
+      },
+
+      // TODO maybe handle "changing active view" here too?
+      // TODO test this stuff
+      // call with (this, store => [], store => {})
+      // and it will automatically manage unsub / resub for you
+      setupStateListener: (reactElement, eventsFromStore, stateFromStore, shouldResub=null) => {
+        reactElement.state = stateFromStore(store)
+        let evts = eventsFromStore(store)
+        const fn = () => {
+          if (shouldResub && shouldResub(store)) {
+            let nevts = eventsFromStore(store)
+            evts.forEach(ev => nevts.indexOf(ev) === -1 ? this.emitter.off(ev, fn) : null)
+            nevts.forEach(ev => evts.indexOf(ev) === -1 ? this.emitter.on(ev, fn) : null)
+            evts = nevts
+          }
+          reactElement.setState(stateFromStore(store))
+        }
+        return {
+          start: () => evts.forEach(ev => this.emitter.on(ev, fn)),
+          stop: () => evts.forEach(ev => this.emitter.off(ev, fn)),
         }
       },
 
@@ -222,6 +269,11 @@ export default class Treed {
   }
 
   destroy() {
+    this.config.plugins.map(plugin => {
+      if (plugin.destroy) {
+        plugin.destroy(this.globalState.plugins[plugin.id])
+      }
+    })
     // TODO
   }
 }

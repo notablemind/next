@@ -19,8 +19,6 @@ const plugins = [
   // todos: require('../../plugins/todos'),
 ]
 
-import './themes.less'
-
 type DbT = any
 
 export default class Document extends Component {
@@ -52,9 +50,11 @@ export default class Document extends Component {
         null : globalLayer,
       () => this.state.treed && this.state.treed.getCurrentKeyLayer(),
     ])
+  }
 
-    this.makeTreed(this.state.db)
+  componentDidMount() {
     window.addEventListener('keydown', this.onKeyDown)
+    this.makeTreed(this.state.db)
   }
 
   keyLayerConfig = {

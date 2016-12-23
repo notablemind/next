@@ -1,4 +1,6 @@
 {
-  "presets": ["es2015", "stage-0", "react"],
-  "plugins": ["react-hot-loader/babel"]
+  "presets": ["react", ["env", {
+    "targets": {"chrome": "current"}
+  }]],
+  "plugins": ["transform-class-properties", "transform-object-rest-spread", "transform-es2015-classes", "react-hot-loader/babel"]
 }

@@ -46,7 +46,7 @@ export default class Editor extends Component {
 
   onBlur = () => {
     setTimeout(() => {
-      if (this._unmounted) return
+      if (this._unmounted || !this.props) return
       if (!document.hasFocus()) return
       this.props.actions.setContent(this.props.node._id, this.state.tmpText)
       this.props.actions.normalMode()

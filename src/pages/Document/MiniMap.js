@@ -21,29 +21,42 @@ class MiniItem extends Component {
     root: string,
     activePath?: bool,
   }
-  _unsub: () => void
+  _sub: any
 
   constructor({store, id}: any) {
     super()
-    const sfs = store => ({
-      node: store.getters.node(id),
-      root: store.getters.root(),
-      activePath: false,
-    })
-    this.state = sfs(store)
-    this.state.activePath = isAncestor(id, this.state.root, store.db.data)
-    this._unsub = store.on([
-      store.events.node(id),
-      store.events.root()
-    ], () => {
+    this._sub = store.setupStateListener(
+      this,
+      store => [
+        store.events.node(id),
+        store.events.root()
+      ],
+      store => ({
+        node: store.getters.node(id),
+        root: store.getters.root(),
+        activePath: isAncestor(id, store.getters.root(), store.db.data),
+      })
+    )
+    //const sfs = store =>
+    //this.state = sfs(store)
+    //this.state.activePath = isAncestor(id, this.state.root, store.db.data)
+  }
+
+  componentDidMount() {
+    this._sub.start()
+    // const {store, id} = this.props
+    /*
+    this._unsub = store.on(, () => {
       const state = sfs(store)
-      state.activePath = isAncestor(id, state.root, store.db.data)
+      //state.activePath = isAncestor(id, state.root, store.db.data)
       this.setState(state)
     })
+    */
   }
 
   componentWillUnmount() {
-    this._unsub()
+    this._sub.stop()
+    // this._unsub()
   }
 
   shouldComponentUpdate(_, nextState) {
@@ -82,30 +95,33 @@ class MiniItem extends Component {
   }
 }
 
-const stateFromStore = store => ({
-  root: store.getters.root(),
-})
-
-const events = store => [
-  store.events.root(),
-  store.events.activeView(),
-]
-
 export default class MiniMap extends Component {
   state: {
     root: string,
     activeView?: string,
   }
-  _unsub: () => void
+  _sub: any
 
   constructor({store}: any) {
     super()
-    this.state = stateFromStore(store)
-    this._unsub = store.on(events(store), () => this.setState(stateFromStore(store)))
+    this._sub = store.setupStateListener(
+      this,
+      store => [
+        store.events.root(),
+        store.events.activeView(),
+      ],
+      store => ({
+        root: store.getters.root(),
+      })
+    )
+  }
+
+  componentDidMount() {
+    this._sub.start()
   }
 
   componentWillUnmount() {
-    this._unsub()
+    this._sub.stop()
   }
 
   render() {

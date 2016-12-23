@@ -8,30 +8,28 @@ import actions from './actions'
 
 export default class ListView extends Component {
   state: any
-  _unsub: () => void
+  _sub: any
   _nodes: {[key: string]: any}
 
   constructor(props: any) {
     super()
     const store = props.treed.registerView('root', 'list', actions)
-    const stateFromStore = store => ({
-      root: store.getters.root(),
-    })
-    this.state = {
-      store: store,
-      ...stateFromStore(store),
-    }
+    this._sub = store.setupStateListener(
+      this,
+      store => [store.events.root()],
+      store => ({root: store.getters.root()}),
+    )
+    this.state.store = store
 
     this._nodes = {}
+  }
 
-    this._unsub = store.on([
-      store.events.root(),
-      // store.events.activeView(),
-    ], () => this.setState(stateFromStore(store)))
+  componentDidMount() {
+    this._sub.start()
   }
 
   componentWillUnmount() {
-    this._unsub()
+    this._sub.stop()
     this.props.treed.unregisterView(this.state.store.id)
   }
 

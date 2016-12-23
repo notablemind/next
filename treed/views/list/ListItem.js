@@ -7,29 +7,25 @@ import Body from '../body'
 import ensureInView from '../../ensureInView'
 
 export default class ListItem extends Component {
-  _unsub: () => void
+  _sub: any
   _div: any
   state: any
 
   constructor({store, id}: any) {
     super()
 
-    const stateFromStore = store => ({
-      node: store.getters.node(id),
-      isActive: store.getters.isActive(id),
-      editState: store.getters.editState(id),
-    })
-
-    this.state = stateFromStore(store)
-
-    this._unsub = store.on([
-      store.events.node(id),
-      store.events.nodeView(id),
-    ], () => this.setState(stateFromStore(store)))
-  }
-
-  componentWillUnmount() {
-    this._unsub()
+    this._sub = store.setupStateListener(
+      this,
+      store => [
+        store.events.node(id),
+        store.events.nodeView(id),
+      ],
+      store => ({
+        node: store.getters.node(id),
+        isActive: store.getters.isActive(id),
+        editState: store.getters.editState(id),
+      }),
+    )
   }
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
@@ -37,9 +33,14 @@ export default class ListItem extends Component {
   }
 
   componentDidMount() {
+    this._sub.start(this)
     if (this.state.isActive && this._div) {
       ensureInView(this._div)
     }
+  }
+
+  componentWillUnmount() {
+    this._sub.stop()
   }
 
   componentDidUpdate(_: any, prevState: any) {
