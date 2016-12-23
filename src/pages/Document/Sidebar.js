@@ -14,14 +14,14 @@ export default class Sidebar extends Component {
   }
   _unsub: () => void
 
-  constructor({treed, plugins}: any) {
+  constructor({globalStore, plugins}: any) {
     super()
-    this.state = {store: treed.activeView()}
+    this.state = {store: globalStore.activeView()}
   }
 
   componentWillMount() {
-    this._unsub = this.props.treed.on([this.props.treed.config.events.activeView()], () => {
-      this.setState({store: this.props.treed.activeView()})
+    this._unsub = this.props.globalStore.on([this.props.globalStore.events.activeView()], () => {
+      this.setState({store: this.props.globalStore.activeView()})
     })
   }
 

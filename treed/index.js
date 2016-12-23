@@ -23,18 +23,51 @@ const defaultSettings = {
   },
 }
 
-const bindStoreProxies = (store, config) => {
-  Object.keys(config.getters).forEach(name => {
-    store.getters[name] = config.getters[name].bind(null, store)
+const bindStoreProxies = (store, config, sub) => {
+  Object.keys(config.getters[sub]).forEach(name => {
+    store.getters[name] = config.getters[sub][name].bind(null, store)
   })
 
-  Object.keys(config.events).forEach(name => {
-    store.events[name] = config.events[name].bind(null, store)
+  Object.keys(config.events[sub]).forEach(name => {
+    store.events[name] = config.events[sub][name].bind(null, store)
   })
 
-  Object.keys(config.actions).forEach(name => {
-    store.actions[name] = config.actions[name].bind(null, store)
+  Object.keys(config.actions[sub]).forEach(name => {
+    store.actions[name] = config.actions[sub][name].bind(null, store)
   })
+}
+
+const bindCommandProxies = (store, commands, emitter, args, viewId: ?string) => {
+  if (viewId) {
+    store.execute = (cmd, preActive?: string=store.state.active,
+                     postActive?: string=store.state.active) => {
+      const res = commands.execute(cmd, args, store.id, preActive, postActive)
+      emitter.emitMany(res.events)
+      return res.idx
+    }
+    store.executeMany = (cmds, preActive?: string=store.state.active,
+                         postActive?: string=store.state.active) => {
+      const res = commands.executeMany(cmds, args, store.id, preActive, postActive)
+      emitter.emitMany(res.events)
+      return res.idx
+    }
+  } else {
+    store.execute = cmd => {
+      const res = commands.execute(cmd, args, null, null, null)
+      emitter.emitMany(res.events)
+      return res.idx
+    }
+    store.executeMany = cmds => {
+      const res = commands.executeMany(cmds, args, null, null, null)
+      emitter.emitMany(res.events)
+      return res.idx
+    }
+  }
+
+  store.append = (idx, cmd) =>
+    emitter.emitMany(commands.append(idx, cmd, args))
+  store.appendMany = (idx, cmds) =>
+    emitter.emitMany(commands.appendMany(idx, cmds, args))
 }
 
 const organizePlugins = plugins => {
@@ -50,6 +83,17 @@ const organizePlugins = plugins => {
         (classNameGetters.length === 0 ? null :
          (node, store) => classNameGetters.map(f => f(node, store)).join(' '))
     },
+  }
+}
+
+const makeGlobalStore = (db, emitter, commands, globalState, config) => {
+  const globalStore = {
+    db,
+    globalStore,
+    actions: {},
+    getters: {},
+    events: {},
+
   }
 }
 
@@ -144,36 +188,44 @@ export default class Treed {
         if (plugin.init) {
           return Promise.resolve(plugin.init(
             settings.plugins[plugin.id] || plugin.defaultGlobalConfig,
-            this
+            this.globalStore
           )).then(state => {
             this.globalState.plugins[plugin.id] = state
           })
         }
       }))
     })
-  }
 
-  setActive = (view: ViewId, id: string) => {
-    this.viewStores[view].actions.setActive(id)
-  }
+    /*
+    this.globalStore = makeGlobalStore(
+      this.db, this.emitter, this.commands, this.config)
+      */
 
-  getCurrentKeyLayer(): any {
-    const mode = this.viewStores[this.globalState.activeView].state.mode
-    return this.keys[this.globalState.activeView][mode]
-  }
+    const events = {}
+    const args: any = [this.db, events]
+    this.globalStore = {
+      db: this.db,
+      emit: this.emitter.emit,
+      emitMany: this.emitter.emitMany,
+      plugins: organizePlugins(this.config.plugins),
+      addKeyLayer: this.keyManager.addLayer,
+      globalState: this.globalState,
+      activeView: () => this.activeView(),
+      handleKey: this.handleKey,
+      on: this.on,
 
-  handleKey(e: any) {
-    this.keyManager.handle(e)
-    // throw new Error('not impl')
-  }
+      undo: () => this.emitter.emitMany(this.commands.undo(args)),
+      redo: () => this.emitter.emitMany(this.commands.redo(args)),
 
-  addKeyLayer(layer: Function | any): () => void {
-    return this.keyManager.addLayer(layer)
-  }
+      events,
+      getters: {},
+      actions: {},
 
-  settingsChanged = () => {
-    this.emitter.emit(this.config.events.settingsChanged())
-    console.log('TODO proces settings change')
+      setupStateListener: (...args) => this.setupStateListener(this.globalStore, ...args),
+    }
+
+    bindCommandProxies(this.globalStore, this.commands, this.emitter, args, null)
+    bindStoreProxies(this.globalStore, this.config, 'global')
   }
 
   registerView(root: string, type: string, viewActions: any): any {
@@ -191,79 +243,80 @@ export default class Treed {
       viewType: type,
     }
 
-    const events = {}
+    const events = {
+      ...this.globalStore.events,
+    }
     const args: any = [this.db, events]
     const store = this.viewStores[id] = {
       id,
-      events,
-      getters: {},
-      actions: {},
-      emit: this.emitter.emit,
-      emitMany: this.emitter.emitMany,
-      plugins: organizePlugins(this.config.plugins),
       state,
-      globalState: this.globalState,
-      db: this.db,
-
-      on: (evts, fn) => {
-        if (!Array.isArray(evts)) {
-          evts = [evts]
-        }
-        evts.forEach(evt => this.emitter.on(evt, fn))
-        return () => {
-          evts.forEach(evt => this.emitter.off(evt, fn))
-        }
-      },
+      ...this.globalStore,
+      getters: {...this.globalStore.getters},
+      actions: {...this.globalStore.actions},
 
       // TODO maybe handle "changing active view" here too?
       // TODO test this stuff
       // call with (this, store => [], store => {})
       // and it will automatically manage unsub / resub for you
-      setupStateListener: (reactElement, eventsFromStore, stateFromStore, shouldResub=null) => {
-        reactElement.state = stateFromStore(store)
-        let evts = eventsFromStore(store)
-        const fn = () => {
-          if (shouldResub && shouldResub(store)) {
-            let nevts = eventsFromStore(store)
-            evts.forEach(ev => nevts.indexOf(ev) === -1 ? this.emitter.off(ev, fn) : null)
-            nevts.forEach(ev => evts.indexOf(ev) === -1 ? this.emitter.on(ev, fn) : null)
-            evts = nevts
-          }
-          reactElement.setState(stateFromStore(store))
-        }
-        return {
-          start: () => evts.forEach(ev => this.emitter.on(ev, fn)),
-          stop: () => evts.forEach(ev => this.emitter.off(ev, fn)),
-        }
-      },
-
-      undo: () => this.emitter.emitMany(this.commands.undo(args)),
-      redo: () => this.emitter.emitMany(this.commands.redo(args)),
-
-      execute: (cmd, preActive?: string=store.state.active, postActive?: string=store.state.active) => {
-        const res = this.commands.execute(cmd, args, store.id, preActive, postActive)
-        this.emitter.emitMany(res.events)
-        return res.idx
-      },
-
-      executeMany: (cmds, preActive?: string=store.state.active, postActive?: string=store.state.active) => {
-        const res = this.commands.executeMany(cmds, args, store.id, preActive, postActive)
-        this.emitter.emitMany(res.events)
-        return res.idx
-      },
-
-      append: (idx, cmd) => this.emitter.emitMany(this.commands.append(idx, cmd, args)),
-      appendMany: (idx, cmds) => this.emitter.emitMany(this.commands.appendMany(idx, cmds, args)),
+      setupStateListener: (...args) => this.setupStateListener(store, ...args),
     }
 
-    bindStoreProxies(store, this.config)
+    bindCommandProxies(store, this.commands, this.emitter, args, id)
+    bindStoreProxies(store, this.config, 'view')
 
     this.keys[store.id] = makeViewKeyLayers(viewActions, `views.${type}.`, {}, store)
 
     this.globalState.activeView = store.id
-    this.emitter.emit(this.config.events.activeView())
+    this.emitter.emit(this.globalStore.events.activeView())
 
     return store
+  }
+
+  setActive = (view: ViewId, id: string) => {
+    this.viewStores[view].actions.setActive(id)
+  }
+
+  getCurrentKeyLayer(): any {
+    const mode = this.viewStores[this.globalState.activeView].state.mode
+    return this.keys[this.globalState.activeView][mode]
+  }
+
+  handleKey = (e: any) => {
+    this.keyManager.handle(e)
+    // throw new Error('not impl')
+  }
+
+  addKeyLayer(layer: Function | any): () => void {
+    return this.keyManager.addLayer(layer)
+  }
+
+  settingsChanged = () => {
+    this.emitter.emit(this.config.events.settingsChanged())
+    console.log('TODO proces settings change')
+  }
+
+  pluginStore(pluginId: string): any {
+    const store = {
+      events: {},
+    }
+  }
+
+  setupStateListener = (store, reactElement, eventsFromStore, stateFromStore, shouldResub=null) => {
+    reactElement.state = stateFromStore(store)
+    let evts = eventsFromStore(store)
+    const fn = () => {
+      if (shouldResub && shouldResub(store)) {
+        let nevts = eventsFromStore(store)
+        evts.forEach(ev => nevts.indexOf(ev) === -1 ? this.emitter.off(ev, fn) : null)
+        nevts.forEach(ev => evts.indexOf(ev) === -1 ? this.emitter.on(ev, fn) : null)
+        evts = nevts
+      }
+      reactElement.setState(stateFromStore(store))
+    }
+    return {
+      start: () => evts.forEach(ev => this.emitter.on(ev, fn)),
+      stop: () => evts.forEach(ev => this.emitter.off(ev, fn)),
+    }
   }
 
   unregisterView(id: string) {
@@ -286,7 +339,7 @@ export default class Treed {
     return current && current.state.mode === 'insert'
   }
 
-  on(evts: Array<string>, fn: Function) {
+  on = (evts: Array<string>, fn: Function) => {
     if (!Array.isArray(evts)) {
       evts = [evts]
     }

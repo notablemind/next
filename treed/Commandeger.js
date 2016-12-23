@@ -49,7 +49,9 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
     this.histpos -= 1
     const last = this.history[this.histpos]
     const changes = this._undo(last.changes, args)
-    this.setActive(last.view, last.preActive)
+    if (last.view) {
+      this.setActive(last.view, last.preActive)
+    }
     return [].concat.apply([], changes.map(c => c.events || []))
   }
 
@@ -58,7 +60,9 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
     const last = this.history[this.histpos]
     this.histpos += 1
     const changes = this._redo(last.changes, args)
-    this.setActive(last.view, last.postActive)
+    if (last.view) {
+      this.setActive(last.view, last.postActive)
+    }
     return [].concat.apply([], changes.map(c => c.events || []))
   }
 

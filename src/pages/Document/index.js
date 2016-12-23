@@ -158,7 +158,7 @@ export default class Document extends Component {
     if (!this.state.treed) return <div>Loading...</div>
     return <div className={css(styles.container)}>
       <Sidebar
-        treed={this.state.treed}
+        globalStore={this.state.treed.globalStore}
         plugins={this.state.treed.config.plugins}
       />
       <div className={css(styles.document)}>

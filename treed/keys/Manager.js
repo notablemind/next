@@ -14,15 +14,16 @@ export default class KeyManager {
     this.prefix = ''
   }
 
-  addLayer(layer) {
+  addLayer = (layer) => {
     this.layers.push(layer)
     return () => this.removeLayer(layer)
   }
-  removeLayer(layer) {
+
+  removeLayer = (layer) => {
     this.layers = this.layers.filter(l => l !== layer)
   }
 
-  handle(e) {
+  handle = (e) => {
     if (MODS[e.keyCode]) {
       // just ignore modifiers
       return
