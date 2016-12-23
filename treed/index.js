@@ -209,6 +209,7 @@ export default class Treed {
       emitMany: this.emitter.emitMany,
       plugins: organizePlugins(this.config.plugins),
       addKeyLayer: this.keyManager.addLayer,
+      addNormalKeyLayer: this.addNormalKeyLayer,
       globalState: this.globalState,
       activeView: () => this.activeView(),
       handleKey: this.handleKey,
@@ -288,6 +289,10 @@ export default class Treed {
 
   addKeyLayer(layer: Function | any): () => void {
     return this.keyManager.addLayer(layer)
+  }
+
+  addNormalKeyLayer = (layer: Object) => {
+    return this.keyManager.addLayer(() => this.isCurrentViewInInsertMode() ? null : layer)
   }
 
   settingsChanged = () => {

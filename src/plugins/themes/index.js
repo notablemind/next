@@ -49,6 +49,11 @@ export default {
     styleNode.textContent = themeToCss(globalPluginConfig)
 
     const actions = makeActions(globalPluginConfig, globalStore)
+    const keyLayer = makeKeyLayer(
+      actions,
+      `plugins.${PLUGIN_ID}.setStyle`,
+      {}, // TODO userSettings
+    )
 
     return {
       styleNode,
@@ -61,11 +66,7 @@ export default {
           globalStore.db.data.settings.plugins[PLUGIN_ID]
         )
       }),
-      removeKeyLayer: globalStore.addKeyLayer(makeKeyLayer(
-        actions,
-        `plugins.${PLUGIN_ID}.setStyle`,
-        {}, // TODO userSettings
-      )),
+      removeKeyLayer: globalStore.addNormalKeyLayer(keyLayer),
     }
   },
 

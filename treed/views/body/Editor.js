@@ -89,14 +89,17 @@ export default class Editor extends Component {
       this.props.actions.normalMode()
       break
     case 38: // up
+      if (e.shiftKey) return
       this.props.actions.setContent(this.props.node._id, this.state.tmpText)
       this.props.actions.focusPrev()
       break
     case 40: // down
+      if (e.shiftKey) return
       this.props.actions.setContent(this.props.node._id, this.state.tmpText)
       this.props.actions.focusNext()
       break
     case 39: // right
+      if (e.shiftKey) return
       if (e.target.selectionStart !== e.target.value.length) {
         return
       }
@@ -104,6 +107,7 @@ export default class Editor extends Component {
       this.props.actions.focusNext(this.props.node._id, 'start')
       break
     case 37: // left
+      if (e.shiftKey) return
       if (e.target.selectionEnd !== 0) return
       this.props.actions.setContent(this.props.node._id, this.state.tmpText)
       this.props.actions.focusPrev(this.props.node._id, 'end')
