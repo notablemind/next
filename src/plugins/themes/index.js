@@ -1,4 +1,6 @@
 
+import React from 'react'
+
 type Style = {
   backgroundColor?: ?string,
   color?: ?string,
@@ -105,11 +107,11 @@ const styleToRuleBody = style => Object.keys(style).map(name => {
 
 const styleToRules = (className, style) => `
 ${className} > .Node_rendered {
-${body}
+${styleToRuleBody(style)}
 }
 
-${levelName} > .Node_input {
-${body}
+${className} > .Node_input {
+${styleToRuleBody(style)}
 }
 `
 
@@ -157,7 +159,7 @@ export default {
   },
 
   leftSidePane(store) {
-    return <div>
+    return <div key="themes">
       Themeing in the here
     </div>
   },

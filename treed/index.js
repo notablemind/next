@@ -77,6 +77,7 @@ export default class Treed {
 
     // TODO maybe plugins will want a say in the db stuff?
     this.ready = this.db.ready.then(() => {
+      // first run
       if (!this.db.data.root) {
         const now = Date.now()
         return this.db.db.save({
@@ -92,6 +93,17 @@ export default class Treed {
           views: {},
         })
       }
+    }).then(() => {
+      const settings = this.db.data.settings || {plugins: {}}
+      return Promise.all(plugins.map(plugin => {
+        if (plugin.init) {
+          return Promise.resolve(plugin.init(
+            settings.plugins[plugin.id] || plugin.defaultGlobalConfig
+          )).then(state => {
+            this.globalState.plugins[plugin.id] = state
+          })
+        }
+      }))
     })
   }
 

@@ -10,14 +10,14 @@ import treedPouch from '../../../treed/pouch'
 import makeKeyLayer from '../../../treed/keys/makeKeyLayer'
 import KeyManager from '../../../treed/keys/Manager'
 import Sidebar from './Sidebar'
-import ThemeManager, {defaultThemeSettings} from './ThemeManager'
+// import ThemeManager, {defaultThemeSettings} from './ThemeManager'
 
 import listView from '../../../treed/views/list'
 
-const plugins = {
-  themes: require('../../plugins/themes'),
+const plugins = [
+  require('../../plugins/themes').default,
   // todos: require('../../plugins/todos'),
-}
+]
 
 import './themes.less'
 
@@ -28,7 +28,7 @@ export default class Document extends Component {
     db: any,
     treed: ?Treed,
   }
-  themeManager: ThemeManager
+  // themeManager: ThemeManager
   keyManager: KeyManager
   _unsub: () => void
 
@@ -98,7 +98,7 @@ export default class Document extends Component {
         document.title = treed.db.data.root.content
         this.onTitleChange(treed.db.data.root.content)
       }
-      this.themeManager = new ThemeManager((treed.db.data.settings || {}).theme || defaultThemeSettings)
+      // this.themeManager = new ThemeManager((treed.db.data.settings || {}).theme || defaultThemeSettings)
       this.setState({treed})
     })
   }
@@ -157,6 +157,7 @@ export default class Document extends Component {
     return <div className={css(styles.container)}>
       <Sidebar
         treed={this.state.treed}
+        plugins={this.state.treed.config.plugins}
       />
       <div className={css(styles.document)}>
         <div className={css(styles.treedContainer) + ' Theme_basic'}>

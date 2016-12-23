@@ -17,7 +17,7 @@ export default class Sidebar extends Component {
   constructor({treed, plugins}: any) {
     super()
     this.state = {store: treed.activeView()}
-    this._unsub = treed.on([treed.viewManager.config.events.activeView()], () => {
+    this._unsub = treed.on([treed.config.events.activeView()], () => {
       this.setState({store: treed.activeView()})
     })
   }
