@@ -32,6 +32,15 @@ type Action = {
 
 window.DEBUG_CHANGES = false
 
+const dumpNode = (root: string, nodes: any, keepIds: bool) => {
+  return {
+    ...nodes[root],
+    _id: keepIds ? root : null,
+    _rev: null, // TODO maybe hang onto the rev, so that I can restore deleted ones? hmm maybe not though - what about undo?
+    children: nodes[root].children.map(id => dumpNode(id, nodes, keepIds)),
+  }
+}
+
 export default class Database<D> {
   db: Db<D>
   plugins: any
@@ -61,7 +70,7 @@ export default class Database<D> {
     this.myrevs = new Set()
   }
 
-  _add(action: Action): Promise<void> {
+  _addAction(action: Action): Promise<void> {
     const prom = this.queue = this.queue.then(() => {
       switch (action.type) {
         case 'set':
@@ -155,7 +164,7 @@ export default class Database<D> {
       modified: now,
     }
     this.onNodeChanged(id)
-    return this._add({type: 'set', id, attr, value, now})
+    return this._addAction({type: 'set', id, attr, value, now})
   }
 
   setNested = (id: string, attrs: Array<string>, value: any) => {
@@ -167,7 +176,7 @@ export default class Database<D> {
     lparent[last] = value
     this.data[id] = node
     this.onNodeChanged(id)
-    return this._add({type: 'setNested', id, attrs, value, now, last})
+    return this._addAction({type: 'setNested', id, attrs, value, now, last})
   }
 
   update = (id: string, update: any) => {
@@ -178,7 +187,7 @@ export default class Database<D> {
       modified: now,
     }
     this.onNodeChanged(id)
-   return this._add({type: 'update', id, update, now})
+   return this._addAction({type: 'update', id, update, now})
   }
 
   save = (doc: any) => {
@@ -187,7 +196,7 @@ export default class Database<D> {
     if (this.data[doc._id]) doc._rev = this.data[doc._id]._rev
     this.data[doc._id] = doc
     this.onNodeChanged(doc._id)
-    return this._add({type: 'save', doc})
+    return this._addAction({type: 'save', doc})
   }
 
   saveMany = (docs: any) => {
@@ -196,12 +205,26 @@ export default class Database<D> {
     // mostly, never overwrite revs.
     docs.forEach(doc => this.data[doc._id] = {...doc, _rev: (this.data[doc._id] || {})._rev})
     docs.forEach(doc => this.onNodeChanged(doc._id))
-    return this._add({type: 'saveMany', docs})
+    return this._addAction({type: 'saveMany', docs})
   }
 
   delete = (doc: any) => {
     delete this.data[doc._id]
-    return this._add({type: 'delete', doc})
+    return this._addAction({type: 'delete', doc})
+  }
+
+  dumpNode(id: string, keepIds: bool) {
+    return dumpNode(id, this.data, keepIds)
+  }
+
+  // TODO are there inter-file relationships to worry about?
+  importNode = (node: any) => {
+    const id = uuid()
+    this.data[id] = {
+      ...node,
+      children: node.children.map(this.importNode),
+    }
+    return id
   }
 
   _onDump = (data: any) => {

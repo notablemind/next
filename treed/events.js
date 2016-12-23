@@ -5,6 +5,7 @@ export default {
     activeView: (globalStore) => 'active-view',
     activeMode: (globalStore) => 'active-mode',
     settingsChanged: (globalStore) => 'node:settings',
+    clipboardChanged: globalStore => 'clipboard',
     // changed: () => 'changed',
     // TODO do I need this?
     // I guess maybe for db sync or something

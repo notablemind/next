@@ -6,10 +6,15 @@ import uuid from '../src/utils/uuid'
 import * as nav from './nav'
 import * as move from './move'
 
+type Node = any
+type DumpedNode = Node & {
+  children: [DumpedNode],
+}
+
 type Mode = 'normal' | 'insert' | 'visual'
 type GlobalStore = {
   db: {
-    data: {[key: string]: any},
+    data: {[key: string]: Node},
   },
   actions: {[key: string]: Function},
   execute: (command: {
@@ -43,11 +48,19 @@ type Store = GlobalStore & {
 type EditPos = 'start' | 'end' | 'default' | 'change'
 type DefEditPos = EditPos | false
 
+// TODO should I accomodate more types of contents?
+// like an image, or something...
+type ClipboardContents = Array<DumpedNode>
+
 const actions = {
   global: {
     set(globalStore: GlobalStore, id: string, attr: string, value: any) {
       if (globalStore.db.data[id][attr] === value) return
       globalStore.execute({type: 'set', args: {id, attr, value}})
+    },
+
+    setClipboard(globalStore: GlobalStore, contents: ClipboardContents) {
+      globalStore.globalState.clipboard = contents
     },
 
     setNested(globalStore: GlobalStore, id: string, attrs: Array<string>, value: any) {

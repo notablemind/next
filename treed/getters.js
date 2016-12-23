@@ -7,7 +7,8 @@ export default {
     pluginConfig: (globalStore, pluginId) =>
       globalStore.db.data.settings.plugins[pluginId],
     pluginState: (globalStore, pluginId) =>
-      globalStore.globalState.plugins[pluginId]
+      globalStore.globalState.plugins[pluginId],
+    clipboard: globalStore => globalStore.globalState.clipboard,
   },
 
   view: {
