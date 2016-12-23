@@ -61,26 +61,59 @@ export const defaultGlobalConfig: ThemeSettings = {
     level: 2,
     enabled: true,
   }],
+
   individualStyles: {
     highlighted: {
-      backgroundColor: '#ffff79',
+      name: 'highlighted',
+      shortcut: 'h',
+      style: {
+        backgroundColor: '#ffff79',
+      },
     },
     pink: {
-      backgroundColor: '#ffe9f5',
+      name: 'pink',
+      shortcut: 'p',
+      style: {
+        backgroundColor: '#ffe9f5',
+      },
     },
     disabled: {
-      color: '#aaa',
-      italic: true,
+      name: 'disabled',
+      shortcut: 'd',
+      style: {
+        color: '#aaa',
+        italic: true,
+      },
     },
     bold: {
-      fontWeight: 'bold',
+      name: 'bold',
+      shortcut: 'b',
+      style: {
+        fontWeight: 'bold',
+      },
     },
     italic: {
-      italic: true,
+      name: 'italic',
+      shortcut: 'i',
+      style: {
+        italic: true,
+      },
     },
-    header1,
-    header2,
-    header3,
+    header1: {
+      name: 'header1',
+      style: header1,
+      shortcut: '1',
+    },
+    header2: {
+      name: 'header2',
+      style: header2,
+      shortcut: '2',
+    },
+    header3: {
+      name: 'header3',
+      style: header3,
+      shortcut: '3',
+    },
   },
 }
 
@@ -115,6 +148,7 @@ const styleToRuleBody = style => {
     const attr = styleAttr(name, style[name])
     text.push(attr)
     /*
+    // TODO maybe this is the thing to do...
     if (name === 'backgroundColor') container.push(attr)
     else text.push(attr)
     */
@@ -145,7 +179,7 @@ const themeToCss = (settings: ThemeSettings): string => {
       ''
   ).join('\n') +
   Object.keys(settings.individualStyles).map(
-    key => styleToRules('.' + styleClassName(key), settings.individualStyles[key])
+    key => styleToRules('.' + styleClassName(key), settings.individualStyles[key].style)
   ).join('\n')
 }
 

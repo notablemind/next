@@ -42,13 +42,17 @@ class IndividualStyles extends Component {
     return <div>
       {Object.keys(this.props.styles).map(key => (
         <label key={key}
+          className={css(styles.individualStyle)}
         >
           <input
             type="checkbox"
             checked={!!this.state.data[key]}
             onChange={() => this.toggle(key)}
           />
-          {key}
+          <div className={css(styles.shortcut)}>
+            {this.props.styles[key].shortcut}
+          </div>
+          {this.props.styles[key].name}
         </label>
       ))}
     </div>
@@ -135,6 +139,21 @@ const styles = StyleSheet.create({
   title: {
     padding: '3px 5px',
     fontWeight: 'bold',
+  },
+
+  individualStyle: {
+    display: 'flex',
+    flexDirection: 'row',
+    padding: 2,
+  },
+
+  shortcut: {
+    backgroundColor: '#ddd',
+    textShadow: '1px 1px 0 white',
+    fontFamily: 'monospace',
+    padding: '2px 4px',
+    borderRadius: 2,
+    margin: '0 3px',
   },
 
   subTitle: {
