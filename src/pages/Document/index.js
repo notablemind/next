@@ -57,6 +57,10 @@ export default class Document extends Component {
     this.makeTreed(this.state.db)
   }
 
+  goHome = () => {
+    hashHistory.push('/')
+  }
+
   keyLayerConfig = {
     goHome: {
       shortcut: 'g q',
@@ -73,10 +77,6 @@ export default class Document extends Component {
       description: 'Redo the last action',
       action: () => this.state.treed && this.state.treed.activeView().redo(),
     },
-  }
-
-  goHome = () => {
-    hashHistory.push('/')
   }
 
   onKeyDown = (e: any) => {
@@ -183,6 +183,7 @@ const styles = StyleSheet.create({
   },
 
   treedContainer: {
-    width: 1000,
+    maxWidth: 1000,
+    minWidth: 800,
   },
 })

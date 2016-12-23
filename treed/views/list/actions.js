@@ -18,6 +18,22 @@ export default {
     alias: 'focusNext',
   },
 
+  nextSibling: {
+    shortcuts: {
+      normal: 'alt+j, alt+down',
+    },
+    description: 'move cursor down to next sibling',
+    alias: 'focusNextSibling',
+  },
+
+  prevSibling: {
+    shortcuts: {
+      normal: 'alt+k, alt+up',
+    },
+    description: 'move cursor up to previous sibling',
+    alias: 'focusPrevSibling',
+  },
+
   left: {
     shortcuts: {
       normal: 'h, left',

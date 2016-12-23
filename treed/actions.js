@@ -141,7 +141,7 @@ const actions = {
       store.emit(store.events.nodeView(id))
     }
     store.state.lastEdited = id
-    store.state.editPos = at
+    store.state.editPos = at === 0 ? 'start' : at
     store.actions.setMode('insert')
   },
 
@@ -330,6 +330,22 @@ const actions = {
         viewType: store.state.viewType
       }
     })
+  },
+
+  focusNextSibling(store: Store, id: string=store.state.active) {
+    if (id === store.state.root) return
+    const sibs = store.db.data[store.db.data[id].parent].children
+    const idx = sibs.indexOf(id)
+    if (idx === sibs.length - 1) return
+    store.actions.setActive(sibs[idx + 1])
+  },
+
+  focusPrevSibling(store: Store, id: string=store.state.active) {
+    if (id === store.state.root) return
+    const sibs = store.db.data[store.db.data[id].parent].children
+    const idx = sibs.indexOf(id)
+    if (idx === 0) return
+    store.actions.setActive(sibs[idx - 1])
   },
 
   focusFirstSibling(store: Store, id: string=store.state.active) {

@@ -62,6 +62,21 @@ export default class Editor extends Component {
         return
       }
       break
+    case 9: // tab
+      // TODO these should be the same "history" item maybe? probably.
+      // So I need the concept of a transaction.
+      // this.props.store.beginTransaction()
+      const pos = e.target.selectionEnd
+      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
+      if (e.shiftKey) {
+        this.props.actions.makeParentsNextSibling()
+      } else {
+        this.props.actions.makePrevSiblingsLastChild()
+      }
+      this.props.actions.editAt(this.props.node._id, pos)
+      // this.props.store.endTransaction()
+      // I won't allow nested transactions until I see a need for them
+      break
     case 13: // enter
       this.props.actions.setContent(this.props.node._id, this.state.tmpText)
       const nid = this.props.actions.createAfter(this.props.node._id)
@@ -69,15 +84,15 @@ export default class Editor extends Component {
         this.props.actions.editStart(nid)
       }
       break
-    case 27:
+    case 27: // escape
       this.props.actions.setContent(this.props.node._id, this.state.tmpText)
       this.props.actions.normalMode()
       break
-    case 38:
+    case 38: // up
       this.props.actions.setContent(this.props.node._id, this.state.tmpText)
       this.props.actions.focusPrev()
       break
-    case 40:
+    case 40: // down
       this.props.actions.setContent(this.props.node._id, this.state.tmpText)
       this.props.actions.focusNext()
       break

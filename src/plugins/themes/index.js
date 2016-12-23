@@ -63,10 +63,10 @@ export const defaultGlobalConfig: ThemeSettings = {
   }],
   individualStyles: {
     highlighted: {
-      backgroundColor: 'yellow',
+      backgroundColor: '#ffff79',
     },
     pink: {
-      backgroundColor: 'pink',
+      backgroundColor: '#ffe9f5',
     },
     disabled: {
       color: '#aaa',
@@ -96,27 +96,47 @@ const makeClassNames = enabledStyles => Object.keys(enabledStyles)
   .map(styleClassName)
   .join(' ')
 
-const styleToRuleBody = style => Object.keys(style).map(name => {
+const styleAttr = (name, val) => {
   if (name === 'italic') {
-    if (style[name]) {
+    if (val) {
       return 'font-style: italic!important;'
     } else {
       return ''
     }
   }
   const needsEm = name === 'fontSize'
-  return `${kebab(name)}: ${style[name]}${needsEm ? 'em' : ''}!important;`
-}).join('\n')
+  return `${kebab(name)}: ${val}${needsEm ? 'em' : ''}!important;`
+}
 
-const styleToRules = (className, style) => `
+const styleToRuleBody = style => {
+  const text = []
+  const container = []
+  Object.keys(style).forEach(name => {
+    const attr = styleAttr(name, style[name])
+    text.push(attr)
+    /*
+    if (name === 'backgroundColor') container.push(attr)
+    else text.push(attr)
+    */
+  })
+  return {text: text.join('\n'), container: container.join('\n')}
+}
+
+const styleToRules = (className, style) => {
+  const {text, container} = styleToRuleBody(style)
+  return `
+${className} {
+${container}
+}
 ${className} > .Node_rendered {
-${styleToRuleBody(style)}
+${text}
 }
 
 ${className} > .Node_input {
-${styleToRuleBody(style)}
+${text}
 }
 `
+}
 
 const themeToCss = (settings: ThemeSettings): string => {
   return settings.headerStyles.map(

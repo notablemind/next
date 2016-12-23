@@ -58,7 +58,7 @@ export default class ListItem extends Component {
     const isRoot = this.props.store.state.root === this.props.id
 
     return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth}` + (isRoot ? ' Node_root' : '')}>
-      <div className={css(styles.top) + ' Node_top'} ref={node => {
+      <div className={css(styles.top, !this.state.editState && styles.topNormal) + ' Node_top'} ref={node => {
         this._div = node
         this.props.nodeMap[this.props.id] = node
       }}>
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
 
-  top: {
+  topNormal: {
     ':hover': {
       backgroundColor: '#eee',
     },

@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
     fontFamily: 'sans-serif',
     outline: 'none',
     lineHeight: '1.2em',
+    backgroundColor: 'transparent',
   },
 
   outline: {
