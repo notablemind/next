@@ -13,8 +13,10 @@ type Change = {
   prom: Promise<void>,
 }
 
+type ViewId = number
+
 type HistoryItem = {
-  view: string,
+  view: ViewId,
   preActive: string,
   postActive: string,
   date: number,
@@ -23,11 +25,11 @@ type HistoryItem = {
 
 export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
   history: Array<HistoryItem>
-  setActive: (view: string, id: string) => void
+  setActive: (view: ViewId, id: string) => void
   commands: Commands
   histpos: number
 
-  constructor(commands: Commands, setActive: (view: string, id: string) => void) {
+  constructor(commands: Commands, setActive: (view: ViewId, id: string) => void) {
     this.history = []
     this.histpos = 0
     this.commands = commands
@@ -60,12 +62,12 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
     return [].concat.apply([], changes.map(c => c.events || []))
   }
 
-  execute(command: Command, args: Args, view: string, preActive: string, postActive: string) {
+  execute(command: Command, args: Args, view: ViewId, preActive: string, postActive: string) {
     return this.executeMany([command], args, view, preActive, postActive)
   }
 
   // TODO care about the "prom"s?
-  executeMany(commands: Array<Command>, args: Args, view: string, preActive: string, postActive: string) {
+  executeMany(commands: Array<Command>, args: Args, view: ViewId, preActive: string, postActive: string) {
     const date = Date.now()
     const changes = this._do(commands, args)
     this.history = this.history.slice(0, this.histpos).concat([{

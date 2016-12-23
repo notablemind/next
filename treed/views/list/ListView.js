@@ -9,6 +9,7 @@ import actions from './actions'
 export default class ListView extends Component {
   state: any
   _unsub: () => void
+  _nodes: {[key: string]: any}
 
   constructor(props: any) {
     super()

@@ -36,25 +36,25 @@ export default {
       // What plugins want to put a block on anything?
       // - tags
       // - source
-      // - probably "presence"
+      // - probably "presence" (where the other users are editing)
       // - ok, so blocks are a thing I should probably keep.
       // Should TODO define its own editor? maybeeeee not.
       render: {
         blocks: {
           // hmm I want to pass in the "general plugin config" too.
-          left: (node, pluginState, store) => (
+          left: (node, pluginData, store) => (
             <input
               type="checkbox"
               className={css(styles.checkbox)}
-              onChange={e => store.actions.setPluginState(node._id, 'todos', {...pluginState, done: e.target.checked})}
-              checked={pluginState.done}
+              onChange={e => store.actions.setPluginData(node._id, 'todos', {...pluginData, done: e.target.checked})}
+              checked={pluginData.done}
             />
           )
         },
 
-        className: (node, pluginState, store) => css(
-          pluginState.done && styles.done,
-          pluginState.dueDate && dueStyle(pluginState.due),
+        className: (node, pluginData, store) => css(
+          pluginData.done && styles.done,
+          pluginData.dueDate && dueStyle(pluginData.due),
         )
       },
 
@@ -71,8 +71,8 @@ export default {
           description: 'Toggle "done"',
           action(store) {
             const node = store.db.data[store.state.active]
-            const config = store.getters.pluginState('todos') || {}
-            store.actions.setPluginState(node._id, 'todos', {
+            const config = store.getters.pluginData('todos') || {}
+            store.actions.setPluginData(node._id, 'todos', {
               ...config,
               done: !config.done,
               didDate: config.done ? null : Date.now(),

@@ -41,7 +41,7 @@ const header3 = {
   italic: true,
 }
 
-export const defaultConfig: ThemeSettings = {
+export const defaultGlobalConfig: ThemeSettings = {
   indentType: 'lines',
   headerStyles: [{
     style: header1,
@@ -79,17 +79,108 @@ export const defaultConfig: ThemeSettings = {
   },
 }
 
-export default {
-  id: 'theme',
-  defaultDocumentConfig,
-  // defaultNodeConfig: null,
 
-  contextMenu(documentConfig, nodeConfig, id, store) {
-    return Object.keys(documentConfig.individualStyles).map(name => ({
-      name,
-      enabled: nodeConfig === name,
-      action: () => store.actions.setPluginConfig('theme', name),
-    }))
+
+
+const kebab = name => name.replace(/[A-Z]/g, n => '-' + n.toLowerCase())
+
+const styleClassName = key => `Notablemind_individual_style_${key}`
+
+const makeClassNames = enabledStyles => Object.keys(enabledStyles)
+  .filter(key => enabledStyles[key])
+  .map(styleClassName)
+  .join(' ')
+
+const styleToRuleBody = style => Object.keys(style).map(name => {
+  if (name === 'italic') {
+    if (style[name]) {
+      return 'font-style: italic!important;'
+    } else {
+      return ''
+    }
+  }
+  const needsEm = name === 'fontSize'
+  return `${kebab(name)}: ${style[name]}${needsEm ? 'em' : ''}!important;`
+}).join('\n')
+
+const styleToRules = (className, style) => `
+${className} > .Node_rendered {
+${body}
+}
+
+${levelName} > .Node_input {
+${body}
+}
+`
+
+const themeToCss = (settings: ThemeSettings): string => {
+  return settings.headerStyles.map(
+    style => style.enabled ?
+      styleToRules(`.Node_body_level_${style.level}`, style.style) :
+      ''
+  ).join('\n') +
+  Object.keys(settings.individualStyles).map(
+    key => styleToRules(styleClassName(key), settings.individualStyles[key])
+  ).join('\n')
+}
+
+// global plugin config -> saved on the document
+// global plugin state -> transient state (default null)
+// plugin data -> `node.plugins[pluginId]`
+
+const PLUGIN_ID = 'themes'
+
+export default {
+  id: PLUGIN_ID,
+  defaultGlobalConfig,
+  // defaultNodeData: null,
+
+  // (globalPluginConfig) -> globalPluginState
+  init(globalPluginConfig, store) {
+    const styleNode = document.createElement('style')
+    document.head.appendChild(styleNode)
+    styleNode.textContent = themeToCss(globalPluginConfig)
+    return {
+      styleNode,
+    }
   },
+
+  onConfigChange(oldPluginConfig, newPluginConfig, globalPluginState, store) {
+    // first see if anything has really changed
+    globalPluginState.styleNode.textContent = themeToCss(newPluginConfig)
+  },
+
+  // globalPluginState -> void
+  destroy(globalPluginState) {
+    const {styleNode} = globalPluginState
+    styleNode.parentNode.removeChild(styleNode)
+  },
+
+  leftSidePane(store) {
+    return <div>
+      Themeing in the here
+    </div>
+  },
+
+  node: {
+    // pluginData, store, globalPluginState, globalPluginConfig
+    className: (pluginData, node, store, globalPluginState, globalPluginConfig) =>
+      pluginData && makeClassNames(pluginData),
+
+    // contextMenu(documentConfig, pluginData, id, store) {
+    contextMenu(pluginData, node, store, globalPluginState, globalPluginConfig) {
+      return Object.keys(globalPluginConfig.individualStyles).map(name => ({
+        name,
+        checked: pluginData && pluginData[name],
+        action: () => store.actions.setPluginData('themes', {
+          ...pluginData,
+          [name]: !(pluginData && pluginData[name])
+        }),
+      }))
+    },
+  },
+
+  // globalContextMenu?
+
 }
 

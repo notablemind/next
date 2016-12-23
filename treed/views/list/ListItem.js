@@ -42,7 +42,7 @@ export default class ListItem extends Component {
     }
   }
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(_: any, prevState: any) {
     if (!prevState.isActive && this.state.isActive && this._div) {
       ensureInView(this._div)
     }

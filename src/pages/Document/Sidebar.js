@@ -4,7 +4,7 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import MiniMap from './MiniMap'
-import Themer from './Themer'
+// import Themer from './Themer'
 
 type Store = any
 
@@ -14,21 +14,27 @@ export default class Sidebar extends Component {
   }
   _unsub: () => void
 
-  constructor({treed}: any) {
+  constructor({treed, plugins}: any) {
     super()
     this.state = {store: treed.activeView()}
     this._unsub = treed.on([treed.viewManager.config.events.activeView()], () => {
       this.setState({store: treed.activeView()})
     })
   }
+
   componentWillUnmount() {
     this._unsub()
   }
+
   render() {
     if (!this.state.store) return <div>Loading...</div>
     return <div className={css(styles.container)}>
       <MiniMap store={this.state.store} />
-      <Themer store={this.state.store} />
+      {this.props.plugins.map(
+        plugin => plugin.leftSidePane ?
+          plugin.leftSidePane(this.state.store) :
+          null
+      )}
     </div>
   }
 }
