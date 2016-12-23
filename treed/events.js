@@ -8,7 +8,7 @@ export default {
   root: store => `root:${store.id}`,
   mode: store => `mode:${store.id}`,
   activeMode: () => 'active-mode',
-  settingsChanged: () => 'settings-changed',
+  settingsChanged: () => 'node:settings',
   // changed: () => 'changed',
     // TODO do I need this?
     // I guess maybe for db sync or something

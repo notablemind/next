@@ -141,7 +141,8 @@ export default {
   // defaultNodeData: null,
 
   // (globalPluginConfig) -> globalPluginState
-  init(globalPluginConfig, store) {
+  // TODO I want a "plugin store" or sth, not "treed"
+  init(globalPluginConfig, treed) {
     const styleNode = document.createElement('style')
     document.head.appendChild(styleNode)
     styleNode.textContent = themeToCss(globalPluginConfig)
@@ -150,18 +151,20 @@ export default {
       preview(config) {
         styleNode.textContent = themeToCss(config)
       },
+      unsub: treed.on([treed.config.events.settingsChanged()], () => {
+        // TODO first check if it changed?
+        styleNode.textContent = themeToCss(
+          treed.db.data.settings.plugins[PLUGIN_ID]
+        )
+      })
     }
-  },
-
-  onConfigChange(oldPluginConfig, newPluginConfig, globalPluginState, store) {
-    // first see if anything has really changed
-    globalPluginState.styleNode.textContent = themeToCss(newPluginConfig)
   },
 
   // globalPluginState -> void
   destroy(globalPluginState) {
     const {styleNode} = globalPluginState
     styleNode.parentNode.removeChild(styleNode)
+    globalPluginState.unsub()
   },
 
   leftSidePane: SidePane,

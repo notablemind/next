@@ -138,7 +138,8 @@ export default class Treed {
       return Promise.all(plugins.map(plugin => {
         if (plugin.init) {
           return Promise.resolve(plugin.init(
-            settings.plugins[plugin.id] || plugin.defaultGlobalConfig
+            settings.plugins[plugin.id] || plugin.defaultGlobalConfig,
+            this
           )).then(state => {
             this.globalState.plugins[plugin.id] = state
           })
