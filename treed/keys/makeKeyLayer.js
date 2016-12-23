@@ -1,7 +1,18 @@
 
 import addKey from './addKey'
 
-export default (config, namePrefix, userShortcuts) => {
+type Config = {
+  [key: string]: {
+    shortcut: string,
+    action: Function,
+  },
+}
+
+type UserShortcuts = {
+  [key: string]: string,
+}
+
+export default (config: Config, namePrefix: string, userShortcuts: UserShortcuts) => {
   const layer = {
     prefixes: {},
     actions: {},
