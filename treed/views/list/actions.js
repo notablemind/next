@@ -92,6 +92,31 @@ export default {
     alias: 'remove',
   },
 
+  copy: {
+    shortcuts: {
+      normal: 'y y',
+      visual: 'y',
+    },
+    description: 'Copy the current node',
+    alias: 'copyNode',
+  },
+
+  pasteAfter: {
+    shortcuts: {
+      normal: 'p',
+    },
+    description: 'Paste after the current node',
+    alias: 'pasteAfter',
+  },
+
+  pasteBefore: {
+    shortcuts: {
+      normal: 'P',
+    },
+    description: 'Paste before the current node',
+    alias: 'pasteBefore',
+  },
+
   indent: {
     shortcuts: {
       normal: 'tab, alt+shift+l, alt+shift+right',

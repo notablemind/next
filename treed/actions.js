@@ -50,7 +50,56 @@ type DefEditPos = EditPos | false
 
 // TODO should I accomodate more types of contents?
 // like an image, or something...
-type ClipboardContents = Array<DumpedNode>
+type ClipboardContents = DumpedNode
+
+const afterPos = (id, nodes) => {
+  let pid = nodes[id].parent
+  let idx
+  if (pid) {
+    idx = nodes[pid].children.indexOf(id) + 1
+  } else {
+    pid = id
+    idx = 0
+  }
+  return {pid, idx}
+}
+
+const nextActiveAfterRemoval = (id, nodes, goUp) => {
+  const sibs = nodes[nodes[id].parent].children
+  let nid
+  if (sibs.length > 1) {
+    const idx = sibs.indexOf(id)
+    if (goUp) {
+      if (idx === 0) {
+        nid = nodes[id].parent
+      } else {
+        nid = sibs[idx - 1]
+      }
+    } else {
+      if (idx === sibs.length - 1) {
+        nid = sibs[idx - 1]
+      } else {
+        nid = sibs[idx + 1]
+      }
+    }
+  } else {
+    nid = nodes[id].parent
+  }
+  return nid
+}
+
+const treeToItems = (pid, id, node, items) => {
+  items.push({
+    ...node,
+    _id: id,
+    parent: pid,
+    children: node.children.map(child => {
+      const nid = uuid()
+      treeToItems(id, nid, child, items)
+      return nid
+    }),
+  })
+}
 
 const actions = {
   global: {
@@ -180,15 +229,7 @@ const actions = {
 
     createAfter(store: Store, id: string=store.state.active, content: string='') {
       if (!id || !store.db.data[id]) return
-      let pid = store.db.data[id].parent
-      let idx
-      if (pid) {
-        idx = store.db.data[pid].children.indexOf(id) + 1
-      } else {
-        pid = id
-        idx = 0
-      }
-      if (idx < 0) return
+      const {pid, idx} = afterPos(id, store.db.data)
       const nid = uuid()
       store.execute({
         type: 'create',
@@ -240,28 +281,44 @@ const actions = {
       store.actions.setNested(id, ['views', store.state.viewType, 'collapsed'], false)
     },
 
-    remove(store: Store, id: string=store.state.active, goUp: boolean=false) {
-      const sibs = store.db.data[store.db.data[id].parent].children
-      let nid
-      if (sibs.length > 1) {
-        const idx = sibs.indexOf(id)
-        if (goUp) {
-          if (idx === 0) {
-            nid = store.db.data[id].parent
-          } else {
-            nid = sibs[idx - 1]
-          }
-        } else {
-          if (idx === sibs.length - 1) {
-            nid = sibs[idx - 1]
-          } else {
-            nid = sibs[idx + 1]
-          }
-        }
-      } else {
-        nid = store.db.data[id].parent
-      }
+    pasteAfter(store: Store, id=store.state.active) {
+      if (!id || !store.db.data[id]) return
+      const {pid, idx} = afterPos(id, store.db.data)
+      // TODO maybe the tree in the clipboard should have ids already?
+      const nid = uuid()
+      const items = []
+      treeToItems(pid, nid, store.globalState.clipboard, items)
+      store.execute({
+        type: 'insertTree',
+        args: {id: nid, pid, ix: idx, items},
+      }, id, nid)
       store.actions.setActive(nid)
+    },
+
+    pasteBefore(store: Store, id=store.state.active) {
+      if (!id || !store.db.data[id]) return
+      let pid = store.db.data[id].parent
+      if (!pid || id === 'root') return
+      const idx = store.db.data[pid].children.indexOf(id)
+      const nid = uuid()
+      const items = []
+      treeToItems(pid, nid, store.globalState.clipboard, items)
+      store.execute({
+        type: 'insertTree',
+        args: {id: nid, pid, ix: idx, items},
+      }, id, nid)
+      store.actions.setActive(nid)
+    },
+
+    copyNode(store: Store, id=store.state.active) {
+      store.globalState.clipboard = store.db.cloneTree(id)
+    },
+
+    remove(store: Store, id: string=store.state.active, goUp: boolean=false) {
+      if (id === store.state.root) return
+      const nid = nextActiveAfterRemoval(id, store.db.data, goUp)
+      store.actions.setActive(nid)
+      store.actions.copyNode(id)
       store.execute({
         type: 'remove',
         args: {id},

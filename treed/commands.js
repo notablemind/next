@@ -100,7 +100,7 @@ const commands: {[key: string]: Command<*, *>} = {
         ...db.data[pid],
         children,
       }])
-      return {old: id}
+      return {old: id, prom}
     },
 
     undo(id, db, events) {
@@ -116,10 +116,33 @@ const commands: {[key: string]: Command<*, *>} = {
         ...node,
         _deleted: true,
       }])}
-    }
+    },
+
+    // TODO redo here
+  },
+
+  insertTree: {
+    apply({id, pid, ix, items}, db, events) {
+      const now = Date.now()
+      if (!id || !db.data[pid]) return null
+      const children = db.data[pid].children.slice()
+      children.splice(ix, 0, id)
+      const prom = db.saveMany([{
+        ...db.data[pid],
+        children,
+      }].concat(items))
+      return {old: id, prom}
+    },
+
+    undo(id, db, events) {
+    },
+
+    redo(id, db, events) {
+    },
   },
 
   remove: {
+    // TODO this should be a "deep removal", with all children etc.
     apply({id}, db, events) {
       const now = Date.now()
       if (!id || !db.data[id]) return null

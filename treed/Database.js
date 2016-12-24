@@ -36,6 +36,7 @@ const dumpNode = (root: string, nodes: any, keepIds: bool) => {
   return {
     ...nodes[root],
     _id: keepIds ? root : null,
+    parent: keepIds ? nodes[root].parent : null,
     _rev: null, // TODO maybe hang onto the rev, so that I can restore deleted ones? hmm maybe not though - what about undo?
     children: nodes[root].children.map(id => dumpNode(id, nodes, keepIds)),
   }
@@ -213,19 +214,33 @@ export default class Database<D> {
     return this._addAction({type: 'delete', doc})
   }
 
-  dumpNode(id: string, keepIds: bool) {
-    return dumpNode(id, this.data, keepIds)
+  cloneTree(id: string) {
+    return dumpNode(id, this.data, false)
   }
 
+  /*
   // TODO are there inter-file relationships to worry about?
+  // TODO make sure symlinks work
   importNode = (node: any) => {
-    const id = uuid()
-    this.data[id] = {
-      ...node,
-      children: node.children.map(this.importNode),
+    const docs = []
+    const now = Date.now()
+    const _import = node => {
+      const id = uuid()
+      this.data[id] = {
+        ...node,
+        _id: id,
+        children: node.children.map(this.importNode),
+        created: now,
+        modified: Date.now(),
+
+      }
+      docs.push(this.data[id])
     }
+    _import(node)
+    this._addAction({type: 'saveMany', docs})
     return id
   }
+  */
 
   _onDump = (data: any) => {
     this.data = data
