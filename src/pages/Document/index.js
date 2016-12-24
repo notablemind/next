@@ -16,7 +16,7 @@ import listView from '../../../treed/views/list'
 
 const plugins = [
   require('../../plugins/themes').default,
-  // todos: require('../../plugins/todos'),
+  require('../../plugins/todos').default,
 ]
 
 type DbT = any

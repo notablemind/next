@@ -20,7 +20,7 @@ const commands: {[key: string]: Command<*, *>} = {
     apply({id, update}, db, events) {
       const backdate = {}
       Object.keys(update).forEach(k => backdate[k] = db.data[id][k])
-      const prom = db.update(id, {update})
+      const prom = db.update(id, update)
       // not much to see here
       return {old: {backdate, id}, prom}
     },

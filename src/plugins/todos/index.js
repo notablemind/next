@@ -34,6 +34,8 @@ export default {
 
   nodeTypes: {
     todo: {
+      shortcut: 't',
+
       // does the notion of blocks make sense? I think mayyyybe blocks would
       // be cool for composition...
       // What plugins want to put a block on anything?
@@ -79,10 +81,9 @@ export default {
             insert: 'alt+enter',
           },
           description: 'Toggle "done"',
-          action(store) {
-            const node = store.db.data[store.state.active]
-            const config = store.getters.pluginData('todos') || {}
-            store.actions.setPluginData(node._id, 'todos', {
+          action(store, node) {
+            const config = node.types.todo
+            store.actions.setNested(node._id, ['types', 'todo'], {
               ...config,
               done: !config.done,
               didDate: config.done ? null : Date.now(),

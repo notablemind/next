@@ -467,6 +467,29 @@ const actions = {
     focusLastVisibleChild(store: Store) {
       store.actions.setActive(nav.last(store.state.root, store.db.data, store.state.viewType))
     },
+
+    // plugins things?
+    setNodeType(store: Store, id, type) {
+      const node = store.db.data[id]
+      if (node.types[type] || !store.plugins.nodeTypes[type].defaultNodeConfig) { // if we already have data, don't fill w/ the default
+        // TODO maybe let a plugin update the data if we're changing back?
+        // dunno when we'd want that.
+        store.actions.set(id, 'type', type)
+      } else {
+        // TODO I want a "set multiple nested" command, b/c this will cause
+        // undue conflicts if changing multiple type configs (not that this is
+        // likely)
+        store.actions.update(id, {
+          type,
+          types: {
+            ...node.types,
+            [type]: store.plugins.nodeTypes[type].defaultNodeConfig(),
+          },
+        })
+        // TODO emit "node:{type}:child-added:{pid}"
+      }
+    },
+
   },
 }
 

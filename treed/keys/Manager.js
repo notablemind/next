@@ -39,6 +39,7 @@ export default class KeyManager {
       }
       if (layer.actions[full]) {
         // TODO do I need to only conditionally stop propagation n stuff?
+        // if I'm gonna be capturing cmd+v then yes.
         layer.actions[full]()
         this.prefix = ''
         return true

@@ -36,6 +36,7 @@ const styleToRuleBody = style => {
 }
 
 const styleToRules = (className, style) => {
+  if (!style) return ''
   const {text, container} = styleToRuleBody(style)
   return `
 ${className} {

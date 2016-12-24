@@ -9,6 +9,7 @@ import baseActions from './actions'
 import baseGetters from './getters'
 import baseEvents from './events'
 
+import addPluginKeys from './keys/addPluginKeys'
 import makeViewKeyLayers from './keys/makeViewKeyLayers'
 import KeyManager from './keys/Manager'
 
@@ -77,7 +78,23 @@ const organizePlugins = plugins => {
     node,
     store
   ))
+  const nodeTypes = {}
+  plugins.forEach(plugin => {
+    Object.keys(plugin.nodeTypes || {}).forEach(type => {
+      nodeTypes[type] = plugin.nodeTypes[type]
+      // defaultNodeConfigs[type] = plugin.nodeTypes[type].defaultNodeConfig
+    })
+  })
+  /*
+  const defaultNodeConfigs = {}
+  plugins.forEach(plugin => {
+    Object.keys(plugin.nodeTypes || {}).forEach(type => {
+      defaultNodeConfigs[type] = plugin.nodeTypes[type].defaultNodeConfig
+    })
+  })
+  */
   return {
+    nodeTypes,
     node: {
       className: classNameGetters.length === 1 ? classNameGetters[0] :
         (classNameGetters.length === 0 ? null :
@@ -139,6 +156,7 @@ export default class Treed {
     this.keyManager = new KeyManager([
       () => this.getCurrentKeyLayer(),
     ])
+    // this._pluginKeyLayer = this.keyManager.addLayer(pluginKeys(plugins))
 
     // TODO maybe plugins will want a say in the db stuff?
     this.ready = this.db.ready.then(() => {
@@ -167,20 +185,6 @@ export default class Treed {
           views: {},
           // TODO what other things go in settings?
         }])
-      }
-      // backfill: TODO remove
-      if (!this.db.data.settings) {
-        const pluginSettings = plugins.reduce((settings, plugin) => (
-          settings[plugin.id] = plugin.defaultGlobalConfig, settings
-        ), {})
-        return this.db.db.save({
-          _id: 'settings',
-          created: now,
-          modified: now,
-          plugins: pluginSettings,
-          views: {},
-          // TODO what other things go in settings?
-        })
       }
     }).then(() => {
       const settings = this.db.data.settings || {plugins: {}}
@@ -266,6 +270,7 @@ export default class Treed {
     bindStoreProxies(store, this.config, 'view')
 
     this.keys[store.id] = makeViewKeyLayers(viewActions, `views.${type}.`, {}, store)
+    addPluginKeys(store, this.keys[store.id], this.config.plugins)
 
     this.globalState.activeView = store.id
     this.emitter.emit(this.globalStore.events.activeView())
@@ -296,7 +301,7 @@ export default class Treed {
   }
 
   settingsChanged = () => {
-    this.emitter.emit(this.config.events.settingsChanged())
+    this.emitter.emit(this.globalStore.events.settingsChanged())
     console.log('TODO proces settings change')
   }
 
