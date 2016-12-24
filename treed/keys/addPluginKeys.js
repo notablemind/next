@@ -2,6 +2,11 @@ import addKey from './addKey'
 
 const addPluginKeys = (store, layers, plugins) => {
   const typeSpecific = {insert: {}, normal: {}, visual: {}}
+  const setNormalType = () => {
+    store.actions.setNodeType(store.state.active, 'normal')
+  }
+  addKey(layers.normal, `t n`, setNormalType)
+  addKey(layers.insert, `alt+t n`, setNormalType)
   plugins.forEach(plugin => {
     if (plugin.nodeTypes) {
       Object.keys(plugin.nodeTypes).forEach(type => {

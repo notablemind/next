@@ -156,18 +156,25 @@ export default {
     alias: 'createNextSibling',
   },
 
+  createPrevSibling: {
+    shortcuts: {
+      normal: 'alt+O',
+    },
+    alias: 'createBefore',
+  },
+
   createBeforeNormal: {
     shortcuts: {
       normal: 'ctrl+O',
     },
-    alias: 'createBefore', // TODO
+    alias: 'createBeforeNormal',
   },
 
   createAfterNormal: {
     shortcuts: {
       normal: 'ctrl+o',
     },
-    alias: 'createAfter', // TODO
+    alias: 'createAfterNormal',
   },
 
   toggleCollapse: {

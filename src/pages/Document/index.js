@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   },
 
   treedContainer: {
-    maxWidth: 1000,
-    minWidth: 800,
+    width: 1000,
+    maxWidth: '100%',
   },
 })

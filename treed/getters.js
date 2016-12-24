@@ -9,6 +9,9 @@ export default {
     pluginState: (globalStore, pluginId) =>
       globalStore.globalState.plugins[pluginId],
     clipboard: globalStore => globalStore.globalState.clipboard,
+
+    viewSettings: (globalStore, viewType) =>
+      globalStore.db.data.settings.views[viewType]
   },
 
   view: {

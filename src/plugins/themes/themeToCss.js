@@ -42,11 +42,11 @@ const styleToRules = (className, style) => {
 ${className} {
 ${container}
 }
-${className} > .Node_rendered {
+${className} .Node_rendered {
 ${text}
 }
 
-${className} > .Node_input {
+${className} .Node_input {
 ${text}
 }
 `

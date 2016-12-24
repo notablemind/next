@@ -216,29 +216,74 @@ const actions = {
       store.actions.setMode('insert')
     },
 
+    createBeforeNormal(store: Store, id: string=store.state.active) {
+      if (!id || !store.db.data[id]) return
+      let pid = store.db.data[id].parent
+      if (!pid || id === 'root') return
+      const idx = store.db.data[pid].children.indexOf(id)
+      const nid = uuid()
+      store.execute({
+        type: 'create',
+        args: {id: nid, pid, ix: idx},
+      }, id, nid)
+      store.actions.editStart(nid)
+      return nid
+    },
+
+    createAfterNormal(store: Store, id: string=store.state.active) {
+      if (!id || !store.db.data[id]) return
+      const {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
+      const nid = uuid()
+      store.execute({
+        type: 'create',
+        args: {id: nid, pid, ix: idx},
+      }, id, nid)
+      store.actions.editStart(nid)
+      return nid
+    },
+
     createBefore(store: Store, id: string=store.state.active, content: string='') {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
       if (!pid || id === 'root') return
       const idx = store.db.data[pid].children.indexOf(id)
       const nid = uuid()
-      // TODO propagate type if needed
+      const oldType = store.db.data[id].type
+      const nodeType = store.plugins.nodeTypes[oldType]
+      const type = nodeType.newSiblingsShouldCarryType ?
+        oldType : 'normal'
+      const types = nodeType.newSiblingsShouldCarryType && nodeType.defaultNodeConfig ?
+        {[oldType]: nodeType.defaultNodeConfig()} : {}
       store.execute({
         type: 'create',
-        args: {id: nid, pid, ix: idx, data: {content}},
+        args: {id: nid, pid, ix: idx, data: {content, type, types}},
       }, id, nid)
       store.actions.editStart(nid)
       return nid
     },
 
     createAfter(store: Store, id: string=store.state.active, content: string='') {
-      if (!id || !store.db.data[id]) return
+      const node = store.db.data[id]
+      if (!id || !node) return
       const {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
       const nid = uuid()
-      // TODO propagate type if needed
+      let type = 'normal'
+      if (pid === node.parent) {
+        if (store.plugins.nodeTypes[node.type].newSiblingsShouldCarryType) {
+          type = node.type
+        }
+      } else {
+        const firstChild = node.children[0] && store.db.data[node.children[0]]
+        if (firstChild && store.plugins.nodeTypes[firstChild.type].newSiblingsShouldCarryType) {
+          type = firstChild.type
+        }
+      }
+      const nodeType = store.plugins.nodeTypes[type]
+      const types = nodeType.defaultNodeConfig ?
+        {[type]: nodeType.defaultNodeConfig()} : {}
       store.execute({
         type: 'create',
-        args: {id: nid, pid, ix: idx, data: {content}},
+        args: {id: nid, pid, ix: idx, data: {content, type, types}},
       }, id, nid)
       store.actions.editStart(nid)
       return nid
@@ -250,9 +295,15 @@ const actions = {
       if (!pid || id === 'root') return
       const idx = store.db.data[pid].children.indexOf(id) + 1
       const nid = uuid()
+      const oldType = store.db.data[id].type
+      const nodeType = store.plugins.nodeTypes[oldType]
+      const type = nodeType.newSiblingsShouldCarryType ?
+        oldType : 'normal'
+      const types = nodeType.newSiblingsShouldCarryType && nodeType.defaultNodeConfig ?
+        {[oldType]: nodeType.defaultNodeConfig()} : {}
       store.execute({
         type: 'create',
-        args: {id: nid, pid, ix: idx},
+        args: {id: nid, pid, ix: idx, data: {type, types}},
       }, id, nid)
       store.actions.editStart(nid)
       return nid

@@ -78,9 +78,17 @@ const organizePlugins = plugins => {
     node,
     store
   ))
-  const nodeTypes = {}
+  const nodeTypes = {
+    normal: {
+      newSiblingsShouldCarryType: true,
+      // TODO anything here?
+    },
+  }
   plugins.forEach(plugin => {
     Object.keys(plugin.nodeTypes || {}).forEach(type => {
+      if (nodeTypes[type]) {
+        console.error(`Multiple plugins want to own ${type}: ${plugin.id} is overriding`)
+      }
       nodeTypes[type] = plugin.nodeTypes[type]
       // defaultNodeConfigs[type] = plugin.nodeTypes[type].defaultNodeConfig
     })
@@ -218,6 +226,8 @@ export default class Treed {
       activeView: () => this.activeView(),
       handleKey: this.handleKey,
       on: this.on,
+      addListener: (evt, fn) => this.emitter.on(evt, fn),
+      removeListener: (evt, fn) => this.emitter.off(evt, fn),
 
       undo: () => this.emitter.emitMany(this.commands.undo(args)),
       redo: () => this.emitter.emitMany(this.commands.redo(args)),
