@@ -52,10 +52,13 @@ type DefEditPos = EditPos | false
 // like an image, or something...
 type ClipboardContents = DumpedNode
 
-const afterPos = (id, nodes) => {
+const afterPos = (id, nodes, viewType) => {
   let pid = nodes[id].parent
   let idx
-  if (pid) {
+  const views = nodes[id].views
+  const collapsed = views && views[viewType] &&
+    views[viewType].collapsed
+  if (pid && (collapsed || !nodes[id].children.length)) {
     idx = nodes[pid].children.indexOf(id) + 1
   } else {
     pid = id
@@ -229,7 +232,7 @@ const actions = {
 
     createAfter(store: Store, id: string=store.state.active, content: string='') {
       if (!id || !store.db.data[id]) return
-      const {pid, idx} = afterPos(id, store.db.data)
+      const {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
       const nid = uuid()
       store.execute({
         type: 'create',
@@ -283,7 +286,7 @@ const actions = {
 
     pasteAfter(store: Store, id=store.state.active) {
       if (!id || !store.db.data[id]) return
-      const {pid, idx} = afterPos(id, store.db.data)
+      const {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
       // TODO maybe the tree in the clipboard should have ids already?
       const nid = uuid()
       const items = []
