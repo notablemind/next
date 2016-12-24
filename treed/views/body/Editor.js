@@ -78,8 +78,11 @@ export default class Editor extends Component {
       // I won't allow nested transactions until I see a need for them
       break
     case 13: // enter
-      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
-      const nid = this.props.actions.createAfter(this.props.node._id)
+      const prev = e.target.value.slice(0, e.target.selectionStart)
+      const next = e.target.value.slice(e.target.selectionStart)
+      // TODO these two things should be a transaction probably? maybe
+      this.props.actions.setContent(this.props.node._id, prev)
+      const nid = this.props.actions.createAfter(this.props.node._id, next)
       if (nid) {
         this.props.actions.editStart(nid)
       }

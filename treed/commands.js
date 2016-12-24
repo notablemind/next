@@ -131,14 +131,28 @@ const commands: {[key: string]: Command<*, *>} = {
         ...db.data[pid],
         children,
       }].concat(items))
-      return {old: id, prom}
+      return {old: {id, items}, prom}
     },
 
-    undo(id, db, events) {
+    undo({id, items}, db, events) {
+      const now = Date.now()
+      if (!id) return null
+      const node = db.data[id]
+      const children = db.data[node.parent].children.slice()
+      children.splice(children.indexOf(id), 1)
+      return {prom: db.saveMany([{
+        ...db.data[node.parent],
+        children,
+      }].concat(items.map(item => ({
+        ...item,
+        _deleted: true,
+      }))))}
     },
 
+    /*
     redo(id, db, events) {
     },
+    */
   },
 
   remove: {

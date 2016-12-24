@@ -102,6 +102,7 @@ export default {
   },
 
   view: {
+    // TODO this isn't hooked up yet
     list: {
       className(store) {
         if (store.getters.pluginConfig(PLUGIN_ID).indentType === 'dots') {

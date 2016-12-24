@@ -25,10 +25,13 @@ const dueStyle = date => {
   }
 }
 
+const PLUGIN_ID = 'todos'
+
 // document config?
 // dunno what kinds of things would be configured
 export default {
-  id: 'todos',
+  id: PLUGIN_ID,
+
   nodeTypes: {
     todo: {
       // does the notion of blocks make sense? I think mayyyybe blocks would
@@ -60,6 +63,8 @@ export default {
 
       defaultNodeConfig() {
         return {
+          // hmm are there any other things associated w/ this that I should
+          // add?
           done: false,
           didDate: null,
           dueDate: null,
@@ -68,6 +73,11 @@ export default {
 
       actions: {
         toggleDone: {
+          shortcuts: {
+            normal: 'alt+enter',
+            visual: 'alt+enter',
+            insert: 'alt+enter',
+          },
           description: 'Toggle "done"',
           action(store) {
             const node = store.db.data[store.state.active]

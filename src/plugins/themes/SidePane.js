@@ -115,16 +115,15 @@ export default class SidePane extends Component {
       {headerStyles.map((hstyle, i) => (
         <div key={i}>
           <div>
-            Level {hstyle.level}
+            <label>
+              <input
+                checked={hstyle.enabled}
+                type="checkbox"
+                onChange={e => this.toggleHeaderEnabled(i)}
+              />
+              Level {hstyle.level}
+            </label>
           </div>
-          <label>
-            <input
-              checked={hstyle.enabled}
-              type="checkbox"
-              onChange={e => this.toggleHeaderEnabled(i)}
-            />
-            enabled
-          </label>
         </div>
       ))}
       <div className={css(styles.subTitle)}>

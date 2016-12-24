@@ -119,13 +119,11 @@ const styles = StyleSheet.create({
     opacity: .2,
     ':hover': {
       opacity: 1,
-      backgroundColor: '#999',
     },
   },
 
   collapsed: {
     opacity: 1,
-    backgroundColor: '#999',
   },
 
   children: {

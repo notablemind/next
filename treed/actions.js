@@ -222,6 +222,7 @@ const actions = {
       if (!pid || id === 'root') return
       const idx = store.db.data[pid].children.indexOf(id)
       const nid = uuid()
+      // TODO propagate type if needed
       store.execute({
         type: 'create',
         args: {id: nid, pid, ix: idx, data: {content}},
@@ -234,9 +235,24 @@ const actions = {
       if (!id || !store.db.data[id]) return
       const {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
       const nid = uuid()
+      // TODO propagate type if needed
       store.execute({
         type: 'create',
         args: {id: nid, pid, ix: idx, data: {content}},
+      }, id, nid)
+      store.actions.editStart(nid)
+      return nid
+    },
+
+    createNextSibling(store: STore, id: string=store.state.active) {
+      if (!id || !store.db.data[id]) return
+      let pid = store.db.data[id].parent
+      if (!pid || id === 'root') return
+      const idx = store.db.data[pid].children.indexOf(id) + 1
+      const nid = uuid()
+      store.execute({
+        type: 'create',
+        args: {id: nid, pid, ix: idx},
       }, id, nid)
       store.actions.editStart(nid)
       return nid
@@ -380,7 +396,6 @@ const actions = {
     movePrev(store: Store, id: string=store.state.active) {
       if (id === store.state.root) return
       const res = move.movePrev(id, store.db.data, store.state.root, store.state.viewType)
-      console.log('move', res)
       if (!res) return
       store.execute({
         type: 'move',
@@ -397,7 +412,6 @@ const actions = {
     moveNext(store: Store, id: string=store.state.active) {
       if (id === store.state.root) return
       const res = move.moveNext(id, store.db.data, store.state.root, store.state.viewType)
-      console.log('move', res)
       if (!res) return
       store.execute({
         type: 'move',
