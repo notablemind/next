@@ -66,12 +66,12 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
     return [].concat.apply([], changes.map(c => c.events || []))
   }
 
-  execute(command: Command, args: Args, view: ViewId, preActive: string, postActive: string) {
+  execute(command: Command, args: Args, view: ?ViewId, preActive: ?string, postActive: ?string) {
     return this.executeMany([command], args, view, preActive, postActive)
   }
 
   // TODO care about the "prom"s?
-  executeMany(commands: Array<Command>, args: Args, view: ViewId, preActive: string, postActive: string) {
+  executeMany(commands: Array<Command>, args: Args, view: ?ViewId, preActive: ?string, postActive: ?string) {
     const date = Date.now()
     const changes = this._do(commands, args)
     this.history = this.history.slice(0, this.histpos).concat([{

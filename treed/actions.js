@@ -29,6 +29,8 @@ type GlobalStore = {
   getters: {[key: string]: Function},
   globalState: {
     activeView: string,
+    plugins: {},
+    clipboard: ?DumpedNode,
   },
 }
 
@@ -351,7 +353,7 @@ const actions = {
       store.actions.setNested(id, ['views', store.state.viewType, 'collapsed'], false)
     },
 
-    pasteAfter(store: Store, id=store.state.active) {
+    pasteAfter(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
       const {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
       // TODO maybe the tree in the clipboard should have ids already?
@@ -365,7 +367,7 @@ const actions = {
       store.actions.setActive(nid)
     },
 
-    pasteBefore(store: Store, id=store.state.active) {
+    pasteBefore(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
       if (!pid || id === 'root') return
@@ -380,7 +382,7 @@ const actions = {
       store.actions.setActive(nid)
     },
 
-    copyNode(store: Store, id=store.state.active) {
+    copyNode(store: Store, id: string=store.state.active) {
       store.globalState.clipboard = store.db.cloneTree(id)
     },
 
@@ -520,7 +522,7 @@ const actions = {
     },
 
     // plugins things?
-    setNodeType(store: Store, id, type) {
+    setNodeType(store: Store, id: string, type: string) {
       const node = store.db.data[id]
       if (node.types[type] || !store.plugins.nodeTypes[type].defaultNodeConfig) { // if we already have data, don't fill w/ the default
         // TODO maybe let a plugin update the data if we're changing back?

@@ -24,6 +24,12 @@ const defaultSettings = {
   },
 }
 
+type GlobalStore = any
+
+type Store = {
+  [key: string]: any
+}
+
 const bindStoreProxies = (store, config, sub) => {
   Object.keys(config.getters[sub]).forEach(name => {
     store.getters[name] = config.getters[sub][name].bind(null, store)
@@ -38,7 +44,7 @@ const bindStoreProxies = (store, config, sub) => {
   })
 }
 
-const bindCommandProxies = (store, commands, emitter, args, viewId: ?string) => {
+const bindCommandProxies = (store: any, commands, emitter, args, viewId: ?string) => {
   if (viewId) {
     store.execute = (cmd, preActive?: string=store.state.active,
                      postActive?: string=store.state.active) => {
@@ -90,17 +96,9 @@ const organizePlugins = plugins => {
         console.error(`Multiple plugins want to own ${type}: ${plugin.id} is overriding`)
       }
       nodeTypes[type] = plugin.nodeTypes[type]
-      // defaultNodeConfigs[type] = plugin.nodeTypes[type].defaultNodeConfig
     })
   })
-  /*
-  const defaultNodeConfigs = {}
-  plugins.forEach(plugin => {
-    Object.keys(plugin.nodeTypes || {}).forEach(type => {
-      defaultNodeConfigs[type] = plugin.nodeTypes[type].defaultNodeConfig
-    })
-  })
-  */
+
   return {
     nodeTypes,
     node: {
@@ -108,17 +106,6 @@ const organizePlugins = plugins => {
         (classNameGetters.length === 0 ? null :
          (node, store) => classNameGetters.map(f => f(node, store)).join(' '))
     },
-  }
-}
-
-const makeGlobalStore = (db, emitter, commands, globalState, config) => {
-  const globalStore = {
-    db,
-    globalStore,
-    actions: {},
-    getters: {},
-    events: {},
-
   }
 }
 
@@ -136,8 +123,13 @@ export default class Treed {
   keys: any
   nextViewId: number
   viewStores: any
-  globalState: any
+  globalState: {
+    activeView: number,
+    plugins: any,
+    clipboard: ?any,
+  }
   keyManager: KeyManager
+  globalStore: GlobalStore
 
   constructor(db: any, plugins: any) {
     this.emitter = new FlushingEmitter()
@@ -160,6 +152,7 @@ export default class Treed {
     this.globalState = {
       activeView: 1,
       plugins: {},
+      clipboard: null,
     }
     this.keyManager = new KeyManager([
       () => this.getCurrentKeyLayer(),
@@ -207,11 +200,6 @@ export default class Treed {
         }
       }))
     })
-
-    /*
-    this.globalStore = makeGlobalStore(
-      this.db, this.emitter, this.commands, this.config)
-      */
 
     const events = {}
     const args: any = [this.db, events]
@@ -262,7 +250,7 @@ export default class Treed {
       ...this.globalStore.events,
     }
     const args: any = [this.db, events]
-    const store = this.viewStores[id] = {
+    const store: Store = this.viewStores[id] = {
       id,
       state,
       ...this.globalStore,
@@ -321,7 +309,13 @@ export default class Treed {
     }
   }
 
-  setupStateListener = (store, reactElement, eventsFromStore, stateFromStore, shouldResub=null) => {
+  setupStateListener = (
+    store: Store,
+    reactElement: any,
+    eventsFromStore: (store: Store) => Array<string>,
+    stateFromStore: (store: Store) => {[key: string]: any},
+    shouldResub?: ?()=>bool =null
+  ) => {
     reactElement.state = stateFromStore(store)
     let evts = eventsFromStore(store)
     const fn = () => {
