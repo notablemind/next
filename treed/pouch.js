@@ -4,6 +4,7 @@ export default db => ({
     db.changes({
       live: true,
       include_docs: true,
+      // attachments: true,
       since: 'now',
     }).on('change', change => {
       if (change.doc._deleted) {
@@ -13,7 +14,10 @@ export default db => ({
       }
     }).on('error', onError)
 
-    db.allDocs({include_docs: true}).then(({rows}) => {
+    db.allDocs({
+      include_docs: true,
+      // attachments: true,
+    }).then(({rows}) => {
       const data = {}
       rows.forEach(({doc}) => {
         data[doc._id] = doc

@@ -14,6 +14,44 @@ import Sidebar from './Sidebar'
 
 import listView from '../../../treed/views/list'
 
+const textImporters = [
+  {
+    name: 'opml',
+    types: ['text/plain'],
+    action(text) {
+      // try to import
+      return false
+    },
+  },
+  {
+    name: 'html',
+    types: ['text/plain', 'text/html'],
+    action(text, store) {
+      const tree = makeATree(text)
+      store.actions.importTree(tree)
+      // parse the html, find any lists n stuff
+      return false
+    },
+  },
+  {
+    name: 'markdown',
+    types: ['text/plain'],
+    action(text) {
+      return false
+    },
+  },
+]
+
+const fileImporters = [
+  {
+    name: 'image',
+    types: ['image/png', 'image/jpeg'],
+    action(blob, store) {
+      store.createImageThing(blob)
+    },
+  },
+]
+
 const plugins = [
   require('../../plugins/themes').default,
   require('../../plugins/todos').default,
@@ -53,6 +91,9 @@ export default class Document extends Component {
 
   componentDidMount() {
     window.addEventListener('keydown', this.onKeyDown)
+    window.addEventListener('dragover', this.onDrag)
+    window.addEventListener('paste', this.onPaste)
+    window.addEventListener('drop', this.onDrop)
     this.makeTreed(this.state.db)
   }
 
@@ -72,6 +113,44 @@ export default class Document extends Component {
       description: 'Redo the last action',
       action: () => this.state.treed && this.state.treed.activeView().redo(),
     },
+  }
+
+  onDrag = (e: any) => {
+    e.preventDefault()
+  }
+
+  onDrop = (e: any) => {
+    e.preventDefault()
+    debugger
+  }
+
+  onPaste = (e: any) => {
+    e.preventDefault()
+    const data = e.clipboardData
+    if (data.items.length === 1) {
+      if (data.items[0].kind === 'string') {
+      }
+    }
+    if (
+      data.items.length === 2 &&
+      data.items[0].kind === 'string' &&
+        data.items[1].kind === 'file'
+    ) {
+      // looks like a "copy/pasted a file"
+      // note this will only work if they pasted an image. (at least in chrome)
+      var ff = data.items[1].getAsFile()
+      data.items[1].getAsString(ss => {
+        console.log('the file as string', ss)
+      })
+      console.log('gott a file')
+      window.copiedFile = ff
+      // debugger
+      data.items[0].getAsString(name => {
+        console.log('file name', name)
+      })
+    } else {
+      debugger
+    }
   }
 
   onKeyDown = (e: any) => {
@@ -146,6 +225,9 @@ export default class Document extends Component {
   componentWillUnmount() {
     this.state.db.close()
     window.removeEventListener('keydown', this.onKeyDown)
+    window.removeEventListener('dragover', this.onDrag)
+    window.removeEventListener('paste', this.onPaste)
+    window.removeEventListener('drop', this.onDrop)
     if (this.state.treed) {
       this.state.treed.destroy()
     }
