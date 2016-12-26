@@ -5,6 +5,9 @@ import {css, StyleSheet} from 'aphrodite'
 import uuid from '../../utils/uuid'
 import {hashHistory} from 'react-router'
 
+import KeyManager from '../../../treed/keys/Manager'
+import makeKeyLayer from '../../../treed/keys/makeKeyLayer'
+
 const organizeFolders = (rows) => {
   const map = {}
   const children = {root: []}
@@ -66,9 +69,21 @@ export default class Browse extends Component {
       settings: null,
       children: {},
       map: {},
+      selected: 0,
     }
 
     if (props.userDb) this.listen(props.userDb)
+  }
+
+  componentDidMount() {
+    this.keyManager = new KeyManager([
+      makeKeyLayer({
+        goDown: {
+          shortcut: 'j, down',
+          action: this.goDown,
+        },
+      }, 'browse.', {})
+    ])
   }
 
   componentWillReceiveProps(nextProps: Props) {
@@ -177,9 +192,8 @@ export default class Browse extends Component {
   }
 
   render() {
-    return <div>
-      <div>
-        Browse
+    return <div className={css(styles.container)}>
+      <div className={css(styles.buttons)}>
         <button
           onClick={this.onNewFile}
         >
@@ -203,7 +217,7 @@ export default class Browse extends Component {
 
 const Folder = ({map, children, folder, onOpen}) => (
   <div className={css(styles.folderContainer)}>
-    <div className={css(styles.item, styles.folder)}>{folder.title}</div>
+    <div className={css(styles.item, styles.folder, folder._id === 'root' && styles.rootName)}>{folder.title}</div>
     <div className={css(styles.children, folder._id === 'root' && styles.rootChildren)}>
       {(children[folder._id] || []).map(id => (
         map[id].type === 'folder' ?
@@ -231,13 +245,43 @@ const Doc = ({doc, onOpen}) => (
 )
 
 const styles = StyleSheet.create({
+  container: {
+    width: 800,
+    maxWidth: '100%',
+    alignSelf: 'center',
+  },
+
+  buttons: {
+    alignSelf: 'center',
+    flexDirection: 'row',
+  },
+
   item: {
-    padding: '20px 40px',
+    padding: '10px 20px',
     cursor: 'pointer',
+    borderBottom: '1px solid #ccc',
+    borderRight: '1px solid #ccc',
+    borderLeft: '1px solid #ccc',
 
     ':hover': {
-      backgroundColor: '#ccc',
+      backgroundColor: '#eee',
     },
+  },
+
+  rootName: {
+    border: '1px solid #ccc',
+    display: 'none',
+  },
+
+  children: {
+    marginLeft: 20,
+    // paddingLeft: 20,
+    // borderLeft: '1px solid #ccc',
+  },
+
+  rootChildren: {
+    marginLeft: 0,
+    borderTop: '1px solid #ccc',
   },
 
   folder: {
