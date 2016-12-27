@@ -50,11 +50,11 @@ const defaultGlobalConfig: ThemeSettings = {
   }, {
     style: header2,
     level: 1,
-    enabled: true,
+    enabled: false,
   }, {
     style: header3,
     level: 2,
-    enabled: true,
+    enabled: false,
   }],
 
   individualStyles: {

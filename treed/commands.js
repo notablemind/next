@@ -15,6 +15,11 @@ type Command<T, D> = {
   }
 }
 
+const walk = (id, nodes, visit) => {
+  visit(id)
+  nodes[id].children.forEach(child => walk(child, nodes, visit))
+}
+
 const commands: {[key: string]: Command<*, *>} = {
   update: {
     apply({id, update}, db, events) {
@@ -165,25 +170,30 @@ const commands: {[key: string]: Command<*, *>} = {
       const children = db.data[node.parent].children.slice()
       const idx = children.indexOf(id)
       children.splice(idx, 1)
+      const nodesToRemove = []
+      walk(id, db.data, cid => nodesToRemove.push(db.data[cid]))
       return {
-        old: {node, idx},
+        old: {node, idx, nodes: nodesToRemove},
         prom: db.saveMany([{
           ...db.data[node.parent],
           children,
-        }, {
+        }, /*{
           ...node,
           _deleted: true,
-        }])
+        }*/].concat(nodesToRemove.map(node => ({
+          ...node,
+          _deleted: true,
+        })))),
       }
     },
 
-    undo({idx, node}, db, events) {
+    undo({idx, node, nodes}, db, events) {
       const children = db.data[node.parent].children.slice()
       children.splice(idx, 0, node._id)
       return {prom: db.saveMany([{
         ...db.data[node.parent],
         children,
-      }, node])}
+      }].concat(nodes))}
     },
   },
 
