@@ -218,6 +218,10 @@ export default class Database<D> {
     return dumpNode(id, this.data, false)
   }
 
+  getAttachment(id: string, attachmentId: string) {
+    return this.db.getAttachment(id, attachmentId)
+  }
+
   /*
   // TODO are there inter-file relationships to worry about?
   // TODO make sure symlinks work

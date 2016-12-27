@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
 
   topNormal: {
     ':hover': {
-      backgroundColor: '#eee',
+      // backgroundColor: '#fafafa',
     },
   },
 

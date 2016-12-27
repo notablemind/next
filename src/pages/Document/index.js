@@ -55,6 +55,7 @@ const fileImporters = [
 const plugins = [
   require('../../plugins/themes').default,
   require('../../plugins/todos').default,
+  require('../../plugins/image').default,
 ]
 
 type DbT = any
@@ -120,6 +121,9 @@ export default class Document extends Component {
   }
 
   onDrop = (e: any) => {
+    if (e.target.nodeName === 'INPUT' && e.target.type === 'file') {
+      return // dropping on a file input, it'll pick it up
+    }
     e.preventDefault()
     debugger
   }
@@ -237,7 +241,7 @@ export default class Document extends Component {
   }
 
   render() {
-    if (!this.state.treed) return <div>Loading...</div>
+    if (!this.state.treed) return <div className={css(styles.container, styles.loading)}>Loading...</div>
     return <div className={css(styles.container)}>
       <Sidebar
         globalStore={this.state.treed.globalStore}
@@ -258,6 +262,14 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     flex: 1,
+  },
+
+  loading: {
+    padding: 100,
+    alignItems: 'center',
+    flexDirection: 'column',
+    fontSize: '2em',
+    color: '#ccc',
   },
 
   document: {

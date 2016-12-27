@@ -29,5 +29,6 @@ export default db => ({
   save: (doc) => db.put(doc), // .then(r => (console.log('save', r), r)),
   saveMany: docs => db.bulkDocs(docs), // .then(r => (console.log('savemany', r), r)),
   delete: doc => db.remove(doc),
+  getAttachment: (id, attachmentId) => db.getAttachment(id, attachmentId),
 })
 

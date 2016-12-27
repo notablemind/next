@@ -30,7 +30,7 @@ export default class Sidebar extends Component {
   }
 
   render() {
-    if (!this.state.store) return <div>Loading...</div>
+    if (!this.state.store) return <div className={css(styles.container)}>Loading...</div>
     return <div className={css(styles.container)}>
       <MiniMap store={this.state.store} />
       {this.props.plugins.map(
