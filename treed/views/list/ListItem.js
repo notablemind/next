@@ -23,6 +23,7 @@ export default class ListItem extends Component {
       store => ({
         node: store.getters.node(id),
         isActive: store.getters.isActive(id),
+        isCutting: store.getters.isCutting(id),
         editState: store.getters.editState(id),
       }),
     )
@@ -72,6 +73,7 @@ export default class ListItem extends Component {
           node={this.state.node}
           depth={this.props.depth}
           isActive={this.state.isActive}
+          isCutting={this.state.isCutting}
           editState={this.state.editState}
           actions={this.props.store.actions}
           store={this.props.store}

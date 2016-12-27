@@ -13,7 +13,7 @@ export default class Body extends Component {
   }
 
   render() {
-    const {depth, isActive, editState} = this.props
+    const {depth, isActive, editState, isCutting} = this.props
     const pluginCls = this.props.store.plugins.node.className ?
       this.props.store.plugins.node.className(this.props.node, this.props.store) :
         ''
@@ -21,6 +21,7 @@ export default class Body extends Component {
       styles.outline,
       isActive && styles.active,
       editState && styles.editing,
+      isCutting && styles.cutting,
     ) + ` Node_body Node_body_level_${depth} ${pluginCls}`
 
     const Component = this.props.node.type !== 'normal' &&
@@ -60,6 +61,10 @@ const styles = StyleSheet.create({
 
   editing: {
     outlineColor: 'lime',
+  },
+
+  cutting: {
+    outline: '2px dotted blue',
   },
 })
 

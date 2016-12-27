@@ -101,6 +101,14 @@ export default {
     alias: 'copyNode',
   },
 
+  cut: {
+    shortcuts: {
+      normal: 'y x, cmd+x',
+    },
+    description: 'Mark the current node to cut',
+    alias: 'setCut',
+  },
+
   pasteAfter: {
     shortcuts: {
       normal: 'p',

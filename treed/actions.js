@@ -356,7 +356,17 @@ const actions = {
     pasteAfter(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
       const {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
-      // TODO maybe the tree in the clipboard should have ids already?
+      if (store.globalState.cut) {
+        const id = store.globalState.cut
+        store.globalState.cut = null
+        store.execute({
+          type: 'move',
+          args: {id, pid, expandParent: true, idx, viewType: store.state.viewType}
+        }, id, id)
+        store.emit([store.events.nodeView(id)])
+        store.actions.setActive(id)
+        return
+      }
       const nid = uuid()
       const items = []
       treeToItems(pid, nid, store.globalState.clipboard, items)
@@ -372,6 +382,18 @@ const actions = {
       let pid = store.db.data[id].parent
       if (!pid || id === 'root') return
       const idx = store.db.data[pid].children.indexOf(id)
+      if (store.globalState.cut) {
+        const id = store.globalState.cut
+        store.globalState.cut = null
+        store.execute({
+          type: 'move',
+          args: {id, pid, expandParent: true, idx, viewType: store.state.viewType}
+        }, id, id)
+        store.emit([store.events.nodeView(id)])
+        store.actions.setActive(id)
+        return
+      }
+
       const nid = uuid()
       const items = []
       treeToItems(pid, nid, store.globalState.clipboard, items)
@@ -383,7 +405,19 @@ const actions = {
     },
 
     copyNode(store: Store, id: string=store.state.active) {
+      if (store.globalState.cut) {
+        store.emit([store.events.nodeView(store.globalState.cut)])
+        store.globalState.cut = null
+      }
       store.globalState.clipboard = store.db.cloneTree(id)
+    },
+
+    setCut(store: Store, id: string=store.state.active) {
+      if (store.globalState.cut) {
+        store.emit([store.events.nodeView(store.globalState.cut)])
+      }
+      store.globalState.cut = id // TODO multi-node
+      store.emit([store.events.nodeView(id)])
     },
 
     remove(store: Store, id: string=store.state.active, goUp: boolean=false) {
