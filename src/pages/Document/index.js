@@ -129,31 +129,8 @@ export default class Document extends Component {
   }
 
   onPaste = (e: any) => {
-    e.preventDefault()
-    const data = e.clipboardData
-    if (data.items.length === 1) {
-      if (data.items[0].kind === 'string') {
-      }
-    }
-    if (
-      data.items.length === 2 &&
-      data.items[0].kind === 'string' &&
-        data.items[1].kind === 'file'
-    ) {
-      // looks like a "copy/pasted a file"
-      // note this will only work if they pasted an image. (at least in chrome)
-      var ff = data.items[1].getAsFile()
-      data.items[1].getAsString(ss => {
-        console.log('the file as string', ss)
-      })
-      console.log('gott a file')
-      window.copiedFile = ff
-      // debugger
-      data.items[0].getAsString(name => {
-        console.log('file name', name)
-      })
-    } else {
-      debugger
+    if (this.state.treed) {
+      this.state.treed.handlePaste(e)
     }
   }
 

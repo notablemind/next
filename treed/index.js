@@ -12,6 +12,7 @@ import baseEvents from './events'
 import addPluginKeys from './keys/addPluginKeys'
 import makeViewKeyLayers from './keys/makeViewKeyLayers'
 import KeyManager from './keys/Manager'
+import organizePlugins from './organizePlugins'
 
 type ViewId = number
 
@@ -75,38 +76,6 @@ const bindCommandProxies = (store: any, commands, emitter, args, viewId: ?string
     emitter.emitMany(commands.append(idx, cmd, args))
   store.appendMany = (idx, cmds) =>
     emitter.emitMany(commands.appendMany(idx, cmds, args))
-}
-
-const organizePlugins = plugins => {
-  const classNameGetters = plugins.filter(p => p.node && p.node.className)
-  .map(p => (node, store) => p.node.className(
-    node.plugins[p.id],
-    node,
-    store
-  ))
-  const nodeTypes = {
-    normal: {
-      newSiblingsShouldCarryType: true,
-      // TODO anything here?
-    },
-  }
-  plugins.forEach(plugin => {
-    Object.keys(plugin.nodeTypes || {}).forEach(type => {
-      if (nodeTypes[type]) {
-        console.error(`Multiple plugins want to own ${type}: ${plugin.id} is overriding`)
-      }
-      nodeTypes[type] = plugin.nodeTypes[type]
-    })
-  })
-
-  return {
-    nodeTypes,
-    node: {
-      className: classNameGetters.length === 1 ? classNameGetters[0] :
-        (classNameGetters.length === 0 ? null :
-         (node, store) => classNameGetters.map(f => f(node, store)).join(' '))
-    },
-  }
 }
 
 export default class Treed {
@@ -288,6 +257,56 @@ export default class Treed {
   handleKey = (e: any) => {
     this.keyManager.handle(e)
     // throw new Error('not impl')
+  }
+
+  pasteFile = (file: any, type: string, filename: string) => {
+    const fns = this.globalStore.plugins.node.pasteFile
+    const activeView = this.activeView()
+    const handled = fns.some(fn => fn(
+      activeView, activeView.state.active, file, type, filename))
+    if (!handled) {
+      // TODO toast
+      console.warn("Don't know how to paste this file")
+    }
+  }
+
+  handlePaste = (e: any) => {
+    const data = e.clipboardData
+    if (data.items.length === 1) {
+      if (data.items[0].kind === 'string') {
+        if (e.target.nodeName === 'INPUT') {
+          return // allow normal pasting into text input
+        }
+      }
+      if (data.items[0].kind === 'file') {
+        const file = data.items[0].getAsFile()
+        this.pasteFile(file, data.items[0].type, '<pasted file>')
+        return
+      }
+    }
+
+    e.preventDefault()
+    if (
+      data.items.length === 2 &&
+      data.items[0].kind === 'string' &&
+        data.items[1].kind === 'file'
+    ) {
+      // looks like a "copy/pasted a file"
+      // note this will only work if they pasted an image. (at least in chrome)
+      const file = data.items[1].getAsFile()
+      console.log(data.items[1], file)
+      if (!file) { // wasn't an image I guess
+        // TODO toast
+        console.warn("Bad file - not an image?")
+        return
+      }
+      const type = data.items[1].type
+      data.items[0].getAsString(filename => {
+        this.pasteFile(file, type, filename)
+      })
+    } else {
+      debugger
+    }
   }
 
   addKeyLayer(layer: Function | any): () => void {

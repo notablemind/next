@@ -7,6 +7,22 @@ const PLUGIN_ID = 'image'
 export default {
   id: PLUGIN_ID,
 
+  node: {
+    pasteFile: (store, id, file, type, filename) => {
+      if (!type.match(/^image\//)) return false
+      const node = store.db.data[id]
+      let extra = {type: 'image'}
+      if (!node.content.trim()) {
+        extra = {content: filename, type: 'image'}
+      }
+      actions.setImage(store, id, file, extra)
+      return true
+    },
+
+    // dropFile:
+    // dropFileNew:
+  },
+
   nodeTypes: {
     image: {
       newSiblingsShouldCarryType: false,
