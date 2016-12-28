@@ -127,8 +127,17 @@ export default class Editor extends Component {
       this.setState({
         tmpText: nextProps.node.content,
       })
+    } else if (!nextProps.editState && this.props.editState) {
+      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
+    } else if (this.props.editState && this.props.node.content !== nextProps.node.content) {
+      this.setState({
+        tmpText: nextProps.node.content,
+      })
     }
-    if (!nextProps.editState && this.props.editState) {
+  }
+
+  componentWillUnmount() {
+    if (this.props.editState) {
       this.props.actions.setContent(this.props.node._id, this.state.tmpText)
     }
   }

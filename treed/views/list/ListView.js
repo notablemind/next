@@ -151,6 +151,9 @@ export default class ListView extends Component {
       data.items.length === 1
     ) {
       this.state.store.actions.dropFile(id, at, data.files[0])
+    } else {
+      // ummm what other cases are there?
+      debugger
     }
   }
 

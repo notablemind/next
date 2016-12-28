@@ -23,7 +23,12 @@ export default class FlushingEmitter {
   emit = (evt) => {
     if (!evt) return
     // TODO maybe for debugging skip this
-    if (!this.listeners[evt]) return // skip sending things no one cares about
+    if (!this.listeners[evt]) {
+      if (DEBUG_EVENTS) {
+        console.log('skipping evt', evt)
+      }
+      return // skip sending things no one cares about
+    }
     this._waitingEvents.add(evt)
     if (!this._emitTimeout) {
       this._emitTimeout = setTimeout(this._flush, pauseMs)
@@ -49,7 +54,10 @@ export default class FlushingEmitter {
     if (window.DEBUG_EVENTS) {
       console.log('flushing', this._waitingEvents)
     }
-    for (let evt of this._waitingEvents) {
+    const waiting = this._waitingEvents
+    this._emitTimeout = null
+    this._waitingEvents = new Set()
+    for (let evt of waiting) {
       if (this.listeners[evt]) {
         this.listeners[evt].forEach(fn => {
           if (!called.has(fn)) {
@@ -59,8 +67,6 @@ export default class FlushingEmitter {
         })
       }
     }
-    this._waitingEvents = new Set()
-    this._emitTimeout = null
   }
 }
 
