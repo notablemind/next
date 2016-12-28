@@ -18,8 +18,11 @@ export default {
     activeNode: store => store.db.data[store.state.active],
     root: store => store.state.root,
     active: store => store.state.active,
+    mode: store => store.state.mode,
     isActiveView: store => store.id === store.globalState.activeView,
     isActive: (store, id) => id === store.state.active,
+    isDragging: (store, id) => id === store.state.active &&
+      store.state.mode === 'dragging',
     isCutting: (store, id) => id === store.globalState.cut,
     isSelected: (store, id) => false, // TODO selection
     editState: (store, id) => store.state.mode === 'insert' &&

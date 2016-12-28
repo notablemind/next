@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     lineHeight: '1.2em',
     backgroundColor: 'transparent',
     padding: '4px 5px',
+    cursor: 'inherit',
   },
 
   empty: {

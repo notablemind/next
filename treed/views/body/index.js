@@ -13,7 +13,7 @@ export default class Body extends Component {
   }
 
   render() {
-    const {depth, isActive, editState, isCutting} = this.props
+    const {depth, isActive, editState, isCutting, isDragging} = this.props
     const pluginCls = this.props.store.plugins.node.className ?
       this.props.store.plugins.node.className(this.props.node, this.props.store) :
         ''
@@ -22,6 +22,7 @@ export default class Body extends Component {
       isActive && styles.active,
       editState && styles.editing,
       isCutting && styles.cutting,
+      isDragging && styles.dragging,
     ) + ` Node_body Node_body_level_${depth} ${pluginCls}`
 
     const Component = this.props.node.type !== 'normal' &&
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
 
   container: {
     padding: '1px 0',
-    cursor: 'pointer',
+    // cursor: 'pointer',
     zIndex: 1,
   },
 
@@ -65,6 +66,11 @@ const styles = StyleSheet.create({
 
   cutting: {
     outline: '2px dotted blue',
+  },
+
+  dragging: {
+    outline: '2px dotted blue',
+    backgroundColor: '#eee',
   },
 })
 

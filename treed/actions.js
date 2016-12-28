@@ -218,6 +218,41 @@ const actions = {
       store.actions.setMode('insert')
     },
 
+    startDragging(store: Store, id: string=store.state.active) {
+      if (!store.actions.setActive(id)) {
+        store.emit(store.events.nodeView(id))
+      }
+      store.actions.setMode('dragging')
+    },
+
+    dragTo(store: Store, id: string, at: 'before' | 'after') {
+      const did = store.state.active
+
+      const node = store.db.data[id]
+      const pid = node.parent
+      const sibs = store.db.data[pid].children
+      let idx = sibs.indexOf(id)
+
+      if (at === 'after') {
+        idx += 1
+      }
+
+      if (store.db.data[did].parent === pid) {
+        const pidx = sibs.indexOf(did)
+        // TODO test this
+        if (pidx < idx) idx -= 1
+      }
+
+      // TODO maybe don't do after for children
+      store.execute({
+        type: 'move',
+        args: {id: did, pid, expandParent: true, idx, viewType: store.state.viewType}
+      }, did, did)
+      store.emit([store.events.nodeView(did)])
+      store.actions.setActive(did)
+      store.actions.setMode('normal')
+    },
+
     createBeforeNormal(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
@@ -355,10 +390,17 @@ const actions = {
 
     pasteAfter(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
-      const {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
+      let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
       if (store.globalState.cut) {
         const id = store.globalState.cut
+        if (store.db.data[id].parent === pid) {
+          const cidx = store.db.data[pid].children.indexOf(id)
+          if (cidx < idx) {
+            idx -= 1
+          }
+        }
         store.globalState.cut = null
+        // TODO can't do it after
         store.execute({
           type: 'move',
           args: {id, pid, expandParent: true, idx, viewType: store.state.viewType}
@@ -381,9 +423,15 @@ const actions = {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
       if (!pid || id === 'root') return
-      const idx = store.db.data[pid].children.indexOf(id)
+      let idx = store.db.data[pid].children.indexOf(id)
       if (store.globalState.cut) {
         const id = store.globalState.cut
+        if (store.db.data[id].parent === pid) {
+          const cidx = store.db.data[pid].children.indexOf(id)
+          if (cidx < idx) {
+            idx -= 1
+          }
+        }
         store.globalState.cut = null
         store.execute({
           type: 'move',

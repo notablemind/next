@@ -6,6 +6,15 @@ import {css, StyleSheet} from 'aphrodite'
 import Body from '../body'
 import ensureInView from '../../ensureInView'
 
+const isAtEdge = (box, x, y) => {
+  return (
+    x - box.left < 5 ||
+    y - box.top < 5 ||
+    x > box.right - 5 ||
+    y > box.bottom - 5
+  )
+}
+
 export default class ListItem extends Component {
   _sub: any
   _div: any
@@ -24,6 +33,7 @@ export default class ListItem extends Component {
         node: store.getters.node(id),
         isActive: store.getters.isActive(id),
         isCutting: store.getters.isCutting(id),
+        isDragging: store.getters.isDragging(id),
         editState: store.getters.editState(id),
       }),
     )
@@ -50,6 +60,26 @@ export default class ListItem extends Component {
     }
   }
 
+  onMouseMove = e => {
+    if (!this.state.isActive || this.state.isDragging) return
+    const box = this._div.getBoundingClientRect()
+    const atEdge = isAtEdge(box, e.clientX, e.clientY)
+    const deff = this.state.editState ? 'text' : 'default'
+    this._div.style.setProperty('cursor', atEdge ? 'move' : deff, 'important')
+  }
+
+  onMouseDown = e => {
+    if (!this.state.isActive) return
+    const box = this._div.getBoundingClientRect()
+    const atEdge = isAtEdge(box, e.clientX, e.clientY)
+    if (!atEdge) {
+      return
+    }
+    e.preventDefault()
+    e.stopPropagation()
+    this.props.store.actions.startDragging(this.props.id)
+  }
+
   render() {
     if (!this.state.node) {
       return <div>loading...</div>
@@ -59,26 +89,37 @@ export default class ListItem extends Component {
     const isRoot = this.props.store.state.root === this.props.id
 
     return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth}` + (isRoot ? ' Node_root' : '')}>
-      <div className={css(styles.top, !this.state.editState && styles.topNormal) + ' Node_top'} ref={node => {
-        this._div = node
-        this.props.nodeMap[this.props.id] = node
-      }}>
+      <div
+        className={css(
+          styles.top,
+          !this.state.editState && styles.topNormal
+        ) + ' Node_top'}
+        onMouseMove={this.onMouseMove}
+        onMouseDownCapture={this.onMouseDown}
+        ref={node => {
+          this._div = node
+          this.props.nodeMap[this.props.id] = node
+        }}
+      >
         {!isRoot && this.state.node.children.length > 0 &&
           <div
             className={css(styles.collapser,
                           collapsed && styles.collapsed) + ' Node_collapser'}
             onClick={() => this.props.store.actions.toggleCollapse(this.props.id)}
           />}
+
         <Body
           node={this.state.node}
           depth={this.props.depth}
           isActive={this.state.isActive}
           isCutting={this.state.isCutting}
+          isDragging={this.state.isDragging}
           editState={this.state.editState}
           actions={this.props.store.actions}
           store={this.props.store}
         />
       </div>
+
       <div className={css(styles.children) + ' Node_children'}>
         {(!collapsed || isRoot) && this.state.node.children.map(id => (
           <ListItem
