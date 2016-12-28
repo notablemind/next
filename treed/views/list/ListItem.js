@@ -62,6 +62,7 @@ export default class ListItem extends Component {
 
   onMouseMove = e => {
     if (!this.state.isActive || this.state.isDragging) return
+    if (this.props.store.state.root === this.props.id) return
     const box = this._div.getBoundingClientRect()
     const atEdge = isAtEdge(box, e.clientX, e.clientY)
     const deff = this.state.editState ? 'text' : 'default'
@@ -70,6 +71,7 @@ export default class ListItem extends Component {
 
   onMouseDown = e => {
     if (!this.state.isActive) return
+    if (this.props.store.state.root === this.props.id) return
     const box = this._div.getBoundingClientRect()
     const atEdge = isAtEdge(box, e.clientX, e.clientY)
     if (!atEdge) {

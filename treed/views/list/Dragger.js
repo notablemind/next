@@ -18,6 +18,7 @@ export default class Dragger {
       backgroundColor: 'black',
       position: 'absolute',
       opacity: .1,
+      pointerEvents: 'none',
     })
 
     this.measure = canOver ? (top) => {

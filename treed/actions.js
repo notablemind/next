@@ -241,6 +241,11 @@ const actions = {
         const pidx = sibs.indexOf(did)
         // TODO test this
         if (pidx < idx) idx -= 1
+        if (idx === pidx) {
+          store.emit([store.events.nodeView(did)])
+          store.actions.setMode('normal')
+          return
+        }
       }
 
       // TODO maybe don't do after for children

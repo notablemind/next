@@ -136,7 +136,7 @@ export default class Treed {
         const pluginSettings = plugins.reduce((settings, plugin) => (
           settings[plugin.id] = plugin.defaultGlobalConfig, settings
         ), {})
-        return this.db.db.saveMany([{
+        return this.db.saveMany([{
           _id: 'root',
           created: now,
           modified: now,
@@ -147,7 +147,7 @@ export default class Treed {
           plugins: {},
           types: {},
           views: {},
-        }], [{
+        }, {
           _id: 'settings',
           created: now,
           modified: now,
@@ -156,8 +156,25 @@ export default class Treed {
           // TODO what other things go in settings?
         }])
       }
+
+      /*
+      // TODO remove
+      if (!this.db.data.settings) {
+        const pluginSettings = plugins.reduce((settings, plugin) => (
+          settings[plugin.id] = plugin.defaultGlobalConfig, settings
+        ), {})
+        return this.db.save({
+          _id: 'settings',
+          created: now,
+          modified: now,
+          plugins: pluginSettings,
+          views: {},
+          // TODO what other things go in settings?
+        })
+      }
+      */
     }).then(() => {
-      const settings = this.db.data.settings || {plugins: {}}
+      const settings = this.db.data.settings
       return Promise.all(plugins.map(plugin => {
         if (plugin.init) {
           return Promise.resolve(plugin.init(

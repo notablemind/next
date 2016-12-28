@@ -91,15 +91,56 @@ export default class ListView extends Component {
     if (!this.dragger) return
     if (!this.dragger.current) {
       this.state.store.actions.normalMode()
+      return
     }
     const {id, at} = this.dragger.getCurrent()
     this.state.store.actions.dragTo(id, at)
   }
 
+  onDrag = (e: any) => {
+    e.stopPropagation()
+    if (!this.dropper) {
+      const measurements = []
+      preWalk(
+        this.state.store.db.data,
+        this.state.store.state.root,
+        id => {
+          measurements.push([id, this._nodes[id].getBoundingClientRect()])
+        }
+      )
+      this.dropper = new Dragger(measurements, true)
+    }
+    this.dropper.onMove(e)
+    // window.addEventListener('mousemove', this.dragger.onMove)
+    // window.addEventListener('mouseup', this.onDragUp, true)
+  }
+
+  onDrop = (e: any) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!this.dropper) {
+      return
+    }
+    if (!this.dropper.current) {
+      this.dropper.destroy()
+      this.dropper = null
+      return
+    }
+    const {id, at} = this.dropper.getCurrent()
+    console.log('dropping', id, at)
+    this.dropper.destroy()
+    this.dropper = null
+    // this.state.store.actions.dragTo(id, at)
+  }
+
   render() {
     const root = this.state.store.state.root
     const depth = findDepth(root, this.state.store.db.data)
-    return <div className={css(styles.container)}>
+    return <div
+      className={css(styles.container)}
+      onDragOver={this.onDrag}
+      onDrop={this.onDrop}
+    >
       <ListItem
         id={root}
         key={root}
