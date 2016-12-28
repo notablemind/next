@@ -139,6 +139,19 @@ export default class ListView extends Component {
     console.log('dropping', id, at)
     this.dropper.destroy()
     this.dropper = null
+    const data = e.dataTransfer
+    if (data.items.length === 1 && data.files.length === 0 &&
+        data.items[0].kind === 'string') {
+      const type = data.items[0].type
+      data.items[0].getAsString(text => {
+        this.state.store.actions.dropString(id, at, text, type)
+      })
+    } else if (
+      data.files.length === 1 &&
+      data.items.length === 1
+    ) {
+      this.state.store.actions.dropFile(id, at, data.files[0])
+    }
   }
 
   render() {

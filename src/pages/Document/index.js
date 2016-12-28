@@ -65,8 +65,6 @@ export default class Document extends Component {
     db: any,
     treed: ?Treed,
   }
-  // themeManager: ThemeManager
-  // keyManager: KeyManager
   _unsub: () => void
 
   constructor(props: any) {
@@ -79,15 +77,6 @@ export default class Document extends Component {
     if (props.makeRemoteDocDb) {
       this.setupSync(props.makeRemoteDocDb, props.params.id)
     }
-    // TODO maybe let plugins register "global actions" that aren't tied to a
-    // view
-    /*
-    this.keyManager = new KeyManager([
-      () => this.state.treed && this.state.treed.isCurrentViewInInsertMode() ?
-        null : globalLayer,
-      () => this.state.treed && this.state.treed.getCurrentKeyLayer(),
-    ])
-    */
   }
 
   componentDidMount() {
