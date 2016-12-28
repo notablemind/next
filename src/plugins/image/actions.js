@@ -29,6 +29,23 @@ const actions = {
     store.actions.update(id, {...update, ...extraData})
   },
 
+  createWithImage(store, pid, idx, file) {
+    const id = uuid()
+    const update = makeAttachmentUpdate({
+      _attachments: {},
+      types: {},
+    }, file)
+
+    store.execute({
+      type: 'create',
+      args: {id, pid, ix: idx, data: {
+        ...update,
+        content: file.name,
+        type: 'image',
+      }},
+    }, store.state.active, id)
+  },
+
   removeImage(store, id) {
     const node = store.db.data[id]
     const _attachments = {...node._attachments}

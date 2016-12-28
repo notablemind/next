@@ -213,12 +213,10 @@ export default class Document extends Component {
         globalStore={this.state.treed.globalStore}
         plugins={this.state.treed.config.plugins}
       />
-      <div className={css(styles.document)}>
-        <div className={css(styles.treedContainer) + ' Theme_basic'}>
-          <listView.Component
-            treed={this.state.treed}
-          />
-        </div>
+      <div className={css(styles.treedContainer) + ' Theme_basic'}>
+        <listView.Component
+          treed={this.state.treed}
+        />
       </div>
     </div>
   }
@@ -238,14 +236,7 @@ const styles = StyleSheet.create({
     color: '#ccc',
   },
 
-  document: {
-    flex: 1,
-    alignItems: 'center',
-    overflow: 'auto',
-  },
-
   treedContainer: {
-    width: 1000,
-    maxWidth: '100%',
+    flex: 1,
   },
 })

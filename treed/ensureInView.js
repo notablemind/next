@@ -9,7 +9,6 @@ const getScrollParent = node => {
 
 let scrolling = null
 const smoothScroll = (node, target) => {
-  // console.log('plz scroll', node, target)
   clearInterval(scrolling)
   scrolling = setInterval(() => {
     const past = node.scrollTop
@@ -28,7 +27,6 @@ const smoothScroll = (node, target) => {
 }
 
 window.addEventListener('wheel', () => {
-  console.log('wheel')
   clearInterval(scrolling)
 })
 

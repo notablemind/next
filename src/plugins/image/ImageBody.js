@@ -117,6 +117,8 @@ export default class ImageBody extends Component {
   }
 
   render() {
+    const hasImage = this.props.node.types.image &&
+      this.props.node.types.image.attachmentId
     return <div
       className={css(styles.container)}
       ref={n => this._node = n}
@@ -124,7 +126,7 @@ export default class ImageBody extends Component {
       onMouseLeave={this.onOut}
     >
       {this.renderImage()}
-      {this.state.hover &&
+      {this.state.hover && hasImage &&
         <div
           onMouseDown={this.onRemove}
           className={css(styles.remove)}

@@ -35,8 +35,11 @@ export default class Dragger {
         } else {
           continue
         }
-        break
+        return
       }
+      const i = this.measurements.length - 1
+      const box = this.measurements[i][1]
+      this.showAfter(i, box.bottom, box.left, box.width)
     } : (top) => {
       for (let i=0; i<this.measurements.length; i++) {
         if (this.measurements[i][1].bottom <= top) continue;
@@ -48,8 +51,11 @@ export default class Dragger {
         } else {
           continue
         }
-        break
+        return
       }
+      const i = this.measurements.length - 1
+      const box = this.measurements[i][1]
+      this.showAfter(i, box.bottom, box.left, box.width)
     }
   }
 

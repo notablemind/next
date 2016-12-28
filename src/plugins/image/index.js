@@ -19,6 +19,23 @@ export default {
       return true
     },
 
+    dropFileNew: (store, pid, idx, file) => {
+      if (!file.type.match(/^image\//)) return false
+      actions.createWithImage(store, pid, idx, file)
+      return true
+    },
+
+    dropFileOnto: (store, id, file) => {
+      if (!file.type.match(/^image\//)) return false
+      const node = store.db.data[id]
+      let extra = {type: 'image'}
+      if (!node.content.trim()) {
+        extra = {content: file.name, type: 'image'}
+      }
+      actions.setImage(store, id, file, extra)
+      return true
+    },
+
     // dropFile:
     // dropFileNew:
   },

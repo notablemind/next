@@ -218,6 +218,49 @@ const actions = {
       store.actions.setMode('insert')
     },
 
+    pasteFile(store: Store, file: any, type: string, filename: string) {
+      const fns = store.plugins.node.pasteFile
+      const handled = fns.some(fn => fn(
+        store, store.state.active, file, type, filename))
+      if (!handled) {
+        // TODO toast
+        console.warn("Don't know how to paste this file")
+      }
+    },
+
+    dropFile(store: Store, id: string, at: 'before' | 'after' | 'over', file: string) {
+      if (at === 'over') {
+        const fns = store.plugins.node.dropFileOnto
+        const handled = fns.some(fn => fn(store, id, file))
+        if (!handled) {
+          // TODO toast
+          console.warn("Don't know how to paste this file")
+        }
+        return
+      }
+
+      let pid, idx
+      if (id === store.state.root) {
+        pid = id
+        idx = 0
+      } else {
+        const node = store.db.data[id]
+        pid = node.parent
+        const sibs = store.db.data[pid].children
+        idx = sibs.indexOf(id)
+        if (at === 'after') {
+          idx += 1
+        }
+      }
+
+      const fns = store.plugins.node.dropFileNew
+      const handled = fns.some(fn => fn(store, pid, idx, file))
+      if (!handled) {
+        // TODO toast
+        console.warn("Don't know how to paste this file")
+      }
+    },
+
     startDragging(store: Store, id: string=store.state.active) {
       if (!store.actions.setActive(id)) {
         store.emit(store.events.nodeView(id))

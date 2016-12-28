@@ -1,5 +1,9 @@
 // @flow
 
+const getSubThing = (plugins, sub, thing) => plugins
+  .filter(p => p[sub] && p[sub][thing])
+  .map(p => p[sub][thing])
+
 const organizePlugins = plugins => {
   const classNameGetters = plugins.filter(p => p.node && p.node.className)
   .map(p => (node, store) => p.node.className(
@@ -28,8 +32,9 @@ const organizePlugins = plugins => {
       className: classNameGetters.length === 1 ? classNameGetters[0] :
         (classNameGetters.length === 0 ? null :
          (node, store) => classNameGetters.map(f => f(node, store)).join(' ')),
-      pasteFile: plugins.filter(p => p.node && p.node.pasteFile)
-        .map(p => p.node.pasteFile),
+      pasteFile: getSubThing(plugins, 'node', 'pasteFile'),
+      dropFileNew: getSubThing(plugins, 'node', 'dropFileNew'),
+      dropFileOnto: getSubThing(plugins, 'node', 'dropFileOnto'),
     },
   }
 }

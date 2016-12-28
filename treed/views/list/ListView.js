@@ -111,6 +111,8 @@ export default class ListView extends Component {
   }
 
   onDrag = (e: any) => {
+    this.dropAgain = true
+    console.log('dragginggg')
     e.stopPropagation()
     if (!this.dropper) {
       const measurements = getAllMeasurements(
@@ -136,7 +138,6 @@ export default class ListView extends Component {
       return
     }
     const {id, at} = this.dropper.getCurrent()
-    console.log('dropping', id, at)
     this.dropper.destroy()
     this.dropper = null
     const data = e.dataTransfer
@@ -152,9 +153,22 @@ export default class ListView extends Component {
     ) {
       this.state.store.actions.dropFile(id, at, data.files[0])
     } else {
+      // Find a text/plain, and go with it.
       // ummm what other cases are there?
       debugger
     }
+  }
+
+  stopDropping = (e: any) => {
+    this.dropAgain = false
+    if (!this.dropper) return
+    setTimeout(() => {
+      if (!this.dropAgain) {
+        console.log('stop dropping')
+        this.dropper.destroy()
+        this.dropper = null
+      }
+    }, 10)
   }
 
   render() {
@@ -164,14 +178,19 @@ export default class ListView extends Component {
       className={css(styles.container)}
       onDragOver={this.onDrag}
       onDrop={this.onDrop}
+      onDragLeave={this.stopDropping}
     >
-      <ListItem
-        id={root}
-        key={root}
-        depth={depth}
-        nodeMap={this._nodes}
-        store={this.state.store}
-      />
+      <div
+        className={css(styles.thinWidth)}
+      >
+        <ListItem
+          id={root}
+          key={root}
+          depth={depth}
+          nodeMap={this._nodes}
+          store={this.state.store}
+        />
+      </div>
     </div>
   }
 }
@@ -184,6 +203,15 @@ const findDepth = (id, data) => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    flex: 1,
+    overflow: 'auto',
+    alignSelf: 'stretch',
+  },
+
+  thinWidth: {
+    width: 1000,
+    maxWidth: '100%',
+    alignSelf: 'center',
   },
 })
 

@@ -276,17 +276,6 @@ export default class Treed {
     // throw new Error('not impl')
   }
 
-  pasteFile = (file: any, type: string, filename: string) => {
-    const fns = this.globalStore.plugins.node.pasteFile
-    const activeView = this.activeView()
-    const handled = fns.some(fn => fn(
-      activeView, activeView.state.active, file, type, filename))
-    if (!handled) {
-      // TODO toast
-      console.warn("Don't know how to paste this file")
-    }
-  }
-
   handlePaste = (e: any) => {
     const data = e.clipboardData
     if (data.items.length === 1) {
@@ -297,7 +286,7 @@ export default class Treed {
       }
       if (data.items[0].kind === 'file') {
         const file = data.items[0].getAsFile()
-        this.pasteFile(file, data.items[0].type, '<pasted file>')
+        this.activeView().actions.pasteFile(file, data.items[0].type, '<pasted file>')
         return
       }
     }
@@ -319,9 +308,10 @@ export default class Treed {
       }
       const type = data.items[1].type
       data.items[0].getAsString(filename => {
-        this.pasteFile(file, type, filename)
+        this.activeView().actions.pasteFile(file, type, filename)
       })
     } else {
+      // TODO other pastes
       debugger
     }
   }
