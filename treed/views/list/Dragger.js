@@ -27,11 +27,13 @@ export default class Dragger {
         const box = this.measurements[i][1]
         if (top - box.top < 5 && i > 0) {
           this.showBefore(i, box.top, box.left, box.width)
-        } else if (top > box.bottom - 5) {
+        } else if (top < box.bottom - 5) {
+          this.showOver(i, box)
+        } else if (!this.measurements[i][2]) {
           // TODO disallow the "after" for things w/ open children
           this.showAfter(i, box.bottom, box.left, box.width)
         } else {
-          this.showOver(i, box)
+          continue
         }
         break
       }
@@ -41,8 +43,10 @@ export default class Dragger {
         const box = this.measurements[i][1]
         if (top < box.top + box.height / 2 && i > 0) {
           this.showBefore(i, box.top, box.left, box.width)
-        } else {
+        } else if (!this.measurements[i][2]) {
           this.showAfter(i, box.bottom, box.left, box.width)
+        } else {
+          continue
         }
         break
       }

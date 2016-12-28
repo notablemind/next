@@ -8,12 +8,27 @@ import actions from './actions'
 
 import Dragger from './Dragger'
 
-const preWalk = (nodes, root, fn) => {
-  fn(root)
-  nodes[root].children.forEach(child => preWalk(nodes, child, fn))
+const preWalk = (nodes, root, viewType, fn) => {
+  const node = nodes[root]
+  const hasOpenChildren = node.children.length > 0 &&
+    !(node.views[viewType] && node.views[viewType].collapsed)
+  fn(root, hasOpenChildren)
+  if (hasOpenChildren) {
+    nodes[root].children.forEach(child => preWalk(nodes, child, viewType, fn))
+  }
 }
 
-const getAllMeasurements = (nodes, root, measurements) => {
+const getAllMeasurements = (nodes, divs, viewType, root) => {
+  const measurements = []
+  preWalk(
+    nodes,
+    root,
+    viewType,
+    (id, hasOpenChildren) => {
+      measurements.push([id, divs[id].getBoundingClientRect(), hasOpenChildren])
+    }
+  )
+  return measurements
 }
 
 export default class ListView extends Component {
@@ -67,13 +82,11 @@ export default class ListView extends Component {
 
   startDragging() {
     // TODO use offsets from the scrollTop, also manage the scrolliness
-    const measurements = []
-    preWalk(
+    const measurements = getAllMeasurements(
       this.state.store.db.data,
+      this._nodes,
+      this.state.store.state.viewType,
       this.state.store.state.root,
-      id => {
-        measurements.push([id, this._nodes[id].getBoundingClientRect()])
-      }
     )
     this.dragger = new Dragger(measurements)
     window.addEventListener('mousemove', this.dragger.onMove)
@@ -100,19 +113,15 @@ export default class ListView extends Component {
   onDrag = (e: any) => {
     e.stopPropagation()
     if (!this.dropper) {
-      const measurements = []
-      preWalk(
+      const measurements = getAllMeasurements(
         this.state.store.db.data,
+        this._nodes,
+        this.state.store.state.viewType,
         this.state.store.state.root,
-        id => {
-          measurements.push([id, this._nodes[id].getBoundingClientRect()])
-        }
       )
       this.dropper = new Dragger(measurements, true)
     }
     this.dropper.onMove(e)
-    // window.addEventListener('mousemove', this.dragger.onMove)
-    // window.addEventListener('mouseup', this.onDragUp, true)
   }
 
   onDrop = (e: any) => {
@@ -130,7 +139,6 @@ export default class ListView extends Component {
     console.log('dropping', id, at)
     this.dropper.destroy()
     this.dropper = null
-    // this.state.store.actions.dragTo(id, at)
   }
 
   render() {
