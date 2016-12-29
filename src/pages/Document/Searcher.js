@@ -68,13 +68,59 @@ export default class Searcher extends Component {
     if (e.keyCode === 27) {
       return this.props.onClose()
     }
+    switch (e.key) {
+      case 'ArrowUp':
+        this.goUp()
+        break
+      case 'ArrowDown':
+        this.goDown()
+        break
+      case 'Enter':
+        this.onEnter(e.metaKey)
+        break
+      default:
+        console.log(e.key)
+        return
+    }
+    e.preventDefault()
+  }
+
+  onEnter(rebase) {
+    const activeView = this.props.treed.activeView()
+    if (rebase) {
+      activeView.actions.rebase(this.state.results[this.state.selected]._id)
+      activeView.actions.setActive(this.state.results[this.state.selected]._id)
+    } else {
+      activeView.actions.setActive(this.state.results[this.state.selected]._id)
+    }
+    this.props.onClose()
+  }
+
+  goUp = () => {
+    if (this.state.selected < this.state.results.length - 1) {
+      this.setState({
+        selected: this.state.selected + 1
+      })
+    } else {
+      this.setState({selected: 0})
+    }
+  }
+
+  goDown = () => {
+    if (this.state.selected > 0) {
+      this.setState({
+        selected: this.state.selected - 1
+      })
+    } else {
+      this.setState({selected: this.state.results.length - 1})
+    }
   }
 
   renderResult(i) {
     const result = this.state.results[i]
     return <div
       key={i}
-      className={css(styles.result)}
+      className={css(styles.result, i == this.state.selected && styles.selected)}
     >
       {result.content}
     </div>
@@ -125,6 +171,10 @@ const styles = StyleSheet.create({
   result: {
     padding: '5px 10px',
     fontSize: '1.5em',
+  },
+
+  selected: {
+    backgroundColor: '#f0f0ff',
   },
 
   input: {
