@@ -57,10 +57,6 @@ export default class ListView extends Component {
     this._nodes = {}
   }
 
-  // drag
-  // drop
-  // hmmmmm so I want "onmousemove" while dragging
-
   componentDidMount() {
     this._sub.start()
   }

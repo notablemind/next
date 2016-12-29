@@ -11,7 +11,48 @@ const walk = (id, nodes, visit) => {
   children.forEach(id => walk(id, nodes, visit))
 }
 
-const trackChildren = (id, store, onChange) => {
+const trackChildren = (id, store, onChange, onChildChange) => {
+  let nodes = {}
+  const oldChildren = store.db.data[id].children
+  const listener = () => {
+    const children = store.db.data[id].children
+    if (children !== oldChildren) {
+      const nnodes = {}
+      // add new
+      children.forEach(child => {
+        if (nodes[child]) {
+          nnodes[child] = nodes[child]
+        } else {
+          let childNode = store.db.data[child]
+          const childListener = () => {
+            const newNode = store.db.data[child]
+            onChildChange(childNode, newNode)
+            childNode = newNode
+          }
+          nnodes[child] = childListener
+          store.addListener(store.events.node(child), childListener)
+        }
+      })
+      // remove old
+      for (let name in nodes) {
+        if (!nnodes[name]) {
+          store.removeListener(store.events.node(name), nodes[name])
+        }
+      }
+      nodes = nnodes
+      onChange()
+    }
+  }
+  store.addListener(store.events.node(id), listener)
+  return () => {
+    store.removeListener(store.events.node(id), listener)
+    for (let name in nodes) {
+      store.removeListener(store.events.node(name), nodes[name])
+    }
+  }
+}
+
+const trackDescendents = (id, store, onChange) => {
   const listeners = {}
   const nodes = {}
 
@@ -70,29 +111,9 @@ const trackChildren = (id, store, onChange) => {
   }
 }
 
-export default class TodoSummary extends Component {
-  constructor({store, node}: any) {
-    super()
-    this.state = {
-      total: 0,
-      done: 0,
-    }
-  }
-
-  componentDidMount() {
-    let total = 0
-    let done = 0
-
-    let _tout = null
-    const enqueueUpdate = () => {
-      if (_tout) return
-      _tout = setTimeout(() => {
-        _tout = null
-        this.setState({total, done})
-      })
-    }
-
-    this._unsub = trackChildren(this.props.node._id, this.props.store, (node, oldNode) => {
+/**
+ * handling descendents
+ *(node, oldNode) => {
       if (!oldNode) { // addition
         if (node.type === 'todo') {
           total += 1
@@ -130,11 +151,55 @@ export default class TodoSummary extends Component {
           }
         }
       }
-    })
+    }
+ *
+ */
+
+export default class TodoSummary extends Component {
+  constructor({store, node}: any) {
+    super()
+    this.state = {
+      total: 0,
+      done: 0,
+    }
+  }
+
+  componentDidMount() {
+    let total = 0
+    let done = 0
+
+    let _tout = null
+    const enqueueUpdate = () => {
+      if (_tout) return
+      _tout = setTimeout(() => {
+        _tout = null
+        this.setState({total, done})
+      })
+    }
+
+    this._unsub = trackChildren(this.props.node._id, this.props.store, this.update, this.update)
+    this.update()
   }
 
   componentWillUnmount() {
     this._unsub()
+  }
+
+  update = () => {
+    let total = 0
+    let done = 0
+    const id = this.props.node._id
+    const children = this.props.store.db.data[id].children
+    children.forEach(child => {
+      const node = this.props.store.db.data[child]
+      if (node.type === 'todo') {
+        total += 1
+        if (node.types.todo.done) {
+          done += 1
+        }
+      }
+    })
+    this.setState({total, done})
   }
 
   render() {

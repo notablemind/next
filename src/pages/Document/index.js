@@ -143,7 +143,11 @@ export default class Document extends Component {
       this.state.treed.destroy()
       this._unsub && this._unsub()
     }
-    const treed = window._treed = new Treed(treedPouch(this.state.db), plugins)
+    const treed = window._treed = new Treed(
+      treedPouch(this.state.db),
+      plugins,
+      this.props.params.id,
+    )
     this._unsub = treed.on(['node:root'], () => {
       document.title = treed.db.data.root.content
       this.onTitleChange(treed.db.data.root.content)

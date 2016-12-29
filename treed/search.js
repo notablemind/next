@@ -11,10 +11,15 @@ const searchShallow = (data, root, viewType, searchText, max) => {
       results.push(node)
       if (results.length > max) break
     }
+    if (node.children.length) {
+      queue = queue.concat(node.children)
+    }
+    /*
     if (node.children.length &&
         !(node.views[viewType] && node.views[viewType].collapsed)) {
       queue = queue.concat(node.children)
     }
+    */
     i += 1
   }
   return results

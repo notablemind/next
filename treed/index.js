@@ -17,6 +17,8 @@ import organizePlugins from './organizePlugins'
 import bindCommandProxies from './bindCommandProxies'
 import * as search from './search'
 
+import uuid from '../src/utils/uuid'
+
 type ViewId = number
 
 const defaultSettings = {
@@ -66,11 +68,12 @@ export default class Treed {
     activeView: number,
     plugins: any,
     clipboard: ?any,
+    runtimeId: string,
   }
   keyManager: KeyManager
   globalStore: GlobalStore
 
-  constructor(db: any, plugins: any) {
+  constructor(db: any, plugins: any, documentId: string) {
     this.emitter = new FlushingEmitter()
     this.commands = new Commandeger(commands, this.setActive)
     this.db = new Database(
@@ -92,6 +95,8 @@ export default class Treed {
       activeView: 1,
       plugins: {},
       clipboard: null,
+      runtimeId: uuid(),
+      documentId,
     }
     this.keyManager = new KeyManager([
       () => this.getCurrentKeyLayer(),
@@ -254,6 +259,33 @@ export default class Treed {
     const data = e.clipboardData
     if (data.items.length === 1) {
       if (data.items[0].kind === 'string') {
+        if (data.items[0].kind === 'string' && data.items[0].type === 'application/x-notablemind') {
+          data.items[0].getAsString(string => {
+            let data
+            try {
+              data = JSON.parse(string)
+            } catch (e) {
+              // TODO toast
+              console.warn('failed to parse json from string of length ' + string.length)
+              return
+            }
+            if (data.runtime === this.globalState.runtimeId) {
+              if (data.source === 'clipboard') {
+                this.activeView().actions.pasteAfter()
+                return
+              } else if (data.source === 'cut') {
+                // umm yeah this is the same I think
+                this.activeView().actions.pasteAfter()
+                return
+              }
+            } else {
+              const store = this.activeView()
+              store.actions.insertTreeAfter(store.state.active, data.tree)
+              return
+            }
+          })
+          return
+        }
         if (e.target.nodeName === 'INPUT') {
           return // allow normal pasting into text input
         }

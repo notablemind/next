@@ -54,6 +54,19 @@ type DefEditPos = EditPos | false
 // like an image, or something...
 type ClipboardContents = DumpedNode
 
+const copyToClipboard = (data) => {
+  const handler = e => {
+    document.removeEventListener('copy', handler)
+    console.log('copying')
+    for (let type in data) {
+      e.clipboardData.setData(type, data[type])
+    }
+    e.preventDefault()
+  }
+  document.addEventListener('copy', handler)
+  document.execCommand('copy')
+}
+
 const afterPos = (id, nodes, viewType) => {
   let pid = nodes[id].parent
   let idx
@@ -447,6 +460,18 @@ const actions = {
       store.actions.setNested(id, ['views', store.state.viewType, 'collapsed'], false)
     },
 
+    insertTreeAfter(store: Store, id: string, tree: any) {
+      let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
+      const nid = uuid()
+      const items = []
+      treeToItems(pid, nid, tree, items)
+      store.execute({
+        type: 'insertTree',
+        args: {id: nid, pid, ix: idx, items},
+      }, id, nid)
+      store.actions.setActive(nid, true)
+    },
+
     pasteAfter(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
       let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
@@ -459,7 +484,6 @@ const actions = {
           }
         }
         store.globalState.cut = null
-        // TODO can't do it after
         store.execute({
           type: 'move',
           args: {id, pid, expandParent: true, idx, viewType: store.state.viewType}
@@ -511,12 +535,23 @@ const actions = {
       store.actions.setActive(nid, true)
     },
 
-    copyNode(store: Store, id: string=store.state.active) {
+    copyNode(store: Store, id: string=store.state.active, copyToSystemClipboard: bool=true) {
       if (store.globalState.cut) {
         store.emit([store.events.nodeView(store.globalState.cut)])
         store.globalState.cut = null
       }
       store.globalState.clipboard = store.db.cloneTree(id)
+      if (copyToSystemClipboard) {
+        copyToClipboard({
+          'application/x-notablemind': JSON.stringify({
+            'source': 'clipboard',
+            'document': store.globalState.documentId,
+            'runtime': store.globalState.runtimeId,
+            // TODO copying attachments doesn't work cross-document.
+            'tree': store.globalState.clipboard,
+          }),
+        })
+      }
     },
 
     setCut(store: Store, id: string=store.state.active) {
@@ -524,6 +559,13 @@ const actions = {
         store.emit([store.events.nodeView(store.globalState.cut)])
       }
       store.globalState.cut = id // TODO multi-node
+      copyToClipboard({
+        'application/x-notablemind': JSON.stringify({
+          'source': 'cut',
+          'runtime': store.globalState.runtimeId,
+          'tree': store.db.cloneTree(id),
+        }),
+      })
       store.emit([store.events.nodeView(id)])
     },
 
@@ -531,7 +573,7 @@ const actions = {
       if (id === store.state.root) return
       const nid = nextActiveAfterRemoval(id, store.db.data, goUp)
       store.actions.setActive(nid, true)
-      store.actions.copyNode(id)
+      store.actions.copyNode(id, false)
       store.execute({
         type: 'remove',
         args: {id},

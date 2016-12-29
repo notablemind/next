@@ -35,7 +35,7 @@ export default class Searcher extends Component {
     }
   }
 
-  bouncyUpdate = debounce(() => {
+  update = () => {
     const newSearched = this.state.text.trim().toLowerCase()
     if (newSearched === this._lastSearched) return
     this._lastSearched = newSearched
@@ -45,10 +45,12 @@ export default class Searcher extends Component {
       results,
       selected: 0,
     })
-  }, 100)
+  }
+
+  bouncyUpdate = debounce(this.update, 100)
 
   componentDidMount() {
-    this.bouncyUpdate()
+    this.update()
   }
 
   onChange = (e: any) => {
@@ -79,7 +81,6 @@ export default class Searcher extends Component {
         this.onEnter(e.metaKey)
         break
       default:
-        console.log(e.key)
         return
     }
     e.preventDefault()
