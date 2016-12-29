@@ -18,6 +18,14 @@ export default {
     alias: 'focusNext',
   },
 
+  focusLastJumpPoint: {
+    shortcuts: {
+      normal: '\'',
+    },
+    description: 'focus last jump point',
+    alias: 'focusLastJumpOrigin',
+  },
+
   nextSibling: {
     shortcuts: {
       normal: 'alt+j, alt+down',

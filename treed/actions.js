@@ -149,11 +149,15 @@ const actions = {
       }
     },
 
-    setActive(store: Store, id: string) {
+    setActive(store: Store, id: string, nonJump: bool=false) {
       if (!id || !store.db.data[id]) return
       const old = store.state.active
       store.actions.setActiveView()
       if (id === old) return
+      if (!nonJump) {
+        // TODO maybe allow you to jump back multiple jumps?
+        store.state.lastJumpOrigin = old
+      }
       store.state.active = id
       if (store.state.mode === 'insert') {
         store.state.editPos = 'default' // do I care about this?
@@ -168,6 +172,13 @@ const actions = {
         store.events.nodeView(id),
       ])
       return true
+    },
+
+    focusLastJumpOrigin(store: Store) {
+      if (!store.state.lastJumpOrigin) {
+        return
+      }
+      store.actions.setActive(store.state.lastJumpOrigin)
     },
 
     setMode(store: Store, mode: Mode) {
@@ -401,7 +412,7 @@ const actions = {
       if (editState !== false) {
         store.actions.editAt(next, editState)
       } else {
-        store.actions.setActive(next)
+        store.actions.setActive(next, true)
       }
     },
 
@@ -410,7 +421,7 @@ const actions = {
       if (editState !== false) {
         store.actions.editAt(prev, editState)
       } else {
-        store.actions.setActive(prev)
+        store.actions.setActive(prev, true)
       }
     },
 
@@ -454,7 +465,7 @@ const actions = {
           args: {id, pid, expandParent: true, idx, viewType: store.state.viewType}
         }, id, id)
         store.emit([store.events.nodeView(id)])
-        store.actions.setActive(id)
+        store.actions.setActive(id, true)
         return
       }
       const nid = uuid()
@@ -464,7 +475,7 @@ const actions = {
         type: 'insertTree',
         args: {id: nid, pid, ix: idx, items},
       }, id, nid)
-      store.actions.setActive(nid)
+      store.actions.setActive(nid, true)
     },
 
     pasteBefore(store: Store, id: string=store.state.active) {
@@ -486,7 +497,7 @@ const actions = {
           args: {id, pid, expandParent: true, idx, viewType: store.state.viewType}
         }, id, id)
         store.emit([store.events.nodeView(id)])
-        store.actions.setActive(id)
+        store.actions.setActive(id, true)
         return
       }
 
@@ -497,7 +508,7 @@ const actions = {
         type: 'insertTree',
         args: {id: nid, pid, ix: idx, items},
       }, id, nid)
-      store.actions.setActive(nid)
+      store.actions.setActive(nid, true)
     },
 
     copyNode(store: Store, id: string=store.state.active) {
@@ -519,7 +530,7 @@ const actions = {
     remove(store: Store, id: string=store.state.active, goUp: boolean=false) {
       if (id === store.state.root) return
       const nid = nextActiveAfterRemoval(id, store.db.data, goUp)
-      store.actions.setActive(nid)
+      store.actions.setActive(nid, true)
       store.actions.copyNode(id)
       store.execute({
         type: 'remove',
@@ -573,7 +584,7 @@ const actions = {
         }
         tmp = node.parent
       }
-      store.actions.setActive(active)
+      store.actions.setActive(active, true)
     },
 
     movePrev(store: Store, id: string=store.state.active) {
@@ -613,7 +624,7 @@ const actions = {
       const sibs = store.db.data[store.db.data[id].parent].children
       const idx = sibs.indexOf(id)
       if (idx === sibs.length - 1) return
-      store.actions.setActive(sibs[idx + 1])
+      store.actions.setActive(sibs[idx + 1], true)
     },
 
     focusPrevSibling(store: Store, id: string=store.state.active) {
@@ -621,7 +632,7 @@ const actions = {
       const sibs = store.db.data[store.db.data[id].parent].children
       const idx = sibs.indexOf(id)
       if (idx === 0) return
-      store.actions.setActive(sibs[idx - 1])
+      store.actions.setActive(sibs[idx - 1], true)
     },
 
     focusFirstSibling(store: Store, id: string=store.state.active) {

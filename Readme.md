@@ -11,17 +11,20 @@ v2
 - live syncing / collaboration
 - offline-first
 - undo/redo
+- drag & drop reordering
+- drag & drop files
 
 # Features coming soon
 - multiple views (whiteboard view, mindmap view, gingko view, trello view?)
 - multiple panes
 - columns
 - multi-select
-- drag & drop reordering
-- drag & drop files
 - import/export html list, OPML, markdown
 - jupyter/ipython integration
 - emojis
+- search
+- markdown rendering
+- keyboard shortcut hinting
 
 # Technical features
 - multiple node types

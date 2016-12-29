@@ -112,7 +112,6 @@ export default class ListView extends Component {
 
   onDrag = (e: any) => {
     this.dropAgain = true
-    console.log('dragginggg')
     e.stopPropagation()
     if (!this.dropper) {
       const measurements = getAllMeasurements(
