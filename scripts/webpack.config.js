@@ -40,7 +40,10 @@ module.exports = {
     }, {
       test: /\.less$/,
       loader: 'style-loader!css-loader!less-loader',
-      include: [path.join(__dirname, '..', 'src')],
+      include: [
+        path.join(__dirname, '..', 'src'),
+        path.join(__dirname, '..', 'treed'),
+      ],
     }]
   }
 };

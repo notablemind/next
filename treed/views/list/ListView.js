@@ -177,6 +177,9 @@ export default class ListView extends Component {
     const menu = [{
       text: 'Copy',
       action: store.actions.copyNode,
+      children: [{
+        text: 'Mores',
+      }],
     }, {
       text: 'Paste',
       action: store.actions.pasteAfter,

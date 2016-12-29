@@ -3,6 +3,8 @@
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
+import './menu.less'
+
 const isParent = (child, parent) => {
   if (child === parent) return true
   while (child.parentNode && child !== document.body) {
@@ -55,7 +57,7 @@ export default class ContextMenu extends Component {
 
 const renderItem = (onClose, item, i) => (
   <div
-    className={css(styles.item)}
+    className={'menu__item ' + css(styles.item)}
     key={i}
   >
     <div
@@ -70,7 +72,7 @@ const renderItem = (onClose, item, i) => (
       {item.text}
     </div>
     {item.children ?
-      <div className={css(styles.subChildren)}>
+      <div className={'menu__children ' + css(styles.subChildren)}>
         {renderMenu(onClose, item.children)}
       </div> : null}
   </div>
@@ -91,7 +93,7 @@ const styles = StyleSheet.create({
   },
 
   menu: {
-    boxShadow: '0 0px 2px #555',
+    boxShadow: '0px 0px 1px #555',
     // border: '1px solid #ccc',
     minWidth: 200,
   },
