@@ -11,6 +11,7 @@ import makeKeyLayer from '../../../treed/keys/makeKeyLayer'
 import KeyManager from '../../../treed/keys/Manager'
 import Sidebar from './Sidebar'
 // import ThemeManager, {defaultThemeSettings} from './ThemeManager'
+import Searcher from './Searcher'
 
 import listView from '../../../treed/views/list'
 
@@ -71,6 +72,7 @@ export default class Document extends Component {
     super()
     this.state = {
       db: new PouchDB('doc_' + props.params.id),
+      searching: false,
       treed: null,
     }
 
@@ -103,6 +105,11 @@ export default class Document extends Component {
       description: 'Redo the last action',
       action: () => this.state.treed && this.state.treed.activeView().redo(),
     },
+    search: {
+      shortcut: '/, cmd+f',
+      description: 'Search',
+      action: () => this.setState({searching: true}),
+    },
   }
 
   onDrag = (e: any) => {
@@ -124,6 +131,7 @@ export default class Document extends Component {
   }
 
   onKeyDown = (e: any) => {
+    if (this.state.searching) return
     if (this.state.treed) {
       this.state.treed.handleKey(e)
     }
@@ -218,6 +226,11 @@ export default class Document extends Component {
           treed={this.state.treed}
         />
       </div>
+      {this.state.searching &&
+        <Searcher
+          treed={this.state.treed}
+          onClose={() => this.setState({searching: false})}
+        />}
     </div>
   }
 }
