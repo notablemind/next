@@ -7,6 +7,7 @@ import ListItem from './ListItem'
 import actions from './actions'
 
 import Dragger from './Dragger'
+import ContextMenu from '../context-menu/ContextMenu'
 
 const preWalk = (nodes, root, viewType, fn) => {
   const node = nodes[root]
@@ -53,6 +54,7 @@ export default class ListView extends Component {
       }),
     )
     this.state.store = store
+    this.state.contextMenu = false
 
     this._nodes = {}
   }
@@ -166,6 +168,27 @@ export default class ListView extends Component {
     }, 10)
   }
 
+  onContextMenu = (e: any) => {
+    e.preventDefault()
+    const top = e.clientY + 5
+    const left = e.clientX + 5
+    const close = () => this.setState({contextMenu: false})
+    const store = this.state.store
+    const menu = [{
+      text: 'Copy',
+      action: store.actions.copyNode,
+    }, {
+      text: 'Paste',
+      action: store.actions.pasteAfter,
+    }]
+    this.setState({
+      contextMenu: {
+        pos: {top, left},
+        menu,
+      },
+    })
+  }
+
   render() {
     const root = this.state.store.state.root
     const depth = findDepth(root, this.state.store.db.data)
@@ -174,18 +197,27 @@ export default class ListView extends Component {
       onDragOver={this.onDrag}
       onDrop={this.onDrop}
       onDragLeave={this.stopDropping}
+      onContextMenu={this.onContextMenu}
     >
-      <div
-        className={css(styles.thinWidth)}
-      >
-        <ListItem
-          id={root}
-          key={root}
-          depth={depth}
-          nodeMap={this._nodes}
-          store={this.state.store}
-        />
+      <div className={css(styles.scroller)}>
+        <div
+          className={css(styles.thinWidth)}
+        >
+          <ListItem
+            id={root}
+            key={root}
+            depth={depth}
+            nodeMap={this._nodes}
+            store={this.state.store}
+          />
+        </div>
       </div>
+      {this.state.contextMenu &&
+        <ContextMenu
+          pos={this.state.contextMenu.pos}
+          menu={this.state.contextMenu.menu}
+          onClose={() => this.setState({contextMenu: null})}
+        />}
     </div>
   }
 }
@@ -197,10 +229,15 @@ const findDepth = (id, data) => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
     flex: 1,
-    overflow: 'auto',
     alignSelf: 'stretch',
+  },
+
+  scroller: {
+    flex: 1,
+    alignSelf: 'stretch',
+    overflow: 'auto',
+    padding: 20,
   },
 
   thinWidth: {
