@@ -1,5 +1,7 @@
 // @flow
 
+import {Component} from 'react'
+
 export type Node = any
 
 // TODO should I accomodate more types of contents?
@@ -88,6 +90,9 @@ export type GlobalStore = {
   getters: {[key: string]: Function},
   globalState: GlobalState,
   plugins: PluginSummary,
+  activeView: () => Store,
+  addNormalKeyLayer: (layer: any) => () => void,
+  on: (evts: Array<string>, fn: Function) => () => void,
 }
 
 export type Store = GlobalStore & {
@@ -95,32 +100,66 @@ export type Store = GlobalStore & {
   state: StoreState,
 }
 
+// Keys!
+
+export type PluginAction = {
+  shortcuts: {
+    [mode: string]: string,
+  },
+  description: string,
+  action: (store: Store, node: Node) => void,
+}
 
 // Plugins!
 
-export type PluginNodeConfig = {
-  dropFileNew?: (store: Store, pid: string, idx: number, file: File) => bool,
-  dropFileOnto: (store: Store, id: string, file: File) => bool,
-  pasteFile?: (store: Store, id: string, file: File, type: string, filename: string) => bool,
-}
-
 export type MenuResult = MenuItem | Array<MenuItem>
 
-export type PluginNodeTypeConfig<T> = {
+export type ColumnConfig = {
+  editable?: bool,
+  type?: string,
+}
+
+export type PluginNodeConfig = {|
+  className?: (pluginData: any, node: Node, store: Store) => string,
+  contextMenu?: (pluginData: any, node: Node, store: Store) => ?MenuResult,
+
+  dropFileNew?: (store: Store, pid: string, idx: number, file: File) => bool,
+  dropFileOnto?: (store: Store, id: string, file: File) => bool,
+  pasteFile?: (store: Store, id: string, file: File, type: string, filename: string) => bool,
+|}
+
+export type PluginNodeTypeConfig<T> = {|
   title: string,
   newSiblingsShouldCarryType?: bool,
   shortcut: string,
-  render: React$Component<*, *, *>,
+  render: any,
   defaultNodeConfig?: () => T,
   contextMenu?: (typeData: T, node: Node, store: Store) => ?MenuResult,
-}
+  actions?: {
+    [key: string]: PluginAction,
+  },
+  columns?: {
+    [columnId: string]: ColumnConfig,
+  },
+|}
 
-export type Plugin = {
+export type Plugin<T, S> = {|
   id: string,
   node?: PluginNodeConfig,
+  defaultGlobalConfig?: T,
+
+  init?: (globalPluginConfig: T, globalStore: GlobalStore) => S,
+  destroy?: (globalPluginState: S) => void,
+  leftSidePane?: any,
 
   nodeTypes?: {
     [key: string]: PluginNodeTypeConfig<*>,
   },
-}
+
+  view?: {
+    [viewType: string]: {
+      className?: (store: Store) => string,
+    },
+  },
+|}
 

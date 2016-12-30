@@ -1,13 +1,13 @@
-// @-flow
+// @flow
 
 import ImageBody from './ImageBody'
 import actions from './actions'
 
-import type plugin from '../types.js'
+import type {Plugin} from '../../../treed/types'
 
 const PLUGIN_ID = 'image'
 
-export default {
+const plugin: Plugin<void, void> = {
   id: PLUGIN_ID,
 
   node: {
@@ -91,3 +91,4 @@ export default {
   },
 }
 
+export default plugin

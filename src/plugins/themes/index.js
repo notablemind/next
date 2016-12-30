@@ -1,3 +1,4 @@
+// @flow
 
 import React from 'react'
 import './themes.less'
@@ -9,6 +10,8 @@ import defaultGlobalConfig from './defaultGlobalConfig'
 import type {Style, ThemeSettings} from './defaultGlobalConfig'
 
 import themeToCss, {makeClassNames} from './themeToCss'
+
+import type {Plugin} from '../../../treed/types'
 
 const PLUGIN_ID = 'themes'
 
@@ -36,7 +39,14 @@ const makeActions = (themeSettings, globalStore) => {
 // global plugin state -> transient state (default null)
 // plugin data -> `node.plugins[pluginId]`
 
-export default {
+type GlobalState = {
+  styleNode: any,
+  preview: (config: ThemeSettings) => void,
+  unsub: () => void,
+  removeKeyLayer: () => void,
+}
+
+const plugin: Plugin<ThemeSettings, GlobalState> = {
   id: PLUGIN_ID,
   defaultGlobalConfig,
   // defaultNodeData: null,
@@ -120,3 +130,4 @@ export default {
 
 }
 
+export default plugin

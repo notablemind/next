@@ -1,9 +1,12 @@
+// @flow
 
 import React from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import TodoBody from './TodoBody'
 import TodoSummary from './TodoSummary'
+
+import type {Plugin} from '../../../treed/types'
 
 /*
 
@@ -18,21 +21,11 @@ define a node type!
 
 */
 
-const dueStyle = date => {
-  const now = Date.now()
-  if (date - now < ONE_DAY) {
-    return styles.dueToday
-  }
-  if (date - now < 2 * ONE_DAY) {
-    return styles.dueTomorrow
-  }
-}
-
 const PLUGIN_ID = 'todos'
 
 // document config?
 // dunno what kinds of things would be configured
-export default {
+const plugin: Plugin<void, void> =  {
   id: PLUGIN_ID,
 
   nodeTypes: {
@@ -95,6 +88,5 @@ export default {
   },
 }
 
-const styles = StyleSheet.create({
-})
+export default plugin
 

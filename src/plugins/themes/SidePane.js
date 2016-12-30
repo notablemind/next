@@ -2,7 +2,7 @@
 
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
-import type ThemeSettings from './'
+import type {ThemeSettings} from './defaultGlobalConfig'
 
 
 const PLUGIN_ID = 'themes'
