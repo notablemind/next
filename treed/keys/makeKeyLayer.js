@@ -1,3 +1,4 @@
+// @flow
 
 import addKey from './addKey'
 
@@ -5,6 +6,7 @@ type Config = {
   [key: string]: {
     shortcut: string,
     action: Function,
+    description: string,
   },
 }
 

@@ -1,6 +1,9 @@
+// @-flow
 
 import ImageBody from './ImageBody'
 import actions from './actions'
+
+import type plugin from '../types.js'
 
 const PLUGIN_ID = 'image'
 
@@ -35,9 +38,6 @@ export default {
       actions.setImage(store, id, file, extra)
       return true
     },
-
-    // dropFile:
-    // dropFileNew:
   },
 
   nodeTypes: {

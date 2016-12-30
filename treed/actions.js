@@ -6,61 +6,20 @@ import uuid from '../src/utils/uuid'
 import * as nav from './nav'
 import * as move from './move'
 
-type Node = any
-type DumpedNode = Node & {
-  children: [DumpedNode],
-}
+import type {
+  Db,
+  Mode,
+  Node,
+  EditPos,
+  MenuItem,
+  StoreState,
+  GlobalState,
+  ClipboardContents,
+  GlobalStore,
+  Store,
+} from './types'
 
-type MenuItem = {
-  text: string,
-  action?: () => void,
-  checked?: bool,
-  disabled?: bool,
-  children?: Array<MenuItem>,
-}
-
-type Mode = 'normal' | 'insert' | 'visual'
-type GlobalStore = {
-  db: {
-    data: {[key: string]: Node},
-  },
-  actions: {[key: string]: Function},
-  execute: (command: {
-    type: string,
-    args: any,
-    preActive?: string,
-    postActive?: string,
-  }) => void,
-  emit: (evt: string) => void,
-  emitMany: (evts: Array<string>) => void,
-  events: {[key: string]: (...args: any) => string},
-  getters: {[key: string]: Function},
-  globalState: {
-    activeView: string,
-    plugins: {},
-    clipboard: ?DumpedNode,
-  },
-}
-
-type Store = GlobalStore & {
-  id: string,
-  state: {
-    root: string,
-    active: string,
-    mode: Mode,
-    lastEdited: string,
-    editPos: EditPos,
-    viewType: string,
-    selection: ?Array<string>,
-  },
-}
-
-type EditPos = 'start' | 'end' | 'default' | 'change'
-type DefEditPos = EditPos | false
-
-// TODO should I accomodate more types of contents?
-// like an image, or something...
-type ClipboardContents = DumpedNode
+export type DefEditPos = EditPos | false
 
 const copyToClipboard = (data) => {
   const handler = (e: any) => {
@@ -503,6 +462,7 @@ const actions = {
       let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
       const nid = uuid()
       const items = []
+      if (!store.globalState.clipboard) return
       treeToItems(pid, nid, store.globalState.clipboard, items)
       store.execute({
         type: 'insertTree',
@@ -543,6 +503,7 @@ const actions = {
       let idx = store.db.data[pid].children.indexOf(id)
       const nid = uuid()
       const items = []
+      if (!store.globalState.clipboard) return
       treeToItems(pid, nid, store.globalState.clipboard, items)
       store.execute({
         type: 'insertTree',
@@ -583,7 +544,7 @@ const actions = {
 
     openContextMenuForNode(store: Store, id: string, x: number, y: number) {
       const node = store.db.data[id]
-      const baseItems = [{
+      const baseItems: Array<MenuItem> = [{
         text: 'Zoom to here',
         disabled: node._id === store.state.root,
         action: () => store.actions.rebase(node._id),
@@ -601,11 +562,12 @@ const actions = {
         })
       }
       if (store.globalState.clipboard) {
+        const clipboard = store.globalState.clipboard
         baseItems.push({
           text: 'Paste copied item',
           action: () => store.actions.pasteClipboardAfter(id),
         })
-        if (store.globalState.clipboard.children.length) {
+        if (clipboard.children.length) {
           baseItems.push({
             text: 'Paste copied item w/o children',
             action: () => store.actions.pasteClipboardAfterWithoutChildren(id),
@@ -613,12 +575,14 @@ const actions = {
         }
       }
 
-      let menu = store.plugins.node.contextMenu.reduce((menu, fn) => {
+      let menu: Array<MenuItem> = store.plugins.node.contextMenu.reduce((menu, fn) => {
         const res = fn(node, store)
         if (Array.isArray(res)) {
           return menu.concat(res)
         } else if (res) {
           return menu.concat([res])
+        } else {
+          return menu
         }
       }, baseItems)
 

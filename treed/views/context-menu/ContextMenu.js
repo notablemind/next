@@ -5,6 +5,8 @@ import {css, StyleSheet} from 'aphrodite'
 
 import './menu.less'
 
+import type {MenuItem} from '../../types'
+
 const isParent = (child, parent) => {
   if (child === parent) return true
   while (child.parentNode && child !== document.body) {

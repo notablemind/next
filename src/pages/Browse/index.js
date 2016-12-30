@@ -82,6 +82,7 @@ export default class Browse extends Component {
         goDown: {
           shortcut: 'j, down',
           action: this.goDown,
+          description: 'go down',
         },
       }, 'browse.', {})
     ])
