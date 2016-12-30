@@ -1,27 +1,29 @@
-// @-flow
+// @flow
 
 import canonicalEventName from './canonicalEventName'
 import {MODS} from './codes'
 
-type Layer = {
-  prefixes: {[key: string]: true},
-  actions: {[key: string]: () => void},
-}
+import type {KeyLayer} from '../types'
+
+type Layer = KeyLayer | () => ?KeyLayer
 
 export default class KeyManager {
-  constructor(layers=[]) {
+  prefix: string
+  layers: Array<Layer>
+  prefixListeners: Array<Function>
+
+  constructor(layers: Array<Layer>=[]) {
     this.layers = layers
-    this.numLayers = 0
     this.prefix = ''
     this.prefixListeners = []
   }
 
-  addLayer = (layer) => {
+  addLayer = (layer: Layer) => {
     this.layers.push(layer)
     return () => this.removeLayer(layer)
   }
 
-  removeLayer = (layer) => {
+  removeLayer = (layer: Layer) => {
     this.layers = this.layers.filter(l => l !== layer)
   }
 
@@ -30,11 +32,11 @@ export default class KeyManager {
     return () => this.prefixListeners.splice(this.prefixListeners.indexOf(fn), 1)
   }
 
-  makeCompletionsList(firstLayer, i) {
+  makeCompletionsList(firstLayer: KeyLayer, i: number) {
     const completions = []
     for (let name in firstLayer.actions) {
       if (name.indexOf(this.prefix) === 0) {
-        completions.push(name)
+        completions.push(firstLayer.actions[name])
       }
     }
     this.layers.slice(i + 1).forEach(l => {
@@ -42,7 +44,7 @@ export default class KeyManager {
       if (!layer) return
       for (let name in layer.actions) {
         if (name.indexOf(this.prefix) === 0) {
-          completions.push(name)
+          completions.push(layer.actions[name])
         }
       }
     })
@@ -56,12 +58,13 @@ export default class KeyManager {
     }
   }
 
-  handle = (e) => {
+  handle = (e: any) => {
     if (MODS[e.keyCode]) {
       // just ignore modifiers
       return
     }
     const key = canonicalEventName(e)
+    if (!key) return
     const full = this.prefix + key
     const handled = this.layers.some((l, i) => {
       const layer = typeof l == 'function' ? l() : l
@@ -77,7 +80,7 @@ export default class KeyManager {
       if (layer.actions[full]) {
         // TODO do I need to only conditionally stop propagation n stuff?
         // if I'm gonna be capturing cmd+v then yes.
-        layer.actions[full]()
+        layer.actions[full].fn()
         this.clearPrefix()
         return true
       }

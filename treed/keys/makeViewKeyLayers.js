@@ -1,6 +1,10 @@
+// @flow
+
 import addKey from './addKey'
 
-export default (config, namePrefix, userShortcuts, store) => {
+import type {ViewActionConfig, Store, UserShortcuts} from '../types'
+
+export default (config: ViewActionConfig, namePrefix: string, userShortcuts: UserShortcuts, store: Store) => {
   const layers = {
     insert: {prefixes: {}, actions: {}},
     normal: {prefixes: {}, actions: {}},
@@ -16,14 +20,16 @@ export default (config, namePrefix, userShortcuts, store) => {
         if (!action) {
           console.error(`Trying to alias to a nonexistant action: ${config[name].alias}`)
         }
-      } else {
+      } else if (config[name].action) {
         let customAction = config[name].action
         if (!customAction) {
           console.error(`No action for ${name}`)
         }
         action = () => customAction(store)
+      } else {
+        throw new Error('Invalid shortcut config')
       }
-      addKey(layers[mode], shortcut, action)
+      addKey(layers[mode], shortcut, action, config[name].description)
     })
   })
   return layers

@@ -21,6 +21,7 @@ const makeActions = (themeSettings, globalStore) => {
     const istyle = themeSettings.individualStyles[key]
     actions[key] = {
       shortcut: 's ' + istyle.shortcut,
+      description: `Toggle ${istyle.name}`,
       action: () => {
         const store = globalStore.activeView()
         const id = store.state.active

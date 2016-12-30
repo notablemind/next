@@ -1,5 +1,8 @@
+// @flow
 
-export default {
+import type {ViewActionConfig} from '../../types'
+
+const actions: ViewActionConfig = {
   up: {
     shortcuts: {
       normal: 'k, up',
@@ -147,15 +150,16 @@ export default {
       normal: 'shift+tab, alt+shift+h, alt+shift+left',
       insert: 'shift+tab, alt+shift+h',
     },
-    descript: 'Un-indent',
+    description: 'Un-indent',
     alias: 'makeParentsNextSibling',
   },
 
   createBefore: {
     shortcuts: {
-      normal: 'O',
+      normal: 'O, alt+O',
     },
     alias: 'createBefore',
+    description: 'Create node before',
   },
 
   createAfter: {
@@ -163,6 +167,7 @@ export default {
       normal: 'o',
     },
     alias: 'createAfter',
+    description: 'Create node after',
   },
 
   createNextSibling: {
@@ -170,13 +175,7 @@ export default {
       normal: 'alt+o',
     },
     alias: 'createNextSibling',
-  },
-
-  createPrevSibling: {
-    shortcuts: {
-      normal: 'alt+O',
-    },
-    alias: 'createBefore',
+    description: 'Create node next sibling',
   },
 
   createBeforeNormal: {
@@ -184,6 +183,7 @@ export default {
       normal: 'ctrl+O',
     },
     alias: 'createBeforeNormal',
+    description: 'Create Text node before',
   },
 
   createAfterNormal: {
@@ -191,6 +191,7 @@ export default {
       normal: 'ctrl+o',
     },
     alias: 'createAfterNormal',
+    description: 'Create Text node after',
   },
 
   toggleCollapse: {
@@ -198,6 +199,7 @@ export default {
       normal: 'z',
     },
     alias: 'toggleCollapse',
+    description: 'Toggle collapse',
   },
 
   rebase: {
@@ -205,6 +207,7 @@ export default {
       normal: 'g d',
     },
     alias: 'rebase',
+    description: 'Zoom to node',
   },
 
   rebaseRoot: {
@@ -214,6 +217,7 @@ export default {
     action(store) {
       store.actions.rebase('root')
     },
+    description: 'Zoom to root',
   },
 
   rebaseUp: {
@@ -224,6 +228,7 @@ export default {
       const parent = store.db.data[store.state.root].parent
       store.actions.rebase(parent)
     },
+    description: 'Zoom to parent of current root',
   },
 
   moveDown: {
@@ -249,6 +254,7 @@ export default {
       normal: '{',
     },
     alias: 'focusFirstSibling',
+    description: 'Jump to first sibling',
   },
 
   focusLastSibling: {
@@ -256,6 +262,7 @@ export default {
       normal: '}',
     },
     alias: 'focusLastSibling',
+    description: 'Jump to last sibling',
   },
 
   focusLastVisibleChild: {
@@ -263,6 +270,7 @@ export default {
       normal: 'G',
     },
     alias: 'focusLastVisibleChild',
+    description: 'Jump to end of document',
   },
 
   focusRoot: {
@@ -270,6 +278,7 @@ export default {
       normal: 'g g',
     },
     alias: 'focusRoot',
+    description: 'Jump to top of document',
   },
 
   /*
@@ -284,3 +293,4 @@ export default {
  */
 }
 
+export default actions

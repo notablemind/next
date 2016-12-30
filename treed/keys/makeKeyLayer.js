@@ -21,7 +21,7 @@ export default (config: Config, namePrefix: string, userShortcuts: UserShortcuts
   }
   Object.keys(config).forEach(name => {
     const shortcut = userShortcuts[namePrefix + name] || config[name].shortcut
-    addKey(layer, shortcut, config[name].action)
+    addKey(layer, shortcut, config[name].action, config[name].description)
   })
   return layer
 }

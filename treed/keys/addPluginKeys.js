@@ -1,3 +1,5 @@
+// @-flow
+
 import addKey from './addKey'
 
 const addPluginKeys = (store, layers, plugins) => {
@@ -5,8 +7,8 @@ const addPluginKeys = (store, layers, plugins) => {
   const setNormalType = () => {
     store.actions.setNodeType(store.state.active, 'normal')
   }
-  addKey(layers.normal, `t n`, setNormalType)
-  addKey(layers.insert, `alt+t n`, setNormalType)
+  addKey(layers.normal, `t n`, setNormalType, 'Set type: Normal')
+  addKey(layers.insert, `alt+t n`, setNormalType, 'Set type: Normal')
   plugins.forEach(plugin => {
     if (plugin.nodeTypes) {
       Object.keys(plugin.nodeTypes).forEach(type => {
@@ -14,8 +16,9 @@ const addPluginKeys = (store, layers, plugins) => {
         const action = () => {
           store.actions.setNodeType(store.state.active, type)
         }
-        addKey(layers.normal, `t ${defn.shortcut}`, action)
-        addKey(layers.insert, `alt+t ${defn.shortcut}`, action)
+        const typeName = defn.title || type
+        addKey(layers.normal, `t ${defn.shortcut}`, action, `Set type: ${typeName}`)
+        addKey(layers.insert, `alt+t ${defn.shortcut}`, action, `Set type: ${typeName}`)
 
         if (defn.actions) {
           Object.keys(defn.actions).forEach(action => {

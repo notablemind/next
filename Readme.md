@@ -15,9 +15,9 @@ v2
 - drag & drop files
 - quick-search
 - context menu
+- keyboard shortcut hinting
 
 # Features coming soon
-- keyboard shortcut hinting
 - multiple views (whiteboard view, mindmap view, gingko view, trello view?, search view)
 - multiple panes
 - columns

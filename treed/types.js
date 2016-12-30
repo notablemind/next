@@ -45,9 +45,7 @@ export type PluginSummary = {
     contextMenu: Array<Function>,
   },
   nodeTypes: {
-    [key: string]: {
-      defaultNodeConfig?: () => any,
-    },
+    [key: string]: PluginNodeTypeConfig<*>,
   },
 }
 
@@ -102,12 +100,38 @@ export type Store = GlobalStore & {
 
 // Keys!
 
-export type PluginAction = {
+export type UserShortcuts = {}
+
+export type KeyLayerAction = {
+  fn: Function,
+  description: string,
+  original: string,
+}
+export type KeyLayer = {
+  prefixes: {[prefix: string]: true},
+  actions: {
+    [shortcut: string]: KeyLayerAction,
+  },
+}
+
+export type KeyAction = {|
   shortcuts: {
     [mode: string]: string,
   },
   description: string,
   action: (store: Store, node: Node) => void,
+|}
+
+export type ViewKeyAction = KeyAction | {|
+  shortcuts: {
+    [mode: string]: string,
+  },
+  description: string,
+  alias: string,
+|}
+
+export type ViewActionConfig = {
+  [actionName: string]: ViewKeyAction,
 }
 
 // Plugins!
@@ -128,20 +152,20 @@ export type PluginNodeConfig = {|
   pasteFile?: (store: Store, id: string, file: File, type: string, filename: string) => bool,
 |}
 
-export type PluginNodeTypeConfig<T> = {|
+export type PluginNodeTypeConfig<T> = {
   title: string,
   newSiblingsShouldCarryType?: bool,
   shortcut: string,
-  render: any,
+  render: ?any,
   defaultNodeConfig?: () => T,
   contextMenu?: (typeData: T, node: Node, store: Store) => ?MenuResult,
   actions?: {
-    [key: string]: PluginAction,
+    [key: string]: KeyAction,
   },
   columns?: {
     [columnId: string]: ColumnConfig,
   },
-|}
+}
 
 export type Plugin<T, S> = {|
   id: string,

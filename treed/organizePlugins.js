@@ -1,8 +1,18 @@
-// @-flow
+// @flow
 
-const getSubThing = (plugins, sub, thing) => plugins
+import type {PluginSummary, Plugin, PluginNodeTypeConfig} from './types'
+
+const getSubThing = (plugins: Array<Plugin<*, *>>, sub: string, thing: string) => plugins
   .filter(p => p[sub] && p[sub][thing])
   .map(p => p[sub][thing])
+
+const getPluginThing = (plugins: Array<Plugin<*, *>>, sub: string, thing: string) => plugins
+  .filter(p => p[sub] && p[sub][thing])
+  .map(p => (node, store) => p[sub][thing](
+    node.plugins[p.id],
+    node,
+    store
+  ))
 
 const typesContextMenu = (node, store) => {
   const children = Object.keys(store.plugins.nodeTypes).map(key => {
@@ -22,33 +32,28 @@ const typesContextMenu = (node, store) => {
   }
 }
 
-const organizePlugins = plugins => {
-  const classNameGetters = plugins.filter(p => p.node && p.node.className)
-  .map(p => (node, store) => p.node.className(
-    node.plugins[p.id],
-    node,
-    store
-  ))
-  const contextMenuFns = plugins.filter(p => p.node && p.node.contextMenu)
-  .map(p => (node, store) => p.node.contextMenu(
-    node.plugins[p.id],
-    node,
-    store
-  ))
 
-  const nodeTypes = {
+const organizePlugins = (plugins: Array<Plugin<*, *>>): PluginSummary => {
+  const classNameGetters = getPluginThing(plugins, 'node', 'className')
+  const contextMenuFns = getPluginThing(plugins, 'node', 'contextMenu')
+
+  const nodeTypes: {[key: string]: PluginNodeTypeConfig<any>} = {
     normal: {
       title: 'Text',
       newSiblingsShouldCarryType: true,
+      shortcut: 'n',
+      render: null,
       // TODO anything here?
     },
   }
   plugins.forEach(plugin => {
-    Object.keys(plugin.nodeTypes || {}).forEach(type => {
+    const pnodeTypes = plugin.nodeTypes
+    if (!pnodeTypes) return
+    Object.keys(pnodeTypes).forEach(type => {
       if (nodeTypes[type]) {
         console.error(`Multiple plugins want to own ${type}: ${plugin.id} is overriding`)
       }
-      nodeTypes[type] = plugin.nodeTypes[type]
+      nodeTypes[type] = pnodeTypes[type]
     })
   })
 
