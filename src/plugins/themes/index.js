@@ -90,14 +90,17 @@ export default {
       pluginData && makeClassNames(pluginData),
 
     contextMenu(pluginData, node, store) {
-      return Object.keys(store.getters.pluginConfig(PLUGIN_ID).individualStyles).map(name => ({
-        name,
-        checked: pluginData && pluginData[name],
-        action: () => store.actions.setPluginData(node._id, PLUGIN_ID, {
-          ...pluginData,
-          [name]: !(pluginData && pluginData[name])
-        }),
-      }))
+      return {
+        text: 'Styles',
+        children: Object.keys(store.getters.pluginConfig(PLUGIN_ID).individualStyles).map(name => ({
+          text: name,
+          checked: !!(pluginData && pluginData[name]),
+          action: () => store.actions.setPluginData(node._id, PLUGIN_ID, {
+            ...pluginData,
+            [name]: !(pluginData && pluginData[name])
+          }),
+        }))
+      }
     },
   },
 

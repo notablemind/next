@@ -23,8 +23,8 @@ type GlobalStore = {
     preActive?: string,
     postActive?: string,
   }) => void,
-  emit: Function,
-  emitMany: Function,
+  emit: (evt: string) => void,
+  emitMany: (evts: Array<string>) => void,
   events: {[key: string]: (...args: any) => string},
   getters: {[key: string]: Function},
   globalState: {
@@ -309,7 +309,7 @@ const actions = {
         // TODO test this
         if (pidx < idx) idx -= 1
         if (idx === pidx) {
-          store.emit([store.events.nodeView(did)])
+          store.emit(store.events.nodeView(did))
           store.actions.setMode('normal')
           return
         }
@@ -320,7 +320,7 @@ const actions = {
         type: 'move',
         args: {id: did, pid, expandParent: true, idx, viewType: store.state.viewType}
       }, did, did)
-      store.emit([store.events.nodeView(did)])
+      store.emit(store.events.nodeView(did))
       store.actions.setActive(did)
       store.actions.setMode('normal')
     },
@@ -472,26 +472,27 @@ const actions = {
       store.actions.setActive(nid, true)
     },
 
-    pasteAfter(store: Store, id: string=store.state.active) {
-      if (!id || !store.db.data[id]) return
+    pasteCutAfter(store: Store, id: string=store.state.active) {
       let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
-      if (store.globalState.cut) {
-        const id = store.globalState.cut
-        if (store.db.data[id].parent === pid) {
-          const cidx = store.db.data[pid].children.indexOf(id)
-          if (cidx < idx) {
-            idx -= 1
-          }
+      if (!store.globalState.cut) return
+      const cid = store.globalState.cut
+      if (store.db.data[cid].parent === pid) {
+        const cidx = store.db.data[pid].children.indexOf(cid)
+        if (cidx < idx) {
+          idx -= 1
         }
-        store.globalState.cut = null
-        store.execute({
-          type: 'move',
-          args: {id, pid, expandParent: true, idx, viewType: store.state.viewType}
-        }, id, id)
-        store.emit([store.events.nodeView(id)])
-        store.actions.setActive(id, true)
-        return
       }
+      store.globalState.cut = null
+      store.execute({
+        type: 'move',
+        args: {id: cid, pid, expandParent: true, idx, viewType: store.state.viewType}
+      }, cid, cid)
+      store.emit(store.events.nodeView(cid))
+      store.actions.setActive(cid, true)
+    },
+
+    pasteClipboardAfter(store: Store, id: string=store.state.active) {
+      let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
       const nid = uuid()
       const items = []
       treeToItems(pid, nid, store.globalState.clipboard, items)
@@ -502,29 +503,36 @@ const actions = {
       store.actions.setActive(nid, true)
     },
 
-    pasteBefore(store: Store, id: string=store.state.active) {
+    pasteClipboardAfterWithoutChildren(store: Store, id: string=store.state.active) {
+      let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
+      const nid = uuid()
+      const item = {
+        ...store.globalState.clipboard,
+        _id: nid,
+        parent: pid,
+        children: [],
+      }
+      store.execute({
+        type: 'insertTree',
+        args: {id: nid, pid, ix: idx, items: [item]},
+      }, id, nid)
+      store.actions.setActive(nid, true)
+    },
+
+    pasteAfter(store: Store, id: string=store.state.active) {
+      if (!id || !store.db.data[id]) return
+      if (store.globalState.cut) {
+        store.actions.pasteCutAfter(id)
+      } else if (store.globalState.clipboard) {
+        store.actions.pasteClipboardAfter(id)
+      }
+    },
+
+    pasteClipboardBefore(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
       if (!pid || id === 'root') return
       let idx = store.db.data[pid].children.indexOf(id)
-      if (store.globalState.cut) {
-        const id = store.globalState.cut
-        if (store.db.data[id].parent === pid) {
-          const cidx = store.db.data[pid].children.indexOf(id)
-          if (cidx < idx) {
-            idx -= 1
-          }
-        }
-        store.globalState.cut = null
-        store.execute({
-          type: 'move',
-          args: {id, pid, expandParent: true, idx, viewType: store.state.viewType}
-        }, id, id)
-        store.emit([store.events.nodeView(id)])
-        store.actions.setActive(id, true)
-        return
-      }
-
       const nid = uuid()
       const items = []
       treeToItems(pid, nid, store.globalState.clipboard, items)
@@ -535,9 +543,103 @@ const actions = {
       store.actions.setActive(nid, true)
     },
 
+    pasteCutBefore(store: Store, id: string=store.state.active) {
+      if (!id || !store.db.data[id]) return
+      let pid = store.db.data[id].parent
+      if (!pid || id === 'root') return
+      let idx = store.db.data[pid].children.indexOf(id)
+      if (!store.globalState.cut) return // TODO toast?
+      const cid = store.globalState.cut
+      if (store.db.data[cid].parent === pid) {
+        const cidx = store.db.data[pid].children.indexOf(cid)
+        if (cidx < idx) {
+          idx -= 1
+        }
+      }
+      store.globalState.cut = null
+      store.execute({
+        type: 'move',
+        args: {id: cid, pid, expandParent: true, idx, viewType: store.state.viewType}
+      }, cid, cid)
+      store.emit(store.events.nodeView(cid))
+      store.actions.setActive(cid, true)
+    },
+
+    pasteBefore(store: Store, id: string=store.state.active) {
+      if (store.globalState.cut) {
+        store.actions.pasteCutBefore(id)
+      } else {
+        store.actions.pasteClipboardBefore(id)
+      }
+    },
+
+    openContextMenuForNode(store: Store, id: string, x: number, y: number) {
+      const node = store.db.data[id]
+      const baseItems = [{
+        text: 'Copy',
+        action: () => store.actions.copyNode(node._id),
+      }, {
+        text: 'Cut',
+        action: () => store.actions.setCut(node._id),
+      }]
+      if (store.globalState.cut) {
+        baseItems.push({
+          text: 'Paste cut item',
+          action: () => store.actions.pasteCutAfter(id),
+        })
+      }
+      if (store.globalState.clipboard) {
+        baseItems.push({
+          text: 'Paste copied item',
+          action: () => store.actions.pasteClipboardAfter(id),
+        })
+        if (store.globalState.clipboard.children.length) {
+          baseItems.push({
+            text: 'Paste copied item w/o children',
+            action: () => store.actions.pasteClipboardAfterWithoutChildren(id),
+          })
+        }
+      }
+
+      let menu = store.plugins.node.contextMenu.reduce((menu, fn) => {
+        const res = fn(node, store)
+        if (Array.isArray(res)) {
+          return menu.concat(res)
+        } else if (res) {
+          return menu.concat([res])
+        }
+      }, baseItems)
+
+      const nodeType = store.plugins.nodeTypes[node.type]
+      if (nodeType && nodeType.contextMenu) {
+        const res = nodeType.contextMenu(node.types[node.type], node, store)
+        if (Array.isArray(res)) {
+          menu = menu.concat(res)
+        } else if (res) {
+          menu = menu.concat([res])
+        }
+      }
+
+      store.actions.setActive(id)
+      store.actions.openContextMenu({
+        top: y,
+        left: x,
+      }, menu, node)
+    },
+
+    openContextMenu(store: Store, pos: {top: number, left: number}, menu: Menu, node?: any) {
+      store.state.contextMenu = {pos, menu, node}
+      store.emit(store.events.contextMenu())
+    },
+
+    closeContextMenu(store: Store) {
+      store.state.contextMenu = null
+      store.emit(store.events.contextMenu())
+    },
+
     copyNode(store: Store, id: string=store.state.active, copyToSystemClipboard: bool=true) {
       if (store.globalState.cut) {
-        store.emit([store.events.nodeView(store.globalState.cut)])
+        store.emit(store.events.nodeView(store.globalState.cut))
         store.globalState.cut = null
       }
       store.globalState.clipboard = store.db.cloneTree(id)
@@ -556,7 +658,7 @@ const actions = {
 
     setCut(store: Store, id: string=store.state.active) {
       if (store.globalState.cut) {
-        store.emit([store.events.nodeView(store.globalState.cut)])
+        store.emit(store.events.nodeView(store.globalState.cut))
       }
       store.globalState.cut = id // TODO multi-node
       copyToClipboard({
@@ -566,7 +668,7 @@ const actions = {
           'tree': store.db.cloneTree(id),
         }),
       })
-      store.emit([store.events.nodeView(id)])
+      store.emit(store.events.nodeView(id))
     },
 
     remove(store: Store, id: string=store.state.active, goUp: boolean=false) {

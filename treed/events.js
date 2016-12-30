@@ -13,6 +13,7 @@ export default {
 
   view: {
     nodeView: (store, id) => `node:${id}:view:${store.id}`,
+    contextMenu: store => `context-menu:${store.id}`,
 
     activeNode: store => `active-node:${store.id}`,
     root: store => `root:${store.id}`,

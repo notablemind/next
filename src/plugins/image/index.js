@@ -42,6 +42,7 @@ export default {
 
   nodeTypes: {
     image: {
+      title: 'Image',
       newSiblingsShouldCarryType: false,
       shortcut: 'i',
 

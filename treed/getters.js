@@ -15,6 +15,7 @@ export default {
   },
 
   view: {
+    contextMenu: store => store.state.contextMenu,
     activeNode: store => store.db.data[store.state.active],
     root: store => store.state.root,
     active: store => store.state.active,

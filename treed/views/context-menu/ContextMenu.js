@@ -18,8 +18,8 @@ export default class ContextMenu extends Component {
   constructor() {
     super()
     this.state = {
-      offX: 0,
-      offY: 0,
+      offX: 5,
+      offY: 5,
     }
   }
 
@@ -61,15 +61,21 @@ const renderItem = (onClose, item, i) => (
     key={i}
   >
     <div
-      onMouseDown={e => {
+      onMouseDown={item.action && !item.disabled ? (e => {
         e.stopPropagation()
         e.preventDefault()
         onClose()
         item.action()
-      }}
-      className={css(styles.itemText, item.disabled && styles.itemTextDisabled)}
+      }) : null}
+      className={css(styles.itemTop)}
     >
-      {item.text}
+      <div className={css(styles.text, item.disabled && styles.itemTextDisabled)}>
+        {item.text}
+      </div>
+      {item.children && item.children.length ?
+        <div className={css(styles.childMarker)}>▸</div> : null}
+      {item.checked ?
+        <div className={css(styles.checked)}>✔</div> : null}
     </div>
     {item.children ?
       <div className={'menu__children ' + css(styles.subChildren)}>
@@ -102,6 +108,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: '100%',
     top: 0,
+    zIndex: 100000000000,
   },
 
   item: {
@@ -115,8 +122,16 @@ const styles = StyleSheet.create({
     },
   },
 
+  itemTop: {
+    flexDirection: 'row',
+  },
+
+  text: {
+    flex: 1,
+  },
+
   itemTextDisabled: {
-    fontStyle: 'italic',
+    // fontStyle: 'italic',
     color: '#999',
   },
 })

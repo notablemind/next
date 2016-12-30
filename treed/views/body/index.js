@@ -7,6 +7,7 @@ import Content from './Content'
 
 export default class Body extends Component {
   onClick = (e: any) => {
+    if (e.button !== 0) return
     e.preventDefault()
     e.stopPropagation()
     this.props.actions.edit(this.props.node._id)

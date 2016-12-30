@@ -46,15 +46,16 @@ export default class ListView extends Component {
         store.events.root(),
         store.events.mode(),
         store.events.activeView(),
+        store.events.contextMenu(),
       ],
       store => ({
         root: store.getters.root(),
         mode: store.getters.mode(),
         isActiveView: store.getters.isActiveView(),
+        contextMenu: store.getters.contextMenu(),
       }),
     )
     this.state.store = store
-    this.state.contextMenu = false
 
     this._nodes = {}
   }
@@ -170,26 +171,18 @@ export default class ListView extends Component {
 
   onContextMenu = (e: any) => {
     e.preventDefault()
-    const top = e.clientY + 5
-    const left = e.clientX + 5
-    const close = () => this.setState({contextMenu: false})
     const store = this.state.store
     const menu = [{
       text: 'Copy',
       action: store.actions.copyNode,
-      children: [{
-        text: 'Mores',
-      }],
-    }, {
-      text: 'Paste',
-      action: store.actions.pasteAfter,
+    // }, {
+      // text: 'Paste',
+      // action: store.actions.pasteAfter,
     }]
-    this.setState({
-      contextMenu: {
-        pos: {top, left},
-        menu,
-      },
-    })
+    store.actions.openContextMenu({
+      top: e.clientY,
+      left: e.clientX,
+    }, menu)
   }
 
   render() {
@@ -219,7 +212,7 @@ export default class ListView extends Component {
         <ContextMenu
           pos={this.state.contextMenu.pos}
           menu={this.state.contextMenu.menu}
-          onClose={() => this.setState({contextMenu: null})}
+          onClose={this.state.store.actions.closeContextMenu}
         />}
     </div>
   }

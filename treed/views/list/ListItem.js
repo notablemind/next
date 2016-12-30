@@ -70,6 +70,7 @@ export default class ListItem extends Component {
   }
 
   onMouseDown = e => {
+    if (e.button !== 0) return e.preventDefault()
     if (!this.state.isActive) return
     if (this.props.store.state.root === this.props.id) return
     const box = this._div.getBoundingClientRect()
@@ -80,6 +81,12 @@ export default class ListItem extends Component {
     e.preventDefault()
     e.stopPropagation()
     this.props.store.actions.startDragging(this.props.id)
+  }
+
+  onContextMenu = (e: any) => {
+    e.preventDefault()
+    e.stopPropagation()
+    this.props.store.actions.openContextMenuForNode(this.props.id, e.clientX, e.clientY)
   }
 
   render() {
@@ -98,6 +105,7 @@ export default class ListItem extends Component {
         ) + ' Node_top'}
         onMouseMove={this.onMouseMove}
         onMouseDownCapture={this.onMouseDown}
+        onContextMenu={this.onContextMenu}
         ref={node => {
           this._div = node
           this.props.nodeMap[this.props.id] = node

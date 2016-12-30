@@ -37,6 +37,7 @@ export default {
 
   nodeTypes: {
     todoSummary: {
+      title: 'Todo Summary',
       newSiblingsShouldCarryType: true,
       shortcut: '@',
 
@@ -44,6 +45,7 @@ export default {
     },
 
     todo: {
+      title: 'Todo',
       newSiblingsShouldCarryType: true,
       shortcut: 't',
 
