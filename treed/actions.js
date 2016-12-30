@@ -576,6 +576,10 @@ const actions = {
     openContextMenuForNode(store: Store, id: string, x: number, y: number) {
       const node = store.db.data[id]
       const baseItems = [{
+        text: 'Zoom to here',
+        disabled: node._id === store.state.root,
+        action: () => store.actions.rebase(node._id),
+      }, {
         text: 'Copy',
         action: () => store.actions.copyNode(node._id),
       }, {
@@ -619,6 +623,8 @@ const actions = {
           menu = menu.concat([res])
         }
       }
+
+      menu.sort((a, b) => (a.children ? 0 : 1) - (b.children ? 0 : 1))
 
       store.actions.setActive(id)
       store.actions.openContextMenu({

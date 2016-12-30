@@ -74,8 +74,8 @@ const renderItem = (onClose, item, i) => (
       </div>
       {item.children && item.children.length ?
         <div className={css(styles.childMarker)}>▸</div> : null}
-      {item.checked ?
-        <div className={css(styles.checked)}>✔</div> : null}
+      {item.checked != null ?
+        <div className={css(styles.checked, !item.checked && styles.notChecked)}>✔</div> : null}
     </div>
     {item.children ?
       <div className={'menu__children ' + css(styles.subChildren)}>
@@ -109,6 +109,10 @@ const styles = StyleSheet.create({
     left: '100%',
     top: 0,
     zIndex: 100000000000,
+  },
+
+  notChecked: {
+    color: '#eee',
   },
 
   item: {

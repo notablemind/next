@@ -55,6 +55,19 @@ export default {
         }
       },
 
+      contextMenu(typeData, node, store) {
+        if (typeData.attachmentId) {
+          return [{
+            text: 'Remove image',
+            action: () => actions.removeImage(store, node._id),
+          }, {
+            text: 'Full size',
+            checked: !!typeData.fullSize,
+            action: () => actions.toggleFullSize(store, node),
+          }]
+        }
+      },
+
       actions: {
         toggleFullSize: {
           shortcuts: {
@@ -64,11 +77,7 @@ export default {
           },
           description: 'Toggle "full size"',
           action(store, node) {
-            const config = node.types.image || {}
-            store.actions.setNested(node._id, ['types', 'image'], {
-              ...config,
-              fullSize: !config.fullSize,
-            })
+            actions.toggleFullSize(store, node)
           },
         },
       },

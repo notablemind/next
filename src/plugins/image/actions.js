@@ -29,6 +29,14 @@ const actions = {
     store.actions.update(id, {...update, ...extraData})
   },
 
+  toggleFullSize(store, node) {
+    const config = node.types.image || {}
+    store.actions.setNested(node._id, ['types', 'image'], {
+      ...config,
+      fullSize: !config.fullSize,
+    })
+  },
+
   createWithImage(store, pid, idx, file) {
     const id = uuid()
     const update = makeAttachmentUpdate({
