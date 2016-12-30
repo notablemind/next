@@ -12,6 +12,7 @@ export default class KeyManager {
     this.layers = layers
     this.numLayers = 0
     this.prefix = ''
+    this.prefixListeners = []
   }
 
   addLayer = (layer) => {
@@ -23,6 +24,39 @@ export default class KeyManager {
     this.layers = this.layers.filter(l => l !== layer)
   }
 
+  addPrefixListener(fn: Function) {
+    this.prefixListeners.push(fn)
+    return () => this.prefixListeners.splice(this.prefixListeners.indexOf(fn), 1)
+  }
+
+  makeCompletionsList(firstLayer, i) {
+    const completions = []
+    for (let name in firstLayer.actions) {
+      console.log(name)
+      if (name.indexOf(this.prefix) === 0) {
+        completions.push(name)
+      }
+    }
+    this.layers.slice(i + 1).forEach(l => {
+      const layer = typeof l === 'function' ? l() : l
+      if (!layer) return
+      for (let name in layer.actions) {
+        console.log(name)
+        if (name.indexOf(this.prefix) === 0) {
+          completions.push(name)
+        }
+      }
+    })
+    return completions
+  }
+
+  clearPrefix() {
+    this.prefix = ''
+    if (this.prefixListeners.length) {
+      this.prefixListeners.forEach(fn => fn('', []))
+    }
+  }
+
   handle = (e) => {
     if (MODS[e.keyCode]) {
       // just ignore modifiers
@@ -30,18 +64,22 @@ export default class KeyManager {
     }
     const key = canonicalEventName(e)
     const full = this.prefix + key
-    const handled = this.layers.some(l => {
+    const handled = this.layers.some((l, i) => {
       const layer = typeof l == 'function' ? l() : l
       if (!layer) return
       if (layer.prefixes[full]) {
         this.prefix = full + ' '
+        if (this.prefixListeners.length) {
+          const completions = this.makeCompletionsList(layer, i)
+          this.prefixListeners.forEach(fn => fn(this.prefix, completions))
+        }
         return true
       }
       if (layer.actions[full]) {
         // TODO do I need to only conditionally stop propagation n stuff?
         // if I'm gonna be capturing cmd+v then yes.
         layer.actions[full]()
-        this.prefix = ''
+        this.clearPrefix()
         return true
       }
     })
@@ -49,7 +87,7 @@ export default class KeyManager {
       e.preventDefault()
       e.stopPropagation()
     } else {
-      this.prefix = ''
+      this.clearPrefix()
     }
   }
 }

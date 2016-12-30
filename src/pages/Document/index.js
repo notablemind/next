@@ -12,6 +12,7 @@ import KeyManager from '../../../treed/keys/Manager'
 import Sidebar from './Sidebar'
 // import ThemeManager, {defaultThemeSettings} from './ThemeManager'
 import Searcher from './Searcher'
+import KeyCompleter from './KeyCompleter'
 
 import listView from '../../../treed/views/list'
 
@@ -230,6 +231,9 @@ export default class Document extends Component {
           treed={this.state.treed}
         />
       </div>
+      <KeyCompleter
+        treed={this.state.treed}
+      />
       {this.state.searching &&
         <Searcher
           treed={this.state.treed}
