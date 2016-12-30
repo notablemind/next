@@ -1,3 +1,4 @@
+// @-flow
 
 import canonicalEventName from './canonicalEventName'
 import {MODS} from './codes'
@@ -32,7 +33,6 @@ export default class KeyManager {
   makeCompletionsList(firstLayer, i) {
     const completions = []
     for (let name in firstLayer.actions) {
-      console.log(name)
       if (name.indexOf(this.prefix) === 0) {
         completions.push(name)
       }
@@ -41,7 +41,6 @@ export default class KeyManager {
       const layer = typeof l === 'function' ? l() : l
       if (!layer) return
       for (let name in layer.actions) {
-        console.log(name)
         if (name.indexOf(this.prefix) === 0) {
           completions.push(name)
         }

@@ -11,6 +11,14 @@ type DumpedNode = Node & {
   children: [DumpedNode],
 }
 
+type MenuItem = {
+  text: string,
+  action?: () => void,
+  checked?: bool,
+  disabled?: bool,
+  children?: Array<MenuItem>,
+}
+
 type Mode = 'normal' | 'insert' | 'visual'
 type GlobalStore = {
   db: {
@@ -55,7 +63,7 @@ type DefEditPos = EditPos | false
 type ClipboardContents = DumpedNode
 
 const copyToClipboard = (data) => {
-  const handler = e => {
+  const handler = (e: any) => {
     document.removeEventListener('copy', handler)
     console.log('copying')
     for (let type in data) {
@@ -398,7 +406,7 @@ const actions = {
       return nid
     },
 
-    createNextSibling(store: STore, id: string=store.state.active) {
+    createNextSibling(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
       if (!pid || id === 'root') return
@@ -633,7 +641,7 @@ const actions = {
       }, menu, node)
     },
 
-    openContextMenu(store: Store, pos: {top: number, left: number}, menu: Menu, node?: any) {
+    openContextMenu(store: Store, pos: {top: number, left: number}, menu: Array<MenuItem>, node?: any) {
       store.state.contextMenu = {pos, menu, node}
       store.emit(store.events.contextMenu())
     },

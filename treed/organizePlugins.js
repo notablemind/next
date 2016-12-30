@@ -1,4 +1,4 @@
-// @flow
+// @-flow
 
 const getSubThing = (plugins, sub, thing) => plugins
   .filter(p => p[sub] && p[sub][thing])

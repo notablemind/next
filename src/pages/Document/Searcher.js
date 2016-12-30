@@ -6,7 +6,7 @@ import {css, StyleSheet} from 'aphrodite'
 const debounce = (fn, wait) => {
   let last = Date.now()
   let _wait = null
-  return (...args) => {
+  return (...args: any) => {
     clearTimeout(_wait)
     if (Date.now() - last < wait) {
       _wait = setTimeout(() => {
@@ -19,20 +19,12 @@ const debounce = (fn, wait) => {
 }
 
 export default class Searcher extends Component {
-  constructor() {
-    super()
-    this.state = {
-      results: [],
-      selected: 0,
-      /* TODO maybe
-      results: {
-        local: [],
-        deep: [],
-        global: [],
-      },
-      */
-      text: '',
-    }
+  _results: any
+  _lastSearched: string
+  state: {
+    results: Array<any>,
+    selected: number,
+    text: string,
   }
 
   update = () => {
@@ -59,13 +51,13 @@ export default class Searcher extends Component {
     }, () => this.bouncyUpdate())
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: any, prevState: any) {
     if (prevState.results !== this.state.results) {
       this._results.scrollTop = this._results.scrollHeight
     }
   }
 
-  onKeyDown = e => {
+  onKeyDown = (e: any) => {
     e.stopPropagation()
     if (e.keyCode === 27) {
       return this.props.onClose()
@@ -86,7 +78,7 @@ export default class Searcher extends Component {
     e.preventDefault()
   }
 
-  onEnter(rebase) {
+  onEnter(rebase: bool) {
     const activeView = this.props.treed.activeView()
     if (rebase) {
       activeView.actions.rebase(this.state.results[this.state.selected]._id)
@@ -117,7 +109,7 @@ export default class Searcher extends Component {
     }
   }
 
-  renderResult(i) {
+  renderResult(i: number) {
     const result = this.state.results[i]
     return <div
       key={i}

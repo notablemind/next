@@ -5,7 +5,14 @@ import {css, StyleSheet} from 'aphrodite'
 
 import Content from '../../../treed/views/body/Content'
 
-export default props => {
+type Props = {
+  node: any,
+  store: any,
+  editState: any,
+  actions: any,
+}
+
+export default (props: Props) => {
   const todo = props.node.types.todo || {}
   return <div className={css(styles.container)}>
     <input

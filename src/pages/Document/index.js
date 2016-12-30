@@ -16,6 +16,7 @@ import KeyCompleter from './KeyCompleter'
 
 import listView from '../../../treed/views/list'
 
+/*
 const textImporters = [
   {
     name: 'opml',
@@ -53,6 +54,7 @@ const fileImporters = [
     },
   },
 ]
+*/
 
 const plugins = [
   require('../../plugins/themes').default,
@@ -66,6 +68,7 @@ export default class Document extends Component {
   state: {
     db: any,
     treed: ?Treed,
+    searching: bool,
   }
   _unsub: () => void
 

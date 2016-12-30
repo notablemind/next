@@ -156,6 +156,12 @@ const trackDescendents = (id, store, onChange) => {
  */
 
 export default class TodoSummary extends Component {
+  state: {
+    total: number,
+    done: number,
+  }
+  _unsub: () => void
+
   constructor({store, node}: any) {
     super()
     this.state = {

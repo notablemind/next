@@ -1,11 +1,18 @@
-// @flow
+// @-flow
 
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import Editor from './Editor'
 
-export default ({node, actions, editState, style}) => {
+type Props = {
+  node: any,
+  actions: any,
+  editState: any,
+  style?: any,
+}
+
+export default ({node, actions, editState, style}: Props) => {
   if (editState) {
     return <Editor
       style={style}

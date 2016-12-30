@@ -251,7 +251,7 @@ export default class Treed {
     // throw new Error('not impl')
   }
 
-  searchFromCurrentView(text) {
+  searchFromCurrentView(text: string) {
     return search.shallowFromRoot(this.activeView(), text)
   }
 

@@ -51,6 +51,7 @@ type Props = {
 type PouchChange = any // TODO can be polymorphic
 
 export default class Browse extends Component {
+  keyManager: KeyManager
   state: {
     sortBy: string,
     sortReverse: bool,
@@ -90,6 +91,10 @@ export default class Browse extends Component {
     if (nextProps.userDb && !this.props.userDb) {
       this.listen(nextProps.userDb)
     }
+  }
+
+  goDown = () => {
+    // TODO
   }
 
   onChange = (change: PouchChange) => {

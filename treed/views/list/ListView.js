@@ -32,12 +32,33 @@ const getAllMeasurements = (nodes, divs, viewType, root) => {
   return measurements
 }
 
+type MenuItem = any
+type Store = any
+
+type State = {
+  root: string,
+  mode: string,
+  isActiveView: bool,
+  contextMenu: ?{
+    menu: Array<MenuItem>,
+    pos: {top: number, left: number},
+  },
+  store: Store,
+}
+type Props = {
+  treed: any,
+}
+
 export default class ListView extends Component {
-  state: any
+  state: State
+  props: Props
   _sub: any
   _nodes: {[key: string]: any}
+  dragger: Dragger
+  dropper: Dragger
+  dropAgain: bool
 
-  constructor(props: any) {
+  constructor(props: Props) {
     super()
     const store = props.treed.registerView('root', 'list', actions)
     this._sub = store.setupStateListener(
@@ -69,7 +90,7 @@ export default class ListView extends Component {
     this.props.treed.unregisterView(this.state.store.id)
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: Props, prevState: State) {
     const nowDragging = this.state.mode === 'dragging' && this.state.isActiveView
     const prevDragging = prevState.mode === 'dragging' && prevState.isActiveView
     if (nowDragging && !prevDragging) {

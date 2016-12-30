@@ -16,9 +16,9 @@ type Change = {
 type ViewId = number
 
 type HistoryItem = {
-  view: ViewId,
-  preActive: string,
-  postActive: string,
+  view: ?ViewId,
+  preActive: ?string,
+  postActive: ?string,
   date: number,
   changes: Array<Change>,
 }
@@ -49,7 +49,7 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
     this.histpos -= 1
     const last = this.history[this.histpos]
     const changes = this._undo(last.changes, args)
-    if (last.view) {
+    if (last.view && last.preActive) {
       this.setActive(last.view, last.preActive)
     }
     return [].concat.apply([], changes.map(c => c.events || []))
@@ -60,7 +60,7 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
     const last = this.history[this.histpos]
     this.histpos += 1
     const changes = this._redo(last.changes, args)
-    if (last.view) {
+    if (last.view && last.postActive) {
       this.setActive(last.view, last.postActive)
     }
     return [].concat.apply([], changes.map(c => c.events || []))

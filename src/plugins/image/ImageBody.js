@@ -8,7 +8,21 @@ import Content from '../../../treed/views/body/Content'
 
 const urlCache = {}
 
+type Node = any
+type Props = {
+  node: any,
+  store: any,
+}
+
 export default class ImageBody extends Component {
+  props: Props
+  state: {
+    src: ?string,
+    error: ?any,
+    hover: bool,
+  }
+  _node: any
+
   constructor() {
     super()
     this.state = {
@@ -25,7 +39,7 @@ export default class ImageBody extends Component {
     }
   }
 
-  load(attachmentId, node) {
+  load(attachmentId: string, node: Node) {
     const key = node._id + ':' + attachmentId
     if (urlCache[key]) {
       return this.setState({src: urlCache[key]})
@@ -48,7 +62,7 @@ export default class ImageBody extends Component {
     )
   }
 
-  onAddFile = e => {
+  onAddFile = (e: any) => {
     console.log('adding file', e)
     const file = e.target.files[0]
     if (e.target.files.length !== 1) {
@@ -64,7 +78,7 @@ export default class ImageBody extends Component {
     // debugger
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps: Props) {
     const nextImage = nextProps.node.types.image
     if (nextImage.attachmentId !==
         this.props.node.types.image.attachmentId) {
@@ -103,15 +117,15 @@ export default class ImageBody extends Component {
     />
   }
 
-  onOver = e => {
+  onOver = (e: any) => {
     this.setState({hover: true})
   }
 
-  onOut = e => {
+  onOut = (e: any) => {
     this.setState({hover: false})
   }
 
-  onRemove = e => {
+  onRemove = (e: any) => {
     e.stopPropagation()
     actions.removeImage(this.props.store, this.props.node._id)
   }

@@ -9,5 +9,6 @@ export type Db<D> = {
   set: (id: string, attr: string, value: any) => Promise<void>,
   setNested: (id: string, attrs: Array<string>, value: any) => Promise<void>,
   delete: (doc: any) => Promise<void>,
+  getAttachment: (id: string) => Promise<any>,
 }
 

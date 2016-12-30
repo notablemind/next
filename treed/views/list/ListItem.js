@@ -60,7 +60,7 @@ export default class ListItem extends Component {
     }
   }
 
-  onMouseMove = e => {
+  onMouseMove = (e: any) => {
     if (!this.state.isActive || this.state.isDragging) return
     if (this.props.store.state.root === this.props.id) return
     const box = this._div.getBoundingClientRect()
@@ -69,7 +69,7 @@ export default class ListItem extends Component {
     this._div.style.setProperty('cursor', atEdge ? 'move' : deff, 'important')
   }
 
-  onMouseDown = e => {
+  onMouseDown = (e: any) => {
     if (e.button !== 0) return e.preventDefault()
     if (!this.state.isActive) return
     if (this.props.store.state.root === this.props.id) return

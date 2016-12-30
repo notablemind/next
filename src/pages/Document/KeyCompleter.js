@@ -1,4 +1,4 @@
-// @flow
+// @-flow
 
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
@@ -24,10 +24,11 @@ export default class KeyCompleter extends Component {
   }
 
   render() {
+    if (!this.state.prefix) return null
     return <div className={css(styles.container)}>
       Completing keys in the here: {this.state.prefix}
-      {this.state.completions.map(n => (
-        <div>
+      {this.state.completions.map((n, i) => (
+        <div key={i}>
           {n}
         </div>
       ))}
