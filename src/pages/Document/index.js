@@ -13,6 +13,7 @@ import Sidebar from './Sidebar'
 // import ThemeManager, {defaultThemeSettings} from './ThemeManager'
 import Searcher from './Searcher'
 import KeyCompleter from './KeyCompleter'
+import ViewTypeSwitcher from './ViewTypeSwitcher'
 
 import listView from '../../../treed/views/list'
 
@@ -153,7 +154,6 @@ export default class Document extends Component {
       this.props.params.id,
     )
     this._unsub = treed.on(['node:root'], () => {
-      document.title = treed.db.data.root.content
       this.onTitleChange(treed.db.data.root.content)
     })
     // TODO actually get the user shortcuts
@@ -161,8 +161,10 @@ export default class Document extends Component {
     const globalLayer = makeKeyLayer(this.keyLayerConfig, 'global', userShortcuts)
     treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
     treed.ready.then(() => {
+      this.props.setTitle(<ViewTypeSwitcher
+        globalStore={treed.globalStore}
+      />)
       if (treed.db.data.root) {
-        document.title = treed.db.data.root.content
         this.onTitleChange(treed.db.data.root.content)
       }
       // this.themeManager = new ThemeManager((treed.db.data.settings || {}).theme || defaultThemeSettings)
@@ -171,6 +173,8 @@ export default class Document extends Component {
   }
 
   onTitleChange(title: string) {
+    document.title = title
+    // this.props.setTitle(title)
     const id = this.props.params.id
     this.props.userDb.get(id).then(doc => {
       if (doc.title !== title) {

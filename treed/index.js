@@ -16,6 +16,7 @@ import KeyManager from './keys/Manager'
 import organizePlugins from './organizePlugins'
 import bindCommandProxies from './bindCommandProxies'
 import * as search from './search'
+import * as migrations from './migrations'
 
 import uuid from '../src/utils/uuid'
 
@@ -128,8 +129,17 @@ export default class Treed {
           modified: now,
           plugins: pluginSettings,
           views: {},
+          defaultViews: {
+            root: {
+              type: 'list',
+              settings: {},
+            },
+          },
           // TODO what other things go in settings?
         }])
+      } else if (!this.db.data.settings.version ||
+                 this.db.data.settings.version < migrations.version) {
+        return migrations.migrate(this.db)
       }
 
       /*

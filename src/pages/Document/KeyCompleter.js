@@ -28,6 +28,7 @@ export default class KeyCompleter extends Component {
 
   componentWillUnmount() {
     this._unsub()
+    clearTimeout(this._waiting)
   }
 
   render() {

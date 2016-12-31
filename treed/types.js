@@ -20,8 +20,24 @@ export type EditPos = 'start' | 'end' | 'default' | 'change'
 
 export type Mode = 'normal' | 'insert' | 'visual'
 
+export type Settings = {
+  plugins: any,
+  views: {
+    [viewType: string]: any,
+  },
+  defaultViews: {
+    [nodeId: string]: {
+      type: string,
+      settings: any,
+    },
+  },
+}
+
 export type Db<D> = {
-  data: {[key: string]: D},
+  data: {
+    settings: Settings,
+    [key: string]: D,
+  },
   save: (doc: any) => Promise<void>,
   saveMany: (docs: Array<any>) => Promise<void>,
   update: (id: string, doc: any) => Promise<void>,

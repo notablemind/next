@@ -11,7 +11,10 @@ export default {
     clipboard: globalStore => globalStore.globalState.clipboard,
 
     viewSettings: (globalStore, viewType) =>
-      globalStore.db.data.settings.views[viewType]
+      globalStore.db.data.settings.views[viewType],
+    defaultView: (globalStore, id) =>
+      globalStore.db.data.settings.defaultViews[id],
+
   },
 
   view: {

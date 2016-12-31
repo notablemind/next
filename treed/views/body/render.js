@@ -5,6 +5,9 @@ const rem = new Remarkable({
   linkify: true,
   breaks: true,
 })
+// TODO use different renderer for a single line block, vs a multi-line block
+// maybe
+rem.block.ruler.disable(['list', 'heading', 'deflist', 'lheading'])
 
 // TODO maybe use some sort of LRU cache?
 const renderCache = {}
