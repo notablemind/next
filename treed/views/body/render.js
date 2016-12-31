@@ -3,6 +3,7 @@ import Remarkable from 'remarkable'
 
 const rem = new Remarkable({
   linkify: true,
+  breaks: true,
 })
 
 // TODO maybe use some sort of LRU cache?
