@@ -8,8 +8,11 @@ import * as move from './move'
 
 import type {
   Db,
-  Mode,
   Node,
+} from './Database'
+
+import type {
+  Mode,
   EditPos,
   MenuItem,
   StoreState,

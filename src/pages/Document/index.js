@@ -151,6 +151,7 @@ export default class Document extends Component {
     const treed = window._treed = new Treed(
       treedPouch(this.state.db),
       plugins,
+      {},
       this.props.params.id,
     )
     this._unsub = treed.on(['node:root'], () => {

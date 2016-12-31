@@ -1,5 +1,39 @@
 // @flow
-import type {Db} from './types'
+
+export type Settings = {
+  plugins: any,
+  views: {
+    [viewType: string]: any,
+  },
+  defaultViews: {
+    [nodeId: string]: {
+      type: string,
+      settings: any,
+    },
+  },
+}
+
+export type Node = any
+
+export type DumpedNode = Node & {
+  children: [DumpedNode],
+}
+
+export type Db = {
+  data: {
+    settings: Settings,
+    [key: string]: any,
+  },
+  save: (doc: any) => Promise<void>,
+  saveMany: (docs: Array<any>) => Promise<void>,
+  update: (id: string, doc: any) => Promise<void>,
+  upsert: (id: string, fn: (doc: any) => any) => Promise<void>,
+  set: (id: string, attr: string, value: any) => Promise<void>,
+  setNested: (id: string, attrs: Array<string>, value: any) => Promise<void>,
+  delete: (doc: any) => Promise<void>,
+  getAttachment: (id: string, attachmentId: string) => Promise<any>,
+  cloneTree: (id: string) => DumpedNode,
+}
 
 type Action = {
   type: 'set',
@@ -42,8 +76,8 @@ const dumpNode = (root: string, nodes: any, keepIds: bool) => {
   }
 }
 
-export default class Database<D> {
-  db: Db<D>
+export default class Database {
+  db: Db
   plugins: any
   settings: any
   data: any

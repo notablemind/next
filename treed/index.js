@@ -19,6 +19,8 @@ import * as search from './search'
 import * as migrations from './migrations'
 
 import uuid from '../src/utils/uuid'
+import type {Plugin, Store, GlobalStore, GlobalState} from './types'
+import type {Db} from './Database'
 
 type ViewId = number
 
@@ -31,10 +33,11 @@ const defaultSettings = {
   },
 }
 
-type GlobalStore = any
-
-type Store = {
-  [key: string]: any
+type ViewTypes = {
+  [name: string]: {
+    Component: any, // react component
+    actions: any, // things
+  },
 }
 
 const bindStoreProxies = (store, config, sub) => {
@@ -54,8 +57,8 @@ const bindStoreProxies = (store, config, sub) => {
 export default class Treed {
   emitter: FlushingEmitter
   commands: Commandeger<*, *>
-  ready: Promise<void>
-  db: Database<*>
+  ready: Promise<*>
+  db: Database
   config: {
     events: any,
     getters: any,
@@ -65,17 +68,14 @@ export default class Treed {
   keys: any
   nextViewId: number
   viewStores: any
-  globalState: {
-    activeView: number,
-    plugins: any,
-    clipboard: ?any,
-    runtimeId: string,
-  }
+  globalState: GlobalState
   keyManager: KeyManager
   globalStore: GlobalStore
+  viewTypes: ViewTypes
 
-  constructor(db: any, plugins: any, documentId: string) {
+  constructor(db: Db, plugins: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string) {
     this.emitter = new FlushingEmitter()
+    this.viewTypes = viewTypes
     this.commands = new Commandeger(commands, this.setActive)
     this.db = new Database(
       db, plugins, id => this.emitter.emit('node:' + id),
@@ -93,6 +93,7 @@ export default class Treed {
     this.keys = {}
     this.nextViewId = 1
     this.globalState = {
+      cut: null,
       activeView: 1,
       plugins: {},
       clipboard: null,
@@ -174,7 +175,7 @@ export default class Treed {
 
     const events = {}
     const args: any = [this.db, events]
-    this.globalStore = {
+    const globalStore: any = {
       db: this.db,
       emit: this.emitter.emit,
       emitMany: this.emitter.emitMany,
@@ -197,9 +198,16 @@ export default class Treed {
 
       setupStateListener: (...args) => this.setupStateListener(this.globalStore, ...args),
     }
+    bindCommandProxies(globalStore, this.commands, this.emitter, args, null)
+    bindStoreProxies(globalStore, this.config, 'global')
+    this.globalStore = globalStore
+  }
 
-    bindCommandProxies(this.globalStore, this.commands, this.emitter, args, null)
-    bindStoreProxies(this.globalStore, this.config, 'global')
+  changeViewType(id: number, type: string, viewActions:any): any {
+    const store = this.viewStores[id]
+    store.state.viewType = type
+    this.keys[store.id] = makeViewKeyLayers(viewActions, `views.${type}.`, {}, store)
+    addPluginKeys(store, this.keys[store.id], this.config.plugins)
   }
 
   registerView(root: string, type: string, viewActions: any): any {
@@ -215,6 +223,10 @@ export default class Treed {
       mode: 'normal',
       minorMode: null,
       viewType: type,
+      contextMenu: null,
+      lastEdited: null,
+      lastJumpOrigin: null,
+      selection: null,
     }
 
     const events = {
@@ -352,10 +364,10 @@ export default class Treed {
   }
 
   setupStateListener = (
-    store: Store,
+    store: GlobalStore,
     reactElement: any,
-    eventsFromStore: (store: Store) => Array<string>,
-    stateFromStore: (store: Store) => {[key: string]: any},
+    eventsFromStore: (store: GlobalStore) => Array<string>,
+    stateFromStore: (store: GlobalStore) => {[key: string]: any},
     shouldResub?: ?()=>bool =null
   ) => {
     reactElement.state = stateFromStore(store)

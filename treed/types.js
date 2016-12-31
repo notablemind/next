@@ -1,8 +1,8 @@
 // @flow
 
 import {Component} from 'react'
-
-export type Node = any
+import Database from './Database'
+import type {Db, DumpedNode, Node, Settings} from './Database'
 
 // TODO should I accomodate more types of contents?
 // like an image, or something...
@@ -20,39 +20,6 @@ export type EditPos = 'start' | 'end' | 'default' | 'change'
 
 export type Mode = 'normal' | 'insert' | 'visual'
 
-export type Settings = {
-  plugins: any,
-  views: {
-    [viewType: string]: any,
-  },
-  defaultViews: {
-    [nodeId: string]: {
-      type: string,
-      settings: any,
-    },
-  },
-}
-
-export type Db<D> = {
-  data: {
-    settings: Settings,
-    [key: string]: D,
-  },
-  save: (doc: any) => Promise<void>,
-  saveMany: (docs: Array<any>) => Promise<void>,
-  update: (id: string, doc: any) => Promise<void>,
-  upsert: (id: string, fn: (doc: any) => any) => Promise<void>,
-  set: (id: string, attr: string, value: any) => Promise<void>,
-  setNested: (id: string, attrs: Array<string>, value: any) => Promise<void>,
-  delete: (doc: any) => Promise<void>,
-  getAttachment: (id: string) => Promise<any>,
-  cloneTree: (id: string) => DumpedNode,
-}
-
-export type DumpedNode = Node & {
-  children: [DumpedNode],
-}
-
 export type PluginSummary = {
   node: {
     pasteFile: Array<Function>,
@@ -66,7 +33,7 @@ export type PluginSummary = {
 }
 
 export type GlobalState = {
-  activeView: string,
+  activeView: number,
   plugins: {},
   clipboard: ?ClipboardContents,
   runtimeId: string,
@@ -78,8 +45,8 @@ export type StoreState = {
   root: string,
   active: string,
   mode: Mode,
-  lastEdited: string,
-  editPos: EditPos,
+  lastEdited: ?string,
+  editPos: ?EditPos,
   viewType: string,
   selection: ?Array<string>,
   lastJumpOrigin: ?string,
@@ -90,7 +57,7 @@ export type StoreState = {
 }
 
 export type GlobalStore = {
-  db: Db<Node>,
+  db: Database,
   actions: {[key: string]: Function},
   execute: (command: {
     type: string,
@@ -110,7 +77,7 @@ export type GlobalStore = {
 }
 
 export type Store = GlobalStore & {
-  id: string,
+  id: number,
   state: StoreState,
 }
 

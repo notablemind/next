@@ -1,15 +1,15 @@
 // @flow
 
-import type {Db} from './types'
+import type {Db} from './Database'
 type Events = any
 
-type Command<T, D> = {
-  apply: (args: T, db: Db<D>, events: Events) => ?{
+type Command<T> = {
+  apply: (args: T, db: Db, events: Events) => ?{
     old: any,
     prom?: Promise<void>,
     events?: Array<string>
   },
-  undo: (old: any, db: Db<D>, events: Events) => ?{
+  undo: (old: any, db: Db, events: Events) => ?{
     prom?: Promise<void>,
     events?: Array<string>,
   }
@@ -20,7 +20,7 @@ const walk = (id, nodes, visit) => {
   nodes[id].children.forEach(child => walk(child, nodes, visit))
 }
 
-const commands: {[key: string]: Command<*, *>} = {
+const commands: {[key: string]: Command<*>} = {
   update: {
     apply({id, update}, db, events) {
       const backdate = {}
