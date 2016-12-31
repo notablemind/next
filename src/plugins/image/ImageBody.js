@@ -12,6 +12,8 @@ type Node = any
 type Props = {
   node: any,
   store: any,
+  actions: any,
+  editState: any,
 }
 
 export default class ImageBody extends Component {

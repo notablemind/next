@@ -3,6 +3,8 @@
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
+import render from './render'
+
 import Editor from './Editor'
 
 type Props = {
@@ -12,22 +14,20 @@ type Props = {
   style?: any,
 }
 
-export default ({node, actions, editState, style}: Props) => {
-  if (editState) {
+export default (props: Props) => {
+  if (props.editState) {
     return <Editor
-      style={style}
-      node={node}
-      actions={actions}
-      editState={editState}
+      {...props}
       className={css(styles.text) + ' Node_input'}
     />
   }
-  return <div style={style} className={
+  return <div style={props.style} className={
     css(
       styles.text,
     ) + ' Node_rendered'
   }>
-    {node.content.trim() ? node.content : <div className={css(styles.empty)} />}
+    {props.node.content.trim() ? <div dangerouslySetInnerHTML={{__html: render(props.node.content)}}/> :
+      <div className={css(styles.empty)} />}
   </div>
 }
 
@@ -50,6 +50,5 @@ const styles = StyleSheet.create({
     height: '1.2em',
     padding: '4px 5px',
   },
-
 
 })
