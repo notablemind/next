@@ -4,6 +4,7 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 export default class KeyCompleter extends Component {
+  _waiting: number
   constructor(props) {
     super()
     this.state = {
@@ -15,7 +16,13 @@ export default class KeyCompleter extends Component {
   componentDidMount() {
     const {treed} = this.props
     this._unsub = treed.keyManager.addPrefixListener((prefix, completions) => {
-      this.setState({prefix, completions})
+      clearTimeout(this._waiting)
+      if (!prefix) {
+        return this.setState({prefix, completions})
+      }
+      this._waiting = setTimeout(() => {
+        this.setState({prefix, completions})
+      }, 300)
     })
   }
 
