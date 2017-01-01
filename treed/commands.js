@@ -20,7 +20,7 @@ const walk = (id, nodes, visit) => {
   nodes[id].children.forEach(child => walk(child, nodes, visit))
 }
 
-const commands: {[key: string]: Command<*>} = {
+const commands: {[key: string]: Command<any>} = {
   update: {
     apply({id, update}, db, events) {
       const backdate = {}

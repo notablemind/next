@@ -203,14 +203,20 @@ export default class Treed {
     this.globalStore = globalStore
   }
 
-  changeViewType(id: number, type: string, viewActions:any): any {
+  changeViewType(id: number, type: string): any {
+    if (!this.viewTypes[type]) {
+      throw new Error(`Unknown view type ${type}`)
+    }
     const store = this.viewStores[id]
     store.state.viewType = type
-    this.keys[store.id] = makeViewKeyLayers(viewActions, `views.${type}.`, {}, store)
+    this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].actions, `views.${type}.`, {}, store)
     addPluginKeys(store, this.keys[store.id], this.config.plugins)
   }
 
-  registerView(root: string, type: string, viewActions: any): any {
+  registerView(root: string, type: string): any {
+    if (!this.viewTypes[type]) {
+      throw new Error(`Unknown view type ${type}`)
+    }
     const id = this.nextViewId++
     if (!root || !this.db.data[root]) root = 'root'
 
@@ -250,7 +256,7 @@ export default class Treed {
     bindCommandProxies(store, this.commands, this.emitter, args, id)
     bindStoreProxies(store, this.config, 'view')
 
-    this.keys[store.id] = makeViewKeyLayers(viewActions, `views.${type}.`, {}, store)
+    this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].actions, `views.${type}.`, {}, store)
     addPluginKeys(store, this.keys[store.id], this.config.plugins)
 
     this.globalState.activeView = store.id
@@ -368,7 +374,7 @@ export default class Treed {
     reactElement: any,
     eventsFromStore: (store: GlobalStore) => Array<string>,
     stateFromStore: (store: GlobalStore) => {[key: string]: any},
-    shouldResub?: ?()=>bool =null
+    shouldResub?: ?(store: GlobalStore)=>bool =null
   ) => {
     reactElement.state = stateFromStore(store)
     let evts = eventsFromStore(store)

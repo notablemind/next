@@ -4,7 +4,6 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import ListItem from './ListItem'
-import actions from './actions'
 
 import Dragger from './Dragger'
 import ContextMenu from '../context-menu/ContextMenu'
@@ -47,6 +46,7 @@ type State = {
 }
 type Props = {
   treed: any,
+  store: any,
 }
 
 export default class ListView extends Component {
@@ -60,8 +60,7 @@ export default class ListView extends Component {
 
   constructor(props: Props) {
     super()
-    const store = props.treed.registerView('root', 'list', actions)
-    this._sub = store.setupStateListener(
+    this._sub = props.store.setupStateListener(
       this,
       store => [
         store.events.root(),
@@ -76,7 +75,6 @@ export default class ListView extends Component {
         contextMenu: store.getters.contextMenu(),
       }),
     )
-    this.state.store = store
 
     this._nodes = {}
   }
@@ -87,7 +85,7 @@ export default class ListView extends Component {
 
   componentWillUnmount() {
     this._sub.stop()
-    this.props.treed.unregisterView(this.state.store.id)
+    this.props.treed.unregisterView(this.props.store.id)
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
@@ -103,10 +101,10 @@ export default class ListView extends Component {
   startDragging() {
     // TODO use offsets from the scrollTop, also manage the scrolliness
     const measurements = getAllMeasurements(
-      this.state.store.db.data,
+      this.props.store.db.data,
       this._nodes,
-      this.state.store.state.viewType,
-      this.state.store.state.root,
+      this.props.store.state.viewType,
+      this.props.store.state.root,
     )
     this.dragger = new Dragger(measurements)
     window.addEventListener('mousemove', this.dragger.onMove)
@@ -123,11 +121,11 @@ export default class ListView extends Component {
   onMouseUp = () => {
     if (!this.dragger) return
     if (!this.dragger.current) {
-      this.state.store.actions.normalMode()
+      this.props.store.actions.normalMode()
       return
     }
     const {id, at} = this.dragger.getCurrent()
-    this.state.store.actions.dragTo(id, at)
+    this.props.store.actions.dragTo(id, at)
   }
 
   onDrag = (e: any) => {
@@ -135,10 +133,10 @@ export default class ListView extends Component {
     e.stopPropagation()
     if (!this.dropper) {
       const measurements = getAllMeasurements(
-        this.state.store.db.data,
+        this.props.store.db.data,
         this._nodes,
-        this.state.store.state.viewType,
-        this.state.store.state.root,
+        this.props.store.state.viewType,
+        this.props.store.state.root,
       )
       this.dropper = new Dragger(measurements, true)
     }
@@ -164,13 +162,13 @@ export default class ListView extends Component {
         data.items[0].kind === 'string') {
       const type = data.items[0].type
       data.items[0].getAsString(text => {
-        this.state.store.actions.dropString(id, at, text, type)
+        this.props.store.actions.dropString(id, at, text, type)
       })
     } else if (
       data.files.length === 1 &&
       data.items.length === 1
     ) {
-      this.state.store.actions.dropFile(id, at, data.files[0])
+      this.props.store.actions.dropFile(id, at, data.files[0])
     } else {
       // Find a text/plain, and go with it.
       // ummm what other cases are there?
@@ -192,7 +190,7 @@ export default class ListView extends Component {
 
   onContextMenu = (e: any) => {
     e.preventDefault()
-    const store = this.state.store
+    const store = this.props.store
     const menu = [{
       text: 'Copy',
       action: store.actions.copyNode,
@@ -207,8 +205,8 @@ export default class ListView extends Component {
   }
 
   render() {
-    const root = this.state.store.state.root
-    const depth = findDepth(root, this.state.store.db.data)
+    const root = this.props.store.state.root
+    const depth = findDepth(root, this.props.store.db.data)
     return <div
       className={css(styles.container)}
       onDragOver={this.onDrag}
@@ -225,7 +223,7 @@ export default class ListView extends Component {
             key={root}
             depth={depth}
             nodeMap={this._nodes}
-            store={this.state.store}
+            store={this.props.store}
           />
         </div>
       </div>
@@ -233,7 +231,7 @@ export default class ListView extends Component {
         <ContextMenu
           pos={this.state.contextMenu.pos}
           menu={this.state.contextMenu.menu}
-          onClose={this.state.store.actions.closeContextMenu}
+          onClose={this.props.store.actions.closeContextMenu}
         />}
     </div>
   }

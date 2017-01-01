@@ -15,7 +15,7 @@ import Searcher from './Searcher'
 import KeyCompleter from './KeyCompleter'
 import ViewTypeSwitcher from './ViewTypeSwitcher'
 
-import listView from '../../../treed/views/list'
+// import listView from '../../../treed/views/list'
 
 /*
 const textImporters = [
@@ -63,13 +63,26 @@ const plugins = [
   require('../../plugins/image').default,
 ]
 
+const viewTypes = {
+  list: require('../../../treed/views/list').default,
+  whiteboard: require('../../../treed/views/whiteboard').default,
+}
+
 type DbT = any
+
+const panesSetup = {
+  leaf: true,
+  type: 'list',
+  // width? or something... maybe view state?
+}
 
 export default class Document extends Component {
   state: {
     db: any,
     treed: ?Treed,
+    store: any,
     searching: bool,
+    viewType: string,
   }
   _unsub: () => void
 
@@ -79,6 +92,9 @@ export default class Document extends Component {
       db: new PouchDB('doc_' + props.params.id),
       searching: false,
       treed: null,
+      store: null,
+      viewType: 'whiteboard',
+      // panesSetup,
     }
 
     if (props.makeRemoteDocDb) {
@@ -140,7 +156,6 @@ export default class Document extends Component {
     if (this.state.treed) {
       this.state.treed.handleKey(e)
     }
-    // this.keyManager.handle(e)
   }
 
   makeTreed(db: any) {
@@ -151,7 +166,7 @@ export default class Document extends Component {
     const treed = window._treed = new Treed(
       treedPouch(this.state.db),
       plugins,
-      {},
+      viewTypes,
       this.props.params.id,
     )
     this._unsub = treed.on(['node:root'], () => {
@@ -165,11 +180,12 @@ export default class Document extends Component {
       this.props.setTitle(<ViewTypeSwitcher
         globalStore={treed.globalStore}
       />)
-      if (treed.db.data.root) {
-        this.onTitleChange(treed.db.data.root.content)
-      }
-      // this.themeManager = new ThemeManager((treed.db.data.settings || {}).theme || defaultThemeSettings)
-      this.setState({treed})
+      this.onTitleChange(treed.db.data.root.content)
+      const store = treed.registerView('root', this.state.viewType)
+      this.setState({
+        treed,
+        store,
+      })
     })
   }
 
@@ -228,15 +244,18 @@ export default class Document extends Component {
   }
 
   render() {
-    if (!this.state.treed) return <div className={css(styles.container, styles.loading)}>Loading...</div>
+    if (!this.state.treed) {
+      return <div className={css(styles.container, styles.loading)}>Loading...</div>
+    }
+    const Component = viewTypes[this.state.viewType].Component
     return <div className={css(styles.container)}>
       <Sidebar
         globalStore={this.state.treed.globalStore}
         plugins={this.state.treed.config.plugins}
       />
       <div className={css(styles.treedContainer) + ' Theme_basic'}>
-        <listView.Component
-          treed={this.state.treed}
+        <Component
+          store={this.state.store}
         />
       </div>
       <KeyCompleter
