@@ -4,41 +4,7 @@ import {css, StyleSheet} from 'aphrodite'
 
 import Body from '../body'
 import trySnapping from './trySnapping'
-
-const addMaybe = (map, ar, n) => {
-  if (map[n]) return
-  ar.push(n)
-  map[n] = true
-}
-
-const calcSnapLines = (myId, nodeMap, x, y, box) => {
-  const dx = x - box.left
-  const dy = y - box.top
-  const lefts = []
-  const ls = {}
-  const rights = []
-  const rs = {}
-  const tops = []
-  const ts = {}
-  const bottoms = []
-  const bs = {}
-
-  for (let id in nodeMap) {
-    if (id === myId) continue
-    const box = nodeMap[id].getBoundingClientRect()
-    addMaybe(ls, lefts, box.left + dx)
-    addMaybe(rs, rights, box.right + dx)
-    addMaybe(ts, tops, box.top + dy)
-    addMaybe(bs, bottoms, box.bottom + dy)
-    // TODO maybe have a fuzzy check instead?
-  }
-
-  lefts.sort()
-  rights.sort()
-  bottoms.sort()
-  tops.sort()
-  return {lefts, rights, tops, bottoms}
-}
+import calcSnapLines from './calcSnapLines'
 
 export default class WhiteboardNode extends Component {
   constructor(props) {
@@ -102,7 +68,6 @@ export default class WhiteboardNode extends Component {
       x, y,
       box
     )
-    console.log('snapLines', snapLines)
     this.setState({
       moving: {
         x, y,
@@ -149,7 +114,6 @@ export default class WhiteboardNode extends Component {
       })
       return
     }
-    console.log('mouseup', this.props.id)
     this.stopDragging()
 
     const orig = this.state.node.views.whiteboard ||
@@ -177,14 +141,8 @@ export default class WhiteboardNode extends Component {
     if (!x) x = 0
     if (!y) y = 0
     return <div
-      ref={n => {
-        if (n) {
-          this.div = n
-          this.props.nodeMap[this.props.id] = n
-        }
-      }}
+      ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
       className={css(styles.container)}
-      // onMouseMove={this.onMouseMove}
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
       style={{

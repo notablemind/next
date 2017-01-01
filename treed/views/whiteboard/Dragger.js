@@ -13,7 +13,10 @@ export default class Dragger extends Component {
   }
 
   onMouseDown = (e: any) => {
+    if (e.button !== 0) return
+    if (!e.metaKey) return
     e.preventDefault()
+    e.stopPropagation()
     if (this.props.onDragStart) {
       this.props.onDragStart()
     }

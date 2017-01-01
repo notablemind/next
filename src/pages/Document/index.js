@@ -117,12 +117,12 @@ export default class Document extends Component {
       action: () => hashHistory.push('/'),
     },
     undo: {
-      shortcut: 'u',
+      shortcut: 'u, cmd+z',
       description: 'Undo the last action',
       action: () => this.state.treed && this.state.treed.activeView().undo(),
     },
     redo: {
-      shortcut: 'R',
+      shortcut: 'R, cmd+shift+z',
       description: 'Redo the last action',
       action: () => this.state.treed && this.state.treed.activeView().redo(),
     },
