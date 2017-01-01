@@ -61,28 +61,30 @@ export default class Whiteboard extends Component {
     const {x, y, zoom} = this.state
     // TODO zoom?
     return <div className={css(styles.container)}>
-    <div className={css(styles.relative)}>
-      <Dragger
-        onDragStart={() => this.props.store.actions.normalMode()}
-        onDrag={(x, y) => this.setState({x, y})}
-        x={x}
-        y={y}
-        onDone={this.onDragDone}
-      />
-      <div className={css(styles.status)}>
-        {x}:{y}:: {zoom}
-      </div>
-      <div
-        className={css(styles.offset)}
-        style={{
-          transform: `translate(${x}px, ${y}px)`,
-        }}
-      >
-        <WhiteboardRoot
-          store={this.props.store}
+      <div className={css(styles.relative)}>
+        <Dragger
+          onDragStart={
+            () => this.props.store.actions.normalMode()
+          }
+          onDrag={(x, y) => this.setState({x, y})}
+          x={x}
+          y={y}
+          onDone={this.onDragDone}
         />
+        <div className={css(styles.status)}>
+          {x}:{y}:: {zoom}
+        </div>
+        <div
+          className={css(styles.offset)}
+          style={{
+            transform: `translate(${x}px, ${y}px)`,
+          }}
+        >
+          <WhiteboardRoot
+            store={this.props.store}
+          />
+        </div>
       </div>
-    </div>
       {this.state.contextMenu &&
         <ContextMenu
           pos={this.state.contextMenu.pos}

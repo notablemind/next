@@ -16,6 +16,7 @@ export default class WhiteboardRoot extends Component {
       }),
       store => store.getters.root() !== this.state.root,
     )
+    this.nodeMap = {}
   }
 
   componentDidMount() {
@@ -33,6 +34,7 @@ export default class WhiteboardRoot extends Component {
           id={child}
           key={child}
           store={this.props.store}
+          nodeMap={this.nodeMap}
         />
       ))}
     </div>

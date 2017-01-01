@@ -4,21 +4,29 @@ import {css, StyleSheet} from 'aphrodite'
 
 import Body from '../body'
 
-// const edgeMargin = 5
-const gridSize = 20
-
-/*
-const isAtEdge = (x, y, box) => {
-  return (
-    x - box.left < edgeMargin ||
-    y - box.top < edgeMargin ||
-    x > box.right - edgeMargin ||
-    y > box.bottom - edgeMargin
-  )
+const addMaybe = (map, ar, n) => {
+  if (map[n]) return
+  ar.push(n)
+  map[n] = true
 }
-*/
 
-const grid = (n, by) => Math.floor(n / by) * by
+const calcSnapLines = nodeMap => {
+  const verticals = []
+  const vs = {}
+  const horizontals = []
+  const hs = {}
+  for (let id in nodeMap) {
+    const box = nodeMap[id].getBoundingClientRect()
+    addMaybe(vs, verticals, box.left)
+    addMaybe(vs, verticals, box.right)
+    addMaybe(hs, horizontals, box.top)
+    addMaybe(hs, horizontals, box.bottom)
+    // TODO maybe have a fuzzy check instead
+  }
+  verticals.sort()
+  horizontals.sort()
+  return {verticals, horizontals}
+}
 
 export default class WhiteboardNode extends Component {
   constructor(props) {
@@ -49,45 +57,8 @@ export default class WhiteboardNode extends Component {
     this._sub.stop()
   }
 
-  /*
-  onMouseMove = (e: any) => {
-    if (this.state.moving) return
-    if (isAtEdge(e.clientX, e.clientY, this.div.getBoundingClientRect())) {
-      this.div.style.cursor = 'move'
-    } else {
-      this.div.style.cursor = 'default'
-    }
-  }
-  */
-
-  onMouseDown = (e: any) => {
-    if (e.button !== 0) return
-    /*
-    if (!isAtEdge(e.clientX, e.clientY, this.div.getBoundingClientRect())) {
-      return
-    }
-    */
-
-    e.stopPropagation()
-    e.preventDefault()
-    this.setState({
-      moving: {dx: 0, dy: 0, ox: e.clientX, oy: e.clientY, moved: false}
-    })
-    window.addEventListener('mousemove', this.onDrag, true)
-    window.addEventListener('mouseup', this.onMouseUp, true)
-  }
-
-  onDrag = (e: any) => {
-    const dx = grid(e.clientX - this.state.moving.ox, gridSize)
-    const dy = grid(e.clientY - this.state.moving.oy, gridSize)
-    this.setState({
-      moving: {
-        ...this.state.moving,
-        moved: this.state.moving.moved || (dx !== 0 || dy !== 0),
-        dx,
-        dy,
-      }
-    })
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextState !== this.state
   }
 
   stopDragging() {
@@ -98,7 +69,46 @@ export default class WhiteboardNode extends Component {
   onContextMenu = (e: any) => {
     e.preventDefault()
     e.stopPropagation()
-    this.props.store.actions.openContextMenuForNode(this.props.id, e.clientX, e.clientY)
+    this.props.store.actions.openContextMenuForNode(
+      this.props.id, e.clientX, e.clientY)
+  }
+
+  onMouseDown = (e: any) => {
+    if (e.button !== 0) return
+
+    e.stopPropagation()
+    e.preventDefault()
+
+    const {x, y} = this.state.node.views.whiteboard ||
+      {x: 0, y: 0}
+
+    this.setState({
+      moving: {
+        x, y,
+        ox: e.clientX,
+        oy: e.clientY,
+        moved: false,
+        snapLines: calcSnapLines(this.props.nodeMap),
+      }
+    })
+    window.addEventListener('mousemove', this.onDrag, true)
+    window.addEventListener('mouseup', this.onMouseUp, true)
+  }
+
+  onDrag = (e: any) => {
+    const dx = e.clientX - this.state.moving.ox
+    const dy = e.clientY - this.state.moving.oy
+    const {x, y} = this.state.node.views.whiteboard ||
+      {x: 0, y: 0}
+    this.setState({
+      moving: {
+        ...this.state.moving,
+        moved: this.state.moving.moved ||
+          (dx !== 0 || dy !== 0),
+        x: x + dx,
+        y: y + dy,
+      }
+    })
   }
 
   onMouseUp = () => {
@@ -113,15 +123,12 @@ export default class WhiteboardNode extends Component {
     }
     console.log('mouseup', this.props.id)
     this.stopDragging()
-    let {x, y} = this.state.node.views.whiteboard || {x: 0, y: 0}
-    if (!x) x = 0
-    if (!y) y = 0
-    let {dx, dy} = this.state.moving
-    dx = grid(dx, gridSize)
-    dy = grid(dy, gridSize)
-    if (dx !== 0 || dy !== 0) {
-      x += dx
-      y += dy
+
+    const orig = this.state.node.views.whiteboard ||
+      {x: 0, y: 0}
+    const {x, y} = this.state.moving
+
+    if (x !== orig.x || y !== orig.y) {
       this.props.store.actions.setNodeViewData(
         this.props.id,
         'whiteboard',
@@ -131,24 +138,27 @@ export default class WhiteboardNode extends Component {
 
     this.setState({
       moving: false,
-      handoff: {dx, dy},
+      handoff: {x, y},
     })
   }
 
   render() {
     const settings = this.state.node.views.whiteboard
-    let {x, y} = settings || {x: 0, y: 0}
+    let {x, y} = this.state.handoff || this.state.moving ||
+      this.state.node.views.whiteboard || {x: 0, y: 0}
     if (!x) x = 0
     if (!y) y = 0
-    const {dx, dy} = this.state.handoff || this.state.moving || {dx: 0, dy: 0}
     return <div
-      ref={n => this.div = n}
+      ref={n => {
+        this.div = n
+        this.props.nodeMap[this.props.id] = n
+      }}
       className={css(styles.container)}
       // onMouseMove={this.onMouseMove}
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
       style={{
-        transform: `translate(${x + dx}px, ${y + dy}px)`,
+        transform: `translate(${x}px, ${y}px)`,
         zIndex: this.state.moving ? 10000 : undefined,
       }}
     >
