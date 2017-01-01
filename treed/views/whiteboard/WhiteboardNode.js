@@ -3,6 +3,7 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import Body from '../body'
+import trySnapping from './trySnapping'
 
 const addMaybe = (map, ar, n) => {
   if (map[n]) return
@@ -13,55 +14,31 @@ const addMaybe = (map, ar, n) => {
 const calcSnapLines = (myId, nodeMap, x, y, box) => {
   const dx = x - box.left
   const dy = y - box.top
-  const verticals = []
-  const vs = {}
-  const horizontals = []
-  const hs = {}
+  const lefts = []
+  const ls = {}
+  const rights = []
+  const rs = {}
+  const tops = []
+  const ts = {}
+  const bottoms = []
+  const bs = {}
+
   for (let id in nodeMap) {
     if (id === myId) continue
     const box = nodeMap[id].getBoundingClientRect()
-    addMaybe(vs, verticals, box.left + dx)
-    addMaybe(vs, verticals, box.right + dx)
-    addMaybe(hs, horizontals, box.top + dy)
-    addMaybe(hs, horizontals, box.bottom + dy)
-    // TODO maybe have a fuzzy check instead
+    addMaybe(ls, lefts, box.left + dx)
+    addMaybe(rs, rights, box.right + dx)
+    addMaybe(ts, tops, box.top + dy)
+    addMaybe(bs, bottoms, box.bottom + dy)
+    // TODO maybe have a fuzzy check instead?
   }
-  verticals.sort()
-  horizontals.sort()
-  return {verticals, horizontals}
+
+  lefts.sort()
+  rights.sort()
+  bottoms.sort()
+  tops.sort()
+  return {lefts, rights, tops, bottoms}
 }
-
-const trySnapping = (x, y, width, height, {verticals, horizontals}) => {
-  for (let i=0; i < verticals.length; i++) {
-    if (verticals[i] > x - snapMargin && verticals[i] < x + snapMargin) {
-      x = verticals[i]
-      break
-    }
-    if (verticals[i] > x + width - snapMargin && verticals[i] < x + width + snapMargin) {
-      x = verticals[i] - width
-      break
-    }
-
-    if (verticals[i] > x + width + snapMargin) break
-  }
-
-  for (let i=0; i < horizontals.length; i++) {
-    if (horizontals[i] > y - snapMargin && horizontals[i] < y + snapMargin) {
-      y = horizontals[i]
-      break
-    }
-    if (horizontals[i] > y + height - snapMargin && horizontals[i] < y + height + snapMargin) {
-      y = horizontals[i] - height
-      break
-    }
-
-    if (horizontals[i] > y + height + snapMargin) break
-  }
-
-  return {x, y}
-}
-
-const snapMargin = 20
 
 export default class WhiteboardNode extends Component {
   constructor(props) {
@@ -90,6 +67,7 @@ export default class WhiteboardNode extends Component {
   componentWillUnmount() {
     this.stopDragging()
     this._sub.stop()
+    delete this.props.nodeMap[this.props.id]
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -118,6 +96,13 @@ export default class WhiteboardNode extends Component {
       {x: 0, y: 0}
 
     const box = this.div.getBoundingClientRect()
+    const snapLines = calcSnapLines(
+      this.props.id,
+      this.props.nodeMap,
+      x, y,
+      box
+    )
+    console.log('snapLines', snapLines)
     this.setState({
       moving: {
         x, y,
@@ -126,12 +111,7 @@ export default class WhiteboardNode extends Component {
         moved: false,
         width: box.width,
         height: box.height,
-        snapLines: calcSnapLines(
-          this.props.id,
-          this.props.nodeMap,
-          x, y,
-          box
-        ),
+        snapLines,
       }
     })
     window.addEventListener('mousemove', this.onDrag, true)
@@ -198,8 +178,10 @@ export default class WhiteboardNode extends Component {
     if (!y) y = 0
     return <div
       ref={n => {
-        this.div = n
-        this.props.nodeMap[this.props.id] = n
+        if (n) {
+          this.div = n
+          this.props.nodeMap[this.props.id] = n
+        }
       }}
       className={css(styles.container)}
       // onMouseMove={this.onMouseMove}
