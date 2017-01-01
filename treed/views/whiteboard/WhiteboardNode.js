@@ -10,23 +10,58 @@ const addMaybe = (map, ar, n) => {
   map[n] = true
 }
 
-const calcSnapLines = nodeMap => {
+const calcSnapLines = (myId, nodeMap, x, y, box) => {
+  const dx = x - box.left
+  const dy = y - box.top
   const verticals = []
   const vs = {}
   const horizontals = []
   const hs = {}
   for (let id in nodeMap) {
+    if (id === myId) continue
     const box = nodeMap[id].getBoundingClientRect()
-    addMaybe(vs, verticals, box.left)
-    addMaybe(vs, verticals, box.right)
-    addMaybe(hs, horizontals, box.top)
-    addMaybe(hs, horizontals, box.bottom)
+    addMaybe(vs, verticals, box.left + dx)
+    addMaybe(vs, verticals, box.right + dx)
+    addMaybe(hs, horizontals, box.top + dy)
+    addMaybe(hs, horizontals, box.bottom + dy)
     // TODO maybe have a fuzzy check instead
   }
   verticals.sort()
   horizontals.sort()
   return {verticals, horizontals}
 }
+
+const trySnapping = (x, y, width, height, {verticals, horizontals}) => {
+  for (let i=0; i < verticals.length; i++) {
+    if (verticals[i] > x - snapMargin && verticals[i] < x + snapMargin) {
+      x = verticals[i]
+      break
+    }
+    if (verticals[i] > x + width - snapMargin && verticals[i] < x + width + snapMargin) {
+      x = verticals[i] - width
+      break
+    }
+
+    if (verticals[i] > x + width + snapMargin) break
+  }
+
+  for (let i=0; i < horizontals.length; i++) {
+    if (horizontals[i] > y - snapMargin && horizontals[i] < y + snapMargin) {
+      y = horizontals[i]
+      break
+    }
+    if (horizontals[i] > y + height - snapMargin && horizontals[i] < y + height + snapMargin) {
+      y = horizontals[i] - height
+      break
+    }
+
+    if (horizontals[i] > y + height + snapMargin) break
+  }
+
+  return {x, y}
+}
+
+const snapMargin = 20
 
 export default class WhiteboardNode extends Component {
   constructor(props) {
@@ -82,13 +117,21 @@ export default class WhiteboardNode extends Component {
     const {x, y} = this.state.node.views.whiteboard ||
       {x: 0, y: 0}
 
+    const box = this.div.getBoundingClientRect()
     this.setState({
       moving: {
         x, y,
         ox: e.clientX,
         oy: e.clientY,
         moved: false,
-        snapLines: calcSnapLines(this.props.nodeMap),
+        width: box.width,
+        height: box.height,
+        snapLines: calcSnapLines(
+          this.props.id,
+          this.props.nodeMap,
+          x, y,
+          box
+        ),
       }
     })
     window.addEventListener('mousemove', this.onDrag, true)
@@ -98,15 +141,20 @@ export default class WhiteboardNode extends Component {
   onDrag = (e: any) => {
     const dx = e.clientX - this.state.moving.ox
     const dy = e.clientY - this.state.moving.oy
-    const {x, y} = this.state.node.views.whiteboard ||
+    let orig = this.state.node.views.whiteboard ||
       {x: 0, y: 0}
+    let {x, y} = trySnapping(
+      orig.x + dx,
+      orig.y + dy,
+      this.state.moving.width,
+      this.state.moving.height,
+      this.state.moving.snapLines)
     this.setState({
       moving: {
         ...this.state.moving,
         moved: this.state.moving.moved ||
           (dx !== 0 || dy !== 0),
-        x: x + dx,
-        y: y + dy,
+        x, y,
       }
     })
   }
