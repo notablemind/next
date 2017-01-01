@@ -6,6 +6,9 @@ import {css, StyleSheet} from 'aphrodite'
 import ContextMenu from '../context-menu/ContextMenu'
 import WhiteboardRoot from './WhiteboardRoot'
 
+import dragger from './dragger'
+import selectBoxes from './selectBoxes'
+
 type Props = {
   store: any,
 }
@@ -16,70 +19,13 @@ type State = {
   contextMenu: any,
   root: string,
   mode: string,
-}
-
-const selectBoxes = (x, y, w, h, boxes, store) => {
-  if (w < 0) {
-    x += w
-    w = -w
-  }
-  if (h < 0) {
-    y += h
-    h = -h
-  }
-  const oldSelected = store.state.selected || {}
-  const selected = {}
-  const events = []
-  boxes.forEach(([id, box]) => {
-    if (
-      (x < box.left && box.left < x + w ||
-      x < box.right && box.right < x + w ||
-      box.left < x && x < box.right) &&
-      (y < box.top && box.top < y + h ||
-      y < box.bottom && box.bottom < y + h ||
-      box.top < y && y < box.bottom)
-    ) {
-      if (!oldSelected[id]) {
-        events.push(store.events.nodeView(id))
-      }
-      selected[id] = true
-    } else if (oldSelected[id]) {
-      events.push(store.events.nodeView(id))
-    }
-  })
-  store.state.selected = selected
-  if (events.length) {
-    store.emitMany(events)
-  }
-}
-
-const dragger = (e, fns) => {
-  e.preventDefault()
-  e.stopPropagation()
-  const ox = e.clientX
-  const oy = e.clientY
-  const move = e => {
-    e.preventDefault()
-    e.stopPropagation()
-    fns.move(ox, oy, e.clientX - ox, e.clientY - oy)
-  }
-  const stop = e => {
-    fns.done(ox, oy, e.clientX - ox, e.clientY - oy)
-    cleanup()
-  }
-  const cleanup = () => {
-    window.removeEventListener('mousemove', move)
-    window.removeEventListener('mouseup', stop)
-  }
-  window.addEventListener('mousemove', move)
-  window.addEventListener('mouseup', stop)
-
-  return cleanup
+  selectBox: any,
 }
 
 export default class Whiteboard extends Component {
   props: Props
   state: State
+  nodeMap: any
   _sub: any
   _dragger: any
   constructor(props: Props) {
@@ -118,7 +64,7 @@ export default class Whiteboard extends Component {
     // TODO maybe save it or something?
   }
 
-  onMouseDown = e => {
+  onMouseDown = (e: any) => {
     if (e.button === 0 && e.metaKey) {
       e.preventDefault()
       e.stopPropagation()

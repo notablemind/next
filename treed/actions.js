@@ -111,6 +111,13 @@ const actions = {
       globalStore.execute({type: 'update', args: {id, update}})
     },
 
+    updateMany(globalStore: GlobalStore, ids: Array<string>, updates: Array<any>) {
+      globalStore.execute({
+        type: 'updateMany',
+        args: {ids, updates}
+      })
+    },
+
     setContent(globalStore: GlobalStore, id: string, content: string) {
       globalStore.actions.set(id, 'content', content)
     },

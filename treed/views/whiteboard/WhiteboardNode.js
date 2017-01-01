@@ -39,7 +39,10 @@ export default class WhiteboardNode extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return nextState !== this.state
+    return nextState !== this.state || (
+      !!this.state.isSelected && (
+        nextProps.dx !== this.props.dx ||
+        nextProps.dy !== this.props.dy))
   }
 
   stopDragging() {
@@ -55,6 +58,7 @@ export default class WhiteboardNode extends Component {
   }
 
   onMouseDown = (e: any) => {
+    if (this.state.isSelected) return this.props.onSelectedDown(e)
     if (e.button !== 0) return
 
     e.stopPropagation()
@@ -142,13 +146,14 @@ export default class WhiteboardNode extends Component {
       this.state.node.views.whiteboard || {x: 0, y: 0}
     if (!x) x = 0
     if (!y) y = 0
+    const {dx, dy} = this.props
     return <div
       ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
       className={css(styles.container)}
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
       style={{
-        transform: `translate(${x}px, ${y}px)`,
+        transform: `translate(${x + dx}px, ${y + dy}px)`,
         zIndex: this.state.moving ? 10000 : undefined,
       }}
     >
