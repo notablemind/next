@@ -24,7 +24,7 @@ export default class Body extends Component {
       editState && styles.editing,
       isCutting && styles.cutting,
       isDragging && styles.dragging,
-    ) + ` Node_body Node_body_level_${depth} ${pluginCls}`
+    ) + ` Node_body Node_body_level_${depth} ${pluginCls || ''}`
 
     const Component = this.props.node.type !== 'normal' &&
       this.props.store.plugins.nodeTypes[this.props.node.type] &&

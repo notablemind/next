@@ -14,10 +14,13 @@ export default class Dragger extends Component {
 
   onMouseDown = (e: any) => {
     e.preventDefault()
+    if (this.props.onDragStart) {
+      this.props.onDragStart()
+    }
     window.addEventListener('mousemove', this.onMouseMove, true)
     window.addEventListener('mouseup', this.onMouseUp, true)
-    this._sx = e.clientX
-    this._sy = e.clientY
+    this._sx = e.clientX - this.props.x
+    this._sy = e.clientY - this.props.y
   }
 
   onMouseMove = (e: any) => {
@@ -57,6 +60,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch',
     backgroundColor: 'white',
-    cursor: 'move',
+    // cursor: 'move',
   },
 })

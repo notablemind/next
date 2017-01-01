@@ -119,6 +119,10 @@ const actions = {
       globalStore.actions.setNested(id, ['plugins', plugin], data)
     },
 
+    setNodeViewData(globalStore: GlobalStore, id: string, view: string, data: any) {
+      globalStore.actions.setNested(id, ['views', view], data)
+    },
+
     setGlobalPluginConfig(globalStore: GlobalStore, plugin: string, config: any) {
       globalStore.actions.setNested('settings', ['plugins', plugin], config)
     },
