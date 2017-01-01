@@ -182,9 +182,14 @@ const styles = StyleSheet.create({
     height: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    // backgroundColor: 'white',
+    backgroundColor: '#eee',
+    borderRadius: 20,
+    opacity: .7,
 
     ':hover': {
       backgroundColor: '#eee',
+      opacity: 1,
     },
   },
 

@@ -201,6 +201,10 @@ export default class WhiteboardNode extends Component {
         actions={this.props.store.actions}
         store={this.props.store}
       />
+      {this.state.node.children.length > 0 &&
+        <div className={css(styles.kidBadge)}>
+          {this.state.node.children.length}
+        </div>}
     </div>
   }
 }
@@ -215,6 +219,18 @@ const styles = StyleSheet.create({
     width: 200,
     border: '1px solid #ccc',
     cursor: 'move',
+  },
+
+  kidBadge: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    padding: '2px 4px',
+    borderRadius: 10,
+    fontSize: 10,
+    color: '#aaa',
+    // backgroundColor: '#eee',
+    zIndex: 10,
   },
 })
 

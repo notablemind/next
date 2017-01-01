@@ -45,7 +45,6 @@ type State = {
   store: Store,
 }
 type Props = {
-  treed: any,
   store: any,
 }
 
@@ -85,7 +84,6 @@ export default class ListView extends Component {
 
   componentWillUnmount() {
     this._sub.stop()
-    this.props.treed.unregisterView(this.props.store.id)
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {

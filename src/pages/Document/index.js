@@ -180,6 +180,15 @@ export default class Document extends Component {
       this.props.setTitle(<ViewTypeSwitcher
         globalStore={treed.globalStore}
       />)
+      this.props.setTitle(
+        <div>
+        <button onClick={() => this.setViewType('list')}>
+          List
+        </button>
+        <button onClick={() => this.setViewType('whiteboard')}>
+          Whiteboard
+        </button>
+        </div>)
       this.onTitleChange(treed.db.data.root.content)
       const store = treed.registerView('root', this.state.viewType)
       this.setState({
@@ -187,6 +196,19 @@ export default class Document extends Component {
         store,
       })
     })
+  }
+
+  setViewType(type: string) {
+    if (this.state.viewType === type) return
+    if (this.state.treed) {
+      this.state.treed.changeViewType(
+        this.state.treed.globalState.activeView,
+        type,
+      )
+      this.setState({
+        viewType: type,
+      })
+    }
   }
 
   onTitleChange(title: string) {
