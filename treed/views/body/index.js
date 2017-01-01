@@ -14,13 +14,14 @@ export default class Body extends Component {
   }
 
   render() {
-    const {depth, isActive, editState, isCutting, isDragging} = this.props
+    const {depth, isActive, isSelected, editState, isCutting, isDragging} = this.props
     const pluginCls = this.props.store.plugins.node.className ?
       this.props.store.plugins.node.className(this.props.node, this.props.store) :
         ''
     const cls = css(
       styles.outline,
       isActive && styles.active,
+      isSelected && styles.selected,
       editState && styles.editing,
       isCutting && styles.cutting,
       isDragging && styles.dragging,
@@ -59,6 +60,10 @@ const styles = StyleSheet.create({
 
   active: {
     outline: '2px solid magenta',
+  },
+
+  selected: {
+    outline: '2px solid cyan',
   },
 
   editing: {

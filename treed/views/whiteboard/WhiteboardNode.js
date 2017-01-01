@@ -18,6 +18,8 @@ export default class WhiteboardNode extends Component {
       store => ({
         node: store.getters.node(props.id),
         isActive: store.getters.isActive(props.id),
+        isSelected: store.state.selected &&
+          store.state.selected[props.id],
         // isCutting: store.getters.isCutting(props.id),
         editState: store.getters.editState(props.id),
         handoff: null,
@@ -154,6 +156,7 @@ export default class WhiteboardNode extends Component {
         node={this.state.node}
         // depth={100}
         isActive={this.state.isActive}
+        isSelected={this.state.isSelected}
         // isCutting={this.state.isCutting}
         editState={this.state.editState}
         actions={this.props.store.actions}

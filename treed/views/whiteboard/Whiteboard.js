@@ -18,6 +18,32 @@ type State = {
   mode: string,
 }
 
+const selectBoxes = (x, y, w, h, boxes, store) => {
+  const oldSelected = store.state.selected || {}
+  const selected = {}
+  const events = []
+  boxes.forEach(([id, box]) => {
+    if (
+      (box.left < x && x < box.right ||
+        box.left < x + w && x + w < box.right)
+       &&
+      (box.top < y && y < box.bottom ||
+        box.top < y + h && y + h < box.bottom)
+    ) {
+      if (!oldSelected[id]) {
+        events.push(store.events.nodeView(id))
+      }
+      selected[id] = true
+    } else if (oldSelected[id]) {
+      events.push(store.events.nodeView(id))
+    }
+  })
+  store.state.selected = selected
+  if (events.length) {
+    store.emitMany(events)
+  }
+}
+
 const dragger = (e, fns) => {
   e.preventDefault()
   e.stopPropagation()
@@ -49,6 +75,7 @@ export default class Whiteboard extends Component {
   _dragger: any
   constructor(props: Props) {
     super()
+    this.nodeMap = {}
     this._sub = props.store.setupStateListener(
       this,
       store => [
@@ -99,26 +126,57 @@ export default class Whiteboard extends Component {
         },
       })
     } else if (e.button === 0) {
-      let moved = false
-      this._dragger = dragger(e, {
-        move: (x, y, w, h) => {
-          if (!moved && Math.abs(w) > 5 && Math.abs(h) > 5) {
-            moved = true
-          }
-          if (moved) {
-            this.setState({
-              selectBox: {x, y, w, h},
-            })
-          }
-        },
-        done: (x, y, w, h) => {
-          if (!moved) {
-            this.props.store.actions.setActive(this.props.store.state.root)
-          }
-          this.setState({selectBox: null})
-        },
-      })
+      this.setupSelector(e)
     }
+  }
+
+  setupSelector(e: any) {
+    let moved = false
+    let boxes = []
+    for (let id in this.nodeMap) {
+      boxes.push([id, this.nodeMap[id].getBoundingClientRect()])
+    }
+
+    this._dragger = dragger(e, {
+      move: (x, y, w, h) => {
+        if (!moved && Math.abs(w) > 5 && Math.abs(h) > 5) {
+          moved = true
+        }
+        if (moved) {
+          this.setState({
+            selectBox: {x, y, w, h},
+          })
+          selectBoxes(x, y, w, h, boxes, this.props.store)
+        }
+      },
+      done: (x, y, w, h) => {
+        if (!moved) {
+          this.props.store.actions.setActive(this.props.store.state.root)
+        }
+        this.setState({selectBox: null})
+      },
+    })
+  }
+
+  renderSelectBox() {
+    let {x, y, w, h} = this.state.selectBox
+    if (w < 0) {
+      x += w
+      w *= -1
+    }
+    if (h < 0) {
+      y += h
+      h *= -1
+    }
+    return <div
+      className={css(styles.selectBox)}
+      style={{
+        top: y,
+        left: x,
+        height: h,
+        width: w,
+      }}
+    />
   }
 
   render() {
@@ -140,19 +198,12 @@ export default class Whiteboard extends Component {
         >
           <WhiteboardRoot
             store={this.props.store}
+            nodeMap={this.nodeMap}
           />
         </div>
       </div>
       {this.state.selectBox &&
-        <div
-          className={css(styles.selectBox)}
-          style={{
-            top: this.state.selectBox.y,
-            left: this.state.selectBox.x,
-            height: this.state.selectBox.h,
-            width: this.state.selectBox.w,
-          }}
-        />}
+        this.renderSelectBox()}
 
       {this.state.contextMenu &&
         <ContextMenu
