@@ -145,6 +145,7 @@ export default class Whiteboard extends Component {
       })
     } else if (e.button === 0) {
       this.setupSelector(e)
+      this.clearSelection()
     }
   }
 
@@ -174,6 +175,16 @@ export default class Whiteboard extends Component {
         this.setState({selectBox: null})
       },
     })
+  }
+
+  clearSelection() {
+    if (!this.props.store.state.selected) return
+    const events = []
+    for (let id in this.props.store.state.selected) {
+      events.push(this.props.store.events.nodeView(id))
+    }
+    this.props.store.state.selected = null
+    this.props.store.emitMany(events)
   }
 
   renderSelectBox() {
