@@ -39,15 +39,6 @@ const selectBoxes = (x, y, w, h, boxes, store) => {
       y < box.bottom && box.bottom < y + h ||
       box.top < y && y < box.bottom)
     ) {
-      /*
-    if (
-      (box.left < x && x < box.right ||
-        box.left < x + w && x + w < box.right)
-       &&
-      (box.top < y && y < box.bottom ||
-        box.top < y + h && y + h < box.bottom)
-    ) {
-    */
       if (!oldSelected[id]) {
         events.push(store.events.nodeView(id))
       }
