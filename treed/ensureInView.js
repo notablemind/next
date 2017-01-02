@@ -30,7 +30,7 @@ window.addEventListener('wheel', () => {
   clearInterval(scrolling)
 })
 
-const ensureInView = (item, margin=100) => {
+const ensureInView = (item, scrollTo=true, margin=100) => {
   const itemBox = item.getBoundingClientRect()
   const parent = getScrollParent(item)
   const parentBox = parent === document.body ? {
@@ -46,7 +46,7 @@ const ensureInView = (item, margin=100) => {
 
   // scroll down
   if (itemBox.bottom > parentBox.bottom - margin) {
-    if (itemBox.bottom < parentBox.bottom + margin) {
+    if (!scrollTo || itemBox.bottom < parentBox.bottom + margin) {
       // just jump immediately
       parent.scrollTop += itemBox.bottom - (parentBox.bottom - margin)
     } else {
@@ -55,7 +55,7 @@ const ensureInView = (item, margin=100) => {
   }
   // scroll up
   else if (itemBox.top < parentBox.top + margin) {
-    if (itemBox.top > parentBox.top - margin) {
+    if (!scrollTo || itemBox.top > parentBox.top - margin) {
       // just jump to it
       parent.scrollTop -= (parentBox.top + margin) - itemBox.top
     } else {

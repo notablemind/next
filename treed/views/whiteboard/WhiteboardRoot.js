@@ -70,12 +70,6 @@ export default class WhiteboardRoot extends Component {
       },
       done: (x, y, w, h) => {
         this.offsetSelected(w, h)
-        /*
-        this.setState({
-          dx: 0,
-          dy: 0,
-        })
-        */
       },
     })
   }

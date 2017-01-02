@@ -20,6 +20,14 @@ const walk = (id, nodes, visit) => {
   nodes[id].children.forEach(child => walk(child, nodes, visit))
 }
 
+const isAncestor = (maybeAncestor, id, nodes) => {
+  while (id) {
+    if (id === maybeAncestor) return true
+    id = nodes[id].parent
+  }
+  return false
+}
+
 const commands: {[key: string]: Command<any>} = {
   update: {
     apply({id, update}, db, events) {
@@ -197,8 +205,72 @@ const commands: {[key: string]: Command<any>} = {
     },
   },
 
+  replaceMergingChildren: {
+    apply({id, destId}, db, events) {
+      const pid = db.data[destId].parent
+      const opid = db.data[id].parent
+      const ochildren = db.data[opid].children.slice()
+      if (pid === opid) throw new Error('TODO')
+      const oidx = ochildren.indexOf(id)
+      ochildren.splice(oidx, 1)
+
+      const nchildren = db.data[pid].children.slice()
+      nchildren[nchildren.indexOf(destId)] = id
+      return {old: {
+        id,
+        destId,
+        oidx,
+        opid,
+        replacedNode: db.data[destId],
+        oldChildren: db.data[id].children,
+      }, prom: db.saveMany([
+        // the old parent
+        {...db.data[opid], children: ochildren},
+        { // the moving node
+          ...db.data[id],
+          parent: pid,
+          children: db.data[destId].children.concat(db.data[id].children),
+        },
+        // the moved node, removed
+        {
+          ...db.data[destId],
+          _deleted: true,
+        },
+        // the new parent
+        {
+          ...db.data[pid],
+          children: nchildren,
+        },
+      ])}
+    },
+
+    undo({id, destId, oidx, opid, replacedNode, oldChildren}, db, events) {
+      const ochildren = db.data[opid].children.slice()
+      ochildren.splice(oidx, 0, [id])
+
+      const pid = db.data[id].parent
+      const nchildren = db.data[pid].children.slice()
+      nchildren[nchildren.indexOf(id)] = destId
+      return {prom: db.saveMany([replacedNode, {
+        ...db.data[id],
+        parent: opid,
+        children: oldChildren,
+      }, {
+        ...db.data[opid],
+        children: ochildren,
+      }, {
+        ...db.data[pid],
+        children: nchildren,
+      }])}
+    },
+  },
+
   move: {
     apply({id, pid, idx, expandParent, viewType}, db, events) {
+      if (isAncestor(id, pid, db.data))  {
+        console.warn("Can't move something into one of its descendents")
+        return
+      }
       const opid = db.data[id].parent
       const ochildren = db.data[opid].children.slice()
       const oidx = ochildren.indexOf(id)
@@ -269,9 +341,6 @@ const commands: {[key: string]: Command<any>} = {
     },
   },
 
-  // TODO setMany
-  // remove
-  // move
 }
 
 export default commands

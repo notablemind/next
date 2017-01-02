@@ -44,6 +44,7 @@ export type GlobalState = {
 export type StoreState = {
   root: string,
   active: string,
+  activeIsJump: bool,
   mode: Mode,
   lastEdited: ?string,
   editPos: ?EditPos,

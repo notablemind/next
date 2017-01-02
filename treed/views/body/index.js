@@ -8,6 +8,12 @@ import Content from './Content'
 export default class Body extends Component {
   onClick = (e: any) => {
     if (e.button !== 0) return
+    if (e.target.nodeName === 'A') {
+      window.open(e.target.href, '_blank')
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
     e.preventDefault()
     e.stopPropagation()
     this.props.actions.edit(this.props.node._id)

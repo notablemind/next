@@ -224,6 +224,7 @@ export default class Treed {
       id,
       root,
       active: root,
+      activeIsJump: false,
       selected: null,
       editPos: null,
       mode: 'normal',
@@ -284,6 +285,12 @@ export default class Treed {
   }
 
   handlePaste = (e: any) => {
+    if (e.target.nodeName === 'TEXTAREA') {
+      return // allow normal pasting into text input
+    }
+    if (e.target.nodeName === 'INPUT') {
+      return // allow normal pasting into text input
+    }
     const data = e.clipboardData
     if (data.items.length === 1) {
       if (data.items[0].kind === 'string') {

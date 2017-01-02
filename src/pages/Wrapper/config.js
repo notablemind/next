@@ -1,3 +1,3 @@
 
-export const baseURL = 'http://localhost:6102'
+export const baseURL = `http://${window.location.hostname}:6102`
 

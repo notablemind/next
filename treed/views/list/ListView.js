@@ -12,19 +12,21 @@ const preWalk = (nodes, root, viewType, fn) => {
   const node = nodes[root]
   const hasOpenChildren = node.children.length > 0 &&
     !(node.views[viewType] && node.views[viewType].collapsed)
-  fn(root, hasOpenChildren)
+  const res = fn(root, hasOpenChildren)
+  if (res === false) return // don't traverse
   if (hasOpenChildren) {
     nodes[root].children.forEach(child => preWalk(nodes, child, viewType, fn))
   }
 }
 
-const getAllMeasurements = (nodes, divs, viewType, root) => {
+const getAllMeasurements = (nodes, divs, viewType, root, moving) => {
   const measurements = []
   preWalk(
     nodes,
     root,
     viewType,
     (id, hasOpenChildren) => {
+      if (id === moving) return false
       measurements.push([id, divs[id].getBoundingClientRect(), hasOpenChildren])
     }
   )
@@ -103,6 +105,7 @@ export default class ListView extends Component {
       this._nodes,
       this.props.store.state.viewType,
       this.props.store.state.root,
+      this.props.store.state.active,
     )
     this.dragger = new Dragger(measurements)
     window.addEventListener('mousemove', this.dragger.onMove)

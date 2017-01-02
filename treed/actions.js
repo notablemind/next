@@ -24,6 +24,11 @@ import type {
 
 export type DefEditPos = EditPos | false
 
+const dedup = ids => {
+  const seen = {}
+  return ids.filter(id => [!seen[id], seen[id]=true][0])
+}
+
 const copyToClipboard = (data) => {
   const handler = (e: any) => {
     document.removeEventListener('copy', handler)
@@ -153,6 +158,7 @@ const actions = {
         store.state.lastJumpOrigin = old
       }
       store.state.active = id
+      store.state.activeIsJump = !nonJump
       if (store.state.mode === 'insert') {
         store.state.editPos = 'default' // do I care about this?
       } else if (store.state.mode !== 'normal') {
@@ -453,6 +459,17 @@ const actions = {
       store.actions.setActive(nid, true)
     },
 
+    replaceFromCut(store: Store, id: string=store.state.active) {
+      if (!store.globalState.cut) return
+      store.execute({
+        type: 'replaceMergingChildren',
+        args: {
+          id: store.globalState.cut,
+          destId: id,
+        },
+      }, id, store.globalState.cut)
+    },
+
     pasteCutAfter(store: Store, id: string=store.state.active) {
       let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
       if (!store.globalState.cut) return
@@ -574,12 +591,20 @@ const actions = {
           text: 'Paste cut item',
           action: () => store.actions.pasteCutAfter(id),
         })
+        baseItems.push({
+          text: 'Replace with cut item',
+          action: () => store.actions.replaceFromCut(id),
+        })
       }
       if (store.globalState.clipboard) {
         const clipboard = store.globalState.clipboard
         baseItems.push({
           text: 'Paste copied item',
           action: () => store.actions.pasteClipboardAfter(id),
+        })
+        baseItems.push({
+          text: 'Replace with copied item',
+          action: () => store.actions.replaceFromClipboard(id),
         })
         if (clipboard.children.length) {
           baseItems.push({
@@ -675,7 +700,7 @@ const actions = {
     },
 
     _fixChildren(store: Store, id: string=store.state.active) {
-      const children = store.db.data[id].children.filter(cid => !!store.db.data[cid] && store.db.data[cid].parent === id)
+      const children = dedup(store.db.data[id].children.filter(cid => !!store.db.data[cid] && store.db.data[cid].parent === id))
       store.actions.set(id, 'children', children)
     },
 

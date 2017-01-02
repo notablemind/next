@@ -32,6 +32,7 @@ export default class ListItem extends Component {
       store => ({
         node: store.getters.node(id),
         isActive: store.getters.isActive(id),
+        activeIsJump: store.state.activeIsJump,
         isCutting: store.getters.isCutting(id),
         isDragging: store.getters.isDragging(id),
         editState: store.getters.editState(id),
@@ -46,7 +47,7 @@ export default class ListItem extends Component {
   componentDidMount() {
     this._sub.start(this)
     if (this.state.isActive && this._div) {
-      ensureInView(this._div)
+      ensureInView(this._div, this.state.activeIsJump)
     }
   }
 
@@ -56,7 +57,7 @@ export default class ListItem extends Component {
 
   componentDidUpdate(_: any, prevState: any) {
     if (!prevState.isActive && this.state.isActive && this._div) {
-      ensureInView(this._div)
+      ensureInView(this._div, this.state.activeIsJump)
     }
   }
 

@@ -93,7 +93,7 @@ export default class Document extends Component {
       searching: false,
       treed: null,
       store: null,
-      viewType: 'whiteboard',
+      viewType: 'list',
       // panesSetup,
     }
 
