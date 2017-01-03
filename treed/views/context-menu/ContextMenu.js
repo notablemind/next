@@ -76,6 +76,8 @@ const renderItem = (onClose, item, i) => (
       </div>
       {item.children && item.children.length ?
         <div className={css(styles.childMarker)}>▸</div> : null}
+      {item.radioChecked != null ?
+        <div className={css(styles.radioChecked, !item.radioChecked && styles.notRadioChecked)}/> : null}
       {item.checked != null ?
         <div className={css(styles.checked, !item.checked && styles.notChecked)}>✔</div> : null}
     </div>
@@ -113,8 +115,12 @@ const styles = StyleSheet.create({
     zIndex: 100000000000,
   },
 
+  checked: {
+    fontSize: 12,
+    alignSelf: 'center',
+  },
   notChecked: {
-    color: '#eee',
+    color: '#ddd',
   },
 
   childMarker: {
@@ -122,7 +128,6 @@ const styles = StyleSheet.create({
   },
 
   item: {
-    padding: '5px 10px',
     position: 'relative',
     backgroundColor: 'white',
 
@@ -135,7 +140,21 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
   },
 
+  radioChecked: {
+    width: 10,
+    height: 10,
+    backgroundColor: '#ddd',
+    border: '1px solid #aaa',
+    borderRadius: 10,
+    alignSelf: 'center',
+  },
+
+  notRadioChecked: {
+    backgroundColor: 'white',
+  },
+
   itemTop: {
+    padding: '5px 10px',
     flexDirection: 'row',
     cursor: 'default',
   },

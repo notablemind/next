@@ -19,7 +19,7 @@ const typesContextMenu = (node, store) => {
     const ntype = store.plugins.nodeTypes[key]
     return {
       text: ntype.title || key,
-      checked: node.type === key,
+      radioChecked: node.type === key,
       disabled: node.type === key,
       action: () => store.actions.setNodeType(node._id, key),
     }
