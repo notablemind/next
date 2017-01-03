@@ -20,10 +20,6 @@ export default class Editor extends Component {
     this._unmounted = false
   }
 
-  componentWillUnmount() {
-    this._unmounted = true
-  }
-
   componentDidMount() {
     this.input.focus(this.props.editState)
   }
@@ -65,6 +61,7 @@ export default class Editor extends Component {
       if (e.shiftKey || e.target.value.indexOf('\n') !== -1) return
       const prev = e.target.value.slice(0, e.target.selectionStart)
       const next = e.target.value.slice(e.target.selectionStart)
+      this.setState({tmpText: prev})
       // TODO these two things should be a transaction probably? maybe
       this.props.actions.setContent(this.props.node._id, prev)
       const nid = this.props.actions.createAfter(this.props.node._id, next)
@@ -126,6 +123,7 @@ export default class Editor extends Component {
   }
 
   componentWillUnmount() {
+    this._unmounted = true
     if (this.props.editState) {
       this.props.actions.setContent(this.props.node._id, this.state.tmpText)
     }

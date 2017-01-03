@@ -46,6 +46,7 @@ const commands: {[key: string]: Command<any>} = {
   updateMany: {
     apply({ids, updates}, db, events) {
       const old = ids.map(id => db.data[id])
+      // TODO maybe have updateMany be understood by the db directly?
       const prom = db.saveMany(ids.map((id, i) => ({
         ...db.data[id],
         ...updates[i],
@@ -216,6 +217,8 @@ const commands: {[key: string]: Command<any>} = {
 
       const nchildren = db.data[pid].children.slice()
       nchildren[nchildren.indexOf(destId)] = id
+
+      const mergedChildren = db.data[destId].children.concat(db.data[id].children)
       return {old: {
         id,
         destId,
@@ -224,44 +227,26 @@ const commands: {[key: string]: Command<any>} = {
         replacedNode: db.data[destId],
         oldChildren: db.data[id].children,
       }, prom: db.saveMany([
-        // the old parent
         {...db.data[opid], children: ochildren},
-        { // the moving node
-          ...db.data[id],
-          parent: pid,
-          children: db.data[destId].children.concat(db.data[id].children),
-        },
-        // the moved node, removed
-        {
-          ...db.data[destId],
-          _deleted: true,
-        },
-        // the new parent
-        {
-          ...db.data[pid],
-          children: nchildren,
-        },
+        {...db.data[id], parent: pid, children: mergedChildren},
+        {...db.data[destId], _deleted: true},
+        {...db.data[pid], children: nchildren},
       ])}
     },
 
     undo({id, destId, oidx, opid, replacedNode, oldChildren}, db, events) {
       const ochildren = db.data[opid].children.slice()
-      ochildren.splice(oidx, 0, [id])
+      ochildren.splice(oidx, 0, id)
 
       const pid = db.data[id].parent
       const nchildren = db.data[pid].children.slice()
       nchildren[nchildren.indexOf(id)] = destId
-      return {prom: db.saveMany([replacedNode, {
-        ...db.data[id],
-        parent: opid,
-        children: oldChildren,
-      }, {
-        ...db.data[opid],
-        children: ochildren,
-      }, {
-        ...db.data[pid],
-        children: nchildren,
-      }])}
+      return {prom: db.saveMany([
+        replacedNode,
+        {...db.data[id], parent: opid, children: oldChildren},
+        {...db.data[opid], children: ochildren},
+        {...db.data[pid], children: nchildren}
+      ])}
     },
   },
 

@@ -24,6 +24,15 @@ import type {
 
 export type DefEditPos = EditPos | false
 
+const checkParentage = (id, nodes, ids, updates) => {
+  const children = dedup(nodes[id].children.filter(cid => !!nodes[cid] && nodes[cid].parent === id))
+  if (children.length !== nodes[id].children.length) {
+    ids.push(id)
+    updates.push({children})
+  }
+  children.forEach(child => checkParentage(child, nodes, ids, updates))
+}
+
 const dedup = ids => {
   const seen = {}
   return ids.filter(id => [!seen[id], seen[id]=true][0])
@@ -124,6 +133,7 @@ const actions = {
     },
 
     setContent(globalStore: GlobalStore, id: string, content: string) {
+      if (!globalStore.db.data[id]) return // ignore requests for deleted nodes
       globalStore.actions.set(id, 'content', content)
     },
 
@@ -460,14 +470,17 @@ const actions = {
     },
 
     replaceFromCut(store: Store, id: string=store.state.active) {
-      if (!store.globalState.cut) return
+      const cut = store.globalState.cut
+      if (!cut) return
+      store.globalState.cut = null
+      store.actions.setActive(cut)
       store.execute({
         type: 'replaceMergingChildren',
         args: {
-          id: store.globalState.cut,
+          id: cut,
           destId: id,
         },
-      }, id, store.globalState.cut)
+      }, id, cut)
     },
 
     pasteCutAfter(store: Store, id: string=store.state.active) {
@@ -845,6 +858,16 @@ const actions = {
       }
     },
 
+
+    _auditTree(store: Store) {
+      const ids = []
+      const updates = []
+      checkParentage('root', store.db.data, ids, updates)
+      console.log('updates', ids, updates)
+      if (ids.length) {
+        store.actions.updateMany(ids, updates)
+      }
+    },
   },
 }
 
