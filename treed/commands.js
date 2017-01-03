@@ -97,6 +97,7 @@ const commands: {[key: string]: Command<any>} = {
       const now = Date.now()
       if (!id || !db.data[pid]) return null
       const children = db.data[pid].children.slice()
+      if (ix === -1) ix = children.length
       children.splice(ix, 0, id)
       const prom = db.saveMany([{
         _id: id,

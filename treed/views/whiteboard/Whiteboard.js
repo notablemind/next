@@ -89,9 +89,14 @@ export default class Whiteboard extends Component {
 
   onDblClick = (e: any) => {
     const box = this.relative.getBoundingClientRect()
-    const x = e.clientX - box.left
-    const y = e.clientY - box.top
+    const x = e.clientX - box.left + this.state.x
+    const y = e.clientY - box.top + this.state.y
     console.warn('TODO create a new node')
+    const viewData = { x, y }
+    let nid = this.props.store.actions.createLastChild(this.state.root, '', viewData)
+    if (nid) {
+      this.props.store.actions.edit(nid)
+    }
   }
 
   setupSelector(e: any) {

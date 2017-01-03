@@ -430,6 +430,27 @@ const actions = {
       return nid
     },
 
+    createLastChild(store: Store, id: string=store.state.active, content: string='', viewData: ?any=null) {
+      const node = store.db.data[id]
+      if (!id || !node) return
+      const nid = uuid()
+      let type = 'normal'
+      const firstChild = node.children[0] && store.db.data[node.children[0]]
+      if (firstChild && store.plugins.nodeTypes[firstChild.type].newSiblingsShouldCarryType) {
+        type = firstChild.type
+      }
+      const nodeType = store.plugins.nodeTypes[type]
+      const types = nodeType.defaultNodeConfig ?
+        {[type]: nodeType.defaultNodeConfig()} : {}
+      const views = viewData ? {[store.state.viewType]: viewData} : {}
+      store.execute({
+        type: 'create',
+        args: {id: nid, pid: id, ix: -1, data: {content, type, types, views}},
+      }, id, nid)
+      store.actions.editStart(nid)
+      return nid
+    },
+
     createNextSibling(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
