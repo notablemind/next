@@ -46,6 +46,9 @@ export default class ImageBody extends Component {
     if (urlCache[key]) {
       return this.setState({src: urlCache[key]})
     }
+    if (!node._attachments || !node._attachments[attachmentId]) {
+      return this.setState({error: 'attachment not found'})
+    }
     if (node._attachments[attachmentId] && node._attachments[attachmentId].data) {
       const url = URL.createObjectURL(
         node._attachments[attachmentId].data

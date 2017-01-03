@@ -598,10 +598,13 @@ const actions = {
       }, {
         text: 'Cut',
         action: () => store.actions.setCut(node._id),
+      }, {
+        text: 'Delete',
+        action: () => store.actions.remove(node._id),
       }]
       if (store.globalState.cut) {
         baseItems.push({
-          text: 'Paste cut item',
+          text: 'Paste cut item after',
           action: () => store.actions.pasteCutAfter(id),
         })
         baseItems.push({
@@ -611,20 +614,47 @@ const actions = {
       }
       if (store.globalState.clipboard) {
         const clipboard = store.globalState.clipboard
-        baseItems.push({
-          text: 'Paste copied item',
-          action: () => store.actions.pasteClipboardAfter(id),
-        })
-        baseItems.push({
-          text: 'Replace with copied item',
-          action: () => store.actions.replaceFromClipboard(id),
-        })
+        const pasteSpecial = [
+          {
+            text: 'Replace with copied item',
+            action: () => store.actions.replaceFromClipboard(id),
+          }
+        ]
         if (clipboard.children.length) {
-          baseItems.push({
-            text: 'Paste copied item w/o children',
+          pasteSpecial.push({
+            text: 'Paste copied item after w/o children',
             action: () => store.actions.pasteClipboardAfterWithoutChildren(id),
           })
         }
+
+        const nodeType = store.plugins.nodeTypes[node.type]
+        if (nodeType && nodeType.pasteSpecial) {
+          const res = nodeType.pasteSpecial(
+            node.types[node.type],
+            clipboard,
+            node,
+            store,
+          )
+          if (Array.isArray(res)) {
+            pasteSpecial.push(...res)
+          } else if (res) {
+            pasteSpecial.push(res)
+          }
+        }
+
+        store.plugins.node.pasteSpecial.map(fn => {
+          const res = fn(node, store, clipboard)
+          if (Array.isArray(res)) {
+            pasteSpecial.push(...res)
+          } else if (res) {
+            pasteSpecial.push(res)
+          }
+        })
+        baseItems.push({
+          text: 'Paste copied item after',
+          action: () => store.actions.pasteClipboardAfter(id),
+          children: pasteSpecial,
+        })
       }
 
       let menu: Array<MenuItem> = store.plugins.node.contextMenu.reduce((menu, fn) => {
@@ -759,6 +789,28 @@ const actions = {
         tmp = node.parent
       }
       store.actions.setActive(active, true)
+    },
+
+    rebaseNext(store: Store) {
+      const id = store.state.root
+      const pid = store.db.data[id].parent
+      const sibs = store.db.data[pid].children
+      const idx = sibs.indexOf(id)
+      if (idx < sibs.length - 1) {
+        store.actions.rebase(sibs[idx + 1])
+        store.actions.setActive(sibs[idx + 1])
+      }
+    },
+
+    rebasePrev(store: Store) {
+      const id = store.state.root
+      const pid = store.db.data[id].parent
+      const sibs = store.db.data[pid].children
+      const idx = sibs.indexOf(id)
+      if (idx > 0) {
+        store.actions.rebase(sibs[idx - 1])
+        store.actions.setActive(sibs[idx - 1])
+      }
     },
 
     movePrev(store: Store, id: string=store.state.active) {

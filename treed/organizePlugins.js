@@ -64,6 +64,7 @@ const organizePlugins = (plugins: Array<Plugin<*, *>>): PluginSummary => {
         (classNameGetters.length === 0 ? null :
          (node, store) => classNameGetters.map(f => f(node, store)).join(' ')),
       pasteFile: getSubThing(plugins, 'node', 'pasteFile'),
+      pasteSpecial: getSubThing(plugins, 'node', 'pasteSpecial'),
       dropFileNew: getSubThing(plugins, 'node', 'dropFileNew'),
       dropFileOnto: getSubThing(plugins, 'node', 'dropFileOnto'),
       contextMenu: [typesContextMenu].concat(contextMenuFns),

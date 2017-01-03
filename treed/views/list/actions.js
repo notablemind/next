@@ -210,6 +210,22 @@ const actions: ViewActionConfig = {
     description: 'Zoom to node',
   },
 
+  rebaseNext: {
+    shortcuts: {
+      normal: 'g n',
+    },
+    alias: 'rebaseNext',
+    description: 'Zoom to next sibling of root',
+  },
+
+  rebasePrev: {
+    shortcuts: {
+      normal: 'g p',
+    },
+    alias: 'rebasePrev',
+    description: 'Zoom to previous sibling of root',
+  },
+
   rebaseRoot: {
     shortcuts: {
       normal: 'g r',

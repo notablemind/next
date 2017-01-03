@@ -23,6 +23,7 @@ export type Mode = 'normal' | 'insert' | 'visual'
 export type PluginSummary = {
   node: {
     pasteFile: Array<Function>,
+    pasteSpecial: Array<Function>,
     dropFileNew: Array<Function>,
     dropFileOnto: Array<Function>,
     contextMenu: Array<Function>,
@@ -130,6 +131,7 @@ export type ColumnConfig = {
 export type PluginNodeConfig = {|
   className?: (pluginData: any, node: Node, store: Store) => string,
   contextMenu?: (pluginData: any, node: Node, store: Store) => ?MenuResult,
+  pasteSpecial?: (node: Node, store: Store, clipboard: any) => ?MenuResult,
 
   dropFileNew?: (store: Store, pid: string, idx: number, file: File) => bool,
   dropFileOnto?: (store: Store, id: string, file: File) => bool,
@@ -143,6 +145,7 @@ export type PluginNodeTypeConfig<T> = {
   render: ?any,
   defaultNodeConfig?: () => T,
   contextMenu?: (typeData: T, node: Node, store: Store) => ?MenuResult,
+  pasteSpecial?: (typeData: T, clipboardData: any, node: Node, store: Store) => ?MenuResult,
   actions?: {
     [key: string]: KeyAction,
   },

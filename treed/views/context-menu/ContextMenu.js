@@ -69,7 +69,7 @@ const renderItem = (onClose, item, i) => (
         onClose()
         item.action()
       }) : null}
-      className={css(styles.itemTop)}
+      className={css(styles.itemTop, item.action && !item.disabled && styles.clickableItem)}
     >
       <div className={css(styles.text, item.disabled && styles.itemTextDisabled)}>
         {item.text}
@@ -117,19 +117,27 @@ const styles = StyleSheet.create({
     color: '#eee',
   },
 
+  childMarker: {
+    color: '#aaa',
+  },
+
   item: {
     padding: '5px 10px',
     position: 'relative',
     backgroundColor: 'white',
-    cursor: 'pointer',
 
     ':hover': {
       backgroundColor: '#eef',
     },
   },
 
+  clickableItem: {
+    cursor: 'pointer',
+  },
+
   itemTop: {
     flexDirection: 'row',
+    cursor: 'default',
   },
 
   text: {

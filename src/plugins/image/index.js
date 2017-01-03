@@ -22,6 +22,30 @@ const plugin: Plugin<void, void> = {
       return true
     },
 
+    pasteSpecial: (node, store, clipboard) => {
+      if (clipboard.type !== 'image' || !clipboard.types.image || !clipboard.types.image.attachmentId) return
+      return {
+        text: 'Paste image',
+        action: () => {
+          const attachmentId = clipboard.types.image.attachmentId
+          store.actions.update(node._id, {
+            type: 'image',
+            types: {
+              ...node.types,
+              image: {
+                ...node.types.image,
+                attachmentId,
+              },
+            },
+            _attachments: {
+              ...node._attachments,
+              [attachmentId]: clipboard._attachments[attachmentId],
+            },
+          })
+        }
+      }
+    },
+
     dropFileNew: (store, pid, idx, file) => {
       if (!file.type.match(/^image\//)) return false
       actions.createWithImage(store, pid, idx, file)
