@@ -31,7 +31,7 @@ export default class Whiteboard extends Component {
   _dragger: any
   constructor(props: Props) {
     super()
-    this.nodeMap = {}
+    props.store.state.nodeMap = {}
     this._sub = props.store.setupStateListener(
       this,
       store => [
@@ -97,8 +97,8 @@ export default class Whiteboard extends Component {
   setupSelector(e: any) {
     let moved = false
     let boxes = []
-    for (let id in this.nodeMap) {
-      boxes.push([id, this.nodeMap[id].getBoundingClientRect()])
+    for (let id in this.props.store.state.nodeMap) {
+      boxes.push([id, this.props.store.state.nodeMap[id].getBoundingClientRect()])
     }
 
     this._dragger = dragger(e, {
@@ -130,6 +130,13 @@ export default class Whiteboard extends Component {
     }
     this.props.store.state.selected = null
     this.props.store.emitMany(events)
+    // this.props.store.actions.normalMode()
+  }
+
+  onContextMenu = (e: any) => {
+    e.preventDefault()
+    e.stopPropagation()
+    this.props.store.actions.openGeneralContextMenu(e.clientX, e.clientY)
   }
 
   renderSelectBox() {
@@ -160,6 +167,7 @@ export default class Whiteboard extends Component {
       <div
         onMouseDown={this.onMouseDown}
         onDoubleClick={this.onDblClick}
+        onContextMenu={this.onContextMenu}
         className={css(styles.relative)}
         ref={rel => this.relative = rel}
       >
@@ -174,7 +182,7 @@ export default class Whiteboard extends Component {
         >
           <WhiteboardRoot
             store={this.props.store}
-            nodeMap={this.nodeMap}
+            nodeMap={this.props.store.state.nodeMap}
           />
         </div>
       </div>
@@ -199,8 +207,9 @@ const styles = StyleSheet.create({
   },
 
   selectBox: {
-    outline: '5px solid blue',
+    outline: '3px solid blue',
     position: 'absolute',
+    pointerEvents: 'none',
   },
 
   relative: {

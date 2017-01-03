@@ -108,6 +108,14 @@ const treeToItems = (pid, id, node, items) => {
   })
 }
 
+const addMenuResult = (menu, result) => {
+  if (Array.isArray(result)) {
+    menu.push(...result)
+  } else if (result) {
+    menu.push(result)
+  }
+}
+
 const actions = {
   global: {
     set(globalStore: GlobalStore, id: string, attr: string, value: any) {
@@ -591,7 +599,38 @@ const actions = {
       }
     },
 
+    openGeneralContextMenu(store: Store, x: number, y: number) {
+      let menu
+      if (store.state.mode === 'visual') {
+        menu = [
+        ]
+        if (store.viewTypes[store.state.viewType].contextMenuVisual) {
+          addMenuResult(
+            menu,
+            store.viewTypes[store.state.viewType].contextMenuVisual(
+              store
+            )
+          )
+          // TODO add plugins stuffs
+        }
+        // TODO
+      } else {
+        menu = [{
+          text: 'Copy',
+          action: store.actions.copyNode,
+        // }, {
+          // text: 'Paste',
+          // action: store.actions.pasteAfter,
+        }]
+      }
+      store.actions.openContextMenu({top: y, left: x}, menu)
+    },
+
+    replaceFromClipboard(store: Store, id: string) {
+    },
+
     openContextMenuForNode(store: Store, id: string, x: number, y: number) {
+      // TODO if visual mode, only do visual mode items
       const node = store.db.data[id]
       const baseItems: Array<MenuItem> = [{
         text: 'Zoom to here',
@@ -619,10 +658,12 @@ const actions = {
       }
       if (store.globalState.clipboard) {
         const clipboard = store.globalState.clipboard
-        const pasteSpecial = [
+        const pasteSpecial: Array<MenuItem> = [
           {
             text: 'Replace with copied item',
-            action: () => store.actions.replaceFromClipboard(id),
+            action: () => {
+              store.actions.replaceFromClipboard(id)
+            },
           }
         ]
         if (clipboard.children.length) {
@@ -634,26 +675,19 @@ const actions = {
 
         const nodeType = store.plugins.nodeTypes[node.type]
         if (nodeType && nodeType.pasteSpecial) {
-          const res = nodeType.pasteSpecial(
-            node.types[node.type],
-            clipboard,
-            node,
-            store,
+          addMenuResult(
+            pasteSpecial,
+            nodeType.pasteSpecial(
+              node.types[node.type],
+              clipboard,
+              node,
+              store,
+            )
           )
-          if (Array.isArray(res)) {
-            pasteSpecial.push(...res)
-          } else if (res) {
-            pasteSpecial.push(res)
-          }
         }
 
         store.plugins.node.pasteSpecial.map(fn => {
-          const res = fn(node, store, clipboard)
-          if (Array.isArray(res)) {
-            pasteSpecial.push(...res)
-          } else if (res) {
-            pasteSpecial.push(res)
-          }
+          addMenuResult(pasteSpecial, fn(node, store, clipboard))
         })
         baseItems.push({
           text: 'Paste copied item after',
@@ -662,25 +696,14 @@ const actions = {
         })
       }
 
-      let menu: Array<MenuItem> = store.plugins.node.contextMenu.reduce((menu, fn) => {
-        const res = fn(node, store)
-        if (Array.isArray(res)) {
-          return menu.concat(res)
-        } else if (res) {
-          return menu.concat([res])
-        } else {
-          return menu
-        }
-      }, baseItems)
+      let menu: Array<MenuItem> = baseItems
+      store.plugins.node.contextMenu.forEach(fn => {
+        addMenuResult(menu, fn(node, store))
+      })
 
       const nodeType = store.plugins.nodeTypes[node.type]
       if (nodeType && nodeType.contextMenu) {
-        const res = nodeType.contextMenu(node.types[node.type], node, store)
-        if (Array.isArray(res)) {
-          menu = menu.concat(res)
-        } else if (res) {
-          menu = menu.concat([res])
-        }
+        addMenuResult(menu, nodeType.contextMenu(node.types[node.type], node, store))
       }
 
       menu.sort((a, b) => (a.children ? 0 : 1) - (b.children ? 0 : 1))

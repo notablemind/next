@@ -188,6 +188,7 @@ export default class Treed {
       on: this.on,
       addListener: (evt, fn) => this.emitter.on(evt, fn),
       removeListener: (evt, fn) => this.emitter.off(evt, fn),
+      viewTypes: this.viewTypes,
 
       undo: () => this.emitter.emitMany(this.commands.undo(args)),
       redo: () => this.emitter.emitMany(this.commands.redo(args)),

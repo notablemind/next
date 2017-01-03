@@ -10,7 +10,7 @@ export type ClipboardContents = DumpedNode
 
 export type MenuItem = {
   text: string,
-  action?: () => void,
+  action?: () => any,
   checked?: bool,
   disabled?: bool,
   children?: Array<MenuItem>,
@@ -58,6 +58,12 @@ export type StoreState = {
   },
 }
 
+export type ViewTypeConfig = {
+  Component: any,
+  actions: ViewActionConfig,
+  contextMenuVisual?: (store: Store) => ?MenuResult,
+}
+
 export type GlobalStore = {
   db: Database,
   actions: {[key: string]: Function},
@@ -76,6 +82,7 @@ export type GlobalStore = {
   activeView: () => Store,
   addNormalKeyLayer: (layer: any) => () => void,
   on: (evts: Array<string>, fn: Function) => () => void,
+  viewTypes: {[key: string]: ViewTypeConfig},
 }
 
 export type Store = GlobalStore & {

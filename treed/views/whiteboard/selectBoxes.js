@@ -1,5 +1,6 @@
 
 const selectBoxes = (x, y, w, h, boxes, store) => {
+  store.actions.setMode('visual')
   if (w < 0) {
     x += w
     w = -w

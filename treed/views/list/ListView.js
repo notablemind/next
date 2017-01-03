@@ -191,18 +191,7 @@ export default class ListView extends Component {
 
   onContextMenu = (e: any) => {
     e.preventDefault()
-    const store = this.props.store
-    const menu = [{
-      text: 'Copy',
-      action: store.actions.copyNode,
-    // }, {
-      // text: 'Paste',
-      // action: store.actions.pasteAfter,
-    }]
-    store.actions.openContextMenu({
-      top: e.clientY,
-      left: e.clientX,
-    }, menu)
+    this.props.store.actions.openGeneralContextMenu(e.clientX, e.clientY)
   }
 
   render() {

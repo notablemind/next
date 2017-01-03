@@ -79,6 +79,7 @@ export default class WhiteboardRoot extends Component {
 
   componentWillUnmount() {
     this._sub.stop()
+    this._unsub()
   }
 
   componentDidUpdate(prevProps: any, prevState: State) {
