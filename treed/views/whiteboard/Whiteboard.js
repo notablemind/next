@@ -61,6 +61,15 @@ export default class Whiteboard extends Component {
     if (this._dragger) this._dragger()
   }
 
+  onWheel = (e: any) => {
+    e.preventDefault()
+    e.stopPropagation()
+    this.setState({
+      x: this.state.x - e.deltaX,
+      y: this.state.y - e.deltaY,
+    })
+  }
+
   onDragDone() {
     // TODO maybe save it or something?
   }
@@ -173,6 +182,7 @@ export default class Whiteboard extends Component {
         onMouseDown={this.onMouseDown}
         onDoubleClick={this.onDblClick}
         onContextMenu={this.onContextMenu}
+        onWheel={this.onWheel}
         className={css(styles.relative)}
         ref={rel => this.relative = rel}
       >

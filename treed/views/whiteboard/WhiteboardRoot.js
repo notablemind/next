@@ -46,6 +46,7 @@ export default class WhiteboardRoot extends Component {
   _sub: any
   _unsub: () => void
   state: State
+  div: any
 
   constructor(props: any) {
     super()
@@ -89,14 +90,27 @@ export default class WhiteboardRoot extends Component {
   }
 
   calcDefaultPositions() {
+    // const root = this.div.offsetParent
+    console.log(this.div)
     let top = 0
+    let x = 0
+    let nextX = 0
     let defaultPositions = []
     this.state.node.children.forEach(id => {
       const box = this.props.nodeMap[id].getBoundingClientRect()
+      if (top + box.height > window.innerHeight) {
+        console.log(x, top, nextX)
+        top = 0
+        x = nextX + 5
+      }
       defaultPositions.push({
-        x: 0,
+        x: x,
         y: top,
       })
+      if (x + box.width > nextX) {
+        console.log('wat', box.width, x, box, nextX, id)
+      }
+      nextX = Math.max(nextX, x + box.width)
       top += box.height + 5
     })
     console.log('positions', defaultPositions)
@@ -176,7 +190,7 @@ export default class WhiteboardRoot extends Component {
 
   render() {
     const {dx, dy, defaultPositions} = this.state
-    return <div className={css(styles.container)}>
+    return <div className={css(styles.container)} ref={node => this.div = node}>
       {this.state.node.children.map((child, i) => (
         <WhiteboardNode
           id={child}
@@ -186,8 +200,8 @@ export default class WhiteboardRoot extends Component {
           onSelectedDown={this.onMouseDown}
           dx={dx}
           dy={dy}
-          defaultPos={defaultPositions ?
-            defaultPositions[i] : {
+          defaultPos={defaultPositions &&
+            defaultPositions[i] || {
               x: 0,
               y: i * 100,
             }
