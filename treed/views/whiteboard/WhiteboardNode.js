@@ -39,10 +39,11 @@ export default class WhiteboardNode extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return nextState !== this.state || (
-      !!this.state.isSelected && (
+    return nextState !== this.state ||
+      (!!this.state.isSelected && (
         nextProps.dx !== this.props.dx ||
-        nextProps.dy !== this.props.dy))
+        nextProps.dy !== this.props.dy)) ||
+      nextProps.defaultPos !== this.props.defaultPos
   }
 
   stopDragging() {
@@ -65,11 +66,11 @@ export default class WhiteboardNode extends Component {
     e.preventDefault()
 
     const {x, y} = this.state.node.views.whiteboard ||
-      {x: 0, y: 0}
+      this.props.defaultPos
 
     const box = this.div.getBoundingClientRect()
     const snapLines = calcSnapLines(
-      this.props.id,
+      {[this.props.id]: true},
       this.props.nodeMap,
       x, y,
       box
@@ -93,7 +94,7 @@ export default class WhiteboardNode extends Component {
     const dx = e.clientX - this.state.moving.ox
     const dy = e.clientY - this.state.moving.oy
     let orig = this.state.node.views.whiteboard ||
-      {x: 0, y: 0}
+      this.props.defaultPos
     let {x, y} = trySnapping(
       orig.x + dx,
       orig.y + dy,
@@ -123,7 +124,7 @@ export default class WhiteboardNode extends Component {
     this.stopDragging()
 
     const orig = this.state.node.views.whiteboard ||
-      {x: 0, y: 0}
+      this.props.defaultPos
     const {x, y} = this.state.moving
 
     if (x !== orig.x || y !== orig.y) {
@@ -143,7 +144,7 @@ export default class WhiteboardNode extends Component {
   render() {
     const settings = this.state.node.views.whiteboard
     let {x, y} = this.state.handoff || this.state.moving ||
-      this.state.node.views.whiteboard || {x: 0, y: 0}
+      this.state.node.views.whiteboard || this.props.defaultPos
     if (!x) x = 0
     if (!y) y = 0
     const {dx, dy} = this.props

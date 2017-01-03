@@ -5,7 +5,7 @@ const addMaybe = (map, ar, n) => {
   map[n] = true
 }
 
-const calcSnapLines = (myId, nodeMap, x, y, box) => {
+const calcSnapLines = (myIds, nodeMap, x, y, box) => {
   const dx = x - box.left
   const dy = y - box.top
   const lefts = []
@@ -18,7 +18,7 @@ const calcSnapLines = (myId, nodeMap, x, y, box) => {
   const bs = {}
 
   for (let id in nodeMap) {
-    if (id === myId) continue
+    if (myIds[id]) continue
     const box = nodeMap[id].getBoundingClientRect()
     addMaybe(ls, lefts, box.left + dx)
     addMaybe(rs, rights, box.right + dx)

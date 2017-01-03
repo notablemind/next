@@ -24,8 +24,13 @@ import type {
 
 export type DefEditPos = EditPos | false
 
+const fixedChildren = (id, nodes) =>
+  dedup(nodes[id].children)
+    .map(cid => typeof cid === 'string' ? cid : '' + cid)
+    .filter(cid => !!nodes[cid] && nodes[cid].parent === id)
+
 const checkParentage = (id, nodes, ids, updates) => {
-  const children = dedup(nodes[id].children.filter(cid => !!nodes[cid] && nodes[cid].parent === id))
+  const children = fixedChildren(id, nodes)
   if (children.length !== nodes[id].children.length) {
     ids.push(id)
     updates.push({children})
@@ -743,7 +748,7 @@ const actions = {
     },
 
     _fixChildren(store: Store, id: string=store.state.active) {
-      const children = dedup(store.db.data[id].children.filter(cid => !!store.db.data[cid] && store.db.data[cid].parent === id))
+      const children = fixedChildren(id, store.db.data)
       store.actions.set(id, 'children', children)
     },
 

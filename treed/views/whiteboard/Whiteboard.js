@@ -26,6 +26,7 @@ export default class Whiteboard extends Component {
   props: Props
   state: State
   nodeMap: any
+  relative: any
   _sub: any
   _dragger: any
   constructor(props: Props) {
@@ -84,6 +85,13 @@ export default class Whiteboard extends Component {
       this.setupSelector(e)
       this.clearSelection()
     }
+  }
+
+  onDblClick = (e: any) => {
+    const box = this.relative.getBoundingClientRect()
+    const x = e.clientX - box.left
+    const y = e.clientY - box.top
+    console.warn('TODO create a new node')
   }
 
   setupSelector(e: any) {
@@ -151,7 +159,9 @@ export default class Whiteboard extends Component {
     return <div className={css(styles.container)}>
       <div
         onMouseDown={this.onMouseDown}
+        onDoubleClick={this.onDblClick}
         className={css(styles.relative)}
+        ref={rel => this.relative = rel}
       >
         <div className={css(styles.status)}>
           {x}:{y}:: {zoom}
