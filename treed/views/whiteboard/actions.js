@@ -8,6 +8,7 @@ const actions: ViewActionConfig = {
       normal: 'enter',
     },
     alias: 'edit',
+    description: 'Start editing',
   },
   // ???
 }

@@ -56,7 +56,8 @@ const copyToClipboard = (data) => {
   document.execCommand('copy')
 }
 
-const afterPos = (id, nodes, viewType) => {
+const afterPos = (id, nodes, root, viewType) => {
+  if (id === root) return {pid: id, idx: 0}
   let pid = nodes[id].parent
   let idx
   const views = nodes[id].views
@@ -262,7 +263,34 @@ const actions = {
       }
     },
 
-    dropFile(store: Store, id: string, at: 'before' | 'after' | 'over', file: string) {
+    dropFiles(store: Store, id: string, at: 'before' | 'after' | 'over', files: Array<any>) {
+      let pid, idx
+      if (id === store.state.root) {
+        pid = id
+        idx = 0
+      } else {
+        const node = store.db.data[id]
+        pid = node.parent
+        const sibs = store.db.data[pid].children
+        idx = sibs.indexOf(id)
+        if (at === 'after') {
+          idx += 1
+        }
+      }
+
+      files.forEach(file => {
+        const fns = store.plugins.node.dropFileNew
+        const handled = fns.some(fn => fn(store, pid, idx, file))
+        if (!handled) {
+          // TODO toast
+          console.warn("Don't know how to paste this file")
+        } else {
+          idx += 1
+        }
+      })
+    },
+
+    dropFile(store: Store, id: string, at: 'before' | 'after' | 'over', file: any) {
       if (at === 'over') {
         const fns = store.plugins.node.dropFileOnto
         const handled = fns.some(fn => fn(store, id, file))
@@ -351,7 +379,7 @@ const actions = {
 
     createAfterNormal(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
-      const {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
+      const {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
       const nid = uuid()
       store.execute({
         type: 'create',
@@ -385,7 +413,7 @@ const actions = {
     createAfter(store: Store, id: string=store.state.active, content: string='', viewData: ?any=null) {
       const node = store.db.data[id]
       if (!id || !node) return
-      const {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
+      const {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
       const nid = uuid()
       let type = 'normal'
       if (pid === node.parent) {
@@ -514,7 +542,7 @@ const actions = {
     },
 
     insertTreeAfter(store: Store, id: string, tree: any) {
-      let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
+      let {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
       const nid = uuid()
       const items = []
       treeToItems(pid, nid, tree, items)
@@ -540,7 +568,7 @@ const actions = {
     },
 
     pasteCutAfter(store: Store, id: string=store.state.active) {
-      let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
+      let {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
       if (!store.globalState.cut) return
       const cid = store.globalState.cut
       if (store.db.data[cid].parent === pid) {
@@ -559,7 +587,7 @@ const actions = {
     },
 
     pasteClipboardAfter(store: Store, id: string=store.state.active) {
-      let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
+      let {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
       const nid = uuid()
       const items = []
       if (!store.globalState.clipboard) return
@@ -572,7 +600,7 @@ const actions = {
     },
 
     pasteClipboardAfterWithoutChildren(store: Store, id: string=store.state.active) {
-      let {pid, idx} = afterPos(id, store.db.data, store.state.viewType)
+      let {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
       const nid = uuid()
       const item = {
         ...store.globalState.clipboard,

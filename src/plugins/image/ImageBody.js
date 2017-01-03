@@ -145,6 +145,11 @@ export default class ImageBody extends Component {
       onMouseLeave={this.onOut}
     >
       {this.renderImage()}
+      {hasImage && <div
+        className={css(styles.date)}
+      >
+        {new Date(this.props.node.types.image.lastModified).toLocaleDateString()}
+      </div>}
       {this.state.hover && hasImage &&
         <div
           onMouseDown={this.onRemove}
@@ -170,6 +175,15 @@ const styles = StyleSheet.create({
     margin: 10,
     boxShadow: '0px 1px 5px #555',
     maxWidth: '100%',
+  },
+
+  date: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    zIndex: 5,
+    color: 'black',
+    textShadow: '1px 1px 0 white',
   },
 
   container: {

@@ -170,6 +170,8 @@ export default class ListView extends Component {
       data.items.length === 1
     ) {
       this.props.store.actions.dropFile(id, at, data.files[0])
+    } else if (data.files.length === data.items.length) {
+      this.props.store.actions.dropFiles(id, at, [...data.files])
     } else {
       // Find a text/plain, and go with it.
       // ummm what other cases are there?

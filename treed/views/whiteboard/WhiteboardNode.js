@@ -84,6 +84,7 @@ export default class WhiteboardNode extends Component {
   }
 
   onMouseDown = (e: any) => {
+    if (this.state.isActive && this.state.editMode) return
     if (this.state.isSelected) return this.props.onSelectedDown(e)
     if (e.button !== 0) return
 

@@ -16,6 +16,7 @@ const makeAttachmentUpdate = (node, imageBlob) => {
     image: {
       ...node.types.image,
       attachmentId: nid,
+      lastModified: imageBlob.lastModified || Date.now(),
       // TODO maybe image dimensions should be stored here too?
     }
   }
@@ -63,7 +64,6 @@ const actions = {
       image: {
         ...node.types.image,
         attachmentId: null,
-        // TODO maybe image dimensions should be stored here too?
       }
     }
     store.actions.update(id, {_attachments, types})
