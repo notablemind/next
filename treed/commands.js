@@ -20,7 +20,7 @@ const walk = (id, nodes, visit) => {
   nodes[id].children.forEach(child => walk(child, nodes, visit))
 }
 
-const isAncestor = (maybeAncestor, id, nodes) => {
+const isAncestor = (maybeAncestor, id, nodes: any) => {
   while (id) {
     if (id === maybeAncestor) return true
     id = nodes[id].parent
@@ -208,17 +208,33 @@ const commands: {[key: string]: Command<any>} = {
 
   replaceMergingChildren: {
     apply({id, destId}, db, events) {
+      if (isAncestor(id, destId, db.data)) {
+        console.warn("Can't move to a descendent")
+        return
+      }
       const pid = db.data[destId].parent
       const opid = db.data[id].parent
       const ochildren = db.data[opid].children.slice()
-      if (pid === opid) throw new Error('TODO')
+      // if (pid === opid) throw new Error('TODO')
       const oidx = ochildren.indexOf(id)
       ochildren.splice(oidx, 1)
 
-      const nchildren = db.data[pid].children.slice()
+      const nchildren = pid === opid ? ochildren : db.data[pid].children.slice()
       nchildren[nchildren.indexOf(destId)] = id
 
-      const mergedChildren = db.data[destId].children.concat(db.data[id].children)
+      const addChildren = destId === opid ? ochildren : db.data[destId].children
+      const mergedChildren = addChildren.concat(db.data[id].children)
+
+      const updates = [
+        {...db.data[opid], children: ochildren},
+        {...db.data[id], parent: pid, children: mergedChildren},
+        {...db.data[destId], _deleted: true},
+      ]
+
+      if (pid !== opid) {
+        updates.push({...db.data[pid], children: nchildren})
+      }
+
       return {old: {
         id,
         destId,
@@ -226,27 +242,31 @@ const commands: {[key: string]: Command<any>} = {
         opid,
         replacedNode: db.data[destId],
         oldChildren: db.data[id].children,
-      }, prom: db.saveMany([
-        {...db.data[opid], children: ochildren},
-        {...db.data[id], parent: pid, children: mergedChildren},
-        {...db.data[destId], _deleted: true},
-        {...db.data[pid], children: nchildren},
-      ])}
+      }, prom: db.saveMany(updates)}
     },
 
     undo({id, destId, oidx, opid, replacedNode, oldChildren}, db, events) {
-      const ochildren = db.data[opid].children.slice()
-      ochildren.splice(oidx, 0, id)
-
       const pid = db.data[id].parent
+
       const nchildren = db.data[pid].children.slice()
       nchildren[nchildren.indexOf(id)] = destId
-      return {prom: db.saveMany([
+
+      const ochildren = pid === opid ? nchildren : db.data[opid].children.slice()
+      ochildren.splice(oidx, 0, id)
+
+      const updates = [
         replacedNode,
         {...db.data[id], parent: opid, children: oldChildren},
-        {...db.data[opid], children: ochildren},
-        {...db.data[pid], children: nchildren}
-      ])}
+      ]
+      if (opid !== destId) {
+        updates.push({...db.data[opid], children: ochildren})
+      }
+
+      if (pid !== opid) {
+        updates.push({...db.data[pid], children: nchildren})
+      }
+
+      return {prom: db.saveMany(updates)}
     },
   },
 
