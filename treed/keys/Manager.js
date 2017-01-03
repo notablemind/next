@@ -5,6 +5,8 @@ import {MODS} from './codes'
 
 import type {KeyLayer} from '../types'
 
+window.DEBUG_KEYS = false
+
 type Layer = KeyLayer | () => ?KeyLayer
 
 export default class KeyManager {
@@ -66,6 +68,9 @@ export default class KeyManager {
     const key = canonicalEventName(e)
     if (!key) return
     const full = this.prefix + key
+    if (window.DEBUG_KEYS) {
+      console.log('key:', full)
+    }
     const handled = this.layers.some((l, i) => {
       const layer = typeof l == 'function' ? l() : l
       if (!layer) return

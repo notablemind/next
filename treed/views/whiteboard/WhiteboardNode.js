@@ -7,25 +7,37 @@ import trySnapping from './trySnapping'
 import calcSnapLines from './calcSnapLines'
 
 export default class WhiteboardNode extends Component {
-  constructor(props) {
+  keyActions: any
+
+  constructor({store, id}: any) {
     super()
-    this._sub = props.store.setupStateListener(
+    this._sub = store.setupStateListener(
       this,
       store => [
-        store.events.node(props.id),
-        store.events.nodeView(props.id),
+        store.events.node(id),
+        store.events.nodeView(id),
       ],
       store => ({
-        node: store.getters.node(props.id),
-        isActive: store.getters.isActive(props.id),
+        node: store.getters.node(id),
+        isActive: store.getters.isActive(id),
         isSelected: store.state.selected &&
-          store.state.selected[props.id],
-        // isCutting: store.getters.isCutting(props.id),
-        editState: store.getters.editState(props.id),
+          store.state.selected[id],
+        // isCutting: store.getters.isCutting(id),
+        editState: store.getters.editState(id),
         handoff: null,
       })
     )
     this.state.moving = false
+
+    this.keyActions = {
+      setContent: text => store.actions.setContent(id, text),
+      onEnter: this.createAfter,
+      onUp: () => null,
+      onDown: () => null,
+      onLeft: () => null,
+      onRight: () => null,
+      onTab: null,
+    }
   }
 
   componentDidMount() {
@@ -49,6 +61,19 @@ export default class WhiteboardNode extends Component {
   stopDragging() {
     window.removeEventListener('mousemove', this.onDrag, true)
     window.removeEventListener('mouseup', this.onMouseUp, true)
+  }
+
+  createAfter = text => {
+    console.log('want to create')
+    const myData = this.state.node.views.whiteboard
+    const viewData = myData ? {
+      x: myData.x,
+      y: myData.y + this.div.offsetHeight + 5, // TODO avoid obstacles
+    } : null
+    let nid = this.props.store.actions.createAfter(this.props.id, text, viewData)
+    if (nid) {
+      this.props.store.actions.setActive(nid)
+    }
   }
 
   onContextMenu = (e: any) => {
@@ -150,7 +175,7 @@ export default class WhiteboardNode extends Component {
     const {dx, dy} = this.props
     return <div
       ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
-      className={css(styles.container)}
+      className={css(styles.container, this.state.isActive && styles.activeContainer)}
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
       style={{
@@ -167,6 +192,7 @@ export default class WhiteboardNode extends Component {
         editState={this.state.editState}
         actions={this.props.store.actions}
         store={this.props.store}
+        keyActions={this.keyActions}
       />
       {this.state.node.children.length > 0 &&
         <div className={css(styles.kidBadge)}>
@@ -186,6 +212,11 @@ const styles = StyleSheet.create({
     width: 200,
     border: '1px solid #ccc',
     cursor: 'move',
+  },
+
+  activeContainer: {
+    // borderColor: 'magenta',
+    zIndex: 100000,
   },
 
   kidBadge: {

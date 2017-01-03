@@ -48,6 +48,7 @@ export default class Body extends Component {
           store={this.props.store}
           actions={this.props.actions}
           editState={this.props.editState}
+          keyActions={this.props.keyActions}
         />
       </div>
     </div>

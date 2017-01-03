@@ -19,6 +19,7 @@ export default class ListItem extends Component {
   _sub: any
   _div: any
   state: any
+  keyActions: any
 
   constructor({store, id}: any) {
     super()
@@ -38,6 +39,28 @@ export default class ListItem extends Component {
         editState: store.getters.editState(id),
       }),
     )
+
+    this.keyActions = {
+      onTab: shiftKey => {
+        if (shiftKey) {
+          store.actions.makeParentsNextSibling()
+        } else {
+          store.actions.makePrevSiblingsLastChild()
+        }
+      },
+      onEnter: text => {
+        const nid = store.actions.createAfter(id, text)
+        if (nid) {
+          store.actions.editStart(nid)
+        }
+      },
+      onLeft: () => store.actions.focusPrev(id, 'end'),
+      onRight: () => store.actions.focusNext(id, 'start'),
+      onUp: store.actions.focusPrev,
+      onDown: store.actions.focusNext,
+
+      setContent: text => store.actions.setContent(id, text),
+    }
   }
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
@@ -128,7 +151,11 @@ export default class ListItem extends Component {
           isDragging={this.state.isDragging}
           editState={this.state.editState}
           actions={this.props.store.actions}
+
+          keyActions={this.keyActions}
+
           store={this.props.store}
+
         />
       </div>
 

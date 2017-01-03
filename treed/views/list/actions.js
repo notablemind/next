@@ -170,6 +170,14 @@ const actions: ViewActionConfig = {
     description: 'Create node after',
   },
 
+  createChild: {
+    shortcuts: {
+      normal: 'cmd+o',
+    },
+    alias: 'createChild',
+    description: 'Create child',
+  },
+
   createNextSibling: {
     shortcuts: {
       normal: 'alt+o',

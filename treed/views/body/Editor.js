@@ -28,7 +28,7 @@ export default class Editor extends Component {
     setTimeout(() => {
       if (this._unmounted || !this.props) return
       if (!document.hasFocus()) return
-      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
+      this.props.keyActions.setContent(this.state.tmpText)
       this.props.actions.normalMode()
     }, 10)
   }
@@ -43,63 +43,59 @@ export default class Editor extends Component {
       }
       break
     case 9: // tab
+      if (!this.props.keyActions.onTab) return // ignore
       // TODO these should be the same "history" item maybe? probably.
       // So I need the concept of a transaction.
       // this.props.store.beginTransaction()
       const pos = e.target.selectionEnd
-      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
-      if (e.shiftKey) {
-        this.props.actions.makeParentsNextSibling()
-      } else {
-        this.props.actions.makePrevSiblingsLastChild()
-      }
+      this.props.keyActions.setContent(this.state.tmpText)
+      this.props.keyActions.onTab(e.shiftKey)
       this.props.actions.editAt(this.props.node._id, pos)
       // this.props.store.endTransaction()
       // I won't allow nested transactions until I see a need for them
       break
     case 13: // enter
-      if (e.shiftKey || e.target.value.indexOf('\n') !== -1) return
+      if (e.shiftKey) return
+      if (!e.ctrlKey && e.target.value.indexOf('\n') !== -1) return
       const prev = e.target.value.slice(0, e.target.selectionStart)
       const next = e.target.value.slice(e.target.selectionStart)
       this.setState({tmpText: prev})
       // TODO these two things should be a transaction probably? maybe
-      this.props.actions.setContent(this.props.node._id, prev)
-      const nid = this.props.actions.createAfter(this.props.node._id, next)
-      if (nid) {
-        this.props.actions.editStart(nid)
-      }
+      this.props.keyActions.setContent(prev)
+      this.props.keyActions.onEnter(next)
       break
     case 27: // escape
-      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
+      this.props.keyActions.setContent(this.state.tmpText)
       this.props.actions.normalMode()
       break
+
     case 38: // up
       if (e.shiftKey) return
       var line = this.input.getCursorLine()
       if (line !== 1 && line !== 0) return
-      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
-      this.props.actions.focusPrev()
+      this.props.keyActions.setContent(this.state.tmpText)
+      this.props.keyActions.onUp()
       break
     case 40: // down
       if (e.shiftKey) return
       var line = this.input.getCursorLine()
       if (line !== 1 && line !== -1) return
-      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
-      this.props.actions.focusNext()
+      this.props.keyActions.setContent(this.state.tmpText)
+      this.props.keyActions.onDown()
       break
     case 39: // right
       if (e.shiftKey) return
       if (e.target.selectionStart !== e.target.value.length) {
         return
       }
-      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
-      this.props.actions.focusNext(this.props.node._id, 'start')
+      this.props.keyActions.setContent(this.state.tmpText)
+      this.props.keyActions.onRight()
       break
     case 37: // left
       if (e.shiftKey) return
       if (e.target.selectionEnd !== 0) return
-      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
-      this.props.actions.focusPrev(this.props.node._id, 'end')
+      this.props.keyActions.setContent(this.state.tmpText)
+      this.props.keyActions.onLeft()
       break
     default:
       return
@@ -114,7 +110,7 @@ export default class Editor extends Component {
         tmpText: nextProps.node.content,
       })
     } else if (!nextProps.editState && this.props.editState) {
-      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
+      this.props.keyActions.setContent(this.state.tmpText)
     } else if (this.props.editState && this.props.node.content !== nextProps.node.content) {
       this.setState({
         tmpText: nextProps.node.content,
@@ -125,7 +121,7 @@ export default class Editor extends Component {
   componentWillUnmount() {
     this._unmounted = true
     if (this.props.editState) {
-      this.props.actions.setContent(this.props.node._id, this.state.tmpText)
+      this.props.keyActions.setContent(this.state.tmpText)
     }
   }
 
