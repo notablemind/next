@@ -1,0 +1,16 @@
+{
+  "name": "native",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest"
+  },
+  "dependencies": {
+    "pouchdb-react-native": "^6.1.24",
+    "react-native": "0.39.2"
+  },
+  "devDependencies": {
+    "babel-preset-react-native": "^1.9.1"
+  }
+}

@@ -1,6 +1,5 @@
 {
-  "presets": ["react", ["env", {
-    "targets": {"chrome": "current"}
-  }]],
+  "presets": ["react", "react-native"],
   "plugins": ["transform-class-properties", "transform-object-rest-spread", "transform-es2015-classes", "react-hot-loader/babel"]
 }
+
