@@ -42,6 +42,8 @@ type DocT = {
   type: 'doc',
   folder: ?string,
   title: string,
+  last_opened: number,
+  size: number,
 }
 
 type Props = {
@@ -223,8 +225,17 @@ export default class Browse extends Component {
 
 const Folder = ({map, children, folder, onOpen}) => (
   <div className={css(styles.folderContainer)}>
-    <div className={css(styles.item, styles.folder, folder._id === 'root' && styles.rootName)}>{folder.title}</div>
-    <div className={css(styles.children, folder._id === 'root' && styles.rootChildren)}>
+    <div className={css(
+      styles.item,
+      styles.folder,
+      folder._id === 'root' && styles.rootName
+    )}>
+      {folder.title}
+    </div>
+    <div className={css(
+      styles.children,
+      folder._id === 'root' && styles.rootChildren
+    )}>
       {(children[folder._id] || []).map(id => (
         map[id].type === 'folder' ?
           <Folder
@@ -246,7 +257,15 @@ const Folder = ({map, children, folder, onOpen}) => (
 
 const Doc = ({doc, onOpen}) => (
   <div className={css(styles.item, styles.doc)} onClick={() => onOpen(doc._id)}>
-    {doc.title}
+    <div className={css(styles.itemTitle)}>
+      {doc.title}
+    </div>
+    <div className={css(styles.size)}>
+      {doc.size}
+    </div>
+    <div className={css(styles.lastOpened)}>
+      {doc.last_opened ? new Date(doc.last_opened).toLocaleDateString() : ''}
+    </div>
   </div>
 )
 
@@ -260,6 +279,19 @@ const styles = StyleSheet.create({
   buttons: {
     alignSelf: 'center',
     flexDirection: 'row',
+  },
+
+  itemTitle: {
+    flex: 1,
+  },
+
+  doc: {
+    flexDirection: 'row',
+  },
+
+  lastOpened: {
+    fontSize: '80%',
+    marginLeft: 10,
   },
 
   item: {

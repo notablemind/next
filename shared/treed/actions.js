@@ -2,7 +2,7 @@
 
 // const maybeId = fn => (store, id) => fn(store, id || store.state.active)
 
-import uuid from '../src/utils/uuid'
+import uuid from './uuid'
 import * as nav from './nav'
 import * as move from './move'
 

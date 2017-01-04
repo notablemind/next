@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "pouchdb": "^6.1.0",
+    "pouchdb-react-native": "^6.1.24"
+  }
+}

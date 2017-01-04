@@ -18,7 +18,7 @@ import bindCommandProxies from './bindCommandProxies'
 import * as search from './search'
 import * as migrations from './migrations'
 
-import uuid from '../src/utils/uuid'
+import uuid from './uuid'
 import type {Plugin, Store, GlobalStore, GlobalState} from './types'
 import type {Db} from './Database'
 

@@ -23,7 +23,7 @@ module.exports = {
   ],
   resolve: {
     alias: {
-      treed: path.join(__dirname, '..', 'treed'),
+      treed: path.join(__dirname, '..', 'native', 'treed'),
       formative: path.join(__dirname, '..', 'formative'),
     },
   },
@@ -34,7 +34,7 @@ module.exports = {
       loaders: ['babel'],
       include: [
         path.join(__dirname, '..', 'src'),
-        path.join(__dirname, '..', 'treed'),
+        path.join(__dirname, '..', 'native', 'treed'),
         path.join(__dirname, '..', 'formative'),
       ],
     }, {
@@ -42,7 +42,7 @@ module.exports = {
       loader: 'style-loader!css-loader!less-loader',
       include: [
         path.join(__dirname, '..', 'src'),
-        path.join(__dirname, '..', 'treed'),
+        path.join(__dirname, '..', 'native', 'treed'),
       ],
     }]
   }

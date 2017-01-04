@@ -218,5 +218,5 @@ const pouchApp = require('express-pouchdb')(PouchDB)
 app.use(pouchApp)
 
 app.listen(6102, () => {
-  console.log('ready')
+  console.log('ready on 6102')
 })

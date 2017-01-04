@@ -110,11 +110,19 @@ export default class Document extends Component {
     this.makeTreed(this.state.db)
   }
 
+  goBack = () => {
+    if (this.state.treed) {
+      const numItems = Object.keys(this.state.treed.db.data).length
+      this.props.updateFile(this.props.params.id, 'size', numItems)
+    }
+    hashHistory.push('/')
+  }
+
   keyLayerConfig = {
     goHome: {
       shortcut: 'g q',
       description: 'Go back to the documents screen',
-      action: () => hashHistory.push('/'),
+      action: this.goBack,
     },
     undo: {
       shortcut: 'u, cmd+z',
@@ -163,6 +171,7 @@ export default class Document extends Component {
       this.state.treed.destroy()
       this._unsub && this._unsub()
     }
+    this.props.updateFile(this.props.params.id, 'last_opened', Date.now())
     const treed = window._treed = new Treed(
       treedPouch(this.state.db),
       plugins,
@@ -215,15 +224,7 @@ export default class Document extends Component {
     document.title = title
     // this.props.setTitle(title)
     const id = this.props.params.id
-    this.props.userDb.get(id).then(doc => {
-      if (doc.title !== title) {
-        console.log('saving title')
-        this.props.userDb.put({
-          ...doc,
-          title,
-        })
-      }
-    })
+    this.props.updateFile(id, 'title', title)
   }
 
   componentWillReceiveProps(nextProps: any) {

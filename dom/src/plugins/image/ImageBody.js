@@ -136,8 +136,9 @@ export default class ImageBody extends Component {
   }
 
   render() {
-    const hasImage = this.props.node.types.image &&
-      this.props.node.types.image.attachmentId
+    const data = this.props.node.types.image
+    const hasImage = data &&
+      data.attachmentId
     return <div
       className={css(styles.container)}
       ref={n => this._node = n}
@@ -145,10 +146,10 @@ export default class ImageBody extends Component {
       onMouseLeave={this.onOut}
     >
       {this.renderImage()}
-      {hasImage && <div
+      {hasImage && data.lastModified && <div
         className={css(styles.date)}
       >
-        {new Date(this.props.node.types.image.lastModified).toLocaleDateString()}
+        {new Date(data.lastModified).toLocaleDateString()}
       </div>}
       {this.state.hover && hasImage &&
         <div

@@ -182,6 +182,19 @@ export default class Wrapper extends Component {
     this.setState({title})
   }
 
+  updateFile = (id: string, attr: string, value: any) => {
+    if (!this.state.userDb) {
+      return console.error('No user db - unable to update file')
+    }
+
+    this.state.userDb.get(id).then(doc => {
+      if (doc[attr] !== value) {
+        console.log(`saving doc ${id}: ${attr}`)
+        this.state.userDb.upsert(id, doc => ({...doc, [attr]: value}))
+      }
+    })
+  }
+
   render() {
     return <div className={css(styles.container)}>
       <Header
@@ -204,6 +217,7 @@ export default class Wrapper extends Component {
         ),
         remoteUser: this.state.user,
         userDb: this.state.userDb,
+        updateFile: this.updateFile,
         setTitle: this.setTitle,
       })}
     </div>
