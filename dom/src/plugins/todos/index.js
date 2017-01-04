@@ -6,7 +6,7 @@ import {css, StyleSheet} from 'aphrodite'
 import TodoBody from './TodoBody'
 import TodoSummary from './TodoSummary'
 
-import type {Plugin} from '../../../treed/types'
+import type {Plugin} from 'treed/types'
 
 /*
 

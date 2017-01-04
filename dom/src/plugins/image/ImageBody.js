@@ -4,7 +4,7 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 import actions from './actions'
 
-import Content from '../../../treed/views/body/Content'
+import Content from 'treed/views/body/Content'
 
 const urlCache = {}
 

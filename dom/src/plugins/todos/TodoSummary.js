@@ -3,7 +3,7 @@
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
-import Content from '../../../treed/views/body/Content'
+import Content from 'treed/views/body/Content'
 
 const walk = (id, nodes, visit) => {
   const children = nodes[id].children

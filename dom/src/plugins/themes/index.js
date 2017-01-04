@@ -3,7 +3,7 @@
 import React from 'react'
 import './themes.less'
 
-import makeKeyLayer from '../../../treed/keys/makeKeyLayer'
+import makeKeyLayer from 'treed/keys/makeKeyLayer'
 import SidePane from './SidePane'
 
 import defaultGlobalConfig from './defaultGlobalConfig'
@@ -11,7 +11,7 @@ import type {Style, ThemeSettings} from './defaultGlobalConfig'
 
 import themeToCss, {makeClassNames} from './themeToCss'
 
-import type {Plugin} from '../../../treed/types'
+import type {Plugin} from 'treed/types'
 
 const PLUGIN_ID = 'themes'
 

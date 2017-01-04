@@ -5,17 +5,17 @@ import {css, StyleSheet} from 'aphrodite'
 import PouchDB from 'pouchdb'
 import {hashHistory} from 'react-router'
 
-import Treed from '../../../treed'
-import treedPouch from '../../../treed/pouch'
-import makeKeyLayer from '../../../treed/keys/makeKeyLayer'
-import KeyManager from '../../../treed/keys/Manager'
+import Treed from 'treed'
+import treedPouch from 'treed/pouch'
+import makeKeyLayer from 'treed/keys/makeKeyLayer'
+import KeyManager from 'treed/keys/Manager'
 import Sidebar from './Sidebar'
 // import ThemeManager, {defaultThemeSettings} from './ThemeManager'
 import Searcher from './Searcher'
 import KeyCompleter from './KeyCompleter'
 import ViewTypeSwitcher from './ViewTypeSwitcher'
 
-// import listView from '../../../treed/views/list'
+// import listView from 'treed/views/list'
 
 /*
 const textImporters = [
@@ -64,8 +64,8 @@ const plugins = [
 ]
 
 const viewTypes = {
-  list: require('../../../treed/views/list').default,
-  whiteboard: require('../../../treed/views/whiteboard').default,
+  list: require('treed/views/list').default,
+  whiteboard: require('treed/views/whiteboard').default,
 }
 
 type DbT = any

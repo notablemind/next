@@ -3,7 +3,7 @@
 import ImageBody from './ImageBody'
 import actions from './actions'
 
-import type {Plugin} from '../../../treed/types'
+import type {Plugin} from 'treed/types'
 
 const PLUGIN_ID = 'image'
 
