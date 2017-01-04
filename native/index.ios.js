@@ -65,7 +65,7 @@ export default class Native extends Component {
   componentDidMount() {
     getUser()
       .then(
-        user => this.checkSavedUser(user),
+        user => user ? this.checkSavedUser(user) : this.setState({loading: false}),
         err => this.setState({loading: false}),
       )
   }

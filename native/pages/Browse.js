@@ -6,6 +6,9 @@ import {
   Text,
   View,
   TextInput,
+  TouchableHighlight,
+  TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 
 import Button from '../components/Button'
@@ -22,21 +25,30 @@ export default class Browse extends Component {
     }
   }
 
-  componentDidMount() {
+  getAllDocs() {
     this.props.userDb.allDocs({include_docs: true}).then(result => {
-      const files = result.rows.filter(item => item.type === 'doc')
+      const files = result.rows.filter(item => item.doc.type === 'doc').map(item => item.doc)
       this.setState({files})
-      /*
-      Promise.all(files.map(file => this.props.checkForLocalDb(file._id))).then(results => {
-        const existings = {}
-        files.forEach((file, i) => existings[file._id] = results[i])
-        this.setState({existings})
-      })
-      */
     }, err => {
       console.log('failed to get')
       this.setState({error: 'Failed to list files'})
     })
+  }
+
+  componentDidMount() {
+    this.getAllDocs()
+    this._changes = this.props.userDb.changes({
+      include_docs: true,
+      live: true,
+      since: 'now',
+    })
+    .on('change', change => {
+      this.getAllDocs()
+    })
+  }
+
+  componentWillUnmount() {
+    this._changes.cancel()
   }
 
   render() {
@@ -50,18 +62,26 @@ export default class Browse extends Component {
         <Text>Loading files list</Text>
       </View>
     }
+    if (!this.state.files.length) {
+      return <View style={styles.container}>
+        <Text>You have no files</Text>
+      </View>
+    }
+
     return <View style={styles.container}>
       <Text>NotableMind: Files</Text>
+      <ScrollView style={{flex: 1}}>
       {this.state.files.map(file => (
-        <View style={styles.item}>
+        <TouchableOpacity
+          key={file._id}
+          onPress={() => console.log('a')}
+          style={styles.item}>
           <Text>
             {file.title}
           </Text>
-        </View>
+        </TouchableOpacity>
       ))}
-      <Text>
-        Files: {this.state.files.length + ''}
-      </Text>
+      </ScrollView>
     </View>
   }
 }
@@ -69,6 +89,12 @@ export default class Browse extends Component {
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
-    padding: 10,
+    flex: 1,
+    // padding: 10,
+  },
+
+  item: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
 })
