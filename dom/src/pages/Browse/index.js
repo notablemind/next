@@ -5,8 +5,8 @@ import {css, StyleSheet} from 'aphrodite'
 import uuid from '../../utils/uuid'
 import {hashHistory} from 'react-router'
 
-import KeyManager from '../../../treed/keys/Manager'
-import makeKeyLayer from '../../../treed/keys/makeKeyLayer'
+import KeyManager from 'treed/keys/Manager'
+import makeKeyLayer from 'treed/keys/makeKeyLayer'
 
 const organizeFolders = (rows) => {
   const map = {}

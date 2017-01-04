@@ -23,8 +23,7 @@ module.exports = {
   ],
   resolve: {
     alias: {
-      treed: path.join(__dirname, '..', 'native', 'treed'),
-      formative: path.join(__dirname, '..', 'formative'),
+      treed: path.join(__dirname, '..', '..', 'shared', 'treed'),
     },
   },
 
@@ -34,15 +33,14 @@ module.exports = {
       loaders: ['babel'],
       include: [
         path.join(__dirname, '..', 'src'),
-        path.join(__dirname, '..', 'native', 'treed'),
-        path.join(__dirname, '..', 'formative'),
+        path.join(__dirname, '..', '..', 'shared', 'treed'),
       ],
     }, {
       test: /\.less$/,
       loader: 'style-loader!css-loader!less-loader',
       include: [
         path.join(__dirname, '..', 'src'),
-        path.join(__dirname, '..', 'native', 'treed'),
+        path.join(__dirname, '..', '..', 'shared', 'treed'),
       ],
     }]
   }
