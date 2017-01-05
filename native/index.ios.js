@@ -12,12 +12,11 @@ import {
   View,
   AsyncStorage,
 } from 'react-native';
-
 import PouchDB from 'pouchdb-react-native'
-import Treed from 'treed'
 
 import Login from './pages/Login'
 import Browse from './pages/Browse'
+import Document from './pages/Document'
 
 import {login} from './utils/login'
 import {baseURL} from './config'
@@ -28,6 +27,10 @@ const USER_KEY = 'notablemind:user'
 const saveUser = user => AsyncStorage.setItem(USER_KEY, JSON.stringify(user))
 const getUser = () => AsyncStorage.getItem(USER_KEY).then(raw => JSON.parse(raw))
 const clearUser = () => AsyncStorage.removeItem(USER_KEY)
+
+const SYNC_DATA_KEY = 'notablemind:syncs'
+const saveSyncData = syncData => AsyncStorage.setItem(SYNC_DATA_KEY, JSON.stringify(syncData))
+const getSyncData = () => AsyncStorage.getItem(SYNC_DATA_KEY).then(raw => JSON.parse(raw)).catch(err => {})
 
 const ensureUserDb = (done) => {
   fetch(`${baseURL}/api/ensure-user`, {
@@ -59,6 +62,7 @@ export default class Native extends Component {
       userDb: new PouchDB('notablemind_user'),
       loading: true,
       online: true,
+      syncData: {},
     }
   }
 
@@ -68,6 +72,9 @@ export default class Native extends Component {
         user => user ? this.checkSavedUser(user) : this.setState({loading: false}),
         err => this.setState({loading: false}),
       )
+
+    getSyncData()
+      .then(syncData => this.setState({syncData}))
   }
 
   componentDidUpdate(_: {}, prevState: State) {
@@ -140,10 +147,13 @@ export default class Native extends Component {
   }
 
   openFile = id => {
-    // ensureDocDb(
     this.setState({
       openFile: id,
     })
+  }
+
+  onCloseFile = () => {
+    this.setState({openFile: null})
   }
 
   render() {
@@ -158,10 +168,26 @@ export default class Native extends Component {
       )
     }
 
+    if (this.state.openFile) {
+      return <Document
+        // This makes it so that we don't reuse the component between files.
+      // Makes it a little easier on us
+        key={this.state.openFile}
+        id={this.state.openFile}
+        onClose={this.onCloseFile}
+        makeRemoteDocDb={id => {
+          const doc = `doc_${this.state.user.id}_${id}`
+          return ensureDocDb(doc).then(() => new PouchDB(`${baseURL}/${doc}`))
+        }}
+      />
+    }
+
     return <Browse
       userDb={this.state.userDb}
       checkForLocalDb={this.checkForLocalDb}
       openFile={this.openFile}
+      syncData={this.state.syncData}
+      // TODO will "browse" ever be responsible for syncing? probs not
     />
 
     /*

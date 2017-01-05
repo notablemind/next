@@ -74,7 +74,7 @@ export default class Browse extends Component {
       {this.state.files.map(file => (
         <TouchableOpacity
           key={file._id}
-          onPress={() => console.log('a')}
+          onPress={() => this.props.openFile(file._id)}
           style={styles.item}>
           <Text>
             {file.title}
