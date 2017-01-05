@@ -14,6 +14,8 @@ import PouchDB from 'pouchdb-react-native'
 import Treed from 'treed'
 import treedPouch from 'treed/pouch'
 
+import Header from './Header'
+
 const plugins = []
 const viewTypes = {
   list: require('../views/list').default,
@@ -32,6 +34,7 @@ export default class Document extends Component {
       store: null,
       viewType: 'list',
       title: 'Notablemind',
+      syncState: 'unstarted',
     }
   }
 
@@ -58,10 +61,18 @@ export default class Document extends Component {
   }
 
   setupSync() {
-    this.props.makeRemoteDocDb(this.props.id).then(
-      db => this.state.db.sync(db, {live: true, retry: true})
-        .on('error', e => console.error('sync fail', e))
-    )
+    this.setState({syncState: 'syncing'})
+    this.props.makeRemoteDocDb(this.props.id).then(db => {
+      // do a full sync first
+      this.state.db.sync(db, {retry: true})
+        .on('error', e => this.setState({syncState: 'error'}))
+        .on('complete', e => {
+          this.setState({syncState: 'done'})
+          // then start a live sync
+          this.state.db.sync(db, {live: true, retry: true})
+            .on('error', e => this.setState({syncState: 'error'}))
+        })
+    })
   }
 
   componentWillUnmount() {
@@ -87,10 +98,12 @@ export default class Document extends Component {
 
     const Component = viewTypes[this.state.viewType].Component
     return <View style={styles.container}>
-    <Text>{this.state.title}</Text>
-      <Text>
-        Hello {this.props.id}
-      </Text>
+      <Header
+        title={this.state.title}
+        onClose={this.props.onClose}
+        syncState={this.state.syncState}
+        // TODO show whole ancestry of current node
+      />
       <Component
         store={this.state.store}
       />
@@ -101,7 +114,8 @@ export default class Document extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    marginTop: 20,
+    // padding: 20,
   },
 })
 

@@ -28,6 +28,7 @@ export default class Browse extends Component {
   getAllDocs() {
     this.props.userDb.allDocs({include_docs: true}).then(result => {
       const files = result.rows.filter(item => item.doc.type === 'doc').map(item => item.doc)
+        .sort((a, b) => a.title > b.title ? 1 : (a.title === b.title ? 0 : -1))
       this.setState({files})
     }, err => {
       console.log('failed to get')
@@ -76,9 +77,14 @@ export default class Browse extends Component {
           key={file._id}
           onPress={() => this.props.openFile(file._id)}
           style={styles.item}>
-          <Text>
+          <View style={styles.itemRow}>
+          <Text style={styles.title}>
             {file.title}
           </Text>
+          <Text>
+            {file.size}
+          </Text>
+          </View>
         </TouchableOpacity>
       ))}
       </ScrollView>
@@ -91,6 +97,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
     flex: 1,
     // padding: 10,
+  },
+
+  title: {
+    flex: 1,
+  },
+
+  itemRow: {
+    flexDirection: 'row',
   },
 
   item: {

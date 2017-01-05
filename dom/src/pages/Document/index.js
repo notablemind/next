@@ -82,6 +82,7 @@ export default class Document extends Component {
     store: any,
     searching: bool,
     viewType: string,
+    syncState: string,
   }
   _unsub: () => void
 
@@ -93,6 +94,7 @@ export default class Document extends Component {
       treed: null,
       store: null,
       viewType: 'list',
+      syncState: 'unsynced',
       // panesSetup,
     }
 
@@ -245,10 +247,17 @@ export default class Document extends Component {
   }
 
   setupSync(makeRemoteDocDb: () => Promise<DbT>, id: string) {
-    makeRemoteDocDb(id).then(
-      db => this.state.db.sync(db, {live: true, retry: true})
-        .on('error', e => console.error('sync fail', e))
-    )
+    this.setState({syncState: 'syncing'})
+    makeRemoteDocDb(id).then(db => {
+      this.state.db.sync(db, {retry: true})
+        .on('error', e => this.setState({syncState: 'error'}))
+        .on('complete', () => {
+          this.setState({syncState: 'synced'})
+
+          this.state.db.sync(db, {live: true, retry: true})
+            .on('error', e => this.setState({syncState: 'error'}))
+        })
+    })
   }
 
   componentWillUnmount() {
@@ -275,6 +284,9 @@ export default class Document extends Component {
         globalStore={this.state.treed.globalStore}
         plugins={this.state.treed.config.plugins}
       />
+      <div className={css(styles.syncState)}>
+        {this.state.syncState}
+      </div>
       <div className={css(styles.treedContainer) + ' Theme_basic'}>
         <Component
           store={this.state.store}
@@ -296,6 +308,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     flex: 1,
+  },
+
+  syncState: {
+    position: 'absolute',
+    top: 100,
+    right: 10,
   },
 
   loading: {
