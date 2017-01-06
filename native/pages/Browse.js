@@ -47,7 +47,9 @@ export default class Browse extends Component {
   }
 
   componentWillUnmount() {
-    this._changes.cancel()
+    if (this._changes) {
+      this._changes.cancel()
+    }
   }
 
   render() {

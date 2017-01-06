@@ -23,6 +23,8 @@ import {baseURL} from './config'
 
 import Button from './components/Button'
 
+GLOBAL.XMLHttpRequest = GLOBAL.originalXMLHttpRequest || GLOBAL.XMLHttpRequest;
+
 const USER_KEY = 'notablemind:user'
 const saveUser = user => AsyncStorage.setItem(USER_KEY, JSON.stringify(user))
 const getUser = () => AsyncStorage.getItem(USER_KEY).then(raw => JSON.parse(raw))
@@ -33,23 +35,25 @@ const saveSyncData = syncData => AsyncStorage.setItem(SYNC_DATA_KEY, JSON.string
 const getSyncData = () => AsyncStorage.getItem(SYNC_DATA_KEY).then(raw => JSON.parse(raw)).catch(err => {})
 
 const ensureUserDb = (done) => {
+  console.log('ensuring user db')
   fetch(`${baseURL}/api/ensure-user`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
   }).then(
-    res => console.log('good', res),
+    res => console.log('good user db', res),
     err => console.log('bad')
   )
 }
 
 const ensureDocDb = id => {
+  console.log('ensuring doc db')
   return fetch(`${baseURL}/api/create-doc?id=${id}`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
   }).then(
-    res => console.log('good', res),
+    res => console.log('good doc db ' + id, res),
     err => console.log('bad')
   )
 }
@@ -103,6 +107,7 @@ export default class Native extends Component {
       }
 
       if (!res.userCtx || res.userCtx.name !== user.id) {
+        console.log('bad result')
         clearUser()
         this.setState({
           user: null,
@@ -110,6 +115,7 @@ export default class Native extends Component {
           loading: false,
         })
       }
+      console.log('got the stuffs', res)
 
       ensureUserDb(res => { console.log('ensured') })
       this.setState({
@@ -158,7 +164,7 @@ export default class Native extends Component {
 
   render() {
     if (this.state.loading) {
-      return <View><Text>Loading...</Text></View>
+      return <View style={styles.loading}><Text>Loading...</Text></View>
     }
     if (!this.state.user) {
       return (
@@ -218,6 +224,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
     paddingTop: 40,
+  },
+
+  loading: {
+    padding: 40,
+    alignItems: 'center',
   },
 
   welcome: {

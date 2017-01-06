@@ -8,6 +8,8 @@ import {
   AsyncStorage,
 } from 'react-native';
 
+import render from './render'
+
 export default class ListItem extends Component {
   constructor({store, id}) {
     super()
@@ -36,7 +38,7 @@ export default class ListItem extends Component {
   render() {
     return <View style={styles.container}>
       <View style={styles.top}>
-        <Text>{this.state.node.content || '<empty>'}</Text>
+        {render(this.state.node.content) || <Text>empty</Text>}
       </View>
       {this.props.depth < 3 &&
         <View style={styles.children}>
@@ -62,7 +64,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   children: {
-    paddingLeft: 10,
+    paddingLeft: 5,
+    borderLeftWidth: 1,
+    borderColor: '#ccc',
+    marginLeft: 10,
   },
 })
 
