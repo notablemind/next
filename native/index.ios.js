@@ -13,6 +13,7 @@ import {
   AsyncStorage,
 } from 'react-native';
 import PouchDB from 'pouchdb-react-native'
+PouchDB.plugin(require('@jabapyth/pouchdb-adapter-asyncstorage').default)
 
 import Login from './pages/Login'
 import Browse from './pages/Browse'
