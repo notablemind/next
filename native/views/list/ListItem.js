@@ -8,7 +8,7 @@ import {
   AsyncStorage,
 } from 'react-native';
 
-import render from './render'
+import render from '../body/render'
 
 export default class ListItem extends Component {
   constructor({store, id}) {

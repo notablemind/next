@@ -19,10 +19,7 @@ import Header from './Header'
 const plugins = []
 const viewTypes = {
   list: require('../views/list').default,
-  /*{
-    actions: {},
-    Component: ({something}) => <Text>Hello phriends</Text>,
-  },*/
+  simple: require('../views/simple').default,
 }
 
 export default class Document extends Component {
@@ -32,7 +29,7 @@ export default class Document extends Component {
       db: new PouchDB('doc_' + props.id),
       treed: null,
       store: null,
-      viewType: 'list',
+      viewType: 'simple',
       title: 'Notablemind',
       syncState: 'unstarted',
     }
@@ -45,6 +42,7 @@ export default class Document extends Component {
       viewTypes,
       this.props.id,
     )
+    window._treed = treed
     this._unsub = treed.on(['node:root'], () => {
       this.onTitleChange(treed.db.data.root.content)
     })
@@ -73,17 +71,6 @@ export default class Document extends Component {
           if (this._unmounted) return
           this.setState({syncState: 'error'})
         })
-        /*
-        .on('change', e => {
-          console.log('got a change', e)
-        })
-        .on('paused', e => {
-          console.log("umm takin a break", e)
-        })
-        .on('active', e => {
-          console.log('back on track', e)
-        })
-        */
         .on('complete', e => {
           console.log('done initial sync')
           if (this._unmounted) return

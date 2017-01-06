@@ -21,18 +21,18 @@ rem.block.ruler.disable(['list', 'heading', 'deflist', 'lheading'])
 
 const cache = {}
 
-const itemToRN = (item, i) => {
+const itemToRN = (style, item, i) => {
   if (Array.isArray(item)) {
     const type = item[0]
     let children
     if (item[1].length === 1 && item[1][0].type === 'text') {
       children = <Text>{item[1][0].content}</Text>
     } else {
-      children = item[1].map(itemToRN)
+      children = item[1].map(itemToRN.bind(null, style))
     }
     switch (type.type) {
       case 'paragraph_open':
-        return <Text style={styles.paragraph} key={i}>{children}</Text>
+        return <Text style={[styles.paragraph, style]} key={i}>{children}</Text>
       case 'em_open':
         return <Text style={styles.em} key={i}>{children}</Text>
       case 'strong_open':
@@ -50,7 +50,7 @@ const itemToRN = (item, i) => {
 
   switch (item.type) {
     case 'inline':
-      return item.children.map(itemToRN)
+      return item.children.map(itemToRN.bind(null, style))
     case 'text':
       return <Text key={i}>{item.content}</Text>
     case 'code':
@@ -71,6 +71,8 @@ const styles = StyleSheet.create({
   },
 
   paragraph: {
+    // fontSize: 16,
+    fontWeight: '300',
   },
 
   strong: {
@@ -102,15 +104,14 @@ const matchSides = parsed => {
   return blockStack[0][1]
 }
 
-const parsedToRN = parsed => {
-
-  return matchSides(parsed).map(itemToRN)
+const parsedToRN = (parsed, style) => {
+  return matchSides(parsed).map(itemToRN.bind(null, style))
 }
 
-export default text => {
+export default (text, style) => {
   if (!cache[text]) {
     try {
-      cache[text] = parsedToRN(rem.parse(text, {}))
+      cache[text] = parsedToRN(rem.parse(text, {}), style)
       // cache[text] = <Text>{JSON.stringify(rem.parse(text, {}), null, 2)}</Text>
     } catch (e) {
       return <Text>{'Dunno' + e.message}</Text>
