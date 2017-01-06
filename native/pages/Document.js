@@ -116,6 +116,7 @@ export default class Document extends Component {
         title={this.state.title}
         onClose={this.props.onClose}
         syncState={this.state.syncState}
+        store={this.state.store}
         // TODO show whole ancestry of current node
       />
       <Component

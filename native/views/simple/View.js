@@ -83,9 +83,9 @@ class RootItem extends Component {
 
   render() {
     return <ScrollView>
-      <View style={styles.rootContent}>
+    {/*<View style={styles.rootContent}>
         {render(this.state.node.content, {fontSize: 24, fontWeight: '200'})}
-      </View>
+      </View>*/}
       {this.state.node.children.map(child => (
         <Item id={child} store={this.props.store} key={child} />
       ))}
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
 
   top: {
     flexDirection: 'row',
-    alignItems: 'center',
+    // alignItems: 'center',
     alignSelf: 'stretch',
     borderBottomWidth: .5,
     borderColor: '#ccd',
@@ -151,13 +151,15 @@ const styles = StyleSheet.create({
   rebaser: {
     width: 20,
     height: 20,
-    backgroundColor: '#555',
+    backgroundColor: '#aaa',
     borderRadius: 10,
+    marginLeft: 10,
+    marginTop: 10,
   },
 
   content: {
     paddingVertical: 5,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
   },
 })
 
