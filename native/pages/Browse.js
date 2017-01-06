@@ -13,8 +13,6 @@ import {
 
 import Button from '../components/Button'
 
-
-
 export default class Browse extends Component {
   constructor() {
     super()
@@ -70,7 +68,10 @@ export default class Browse extends Component {
     }
 
     return <View style={styles.container}>
-      <Text>NotableMind: Files</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>NotableMind: Files</Text>
+      </View>
+
       <ScrollView style={{flex: 1}}>
       {this.state.files.map(file => (
         <TouchableOpacity
@@ -97,6 +98,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
     flex: 1,
     // padding: 10,
+  },
+
+  header: {
+    backgroundColor: 'cyan',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+
+  headerText: {
+    color: '#555',
+    fontWeight: 'bold',
   },
 
   title: {
