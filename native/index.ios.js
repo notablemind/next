@@ -24,6 +24,7 @@ import {baseURL} from './config'
 
 import Button from './components/Button'
 import Menu from './components/Menu'
+import SideMenu from './SideMenu'
 
 // GLOBAL.XMLHttpRequest = GLOBAL.originalXMLHttpRequest || GLOBAL.XMLHttpRequest;
 
@@ -170,6 +171,10 @@ export default class Native extends Component {
     saveSyncData(this.state.syncData)
   }
 
+  openMenu = () => {
+    this.menu.toggleSlideMenu()
+  }
+
   render() {
     if (this.state.loading) {
       return <View style={styles.loading}><Text>Loading...</Text></View>
@@ -192,6 +197,7 @@ export default class Native extends Component {
         initialTitle={this.state.openFile.title}
         synced={this.state.syncData[this.state.openFile.id]}
         setSyncedTime={this.setSyncedTime}
+        openMenu={this.openMenu}
         makeRemoteDocDb={id => {
           const doc = `doc_${this.state.user.id}_${id}`
           return ensureDocDb(doc).then(() => new PouchDB(`${baseURL}/${doc}`))
@@ -207,9 +213,14 @@ export default class Native extends Component {
       />
 
     return <Menu
+      ref={menu => this.menu = menu}
       width={200}
       slideWay="left"
-      menu={<SideMenu />}
+      menu={<SideMenu
+        docId={this.state.openFile}
+        onCloseDoc={() => this.setState({openFile: null})}
+        user={this.state.user}
+      />}
       frontView={main}
     />
 
@@ -222,16 +233,6 @@ export default class Native extends Component {
     </View>
     */
   }
-}
-
-const SideMenu = ({toggleSlideMenu}) => {
-  return <View style={{
-    flex: 1,
-    backgroundColor: 'red',
-    padding: 10,
-  }}>
-    <Text>Hi</Text>
-  </View>
 }
 
 const styles = StyleSheet.create({

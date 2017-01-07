@@ -162,6 +162,7 @@ export default class Document extends Component {
       <Header
         title={this.state.title}
         onClose={this.props.onClose}
+        onOpenMenu={this.props.openMenu}
         syncState={this.state.syncState}
         store={this.state.store}
         // TODO show whole ancestry of current node

@@ -71,9 +71,16 @@ export default class Header extends Component {
           </View>
         </TouchableOpacity>
           :
-        <View style={styles.title}>
-          <View style={{width: 10, flexShrink: 0}} />
-          {title}
+        <View style={styles.top}>
+          <Icon
+            name="navicon"
+            size={20}
+            style={styles.menuButton}
+            onPress={this.props.onOpenMenu}
+          />
+          <View style={styles.title}>
+            {title}
+          </View>
         </View>
         }
       <ActivityIndicator
@@ -114,6 +121,11 @@ const styles = StyleSheet.create({
     fontWeight: '200',
   },
 
+  top: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
   title: {
     flexDirection: 'row',
     flex: 1,
@@ -123,6 +135,12 @@ const styles = StyleSheet.create({
   },
 
   rebaseUp: {
+    padding: 10,
+    // alignSelf: 'stretch',
+    alignItems: 'center',
+  },
+
+  menuButton: {
     padding: 10,
     // alignSelf: 'stretch',
     alignItems: 'center',
