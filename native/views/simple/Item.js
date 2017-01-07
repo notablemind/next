@@ -15,7 +15,8 @@ import {
 import render from '../body/render'
 
 import Icon from 'react-native-vector-icons/EvilIcons'
-
+import ImageNode from './ImageNode'
+import CheckBox from './CheckBox'
 
 
 export default class Item extends Component {
@@ -47,17 +48,41 @@ export default class Item extends Component {
     this.props.store.actions.rebase(this.props.id)
   }
 
+  onCheck = () => {
+    console.log('umm check mate')
+    const checked = this.state.node.types.todo && this.state.node.types.todo.done
+    this.props.store.actions.setNested(
+      this.props.id,
+      ['types', 'todo', 'done'],
+      !checked
+    )
+  }
+
   body() {
     if (this.state.node.type === 'image') {
       return <ImageNode node={this.state.node} store={this.props.store} />
     }
+    const contents = render(this.state.node.content, styles.contentText)
     return <View style={styles.content}>
-      {render(this.state.node.content, styles.contentText)}
+      {this.state.node.type === 'todo' &&
+        <CheckBox
+          checked={this.state.node.types.todo && this.state.node.types.todo.done}
+          onChange={this.onCheck}
+          style={{marginRight: 10}}
+        />}
+      {this.state.node.children.length > 0 ?
+        <TouchableOpacity
+          onPress={this.onRebase}
+          style={{flex: 1}}
+        >
+          {contents}
+        </TouchableOpacity> : contents}
     </View>
   }
 
   render() {
     return <View style={styles.top}>
+      {this.body()}
       {this.state.node.children.length > 0 &&
         <Icon
           name="chevron-right"
@@ -66,56 +91,6 @@ export default class Item extends Component {
           style={styles.rebaser}
         />
       }
-      {this.body()}
-    </View>
-  }
-}
-
-class ImageNode extends Component {
-  constructor() {
-    super()
-    this.state = {uri: null, loading: true, error: null}
-  }
-
-  componentDidMount() {
-    this.load()
-  }
-
-  load() {
-    const {node, store} = this.props
-    if (!node.types.image || !node.types.image.attachmentId) {
-      return this.setState({loading: false})
-    }
-    store.db.db.getBase64Attachment(node._id, node.types.image.attachmentId).then(
-      base64text => {
-        // const url = URL.createObjectURL(blob)
-        // urlCache[key] = url
-        // this.setState({src: url})
-        this.setState({
-          uri: 'data:image/png;base64,' + base64text,
-          loading: false,
-        })
-      },
-      error => this.setState({error, loading: false,}),
-    )
-  }
-
-  render() {
-    if (this.state.loading) return <Text>Loading...</Text>
-    if (!this.state.uri) return <Text>No image</Text>
-    if (this.state.error) return <Text>Failed to load image</Text>
-
-    return <View style={styles.imageContainer}>
-      <Image
-        resizeMode="contain"
-        source={{uri: this.state.uri}}
-        style={styles.image}
-      />
-      <View style={styles.imageCaption}>
-        {this.props.node.content ?
-          render(this.props.node.content, styles.captionText) :
-          <Text>empty</Text>}
-      </View>
     </View>
   }
 }
@@ -163,18 +138,20 @@ const styles = StyleSheet.create({
     // height: 20,
     // backgroundColor: '#aaa',
     // borderRadius: 10,
-    marginLeft: 5,
+    marginRight: 5,
     marginTop: 12,
   },
 
   content: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 5,
     paddingHorizontal: 10,
   },
 
   contentText: {
-    fontSize: 20, fontWeight: '200', lineHeight: 30
+    fontSize: 20, fontWeight: '200', lineHeight: 30,
   },
 })
 

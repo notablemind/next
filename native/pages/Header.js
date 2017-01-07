@@ -52,18 +52,30 @@ export default class Header extends Component {
       done: 'Synced',
     }[this.props.syncState]
 
+    const title = render(this.state.node.content, styles.titleText)
+
     return <View style={styles.container}>
       {this.state.root !== 'root' ?
-        <Icon
-          name="chevron-left"
-          size={20}
+        <TouchableOpacity
           onPress={this.rebaseUp}
-          style={styles.rebaseUp}
-        /> :
-        <View style={{width: 10}} />}
-      <View style={styles.title}>
-        {render(this.state.node.content, styles.titleText)}
-      </View>
+          // style={{flex: 1}}
+            style={styles.rebaseUpButton}
+        >
+          <Icon
+            name="chevron-left"
+            size={20}
+            style={styles.rebaseUp}
+          />
+          <View style={styles.title}>
+            {title}
+          </View>
+        </TouchableOpacity>
+          :
+        <View style={styles.title}>
+          <View style={{width: 10, flexShrink: 0}} />
+          {title}
+        </View>
+        }
       <ActivityIndicator
         animating={this.props.syncState === 'syncing'}
         size="small"
@@ -92,12 +104,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'cyan',
   },
 
+  rebaseUpButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+
   titleText: {
     fontWeight: '200',
   },
 
   title: {
+    flexDirection: 'row',
     flex: 1,
+    paddingVertical: 10,
     // paddingTop: 5,
     // padding: 10,
   },

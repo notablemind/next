@@ -34,8 +34,8 @@ export default class AddItem extends Component {
     {this.state.adding ? <TextInput
         autoFocus
         style={styles.input}
-        clearButtonMode="always"
         onSubmitEditing={this.onSave}
+        onBlur={() => this.setState({adding: false})}
         value={this.state.text}
         onChangeText={text => this.setState({text})}
       /> :
@@ -46,6 +46,13 @@ export default class AddItem extends Component {
           Add an item
         </Text>
       </TouchableOpacity>}
+      {this.state.adding &&
+        <TouchableOpacity
+          onPress={() => this.setState({adding: false})}
+          style={styles.cancel}
+        >
+          <Text style={styles.cancelText}>cancel</Text>
+        </TouchableOpacity>}
     </View>
   }
 }
@@ -56,6 +63,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderBottomWidth: .5,
     borderColor: '#ddd',
+  },
+
+  cancel: {
+    position: 'absolute',
+    right: 20,
+    top: 20,
+    backgroundColor: '#ccc',
+    paddingVertical: 1,
+    paddingHorizontal: 5,
+    borderRadius: 5,
+  },
+
+  cancelText: {
+    color: 'white',
   },
 
   placeholder: {
