@@ -11,6 +11,8 @@ import {
 
 import render from '../views/body/render'
 
+import Icon from 'react-native-vector-icons/EvilIcons'
+
 export default class Header extends Component {
   constructor({store}) {
     super()
@@ -50,16 +52,17 @@ export default class Header extends Component {
     }[this.props.syncState]
 
     return <View style={styles.container}>
-      {this.state.root !== 'root' &&
-        <Text
+      {this.state.root !== 'root' ?
+        <Icon
+          name="chevron-left"
+          size={20}
           onPress={this.rebaseUp}
           style={styles.rebaseUp}
-        >
-          ◀
-        </Text>}
-      <Text style={styles.title}>
-        {render(this.state.node.content)}
-      </Text>
+        /> : <View style={{width: 10}} />
+      }
+      <View style={styles.title}>
+        {render(this.state.node.content, styles.titleText)}
+      </View>
       <Text style={styles.syncState}>
         {syncState}
       </Text>
@@ -81,8 +84,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'cyan',
   },
 
+  titleText: {
+    fontWeight: '200',
+  },
+
   title: {
     flex: 1,
+    // paddingTop: 5,
     // padding: 10,
   },
 

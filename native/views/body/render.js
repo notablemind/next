@@ -55,6 +55,8 @@ const itemToRN = (style, item, i) => {
       return <Text key={i}>{item.content}</Text>
     case 'code':
       return <Text style={styles.code} key={i}>{item.content}</Text>
+    case 'softbreak':
+      return '\n'
     default:
       return <Text key={i}>Type: {item.type} : {item.content}</Text>
   }
@@ -109,13 +111,14 @@ const parsedToRN = (parsed, style) => {
 }
 
 export default (text, style) => {
-  if (!cache[text]) {
+  const key = text + style
+  if (!cache[key]) {
     try {
-      cache[text] = parsedToRN(rem.parse(text, {}), style)
+      cache[key] = parsedToRN(rem.parse(text, {}), style)
       // cache[text] = <Text>{JSON.stringify(rem.parse(text, {}), null, 2)}</Text>
     } catch (e) {
       return <Text>{'Dunno' + e.message}</Text>
     }
   }
-  return cache[text]
+  return cache[key]
 }

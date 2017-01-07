@@ -27,6 +27,12 @@ export default class Searcher extends Component {
     text: string,
   }
 
+  state = {
+    results: [],
+    selected: 0,
+    text: '',
+  }
+
   update = () => {
     const newSearched = this.state.text.trim().toLowerCase()
     if (newSearched === this._lastSearched) return

@@ -27,15 +27,34 @@ export default class Document extends Component {
     super()
     this.state = {
       db: new PouchDB('doc_' + props.id),
+      initialSyncing: !props.synced,
       treed: null,
       store: null,
       viewType: 'simple',
       title: 'Notablemind',
       syncState: 'unstarted',
     }
+    window.doc = this
+    window.AsyncStorage = AsyncStorage
   }
 
   componentDidMount() {
+    if (!this.props.synced) {
+      this.setupSync(() => {
+        console.log('moving on')
+        this.setState({
+          initialSyncing: false,
+        })
+        this.setupTreed()
+      })
+    } else {
+      this.setupTreed()
+      this.setupSync()
+    }
+  }
+
+  setupTreed() {
+    console.log('setting up treed')
     const treed = new Treed(
       treedPouch(this.state.db),
       plugins,
@@ -55,10 +74,9 @@ export default class Document extends Component {
         title,
       })
     })
-    this.setupSync()
   }
 
-  setupSync() {
+  setupSync(done) {
     this.setState({syncState: 'syncing'})
     console.log('syncing')
     this.props.makeRemoteDocDb(this.props.id).then(db => {
@@ -67,11 +85,14 @@ export default class Document extends Component {
       // do a full sync first
       this._sync = this.state.db.sync(db)
         .on('error', e => {
-          console.log('bad news initial sync', e)
+          console.error(e)
+          console.warn('bad news initial sync', e)
           if (this._unmounted) return
           this.setState({syncState: 'error'})
         })
         .on('complete', e => {
+          if (done) done()
+          this.props.setSyncedTime(Date.now())
           console.log('done initial sync')
           if (this._unmounted) return
           this.setState({syncState: 'done'})
@@ -79,6 +100,8 @@ export default class Document extends Component {
           this._sync = this.state.db.sync(db, {live: true, retry: true})
             .on('error', e => {
               if (this._unmounted) return
+              console.error(e)
+              console.warn('failed while live syncing', e)
               this.setState({syncState: 'error'})
             })
         })
@@ -104,8 +127,14 @@ export default class Document extends Component {
   }
 
   render() {
+    if (this.state.initialSyncing) {
+      return <View style={styles.loadingContainer}>
+        <Text>Initial sync...</Text>
+      </View>
+    }
+
     if (!this.state.treed) {
-      return <View>
+      return <View style={styles.loadingContainer}>
         <Text>Loading...</Text>
       </View>
     }
@@ -131,6 +160,12 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 20,
     // padding: 20,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    padding: 40,
+    alignItems: 'center',
   },
 })
 

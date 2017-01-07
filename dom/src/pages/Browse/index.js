@@ -127,7 +127,7 @@ export default class Browse extends Component {
           ...children,
           // TODO respect current sort order
           [prev]: children[prev].splice(children[prev].indexOf(id), 1),
-          [next]: children[next].concat([id]),
+          [next]: (children[next] || []).concat([id]),
         }
       }
     } else {
@@ -135,7 +135,7 @@ export default class Browse extends Component {
       children = {
         ...children,
         // TODO respect sort order
-        [parent]: children[parent].concat([id]),
+        [parent]: (children[parent] || []).concat([id]),
       }
     }
 

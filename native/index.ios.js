@@ -24,7 +24,7 @@ import {baseURL} from './config'
 
 import Button from './components/Button'
 
-GLOBAL.XMLHttpRequest = GLOBAL.originalXMLHttpRequest || GLOBAL.XMLHttpRequest;
+// GLOBAL.XMLHttpRequest = GLOBAL.originalXMLHttpRequest || GLOBAL.XMLHttpRequest;
 
 const USER_KEY = 'notablemind:user'
 const saveUser = user => AsyncStorage.setItem(USER_KEY, JSON.stringify(user))
@@ -33,7 +33,7 @@ const clearUser = () => AsyncStorage.removeItem(USER_KEY)
 
 const SYNC_DATA_KEY = 'notablemind:syncs'
 const saveSyncData = syncData => AsyncStorage.setItem(SYNC_DATA_KEY, JSON.stringify(syncData))
-const getSyncData = () => AsyncStorage.getItem(SYNC_DATA_KEY).then(raw => JSON.parse(raw)).catch(err => {})
+const getSyncData = () => AsyncStorage.getItem(SYNC_DATA_KEY).then(raw => raw ? JSON.parse(raw) : {}).catch(err => ({}))
 
 const ensureUserDb = (done) => {
   console.log('ensuring user db')
@@ -72,14 +72,15 @@ export default class Native extends Component {
   }
 
   componentDidMount() {
-    getUser()
-      .then(
-        user => user ? this.checkSavedUser(user) : this.setState({loading: false}),
-        err => this.setState({loading: false}),
-      )
-
     getSyncData()
       .then(syncData => this.setState({syncData}))
+      .then(() => {
+        getUser()
+          .then(
+            user => user ? this.checkSavedUser(user) : this.setState({loading: false}),
+            err => this.setState({loading: false}),
+          )
+      })
   }
 
   componentDidUpdate(_: {}, prevState: State) {
@@ -163,6 +164,11 @@ export default class Native extends Component {
     this.setState({openFile: null})
   }
 
+  setSyncedTime = date => {
+    this.state.syncData[this.state.openFile] = date
+    saveSyncData(this.state.syncData)
+  }
+
   render() {
     if (this.state.loading) {
       return <View style={styles.loading}><Text>Loading...</Text></View>
@@ -182,6 +188,8 @@ export default class Native extends Component {
         key={this.state.openFile}
         id={this.state.openFile}
         onClose={this.onCloseFile}
+        synced={this.state.syncData[this.state.openFile]}
+        setSyncedTime={this.setSyncedTime}
         makeRemoteDocDb={id => {
           const doc = `doc_${this.state.user.id}_${id}`
           return ensureDocDb(doc).then(() => new PouchDB(`${baseURL}/${doc}`))
