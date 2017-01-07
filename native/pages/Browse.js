@@ -81,7 +81,7 @@ export default class Browse extends Component {
           onPress={() => this.props.openFile(file._id, file.title)}
           style={styles.item}>
           <View style={styles.itemRow}>
-          <Text style={styles.title}>
+          <Text style={[styles.title, !this.props.syncData[file._id] && styles.unsynced]}>
             {file.title}
           </Text>
           <Text>
@@ -100,6 +100,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     flex: 1,
     // padding: 10,
+  },
+
+  unsynced: {
+    fontStyle: 'italic',
+    color: '#888',
   },
 
   header: {
