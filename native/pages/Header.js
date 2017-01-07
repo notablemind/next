@@ -7,6 +7,7 @@ import {
   View,
   AsyncStorage,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 
 import render from '../views/body/render'
@@ -58,11 +59,18 @@ export default class Header extends Component {
           size={20}
           onPress={this.rebaseUp}
           style={styles.rebaseUp}
-        /> : <View style={{width: 10}} />
-      }
+        /> :
+        <View style={{width: 10}} />}
       <View style={styles.title}>
         {render(this.state.node.content, styles.titleText)}
       </View>
+      <ActivityIndicator
+        animating={this.props.syncState === 'syncing'}
+        size="small"
+        style={{
+          marginRight: 10,
+        }}
+      />
       <Text style={styles.syncState}>
         {syncState}
       </Text>

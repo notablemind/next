@@ -15,6 +15,7 @@ import Icon from 'react-native-vector-icons/EvilIcons'
 import render from '../body/render'
 
 import Item from './Item'
+import AddItem from './AddItem'
 
 export default class RootItem extends Component {
   constructor({store, id}) {
@@ -52,6 +53,10 @@ export default class RootItem extends Component {
       {this.state.node.children.map(child => (
         <Item id={child} store={this.props.store} key={child} />
       ))}
+      <AddItem
+        store={this.props.store}
+        parent={this.state.root}
+      />
     </ScrollView>
   }
 }
@@ -63,6 +68,7 @@ const styles = StyleSheet.create({
 
   container: {
     alignItems: 'stretch',
+    paddingBottom: 250,
   },
 
   rootContent: {

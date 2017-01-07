@@ -154,9 +154,9 @@ export default class Native extends Component {
     clearUser()
   }
 
-  openFile = id => {
+  openFile = (id, title) => {
     this.setState({
-      openFile: id,
+      openFile: {id, title},
     })
   }
 
@@ -165,7 +165,7 @@ export default class Native extends Component {
   }
 
   setSyncedTime = date => {
-    this.state.syncData[this.state.openFile] = date
+    this.state.syncData[this.state.openFile.id] = date
     saveSyncData(this.state.syncData)
   }
 
@@ -185,10 +185,11 @@ export default class Native extends Component {
       return <Document
         // This makes it so that we don't reuse the component between files.
       // Makes it a little easier on us
-        key={this.state.openFile}
-        id={this.state.openFile}
+        key={this.state.openFile.id}
+        id={this.state.openFile.id}
         onClose={this.onCloseFile}
-        synced={this.state.syncData[this.state.openFile]}
+        initialTitle={this.state.openFile.title}
+        synced={this.state.syncData[this.state.openFile.id]}
         setSyncedTime={this.setSyncedTime}
         makeRemoteDocDb={id => {
           const doc = `doc_${this.state.user.id}_${id}`

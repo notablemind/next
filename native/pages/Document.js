@@ -6,6 +6,7 @@ import {
   Text,
   View,
   AsyncStorage,
+  ActivityIndicator,
 } from 'react-native';
 
 import {baseURL} from '../config'
@@ -15,6 +16,11 @@ import Treed from 'treed'
 import treedPouch from 'treed/pouch'
 
 import Header from './Header'
+
+import Icon from 'react-native-vector-icons/EvilIcons'
+
+import Button from '../components/Button'
+
 
 const plugins = []
 const viewTypes = {
@@ -31,7 +37,7 @@ export default class Document extends Component {
       treed: null,
       store: null,
       viewType: 'simple',
-      title: 'Notablemind',
+      title: props.initialTitle,
       syncState: 'unstarted',
     }
     window.doc = this
@@ -128,8 +134,20 @@ export default class Document extends Component {
 
   render() {
     if (this.state.initialSyncing) {
-      return <View style={styles.loadingContainer}>
-        <Text>Initial sync...</Text>
+      return <View style={styles.container}>
+       <Button action={this.props.onClose}>
+        Back
+       </Button>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator
+            animating={true}
+            size="large"
+            style={{
+              marginBottom: 30,
+            }}
+          />
+          <Text>Initial sync...</Text>
+        </View>
       </View>
     }
 
