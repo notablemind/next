@@ -23,6 +23,7 @@ import {login} from './utils/login'
 import {baseURL} from './config'
 
 import Button from './components/Button'
+import Menu from './components/Menu'
 
 // GLOBAL.XMLHttpRequest = GLOBAL.originalXMLHttpRequest || GLOBAL.XMLHttpRequest;
 
@@ -181,8 +182,8 @@ export default class Native extends Component {
       )
     }
 
-    if (this.state.openFile) {
-      return <Document
+    const main = this.state.openFile ?
+      <Document
         // This makes it so that we don't reuse the component between files.
       // Makes it a little easier on us
         key={this.state.openFile.id}
@@ -196,44 +197,46 @@ export default class Native extends Component {
           return ensureDocDb(doc).then(() => new PouchDB(`${baseURL}/${doc}`))
         }}
       />
-    }
+      :
+      <Browse
+        userDb={this.state.userDb}
+        checkForLocalDb={this.checkForLocalDb}
+        openFile={this.openFile}
+        syncData={this.state.syncData}
+        // TODO will "browse" ever be responsible for syncing? probs not
+      />
 
-    return <Browse
-      userDb={this.state.userDb}
-      checkForLocalDb={this.checkForLocalDb}
-      openFile={this.openFile}
-      syncData={this.state.syncData}
-      // TODO will "browse" ever be responsible for syncing? probs not
+    return <Menu
+      width={200}
+      slideWay="left"
+      menu={<SideMenu />}
+      frontView={main}
     />
 
+
     /*
-    return (
-      <View style={styles.container}>
-        <Button action={this.onLogout}>
-          Logout
-        </Button>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          {this.state.remoteUserDb ? 'Yes has user db' : 'No has not user db'}
-        </Text>
-      </View>
-    );
+    return <View
+      style={styles.container}
+    >
+      {main}
+    </View>
     */
   }
+}
+
+const SideMenu = ({toggleSlideMenu}) => {
+  return <View style={{
+    flex: 1,
+    backgroundColor: 'red',
+    padding: 10,
+  }}>
+    <Text>Hi</Text>
+  </View>
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-    paddingTop: 40,
   },
 
   loading: {
