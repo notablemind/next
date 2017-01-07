@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
 
   title: {
     flex: 1,
+    fontWeight: '200',
   },
 
   itemRow: {
@@ -122,7 +123,9 @@ const styles = StyleSheet.create({
   },
 
   item: {
-    paddingVertical: 10,
+    paddingVertical: 15,
     paddingHorizontal: 20,
+    borderBottomWidth: .5,
+    borderColor: '#ccc',
   },
 })

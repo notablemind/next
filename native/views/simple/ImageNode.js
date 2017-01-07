@@ -46,17 +46,30 @@ export default class ImageNode extends Component {
     )
   }
 
-  render() {
-    if (this.state.loading) return <Text>Loading...</Text>
-    if (!this.state.uri) return <Text>No image</Text>
-    if (this.state.error) return <Text>Failed to load image</Text>
+  notReadyText() {
+    if (this.state.loading) return 'Loading...'
+    if (!this.state.uri) return 'No image'
+    if (this.state.error) return 'Failed to load image'
+  }
 
+  renderImage() {
+    const notReadyText = this.notReadyText()
+    if (notReadyText) {
+      return <View style={styles.imagePlaceholder}>
+        <Text>{notReadyText}</Text>
+      </View>
+    }
+
+    return <Image
+      resizeMode="contain"
+      source={{uri: this.state.uri}}
+      style={styles.image}
+    />
+  }
+
+  render() {
     return <View style={styles.imageContainer}>
-      <Image
-        resizeMode="contain"
-        source={{uri: this.state.uri}}
-        style={styles.image}
-      />
+      {this.renderImage()}
       <View style={styles.imageCaption}>
         {this.props.node.content ?
           render(this.props.node.content, styles.captionText) :
@@ -78,6 +91,12 @@ const styles = StyleSheet.create({
     // flex: 1,
     // alignSelf: 'center',
     // width: 100
+  },
+
+  imagePlaceholder: {
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   imageContainer: {

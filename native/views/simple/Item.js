@@ -70,28 +70,25 @@ export default class Item extends Component {
           onChange={this.onCheck}
           style={{marginRight: 10}}
         />}
-      {this.state.node.children.length > 0 ?
-        <TouchableOpacity
-          onPress={this.onRebase}
-          style={{flex: 1}}
-        >
-          {contents}
-        </TouchableOpacity> : contents}
+      <View style={{flex: 1}}>{contents}</View>
     </View>
   }
 
   render() {
-    return <View style={styles.top}>
-      {this.body()}
-      {this.state.node.children.length > 0 &&
+    if (this.state.node.children.length) {
+      return <TouchableOpacity onPress={this.onRebase} style={styles.top}>
+        {this.body()}
         <Icon
           name="chevron-right"
           size={20}
-          onPress={this.onRebase}
           style={styles.rebaser}
         />
-      }
-    </View>
+      </TouchableOpacity>
+    } else {
+      return <View style={styles.top}>
+        {this.body()}
+      </View>
+    }
   }
 }
 

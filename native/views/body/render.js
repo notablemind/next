@@ -21,44 +21,45 @@ rem.block.ruler.disable(['list', 'heading', 'deflist', 'lheading'])
 
 const cache = {}
 
-const itemToRN = (style, item, i) => {
+const itemToRN = (style, oneLine, item, i) => {
   if (Array.isArray(item)) {
     const type = item[0]
     let children
     if (item[1].length === 1 && item[1][0].type === 'text') {
-      children = <Text>{item[1][0].content}</Text>
+      children = <Text numberOfLines={oneLine ? 1 : undefined}>{item[1][0].content}</Text>
     } else {
-      children = item[1].map(itemToRN.bind(null, style))
+      children = item[1].map(itemToRN.bind(null, style, oneLine))
     }
     switch (type.type) {
       case 'paragraph_open':
-        return <Text style={[styles.paragraph, style]} key={i}>{children}</Text>
+        return <Text numberOfLines={oneLine ? 1 : undefined} style={[styles.paragraph, style]} key={i}>{children}</Text>
       case 'em_open':
-        return <Text style={styles.em} key={i}>{children}</Text>
+        return <Text numberOfLines={oneLine ? 1 : undefined} style={styles.em} key={i}>{children}</Text>
       case 'strong_open':
-        return <Text style={styles.strong} key={i}>{children}</Text>
+        return <Text numberOfLines={oneLine ? 1 : undefined} style={styles.strong} key={i}>{children}</Text>
       case 'link_open':
         return <Text
+        numberOfLines={oneLine ? 1 : undefined}
           key={i}
           style={styles.hyperlink}
           onPress={() => Linking.openURL(type.href)}
         >{children}</Text>
       default:
-        return <Text key={i}>Type: {type} {children}</Text>
+        return <Text numberOfLines={oneLine ? 1 : undefined} key={i}>Type: {type} {children}</Text>
     }
   }
 
   switch (item.type) {
     case 'inline':
-      return item.children.map(itemToRN.bind(null, style))
+      return item.children.map(itemToRN.bind(null, style, oneLine))
     case 'text':
-      return <Text key={i}>{item.content}</Text>
+      return <Text numberOfLines={oneLine ? 1 : undefined} key={i}>{item.content}</Text>
     case 'code':
-      return <Text style={styles.code} key={i}>{item.content}</Text>
+      return <Text numberOfLines={oneLine ? 1 : undefined} style={styles.code} key={i}>{item.content}</Text>
     case 'softbreak':
       return '\n'
     default:
-      return <Text key={i}>Type: {item.type} : {item.content}</Text>
+      return <Text numberOfLines={oneLine ? 1 : undefined} key={i}>Type: {item.type} : {item.content}</Text>
   }
 }
 
@@ -106,15 +107,15 @@ const matchSides = parsed => {
   return blockStack[0][1]
 }
 
-const parsedToRN = (parsed, style) => {
-  return matchSides(parsed).map(itemToRN.bind(null, style))
+const parsedToRN = (parsed, style, oneLine) => {
+  return matchSides(parsed).map(itemToRN.bind(null, style, oneLine))
 }
 
-export default (text, style) => {
-  const key = text + style
+export default (text, style, oneLine) => {
+  const key = text + style + (oneLine ? ':oneline' : '')
   if (!cache[key]) {
     try {
-      cache[key] = parsedToRN(rem.parse(text, {}), style)
+      cache[key] = parsedToRN(rem.parse(text, {}), style, oneLine)
       // cache[text] = <Text>{JSON.stringify(rem.parse(text, {}), null, 2)}</Text>
     } catch (e) {
       return <Text>{'Dunno' + e.message}</Text>

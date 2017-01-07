@@ -52,7 +52,7 @@ export default class Header extends Component {
       done: 'Synced',
     }[this.props.syncState]
 
-    const title = render(this.state.node.content, styles.titleText)
+    const title = render(this.state.node.content, styles.titleText, true)
 
     return <View style={styles.container}>
       {this.state.root !== 'root' ?
