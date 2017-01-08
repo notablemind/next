@@ -163,7 +163,7 @@ export default class Native extends Component {
   }
 
   onCloseFile = () => {
-    this.setState({openFile: null})
+    this.setState({openFile: null, store: null})
   }
 
   setSyncedTime = date => {
@@ -198,6 +198,7 @@ export default class Native extends Component {
         synced={this.state.syncData[this.state.openFile.id]}
         setSyncedTime={this.setSyncedTime}
         openMenu={this.openMenu}
+        onStore={store => this.setState({store})}
         makeRemoteDocDb={id => {
           const doc = `doc_${this.state.user.id}_${id}`
           return ensureDocDb(doc).then(() => new PouchDB(`${baseURL}/${doc}`))
@@ -220,6 +221,7 @@ export default class Native extends Component {
         docId={this.state.openFile}
         onCloseDoc={() => this.setState({openFile: null})}
         user={this.state.user}
+        store={this.state.store}
       />}
       frontView={main}
     />

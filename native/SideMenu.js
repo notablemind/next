@@ -9,64 +9,35 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-const SideMenu = ({docId, user, toggleSlideMenu, onCloseDoc}) => {
+
+// TODO subscribe to store if present, so undo & redo work
+const SideMenu = ({docId, user, toggleSlideMenu, onCloseDoc, store}) => {
+  const items = [
+    docId && {text: 'Close doc', action: onCloseDoc},
+    docId && {children: [{text: 'Undo', action: store && store.undo}, {text: 'Redo', action: store && store.redo}]},
+    {text: 'Quick Add', action: null},
+    {text: 'Settings', action: null},
+    user ? {text: 'Logout'} : {text: 'Login'},
+  ]
+
   return <View style={styles.container}>
-    {docId &&
-    <Button
-      action={() => (toggleSlideMenu(), onCloseDoc())}
-    >
-      Close doc
-    </Button>}
-
-    {docId &&
-    <View style={{flexDirection: 'row'}}>
-      <Button
-        action={onCloseDoc}
-        style={{flex: 1}}
-      >
-        Undo
-      </Button>
-      <Button
-        action={onCloseDoc}
-        style={{flex: 1}}
-      >
-        Redo
-      </Button>
-    </View>}
-
-    <Button
-    >
-      Quick Add
-    </Button>
-    <Button
-    >
-      Settings
-    </Button>
-
-    <View style={{flex: 1}} />
-
-    {user ?
-    <Button
-      action={onCloseDoc}
-    >
-      Logout
-    </Button> :
-    <Button
-      action={onCloseDoc}
-    >
-      Login
-    </Button>
-    }
-
-
+    {items.map((item, i) => (
+      item ?
+        (item.children ?
+          <View key={i} style={styles.buttonRow}>
+            {item.children.map((child, i) => <Button fill key={i} action={child.action}>{child.text}</Button>)}
+          </View> :
+          <Button key={i} action={item.action}>{item.text}</Button>)
+        : null
+    ))}
   </View>
 }
 
 export default SideMenu
 
-const Button = ({children, style, action}) => (
-  <TouchableOpacity onPress={action} style={[styles.button, style]}>
-    <Text>
+const Button = ({children, style, action, fill}) => (
+  <TouchableOpacity onPress={action} style={[styles.button, style, !action && styles.disabled, fill && styles.fill]}>
+    <Text style={!action && styles.disabledText}>
       {children}
     </Text>
   </TouchableOpacity>
@@ -82,6 +53,22 @@ const styles = StyleSheet.create({
     // shadowColor: '#666',
     // shadowOpacity: 1,
     // shadowRadius: 5,
+  },
+
+  buttonRow: {
+    flexDirection: 'row',
+  },
+
+  fill: {
+    flex: 1,
+  },
+
+  disabled: {
+    backgroundColor: '#fafafa',
+  },
+
+  disabledText: {
+    color: '#777',
   },
 
   button: {

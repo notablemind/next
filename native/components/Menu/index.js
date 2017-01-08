@@ -38,6 +38,7 @@ var SlideMenu = React.createClass({
     this.direction = null
     this.lastPosition = null
     this.offset = -this.props.width;
+    this._resetTimeout = null
 
     this._panGesture = PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
@@ -67,6 +68,9 @@ var SlideMenu = React.createClass({
                 return Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
                   && gestureState.dx < -30
               }
+            } else {
+              clearTimeout(this._resetTimeout)
+              this._resetTimeout = setTimeout(() => this.firstTouch = true, 500)
             }
           }
         }
@@ -164,6 +168,7 @@ var SlideMenu = React.createClass({
       this.toggleSlideMenu();
     }
     this.firstTouch = true;
+    this.firstTouchWasGood = false
   },
 
   render() {

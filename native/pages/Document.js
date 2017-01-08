@@ -78,6 +78,7 @@ export default class Document extends Component {
     treed.ready.then(() => {
       const store = treed.registerView('root', this.state.viewType)
       const title = treed.db.data.root.content
+      this.props.onStore(store)
       this.setState({
         treed,
         store,

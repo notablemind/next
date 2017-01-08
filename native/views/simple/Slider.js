@@ -40,6 +40,8 @@ export default class Slider extends Component {
       slideState: null,
     }
     this.offset = 0
+    this.firstTouch = true
+    this.firstTouchGood = false
 
     this.moveFinished = () => {
       if (this.direction === 'right') {
@@ -52,12 +54,24 @@ export default class Slider extends Component {
       this.setState({slideState: this.direction})
       queueAnimation()
       this.main.setNativeProps({style: {left: this.offset}})
+      this.firstTouch = true
+      this.firstTouchGood = false
     }
 
     this._panGesture = PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
+        if (this.firstTouch) {
+          this.firstTouchGood = evt.nativeEvent.pageX > 20
+          this.firstTouch = false
+        }
+        if (!this.firstTouchGood) {
+          clearTimeout(this._resetTimeout)
+          this._resetTimeout = setTimeout(() => this.firstTouch = true, 500)
+        }
         const isHoriz = Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
         if (!isHoriz) return false
+        return Math.abs(gestureState.dx) > 20
+        /*
         const slid = this.state.slideState !== null
         switch (this.state.slideState) {
           case null:
@@ -68,6 +82,7 @@ export default class Slider extends Component {
           default:
             return gestureState.dx < -20
         }
+        */
       },
       onPanResponderGrant: (evt, gestureState) => {
         this.position = 0
@@ -76,22 +91,25 @@ export default class Slider extends Component {
       onPanResponderMove: (evt, gestureState) => {
         if (this.lastPosition === null) {
           this.lastPosition = gestureState.dx
+          if (this.state.slideState) {
+            this.offset = gestureState.dx > 0 ? -screenWidth : screenWidth
+          }
           this.direction = this.state.slideState ? null :
             (gestureState.dx > 0 ? 'right' : 'left')
         } else {
           const diff = gestureState.dx - this.lastPosition
-          switch (this.state.slideState) {
-            case null:
+          switch (this.offset) {
+            case 0:
               this.direction =
                 gestureState.dx > 0 ?
                   (diff > 0 ? 'right' : null) :
                   (diff > 0 ? null : 'left')
               break
-            case 'left':
+            case -screenWidth:
               this.direction = diff > 0 ? null : 'left'
               break
             default:
-            case 'right':
+            case screenWidth:
               this.direction = diff > 0 ? 'right' : null
               break
           }

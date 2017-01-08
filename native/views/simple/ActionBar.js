@@ -44,12 +44,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ddd',
-    alignItems: 'center',
+    alignItems: 'stretch',
     flexDirection: 'row',
   },
 
   button: {
-    padding: 20,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
   },
 
   buttonText: {
