@@ -60,6 +60,7 @@ export default class Item extends Component {
         editState={this.state.editState}
         node={this.state.node}
         store={this.props.store}
+        onPress={this.state.node.children.length && this.onRebase}
         Content={Content}
       />
     }
@@ -67,6 +68,7 @@ export default class Item extends Component {
       node={this.state.node}
       store={this.props.store}
       editState={this.state.editState}
+      onPress={this.state.node.children.length && this.onRebase}
     />
   }
 
@@ -86,6 +88,7 @@ export default class Item extends Component {
       <View style={styles.top}>
         {this.body()}
       </View>
+      // return contents
     return <Slider
       main={contents}
       style={styles.container}
@@ -102,7 +105,7 @@ const styles = StyleSheet.create({
   top: {
     flexDirection: 'row',
     // alignItems: 'center',
-    alignSelf: 'stretch',
+    // alignSelf: 'stretch',
     backgroundColor: 'white',
   },
 

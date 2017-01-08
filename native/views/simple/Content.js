@@ -35,11 +35,17 @@ export default class Content extends Component {
     this._tout = setTimeout(() => {
       // this.setState({awesome: true})
       this.props.store.actions.edit(this.props.node._id)
-    }, 100)
+      this._tout = null
+    }, 500)
   }
 
   handleOut = () => {
-    clearTimeout(this._tout)
+    if (this._tout) {
+      clearTimeout(this._tout)
+      if (this.props.onPress) {
+        this.props.onPress()
+      }
+    }
   }
 
   reset = () => {
@@ -67,13 +73,20 @@ export default class Content extends Component {
         multiline
       />
     }
+    const content = render(this.props.node.content, styles.contentText)
+    return <TouchableWithoutFeedback
+      onPressIn={this.handleIn}
+      onPressOut={this.handleOut}
+    >
+    <View style={styles.content}>{content}</View>
+    </TouchableWithoutFeedback>
 
     return <TouchableWithoutFeedback
       onPressIn={this.handleIn}
       onPressOut={this.handleOut}
     >
-      <View style={[styles.content, this.state.awesome && styles.awesome]}>
-        {render(this.props.node.content, styles.contentText)}
+      <View style={styles.content}>
+        {content}
       </View>
     </TouchableWithoutFeedback>
   }
@@ -84,6 +97,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'stretch',
   },
 
   awesome: {

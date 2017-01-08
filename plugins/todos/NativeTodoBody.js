@@ -24,8 +24,8 @@ const toggleChecked = (store, node) => {
   )
 }
 
-export default ({store, node, editState, Content}) => (
-  <View style={{flex: 1, flexDirection: 'row'}}>
+export default ({store, node, editState, onPress, Content}) => (
+  <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
     <CheckBox
       checked={node.types.todo && node.types.todo.done}
       onChange={() => toggleChecked(store, node)}
@@ -35,9 +35,13 @@ export default ({store, node, editState, Content}) => (
         justifyContent: 'center',
       }}
     />
-    <View style={{flex: 1}}>
-      <Content node={node} store={store} editState={editState} />
-    </View>
+    <Content
+      key={node._id}
+      onPress={onPress}
+      node={node}
+      store={store}
+      editState={editState}
+    />
   </View>
 )
 

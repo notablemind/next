@@ -71,6 +71,7 @@ export default class ImageNode extends Component {
           node={this.props.node}
           store={this.props.store}
           editState={this.props.editState}
+          onPress={this.props.onPress}
         />
       </View>
     </View>
