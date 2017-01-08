@@ -112,6 +112,9 @@ const parsedToRN = (parsed, style, oneLine) => {
 }
 
 export default (text, style, oneLine) => {
+  if (!text.trim()) {
+    return <Text style={style}>empty</Text>
+  }
   const key = text + style + (oneLine ? ':oneline' : '')
   if (!cache[key]) {
     try {

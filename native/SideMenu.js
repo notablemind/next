@@ -25,9 +25,15 @@ const SideMenu = ({docId, user, toggleSlideMenu, onCloseDoc, store}) => {
       item ?
         (item.children ?
           <View key={i} style={styles.buttonRow}>
-            {item.children.map((child, i) => <Button fill key={i} action={child.action}>{child.text}</Button>)}
+            {item.children.map((child, i) => <Button fill key={i} action={
+              child.action ?
+                (() => (toggleSlideMenu(), child.action())) : null
+            }>{child.text}</Button>)}
           </View> :
-          <Button key={i} action={item.action}>{item.text}</Button>)
+          <Button key={i} action={
+            item.action ?
+              (() => (toggleSlideMenu(), item.action())) : null
+          }>{item.text}</Button>)
         : null
     ))}
   </View>

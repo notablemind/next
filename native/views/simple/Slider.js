@@ -31,6 +31,8 @@ const queueAnimation = () => {
   });
 }
 
+const threshhold = 20
+
 export default class Slider extends Component {
   constructor(props) {
     super()
@@ -61,7 +63,7 @@ export default class Slider extends Component {
     this._panGesture = PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
         if (this.firstTouch) {
-          this.firstTouchGood = evt.nativeEvent.pageX > 20
+          this.firstTouchGood = evt.nativeEvent.pageX > threshhold
           this.firstTouch = false
         }
         if (!this.firstTouchGood) {
@@ -70,19 +72,7 @@ export default class Slider extends Component {
         }
         const isHoriz = Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
         if (!isHoriz) return false
-        return Math.abs(gestureState.dx) > 20
-        /*
-        const slid = this.state.slideState !== null
-        switch (this.state.slideState) {
-          case null:
-            return Math.abs(gestureState.dx) > 20
-          case 'left':
-            return gestureState.dx > 20
-          case 'right':
-          default:
-            return gestureState.dx < -20
-        }
-        */
+        return Math.abs(gestureState.dx) > threshhold
       },
       onPanResponderGrant: (evt, gestureState) => {
         this.position = 0
@@ -130,6 +120,11 @@ export default class Slider extends Component {
     })
   }
 
+  slideClosed = () => {
+    this.direction = null
+    this.moveFinished()
+  }
+
   render() {
     return <View style={this.props.style}
         {...this._panGesture.panHandlers}
@@ -137,7 +132,9 @@ export default class Slider extends Component {
       <View
         style={styles.backdrop}
       >
-        {this.props.backdrop}
+        {React.cloneElement(this.props.backdrop, {
+          slideClosed: this.slideClosed,
+        })}
       </View>
       <View
         ref={node => this.main = node}
