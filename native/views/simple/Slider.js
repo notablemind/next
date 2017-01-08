@@ -40,6 +40,7 @@ export default class Slider extends Component {
     this.direction = null
     this.state = {
       slideState: null,
+      tick: 0,
     }
     this.offset = 0
     this.firstTouch = true
@@ -56,6 +57,9 @@ export default class Slider extends Component {
       this.setState({slideState: this.direction})
       queueAnimation()
       this.main.setNativeProps({style: {left: this.offset}})
+      setTimeout(() => {
+        this.setState(state => ({tick: state.tick + 1}))
+      }, 100)
       this.firstTouch = true
       this.firstTouchGood = false
     }
@@ -134,6 +138,7 @@ export default class Slider extends Component {
       >
         {React.cloneElement(this.props.backdrop, {
           slideClosed: this.slideClosed,
+          key: '' + this.state.tick,
         })}
       </View>
       <View

@@ -8,7 +8,7 @@ import {
   AsyncStorage,
   Linking,
   ScrollView,
-  TouchableOpacity,
+  TouchableHighlight,
   Image,
 } from 'react-native';
 
@@ -76,14 +76,16 @@ export default class Item extends Component {
 
   render() {
     const contents = this.state.node.children.length ?
-      <TouchableOpacity onPress={this.onRebase} style={styles.top}>
+      <TouchableHighlight onPress={this.onRebase}>
+        <View style={styles.top}>
         {this.body()}
         <Icon
           name="chevron-right"
           size={20}
           style={styles.rebaser}
         />
-      </TouchableOpacity>
+        </View>
+      </TouchableHighlight>
       :
       <View style={styles.top}>
         {this.body()}

@@ -24,6 +24,7 @@ const makePages = (store, node, reset) => ({
   ],
   Type: Object.keys(store.plugins.nodeTypes).map(nodeType => ({
     text: store.plugins.nodeTypes[nodeType].title || nodeType,
+    action: nodeType !== node.type ? (() => store.actions.setNodeType(node._id, nodeType)) : null,
   })),
   Delete: [
     {text: 'Really delete', action: () => store.actions.remove(node._id)},
