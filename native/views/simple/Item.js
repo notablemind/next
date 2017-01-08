@@ -18,6 +18,7 @@ import Icon from 'react-native-vector-icons/EvilIcons'
 import CheckBox from './CheckBox'
 import Slider from './Slider'
 import ActionBar from './ActionBar'
+import Content from './Content'
 
 
 export default class Item extends Component {
@@ -33,6 +34,7 @@ export default class Item extends Component {
       store => ({
         node: store.getters.node(id),
         isRoot: store.getters.root() === id,
+        editState: store.getters.editState(id),
       }),
     )
   }
@@ -55,27 +57,21 @@ export default class Item extends Component {
     const CustomRender = nodeTypeDef && nodeTypeDef.render
     if (CustomRender) {
       return <CustomRender
-        renderMarkdown={render}
+        editState={this.state.editState}
         node={this.state.node}
         store={this.props.store}
-        contentTextStyle={styles.contentText}
-        contentStyle={styles.content}
+        Content={Content}
       />
     }
-    const contents = render(this.state.node.content, styles.contentText)
-    return <View style={styles.content}>
-      {this.state.node.type === 'todo' &&
-        <CheckBox
-          checked={this.state.node.types.todo && this.state.node.types.todo.done}
-          onChange={this.onCheck}
-          style={{marginRight: 10}}
-        />}
-      <View style={{flex: 1}}>{contents}</View>
-    </View>
+    return <Content
+      node={this.state.node}
+      store={this.props.store}
+      editState={this.state.editState}
+    />
   }
 
   render() {
-    const contents = this.state.node.children.length ?
+    const contents = (this.state.node.children.length && !this.state.editState) ?
       <TouchableHighlight onPress={this.onRebase}>
         <View style={styles.top}>
         {this.body()}
@@ -93,6 +89,7 @@ export default class Item extends Component {
     return <Slider
       main={contents}
       style={styles.container}
+      canSlide={!this.state.editState}
       backdrop={<ActionBar
         store={this.props.store}
         node={this.state.node}
@@ -151,18 +148,6 @@ const styles = StyleSheet.create({
     // borderRadius: 10,
     marginRight: 5,
     marginTop: 12,
-  },
-
-  content: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  contentText: {
-    fontSize: 20, fontWeight: '200', lineHeight: 30,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
   },
 })
 

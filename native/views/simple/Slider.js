@@ -66,6 +66,7 @@ export default class Slider extends Component {
 
     this._panGesture = PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
+        if (!this.props.canSlide) return false
         if (this.firstTouch) {
           this.firstTouchGood = evt.nativeEvent.pageX > threshhold
           this.firstTouch = false

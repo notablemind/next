@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 
-const makePages = (store, node, reset) => ({
+const makePages = (store, node) => ({
   Add: [
     {text: 'Before', action: () => store.actions.createBefore(node._id)},
     {text: 'After', action: () => store.actions.createAfter(node._id)},
@@ -20,7 +20,7 @@ const makePages = (store, node, reset) => ({
       store.actions.createLastChild(node._id)
       store.actions.rebase(node._id)
     }},
-    {text: 'Back', action: reset},
+    {text: 'Back', action: 'reset'},
   ],
   Type: Object.keys(store.plugins.nodeTypes).map(nodeType => ({
     text: store.plugins.nodeTypes[nodeType].title || nodeType,
@@ -28,7 +28,7 @@ const makePages = (store, node, reset) => ({
   })),
   Delete: [
     {text: 'Really delete', action: () => store.actions.remove(node._id)},
-    {text: 'Just kidding', action: reset},
+    {text: 'Just kidding', action: 'reset'},
   ],
 })
 
@@ -50,7 +50,11 @@ export default class ActionBar extends Component {
     if (this.state.page) {
       return <View style={styles.container}>
         {this.state.pages[this.state.page].map((item, i) => (
-          <Button action={item.action && (() => (this.reset(), item.action()))} key={i}>
+          <Button action={
+            item.action === 'reset' ?
+              () => this.setState({page: null}) :
+                (() => (this.reset(), item.action()))
+          } key={i}>
             {item.text}
           </Button>
         ))}

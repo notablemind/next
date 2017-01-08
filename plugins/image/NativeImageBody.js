@@ -63,12 +63,15 @@ export default class ImageNode extends Component {
   }
 
   render() {
+    const {Content} = this.props
     return <View style={styles.imageContainer}>
       {this.renderImage()}
       <View style={styles.imageCaption}>
-        {this.props.node.content ?
-          this.props.renderMarkdown(this.props.node.content, styles.captionText) :
-          <Text>empty</Text>}
+        <Content
+          node={this.props.node}
+          store={this.props.store}
+          editState={this.props.editState}
+        />
       </View>
     </View>
   }
@@ -100,7 +103,8 @@ const styles = StyleSheet.create({
   },
 
   imageCaption: {
-    alignSelf: 'center',
+    alignSelf: 'stretch',
+    alignItems: 'center',
     paddingBottom: 5,
   },
 
