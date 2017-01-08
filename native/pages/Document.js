@@ -24,6 +24,7 @@ import Button from '../components/Button'
 
 const plugins = [
   require('../../plugins/todos/native').default,
+  require('../../plugins/image/native').default,
 ]
 
 const viewTypes = {

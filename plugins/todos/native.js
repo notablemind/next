@@ -1,22 +1,15 @@
 
-import {
-  View,
-  Text,
-} from '../../native/node_modules/react-native'
-
-// import TodoBody from './TodoBody'
-// import TodoSummary from './TodoSummary'
+import deepMerge from 'treed/deepMerge'
+import NativeTodoBody from './NativeTodoBody'
+// import NativeTodoSummary from './NativeTodoSummary'
 
 import pluginBase from './'
 
-export default {
-  ...pluginBase,
-  components: {
-    nodeTypes: {
-      // todoSummary: TodoSummary,
-      // todo: TodoBody,
-    },
+export default deepMerge(pluginBase, {
+  nodeTypes: {
+    // todoSummary: {render: NativeTodoSummary},
+    todo: {render: NativeTodoBody},
   },
-}
+})
 
 

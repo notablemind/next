@@ -12,11 +12,6 @@ import {
   Image,
 } from 'react-native';
 
-import render from '../body/render'
-
-import Icon from 'react-native-vector-icons/EvilIcons'
-
-
 export default class ImageNode extends Component {
   constructor() {
     super()
@@ -72,7 +67,7 @@ export default class ImageNode extends Component {
       {this.renderImage()}
       <View style={styles.imageCaption}>
         {this.props.node.content ?
-          render(this.props.node.content, styles.captionText) :
+          this.props.renderMarkdown(this.props.node.content, styles.captionText) :
           <Text>empty</Text>}
       </View>
     </View>
@@ -115,5 +110,6 @@ const styles = StyleSheet.create({
     lineHeight: 20
   },
 })
+
 
 

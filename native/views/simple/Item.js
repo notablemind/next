@@ -15,7 +15,6 @@ import {
 import render from '../body/render'
 
 import Icon from 'react-native-vector-icons/EvilIcons'
-import ImageNode from './ImageNode'
 import CheckBox from './CheckBox'
 
 
@@ -48,19 +47,18 @@ export default class Item extends Component {
     this.props.store.actions.rebase(this.props.id)
   }
 
-  onCheck = () => {
-    console.log('umm check mate')
-    const checked = this.state.node.types.todo && this.state.node.types.todo.done
-    this.props.store.actions.setNested(
-      this.props.id,
-      ['types', 'todo', 'done'],
-      !checked
-    )
-  }
-
   body() {
-    if (this.state.node.type === 'image') {
-      return <ImageNode node={this.state.node} store={this.props.store} />
+    const nodeType = this.state.node.type
+    let nodeTypeDef = this.props.store.plugins.nodeTypes[nodeType]
+    const CustomRender = nodeTypeDef && nodeTypeDef.render
+    if (CustomRender) {
+      return <CustomRender
+        renderMarkdown={render}
+        node={this.state.node}
+        store={this.props.store}
+        contentTextStyle={styles.contentText}
+        contentStyle={styles.content}
+      />
     }
     const contents = render(this.state.node.content, styles.contentText)
     return <View style={styles.content}>
@@ -143,12 +141,12 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
   },
 
   contentText: {
     fontSize: 20, fontWeight: '200', lineHeight: 30,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
   },
 })
 
