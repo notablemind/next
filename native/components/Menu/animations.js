@@ -16,7 +16,7 @@ var animations = {
       },
     },
     linear: {
-      duration: 300,
+      duration: 100,
       create: {
         type: LayoutAnimation.Types.linear,
         property: LayoutAnimation.Properties.opacity,

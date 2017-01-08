@@ -77,6 +77,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     paddingTop: 20,
+    borderRightWidth: 0.5,
+    borderColor: '#ccc',
+    // shadowColor: '#666',
+    // shadowOpacity: 1,
+    // shadowRadius: 5,
   },
 
   button: {

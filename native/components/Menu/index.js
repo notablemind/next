@@ -34,6 +34,8 @@ var SlideMenu = React.createClass({
   componentWillMount() {
     this.blockSlideMenu(false);
 
+    this.direction = null
+    this.lastPosition = null
     this.offset = -this.props.width;
 
     this._panGesture = PanResponder.create({
@@ -79,6 +81,14 @@ var SlideMenu = React.createClass({
   moveAppropriateView(position) {
     if (!this.center || !this.menu) return;
 
+    if (this.lastPosition === null) {
+      this.lastPosition = position
+      this.direction = position > 0 ? 'open' : 'close'
+    } else {
+      this.direction = position - this.lastPosition > 0 ? 'open' : 'close'
+      this.lastPosition = position
+    }
+
     if (this.props.slideWay === 'left') {
       if (this.offset + position <= 0) {
         this.menu.setNativeProps({
@@ -107,14 +117,15 @@ var SlideMenu = React.createClass({
     }
   },
 
-  toggleSlideMenu() {
-    if (this.state.slideMenuIsOpen) {
-      this.offset = -this.props.width;
-
-      this.setState({ slideMenuIsOpen: false });
-    } else {
+  setOpen(open) {
+    if (open) {
       this.offset = 0;
-      this.setState({ slideMenuIsOpen: true });
+    } else {
+      this.offset = -this.props.width;
+    }
+    // maybe remove conditional?
+    if (open !== this.state.slideMenuIsOpen) {
+      this.setState({ slideMenuIsOpen: open });
     }
 
     queueAnimation(this.props.animation);
@@ -137,10 +148,20 @@ var SlideMenu = React.createClass({
     }
   },
 
+  toggleSlideMenu() {
+    this.setOpen(!this.state.slideMenuIsOpen)
+  },
+
   moveFinished() {
     if (!this.center || !this.menu) return;
 
-    this.toggleSlideMenu();
+    if (this.direction === 'open') {
+      this.setOpen(true)
+    } else if (this.direction === 'close') {
+      this.setOpen(false)
+    } else {
+      this.toggleSlideMenu();
+    }
     this.firstTouch = true;
   },
 
@@ -192,7 +213,7 @@ var SlideMenu = React.createClass({
 var styles = StyleSheet.create({
   containerSlideMenu: {
     flex: 1,
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   center: {
     flex: 1,
@@ -216,7 +237,7 @@ var styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    // backgroundColor: 'rgba(0,0,0,0.5)',
   }
 });
 
