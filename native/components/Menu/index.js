@@ -21,6 +21,7 @@ var queueAnimation = require('./animations.js');
 
 var SlideMenu = React.createClass({
   firstTouch: true,
+  firstTouchWasGood: false,
   getInitialState() {
     return ({
       slideMenuIsOpen: false,
@@ -44,7 +45,7 @@ var SlideMenu = React.createClass({
           if (this.state.slideMenuIsOpen) {
             if (this.props.slideWay === 'left') {
               return Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
-                && gestureState.dx < 20
+                && gestureState.dx < -20
             }
 
             return Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
@@ -52,13 +53,13 @@ var SlideMenu = React.createClass({
           } else {
             if (this.firstTouch) {
               if (this.props.slideWay === 'left') {
-                if (evt.nativeEvent.pageX < 20)
-                  this.firstTouch = false;
+                this.firstTouchWasGood = evt.nativeEvent.pageX < 20
               } else {
-                if (evt.nativeEvent.pageX > 300)
-                  this.firstTouch = false;
+                this.firstTouchWasGood = evt.nativeEvent.pageX > 300
               }
-            } else {
+              this.firstTouch = false;
+              return false
+            } else if (this.firstTouchWasGood) {
               if (this.props.slideWay === 'left') {
                 return Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
                   && gestureState.dx > 30

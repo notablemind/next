@@ -16,6 +16,8 @@ import render from '../body/render'
 
 import Icon from 'react-native-vector-icons/EvilIcons'
 import CheckBox from './CheckBox'
+import Slider from './Slider'
+import ActionBar from './ActionBar'
 
 
 export default class Item extends Component {
@@ -73,8 +75,8 @@ export default class Item extends Component {
   }
 
   render() {
-    if (this.state.node.children.length) {
-      return <TouchableOpacity onPress={this.onRebase} style={styles.top}>
+    const contents = this.state.node.children.length ?
+      <TouchableOpacity onPress={this.onRebase} style={styles.top}>
         {this.body()}
         <Icon
           name="chevron-right"
@@ -82,11 +84,18 @@ export default class Item extends Component {
           style={styles.rebaser}
         />
       </TouchableOpacity>
-    } else {
-      return <View style={styles.top}>
+      :
+      <View style={styles.top}>
         {this.body()}
       </View>
-    }
+    return <Slider
+      main={contents}
+      style={styles.container}
+      backdrop={<ActionBar
+        store={this.props.store}
+        node={this.state.node}
+      />}
+    />
   }
 }
 
@@ -95,8 +104,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     // alignItems: 'center',
     alignSelf: 'stretch',
+    backgroundColor: 'white',
+  },
+
+  container: {
     borderBottomWidth: .5,
     borderColor: '#ccd',
+    alignSelf: 'stretch',
   },
 
   image: {
