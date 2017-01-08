@@ -1,5 +1,5 @@
 
-import uuid from '../../utils/uuid'
+import uuid from 'treed/uuid'
 
 const makeAttachmentUpdate = (node, imageBlob) => {
   const _attachments = {...node._attachments}

@@ -57,9 +57,9 @@ const fileImporters = [
 */
 
 const plugins = [
-  require('../../plugins/themes').default,
-  require('../../plugins/todos').default,
-  require('../../plugins/image').default,
+  require('../../../../plugins/themes').default,
+  require('../../../../plugins/todos/dom').default,
+  require('../../../../plugins/image/dom').default,
 ]
 
 const viewTypes = {

@@ -22,7 +22,10 @@ import Icon from 'react-native-vector-icons/EvilIcons'
 import Button from '../components/Button'
 
 
-const plugins = []
+const plugins = [
+  require('../../plugins/todos/native').default,
+]
+
 const viewTypes = {
   list: require('../views/list').default,
   simple: require('../views/simple').default,

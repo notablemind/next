@@ -1,6 +1,5 @@
 // @flow
 
-import ImageBody from './ImageBody'
 import actions from './actions'
 
 import type {Plugin} from 'treed/types'
@@ -70,7 +69,7 @@ const plugin: Plugin<void, void> = {
       newSiblingsShouldCarryType: false,
       shortcut: 'i',
 
-      render: ImageBody,
+      render: null,
 
       defaultNodeConfig() {
         return {

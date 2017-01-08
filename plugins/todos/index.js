@@ -1,10 +1,3 @@
-// @flow
-
-import React from 'react'
-import {css, StyleSheet} from 'aphrodite'
-
-import TodoBody from './TodoBody'
-import TodoSummary from './TodoSummary'
 
 import type {Plugin} from 'treed/types'
 
@@ -34,7 +27,7 @@ const plugin: Plugin<void, void> =  {
       newSiblingsShouldCarryType: true,
       shortcut: '@',
 
-      render: TodoSummary,
+      render: null, // TodoSummary,
     },
 
     todo: {
@@ -42,7 +35,7 @@ const plugin: Plugin<void, void> =  {
       newSiblingsShouldCarryType: true,
       shortcut: 't',
 
-      render: TodoBody,
+      render: null, // TodoBody,
 
       defaultNodeConfig() {
         return {
