@@ -95,7 +95,7 @@ const ensureMemberAccess = (dbname, username, done) => {
   }, err => {
     console.log('failed to ensure member access')
     done(err)
-  })
+  }).then(() => db.close())
 }
 
 const finish = (res, good, failMessage) => {

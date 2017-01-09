@@ -31,23 +31,6 @@ export default class Content extends Component {
     }
   }
 
-  handleIn = () => {
-    this._tout = setTimeout(() => {
-      // this.setState({awesome: true})
-      this.props.store.actions.edit(this.props.node._id)
-      this._tout = null
-    }, 500)
-  }
-
-  handleOut = () => {
-    if (this._tout) {
-      clearTimeout(this._tout)
-      if (this.props.onPress) {
-        this.props.onPress()
-      }
-    }
-  }
-
   reset = () => {
     this.props.store.actions.normalMode()
   }
@@ -74,21 +57,9 @@ export default class Content extends Component {
       />
     }
     const content = render(this.props.node.content, styles.contentText)
-    return <TouchableWithoutFeedback
-      onPressIn={this.handleIn}
-      onPressOut={this.handleOut}
-    >
-    <View style={styles.content}>{content}</View>
-    </TouchableWithoutFeedback>
-
-    return <TouchableWithoutFeedback
-      onPressIn={this.handleIn}
-      onPressOut={this.handleOut}
-    >
-      <View style={styles.content}>
+    return <View style={styles.content}>
         {content}
       </View>
-    </TouchableWithoutFeedback>
   }
 }
 

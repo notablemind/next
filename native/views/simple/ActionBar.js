@@ -12,21 +12,27 @@ import {
   Image,
 } from 'react-native';
 
+import Icon from 'react-native-vector-icons/EvilIcons'
+
 const makePages = (store, node) => ({
-  Add: [
-    {text: 'Before', action: () => store.actions.createBefore(node._id)},
-    {text: 'After', action: () => store.actions.createAfter(node._id)},
-    {text: 'Child', action: () => {
+  plus: [
+    {icon: 'chevron-up', action: () => {
+      store.actions.createBefore(node._id)
+    }},
+    {icon: 'chevron-down', action: () => {
+      store.actions.createAfter(node._id)
+    }},
+    {icon: 'chevron-right', action: () => {
       store.actions.createLastChild(node._id)
       store.actions.rebase(node._id)
     }},
-    {text: 'Back', action: 'reset'},
+    {icon: 'undo', action: 'reset'},
   ],
-  Type: Object.keys(store.plugins.nodeTypes).map(nodeType => ({
+  retweet: Object.keys(store.plugins.nodeTypes).map(nodeType => ({
     text: store.plugins.nodeTypes[nodeType].title || nodeType,
     action: nodeType !== node.type ? (() => store.actions.setNodeType(node._id, nodeType)) : null,
   })),
-  Delete: [
+  trash: [
     {text: 'Really delete', action: () => store.actions.remove(node._id)},
     {text: 'Just kidding', action: 'reset'},
   ],
@@ -55,7 +61,12 @@ export default class ActionBar extends Component {
               () => this.setState({page: null}) :
                 (() => (this.reset(), item.action()))
           } key={i}>
-            {item.text}
+            {item.icon ?
+              <Icon
+                name={item.icon}
+                size={30}
+              />
+              : item.text}
           </Button>
         ))}
       </View>
@@ -63,7 +74,10 @@ export default class ActionBar extends Component {
       return <View style={styles.container}>
         {Object.keys(this.state.pages).map(key => (
           <Button action={() => this.setState({page: key})} key={key}>
-            {key}
+            <Icon
+              name={key}
+              size={30}
+            />
           </Button>
         ))}
       </View>
@@ -73,7 +87,9 @@ export default class ActionBar extends Component {
 
 const Button = ({children, action}) => (
   <TouchableOpacity style={styles.button} onPress={action}>
-    <Text style={styles.buttonText}>{children}</Text>
+    {typeof children === 'string' ?
+      <Text style={styles.buttonText}>{children}</Text> :
+      children}
   </TouchableOpacity>
 )
 
@@ -86,8 +102,10 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    paddingHorizontal: 20,
+    // paddingHorizontal: 10,
     justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
   },
 
   buttonText: {

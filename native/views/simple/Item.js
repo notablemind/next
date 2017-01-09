@@ -74,7 +74,10 @@ export default class Item extends Component {
 
   render() {
     const contents = (this.state.node.children.length && !this.state.editState) ?
-      <TouchableHighlight onPress={this.onRebase}>
+      <TouchableHighlight
+        onPress={this.onRebase}
+        underlayColor="#ddd"
+      >
         <View style={styles.top}>
         {this.body()}
         <Icon
