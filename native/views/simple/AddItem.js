@@ -20,10 +20,13 @@ export default class AddItem extends Component {
     this.state = {
       text: '',
       adding: false,
+      editHeight: 30,
     }
   }
 
-  onSave = () => {
+  onSave = (evt) => {
+    evt.stopPropagation()
+    evt.preventDefault()
     if (!this.state.text) return this.setState({adding: false})
     this.props.store.actions.createLastChild(this.props.parent, this.state.text)
     this.setState({text: '', adding: false})
@@ -33,8 +36,12 @@ export default class AddItem extends Component {
     return <View style={styles.container}>
     {this.state.adding ? <TextInput
         autoFocus
-        style={styles.input}
-        onSubmitEditing={this.onSave}
+        multiline
+        style={[styles.input, {
+          height: Math.max(35, this.state.editHeight + 10)
+        }]}
+        onContentSizeChange={evt => this.setState({editHeight: evt.nativeEvent.contentSize.height})}
+        onKeyPress={evt => evt.nativeEvent.key === 'Enter' ? this.onSave(evt) : null}
         onBlur={() => this.setState({adding: false})}
         value={this.state.text}
         onChangeText={text => this.setState({text})}

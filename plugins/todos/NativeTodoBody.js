@@ -30,7 +30,8 @@ export default ({store, node, editState, onPress, Content}) => (
       checked={node.types.todo && node.types.todo.done}
       onChange={() => toggleChecked(store, node)}
       style={{
-        padding: 10,
+        paddingLeft: 15,
+        paddingRight: 10,
         alignSelf: 'stretch',
         justifyContent: 'center',
       }}

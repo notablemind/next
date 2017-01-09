@@ -12,30 +12,44 @@ import {
   Image,
 } from 'react-native';
 
-import Icon from 'react-native-vector-icons/EvilIcons'
+import Icon from 'react-native-vector-icons/Ionicons'
+
+const typeIcons = {
+  todo: 'ios-checkmark-circle',
+  image: 'ios-image',
+}
+
+const typeTitles = {
+  todoSummary: '0/10',
+  normal: 'T',
+}
 
 const makePages = (store, node) => ({
-  plus: [
-    {icon: 'chevron-up', action: () => {
+  'ios-add': [
+    {icon: 'ios-arrow-up', action: () => {
       store.actions.createBefore(node._id)
     }},
-    {icon: 'chevron-down', action: () => {
+    {icon: 'ios-arrow-down', action: () => {
       store.actions.createAfter(node._id)
     }},
-    {icon: 'chevron-right', action: () => {
+    {icon: 'ios-arrow-forward', action: () => {
       store.actions.createLastChild(node._id)
       store.actions.rebase(node._id)
     }},
-    {icon: 'undo', action: 'reset'},
+    {icon: 'ios-undo-outline', action: 'reset'},
   ],
-  retweet: Object.keys(store.plugins.nodeTypes).map(nodeType => ({
-    text: store.plugins.nodeTypes[nodeType].title || nodeType,
+  'ios-settings': Object.keys(store.plugins.nodeTypes).map(nodeType => ({
+    icon: typeIcons[nodeType],
+    text: typeTitles[nodeType] || store.plugins.nodeTypes[nodeType].title || nodeType,
     action: nodeType !== node.type ? (() => store.actions.setNodeType(node._id, nodeType)) : null,
-  })),
-  trash: [
-    {text: 'Really delete', action: () => store.actions.remove(node._id)},
-    {text: 'Just kidding', action: 'reset'},
+  })).concat([
+    {icon: 'ios-undo-outline', action: 'reset'},
+  ]),
+  'ios-trash-outline': [
+    {icon: 'ios-trash', color: 'red', action: () => store.actions.remove(node._id)},
+    {icon: 'ios-undo-outline', action: 'reset'},
   ],
+  'ios-more': () => store.actions.showMobileContextMenu(),
 })
 
 export default class ActionBar extends Component {
@@ -52,19 +66,30 @@ export default class ActionBar extends Component {
     this.setState({page: null})
   }
 
+  pickPage(page) {
+    if (typeof this.state.pages[page] === 'function') {
+      this.props.slideClosed()
+      this.state.pages[page]()
+    } else {
+      this.setState({page})
+    }
+  }
+
   render() {
     if (this.state.page) {
       return <View style={styles.container}>
         {this.state.pages[this.state.page].map((item, i) => (
           <Button action={
-            item.action === 'reset' ?
+            item.action &&
+            (item.action === 'reset' ?
               () => this.setState({page: null}) :
-                (() => (this.reset(), item.action()))
+                (() => (this.reset(), item.action())))
           } key={i}>
             {item.icon ?
               <Icon
                 name={item.icon}
-                size={30}
+                color={item.action ? item.color : 'white'}
+                size={20}
               />
               : item.text}
           </Button>
@@ -73,10 +98,10 @@ export default class ActionBar extends Component {
     } else {
       return <View style={styles.container}>
         {Object.keys(this.state.pages).map(key => (
-          <Button action={() => this.setState({page: key})} key={key}>
+          <Button action={() => this.pickPage(key)} key={key}>
             <Icon
               name={key}
-              size={30}
+              size={20}
             />
           </Button>
         ))}
@@ -88,7 +113,7 @@ export default class ActionBar extends Component {
 const Button = ({children, action}) => (
   <TouchableOpacity style={styles.button} onPress={action}>
     {typeof children === 'string' ?
-      <Text style={styles.buttonText}>{children}</Text> :
+      <Text style={[styles.buttonText, !action && styles.disabled]}>{children}</Text> :
       children}
   </TouchableOpacity>
 )
@@ -106,6 +131,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
+  },
+
+  disabledText: {
+    color: 'white',
   },
 
   buttonText: {

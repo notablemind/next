@@ -93,13 +93,6 @@ export default class Header extends Component {
       <Text style={styles.syncState}>
         {syncState}
       </Text>
-      <TouchableOpacity
-        onPress={this.props.onClose}
-      >
-        <Text style={styles.closeText}>
-          Close
-        </Text>
-      </TouchableOpacity>
     </View>
   }
 }
@@ -119,6 +112,7 @@ const styles = StyleSheet.create({
 
   titleText: {
     fontWeight: '200',
+    fontSize: 20,
   },
 
   top: {
@@ -148,6 +142,9 @@ const styles = StyleSheet.create({
 
   syncState: {
     fontSize: 10,
+    marginRight: 15,
+    // color: '#555',
+    fontWeight: '200',
   },
 
   closeText: {
