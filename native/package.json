@@ -10,6 +10,7 @@
     "@jabapyth/pouchdb-adapter-asyncstorage": "6.1.24",
     "pouchdb-react-native": "^6.1.24",
     "react-native": "0.39.2",
+    "react-native-keyboard-aware-scroll-view": "^0.2.6",
     "react-native-vector-icons": "3.0.0"
   },
   "devDependencies": {

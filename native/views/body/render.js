@@ -83,7 +83,9 @@ const styles = StyleSheet.create({
   },
 
   code: {
-    // fontFamily: 'monospace',
+    fontFamily: 'Menlo',
+    // fontWeight: '100',
+    fontSize: 14,
     backgroundColor: '#eee',
     color: '#555',
   },

@@ -13,6 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/EvilIcons'
 
 import render from '../body/render'
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view'
 
 import Item from './Item'
 import AddItem from './AddItem'
@@ -44,8 +45,11 @@ export default class RootItem extends Component {
   }
 
   render() {
-    return <ScrollView style={styles.scroller}
-    contentContainerStyle={styles.container}
+    return <KeyboardAwareScrollView
+      keyboardDismissMode="interactive"
+      ref={node => this.container = node}
+      style={styles.scroller}
+      contentContainerStyle={styles.container}
     >
     {/*<View style={styles.rootContent}>
         {render(this.state.node.content, {fontSize: 24, fontWeight: '200'})}
@@ -56,8 +60,9 @@ export default class RootItem extends Component {
       <AddItem
         store={this.props.store}
         parent={this.state.root}
+        rescroll={item => this.container.scrollToFocusedInput(item)}
       />
-    </ScrollView>
+    </KeyboardAwareScrollView>
   }
 }
 
@@ -68,7 +73,7 @@ const styles = StyleSheet.create({
 
   container: {
     alignItems: 'stretch',
-    paddingBottom: 250,
+    // paddingBottom: 250,
   },
 
   rootContent: {

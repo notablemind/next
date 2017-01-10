@@ -38,11 +38,14 @@ export default class AddItem extends Component {
         autoFocus
         multiline
         style={[styles.input, {
-          height: Math.max(35, this.state.editHeight + 10)
+          height: Math.max(35, this.state.editHeight)
         }]}
-        onContentSizeChange={evt => this.setState({editHeight: evt.nativeEvent.contentSize.height})}
+        onContentSizeChange={evt => {
+          this.setState({editHeight: evt.nativeEvent.contentSize.height})
+          this.props.rescroll(evt.target)
+        }}
         onKeyPress={evt => evt.nativeEvent.key === 'Enter' ? this.onSave(evt) : null}
-        onBlur={() => this.setState({adding: false})}
+        onBlur={() => this.setState({adding: false, text: ''})}
         value={this.state.text}
         onChangeText={text => this.setState({text})}
       /> :
@@ -53,13 +56,13 @@ export default class AddItem extends Component {
           Add an item
         </Text>
       </TouchableOpacity>}
-      {this.state.adding &&
+      {/*this.state.adding &&
         <TouchableOpacity
-          onPress={() => this.setState({adding: false})}
+          onPress={() => this.setState({adding: false, text: ''})}
           style={styles.cancel}
         >
           <Text style={styles.cancelText}>cancel</Text>
-        </TouchableOpacity>}
+        </TouchableOpacity>*/}
     </View>
   }
 }
@@ -74,8 +77,8 @@ const styles = StyleSheet.create({
 
   cancel: {
     position: 'absolute',
-    right: 20,
-    top: 20,
+    right: 5,
+    top: 5,
     backgroundColor: '#ccc',
     paddingVertical: 1,
     paddingHorizontal: 5,
@@ -94,9 +97,9 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    fontWeight: '100',
+    fontWeight: '200',
     fontSize: 20,
     lineHeight: 30,
-    height: 30,
+    // height: 30,
   },
 })
