@@ -98,7 +98,7 @@ export default class Browse extends Component {
     }
   }
 
-  syncAllTheThings = (skipList) => {
+  syncAllTheThings = (skipList: Array<string>) => {
     const docs = this.state.children.root
     const PouchDB = require('pouchdb')
     const proms = docs.map(id => {

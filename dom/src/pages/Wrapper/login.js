@@ -13,6 +13,32 @@ const userByEmail = (email, done) => {
     )
 }
 
+const authWithApiServer = (id: string, pwd: string, done: Function) => {
+  const remoteDb = new PouchDB(`${apiURL}/user_${id}`)
+  remoteDb.getSession((err, res) => {
+    if (err) {
+      return done('Unable to connect to syncing server')
+    }
+    // already have a valid session
+    if (res.userCtx && res.userCtx.name === id) {
+      return authWithApiServer(id, pwd, () => {
+        done(null, id, remoteDb)
+      })
+    }
+    remoteDb.login(id, pwd, (err, response) => {
+        if (err && err.name === 'unauthorized') {
+          return done('Wrong password')
+        }
+        if (err) {
+          return done('Unable to connect to syncing server')
+        }
+        if (response.ok && response.name === id) {
+          done()
+        }
+    })
+  })
+}
+
 export const signup = (
   name: string, email: string, pwd: string, done: Function
 ) => {
@@ -45,8 +71,10 @@ export const login = (email: string, pwd: string, done: Done) => {
         return done('Unable to connect to syncing server')
       }
       // already have a valid session
-      if (res.userCtx && res.userCtx.name === id) {
-        return done(null, id, remoteDb)
+      if (id && res.userCtx && res.userCtx.name === id) {
+        return authWithApiServer(id, pwd, () => {
+          done(null, id, remoteDb)
+        })
       }
       remoteDb.login(id, pwd, (err, response) => {
         if (err && err.name === 'unauthorized') {
@@ -55,9 +83,11 @@ export const login = (email: string, pwd: string, done: Done) => {
         if (err) {
           return done('Unable to connect to syncing server')
         }
-        if (response.ok && response.name === id) {
+        if (id && response.ok && response.name === id) {
           console.log('login response', response)
-          done(null, id, remoteDb)
+          authWithApiServer(id, pwd, () => {
+            done(null, id, remoteDb)
+          })
         }
       })
     })

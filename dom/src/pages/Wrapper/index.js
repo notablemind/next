@@ -27,8 +27,8 @@ const ensureUserDb = (done) => {
     mode: 'cors',
     credentials: 'include',
   }).then(
-    res => console.log('good', res),
-    err => console.log('bad')
+    res => (console.log('good', res), done()),
+    err => (console.log('bad'), done(err))
   )
 }
 
@@ -118,10 +118,12 @@ export default class Wrapper extends Component {
           })
         }
 
-        ensureUserDb(res => { console.log('ensured') })
-        this.setState({
-          loading: false,
-          remoteUserDb,
+        ensureUserDb(err => {
+          if (err) return this.setState({loading: false, remoteUserDb: null, user: null})
+          this.setState({
+            loading: false,
+            remoteUserDb,
+          })
         })
       })
     }
@@ -140,6 +142,12 @@ export default class Wrapper extends Component {
 
   getUser = (id: string, remoteUserDb: any) => {
     remoteUserDb.getUser(id, (err, res) => {
+      if (err) {
+        console.log('failed to get user :(')
+        clearUser()
+        this.setState({user: null, remoteUserDb: null})
+        return
+      }
       console.log(err, res)
       const user = {
         id,
@@ -147,8 +155,10 @@ export default class Wrapper extends Component {
         realName: res.realName,
       }
       saveUser(user)
-      ensureUserDb(res => { console.log('ensured') })
-      this.setState({user, remoteUserDb})
+      ensureUserDb(err => {
+        if (err) return this.setState({loading: false, remoteUserDb: null, user: null})
+        this.setState({user, remoteUserDb})
+      })
     })
   }
 
@@ -210,7 +220,7 @@ export default class Wrapper extends Component {
       {React.cloneElement(this.props.children, {
         makeRemoteDocDb: this.state.remoteUserDb && (
           id => {
-            if (!this.state.user) return
+            if (!this.state.user) return Promise.reject(new Error('no user'))
             const doc = `doc_${this.state.user.id}_${id}`
             return ensureDocDb(doc).then(() => new PouchDB(`${dbURL}/${doc}`))
           }

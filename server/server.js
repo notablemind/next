@@ -4,7 +4,7 @@ const path = require('path')
 app.use(require('cors')({origin: true, credentials: true}))
 app.use(require('cookie-parser')())
 
-const PouchDB = require('http-pouchdb')(require('pouchdb'), require('./secret.json').url + '/')
+const PouchDB = require('http-pouchdb')(require('pouchdb'), require('./supersecret.json').url + '/')
 // const PouchDB = require('pouchdb').defaults({prefix: path.join(__dirname, 'data/')})
 
 PouchDB.plugin(require('pouchdb-auth'))
@@ -44,21 +44,21 @@ const getUsersDB = (req) => {
 
 const authMiddleware = (req, res, next) => {
   if (req.cookies.AuthSession) {
-    console.log(req.cookies.AuthSession)
+    // console.log(req.cookies.AuthSession)
     return getUsersDB(req).then(db => db.multiUserSession(req.cookies.AuthSession).then(
       result => {
         if (!result || !result.userCtx.name) {
-          console.log('no res', result)
+          console.log('Unable to authorize', result, req.cookies.AuthSession)
           res.status(401)
           res.end('Bad news')
           return
         }
-        console.log('auth-ed', result.userCtx)
+        // console.log('auth-ed', result.userCtx)
         req.pouchUserId = result.userCtx.name
         next()
       },
       err => {
-        console.log('err', err)
+        console.log('err authing', err)
         res.status(401)
         res.end('Bad news')
         return
@@ -98,14 +98,20 @@ const ensureMemberAccess = (dbname, username, done) => {
   const db = new PouchDB(dbname)
   db.installSecurityMethods()
   db.getSecurity().then(security => {
+    console.log('got security', security)
     if (!security.members) {
       security.members = {names: [], roles: []}
     }
+    if (!security.cloudant) {
+      security.cloudant = {}
+    }
+    security.cloudant[username] = ['_reader', '_writer']
     if (security.members.names.indexOf(username) === -1) {
       security.members.names.push(username)
     }
     return db.putSecurity(security)
   }).then(() => {
+    console.log('ensured member access to', dbname, 'for', username)
     done()
   }, err => {
     console.log('failed to ensure member access')
@@ -134,7 +140,7 @@ const userByEmail = (email, done) => {
     key: email,
     include_docs: true,
   }).then(res => {
-    console.log('got', res)
+    // console.log('got', res)
     if (!res || !res.rows.length) return done(null, null)
     users.get(res.rows[0].id).then(doc => {
       done(null, doc.name)
