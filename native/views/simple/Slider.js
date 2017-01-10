@@ -38,9 +38,10 @@ export default class Slider extends Component {
     super()
     this.lastPosition = null
     this.direction = null
+
     this.state = {
       slideState: null,
-      tick: 0,
+      opens: 0,
     }
     this.offset = 0
     this.firstTouch = true
@@ -54,13 +55,12 @@ export default class Slider extends Component {
       } else {
         this.offset = 0
       }
-      this.setState({slideState: this.direction})
+      this.setState({
+        slideState: this.direction,
+        // open: !!this.direction,
+      })
       queueAnimation()
       this.main.setNativeProps({style: {left: this.offset}})
-      setTimeout(() => {
-        if (this._unmounted) return
-        this.setState(state => ({tick: state.tick + 1}))
-      }, 100)
       this.firstTouch = true
       this.firstTouchGood = false
     }
@@ -83,6 +83,9 @@ export default class Slider extends Component {
       onPanResponderGrant: (evt, gestureState) => {
         this.position = 0
         this.lastPosition = null
+        if (!this.state.slideState) {
+          this.setState({opens: this.state.opens + 1})
+        }
       },
       onPanResponderMove: (evt, gestureState) => {
         if (this.lastPosition === null) {
@@ -142,10 +145,10 @@ export default class Slider extends Component {
       <View
         style={styles.backdrop}
       >
-        {React.cloneElement(this.props.backdrop, {
+        {this.state.opens ? React.cloneElement(this.props.backdrop, {
           slideClosed: this.slideClosed,
-          key: '' + this.state.tick,
-        })}
+          key: '' + this.state.opens,
+        }): null}
       </View>
       <View
         ref={node => this.main = node}
