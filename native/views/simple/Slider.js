@@ -58,6 +58,7 @@ export default class Slider extends Component {
       queueAnimation()
       this.main.setNativeProps({style: {left: this.offset}})
       setTimeout(() => {
+        if (this._unmounted) return
         this.setState(state => ({tick: state.tick + 1}))
       }, 100)
       this.firstTouch = true
@@ -128,6 +129,10 @@ export default class Slider extends Component {
   slideClosed = () => {
     this.direction = null
     this.moveFinished()
+  }
+
+  componentWillUnmount() {
+    this._unmounted = true
   }
 
   render() {

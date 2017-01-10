@@ -58,6 +58,7 @@ export default class RootItem extends Component {
         <Item id={child} store={this.props.store} key={child} />
       ))}
       <AddItem
+        key="add-item"
         store={this.props.store}
         parent={this.state.root}
         rescroll={item => this.container.scrollToFocusedInput(item)}

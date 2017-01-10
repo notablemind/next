@@ -25,6 +25,7 @@ const typeTitles = {
 }
 
 const makePages = (store, node) => ({
+  'ios-create': () => store.actions.edit(node._id),
   'ios-add': [
     {icon: 'ios-arrow-up', action: () => {
       store.actions.createBefore(node._id)

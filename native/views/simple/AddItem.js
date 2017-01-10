@@ -27,9 +27,14 @@ export default class AddItem extends Component {
   onSave = (evt) => {
     evt.stopPropagation()
     evt.preventDefault()
-    if (!this.state.text) return this.setState({adding: false})
+    if (!this.state.text) return this.setState({text: '', adding: false})
     this.props.store.actions.createLastChild(this.props.parent, this.state.text)
-    this.setState({text: '', adding: false})
+    this.props.store.actions.normalMode()
+    this.setState({text: '', adding: true})
+  }
+
+  onBlur = () => {
+    this.setState({text: ''})
   }
 
   render() {
@@ -45,7 +50,7 @@ export default class AddItem extends Component {
           this.props.rescroll(evt.target)
         }}
         onKeyPress={evt => evt.nativeEvent.key === 'Enter' ? this.onSave(evt) : null}
-        onBlur={() => this.setState({adding: false, text: ''})}
+        onBlur={this.onBlur}
         value={this.state.text}
         onChangeText={text => this.setState({text})}
       /> :
@@ -69,8 +74,8 @@ export default class AddItem extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 15,
-    paddingHorizontal: 10,
+    // paddingVertical: 15,
+    // paddingHorizontal: 10,
     borderBottomWidth: .5,
     borderColor: '#ddd',
   },
@@ -94,12 +99,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 30,
     textAlign: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
   },
 
   input: {
     fontWeight: '200',
     fontSize: 20,
     lineHeight: 30,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     // height: 30,
   },
 })
