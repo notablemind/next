@@ -55,17 +55,23 @@ export default class Browse extends Component {
   render() {
     if (this.state.error) {
       return <View style={styles.container}>
-        <Text>Failed to load files list</Text>
+        <View style={styles.loading}>
+          <Text>Failed to load files list</Text>
+        </View>
       </View>
     }
     if (!this.state.files) {
       return <View style={styles.container}>
-        <Text>Loading files list</Text>
+        <View style={styles.loading}>
+          <Text>Loading files list</Text>
+        </View>
       </View>
     }
     if (!this.state.files.length) {
       return <View style={styles.container}>
-        <Text>You have no files</Text>
+        <View style={styles.loading}>
+          <Text>No files</Text>
+        </View>
       </View>
     }
 
@@ -100,6 +106,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     flex: 1,
     // padding: 10,
+  },
+
+  loading: {
+    alignItems: 'center',
+    paddingVertical: 50,
   },
 
   unsynced: {
