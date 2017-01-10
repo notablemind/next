@@ -4,7 +4,9 @@ const path = require('path')
 app.use(require('cors')({origin: true, credentials: true}))
 app.use(require('cookie-parser')())
 
-const PouchDB = require('pouchdb').defaults({prefix: path.join(__dirname, 'data/')})
+const PouchDB = require('http-pouchdb')(require('pouchdb'), require('./secret.json').url + '/')
+// const PouchDB = require('pouchdb').defaults({prefix: path.join(__dirname, 'data/')})
+
 PouchDB.plugin(require('pouchdb-auth'))
 PouchDB.plugin(require('pouchdb-security'))
 PouchDB.plugin(require('pouchdb-find'))
@@ -12,6 +14,19 @@ PouchDB.plugin(require('pouchdb-find'))
 const users = new PouchDB('_users')
 users.useAsAuthenticationDB()
 users.createIndex({index: {fields: ['email']}})
+
+const usersQuery = {
+  _id: '_design/by_email',
+  views: {
+    by_email: {
+      map: function(doc) {emit(doc.email)}.toString(),
+    },
+  },
+}
+
+users.put(usersQuery)
+  .then(() => console.log('saved users query'))
+  .catch(err => err.status === 409 ? console.log('users query all set') : console.log('users query saving:', err))
 
 const checkAuth = (username, password, done) => {
   users.multiUserLogIn(username, password, (err, res) => {
@@ -108,11 +123,30 @@ const finish = (res, good, failMessage) => {
   res.end()
 }
 
+PouchDB.debug.enable('pouchdb:find')
 const isMyDoc = (id, userId) => {
   return id.indexOf(`doc_${userId}_`) === 0
 }
 
 const userByEmail = (email, done) => {
+  // (doc, emit) => emit(doc.email)
+  users.query('by_email/by_email', {
+    key: email,
+    include_docs: true,
+  }).then(res => {
+    console.log('got', res)
+    if (!res || !res.rows.length) return done(null, null)
+    users.get(res.rows[0].id).then(doc => {
+      done(null, doc.name)
+    }, err => {
+      done('Failed to get doc: ' + res.rows[0].id)
+    })
+  }, err => {
+    console.log('errors umm' + err)
+    done(err)
+  })
+
+  /*
   users.find({selector: {'email': email}})
     .then(users => {
       if (!users || !users.docs.length) {
@@ -121,9 +155,11 @@ const userByEmail = (email, done) => {
       }
       done(null, users.docs[0].name)
     }, err => {
-      console.log('fail', err, email)
-      done(500)
+      console.log('failed to find probably', err, email)
+      done(null, null)
+      // done("Error finding user maybe")
     })
+    */
 }
 
 app.get('/api/user-by-email', (req, res) => {

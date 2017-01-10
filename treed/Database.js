@@ -253,7 +253,6 @@ export default class Database {
   }
 
   getAttachment(id: string, attachmentId: string) {
-    debugger
     return this.db.getAttachment(id, attachmentId)
   }
 
@@ -287,7 +286,6 @@ export default class Database {
   }
 
   _onChange = (id: string, doc: any) => {
-    console.log('got some change')
     if (id === 'settings') {
       setTimeout(() => {
         if (this.myrevs.has(doc._rev)) {
@@ -303,6 +301,11 @@ export default class Database {
     if (!doc) {
       delete this.data[id]
     } else {
+      /*
+      if (this.data[id]._rev && +doc._rev.split('-')[0] < +this.data[id]._rev.split('-')[0]) {
+        // discard, it's old
+      }
+      */
       setTimeout(() => {
         if (this.myrevs.has(doc._rev)) {
           // console.log('skipping my', doc._rev)
@@ -310,7 +313,7 @@ export default class Database {
           return
           // this was my change, plz ignore
         }
-        console.log('onchange', id, doc && doc._rev)
+        // console.log('onchange', id, doc && doc._rev)
         if (!this.data[id] || this.data[id].modified !== doc.modified) {
           this.data[id] = doc
           this.onNodeChanged(id)

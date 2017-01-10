@@ -6,7 +6,7 @@ import {css, StyleSheet} from 'aphrodite'
 import {Router, Route, IndexRoute, hashHistory} from 'react-router'
 
 import Header from './Header'
-import {baseURL} from './config'
+import {apiURL, dbURL} from './config'
 
 import {login, signup} from './login'
 
@@ -22,7 +22,7 @@ window.pouchdb = PouchDB
 const USER_KEY = 'notablemind:user'
 
 const ensureUserDb = (done) => {
-  fetch(`${baseURL}/api/ensure-user`, {
+  fetch(`${apiURL}/api/ensure-user`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
@@ -33,7 +33,7 @@ const ensureUserDb = (done) => {
 }
 
 const ensureDocDb = id => {
-  return fetch(`${baseURL}/api/create-doc?id=${id}`, {
+  return fetch(`${apiURL}/api/create-doc?id=${id}`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
@@ -98,7 +98,7 @@ export default class Wrapper extends Component {
     }
 
     if (user) {
-      const remoteUserDb = new PouchDB(`${baseURL}/user_${user.id}`)
+      const remoteUserDb = new PouchDB(`${dbURL}/user_${user.id}`)
       remoteUserDb.getSession((err, res) => {
         if (err) {
           console.log('network error', err)
@@ -212,7 +212,7 @@ export default class Wrapper extends Component {
           id => {
             if (!this.state.user) return
             const doc = `doc_${this.state.user.id}_${id}`
-            return ensureDocDb(doc).then(() => new PouchDB(`${baseURL}/${doc}`))
+            return ensureDocDb(doc).then(() => new PouchDB(`${dbURL}/${doc}`))
           }
         ),
         remoteUser: this.state.user,

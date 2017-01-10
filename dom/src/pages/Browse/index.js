@@ -75,6 +75,8 @@ export default class Browse extends Component {
       selected: 0,
     }
 
+    window.browse = this
+
     if (props.userDb) this.listen(props.userDb)
   }
 
@@ -94,6 +96,34 @@ export default class Browse extends Component {
     if (nextProps.userDb && !this.props.userDb) {
       this.listen(nextProps.userDb)
     }
+  }
+
+  syncAllTheThings = (skipList) => {
+    const docs = this.state.children.root
+    const PouchDB = require('pouchdb')
+    const proms = docs.map(id => {
+      if (skipList.indexOf(id) !== -1) {
+        console.log('skipping', id)
+        return
+      }
+      console.log('starting', this.state.map[id].title, id)
+      return this.props.makeRemoteDocDb(id).then(remote => {
+        const local = new PouchDB(`doc_${id}`)
+        return new Promise((res, rej) => {
+          local.sync(remote, {retry: true}).on('complete', () => {
+            console.log('finished', id, this.state.map[id].title)
+            res()
+          }).on('error', err => {
+            console.log('failed', id, this.state.map[id].title, err)
+            res(err)
+          })
+        })
+      })
+    })
+    Promise.all(proms).then(
+      results => console.log('resulted!', results),
+      err => console.log('failed', err)
+    )
   }
 
   goDown = () => {

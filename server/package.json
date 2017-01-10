@@ -6,6 +6,7 @@
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.1",
     "express-pouchdb": "^2.1.1",
+    "mongodown": "^1.1.0",
     "pouchdb-core": "^6.0.7",
     "pouchdb-find": "^0.10.4",
     "pouchdb-server": "^1.2.1"

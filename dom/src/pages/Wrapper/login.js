@@ -1,11 +1,11 @@
 // @flow
 
 import PouchDB from 'pouchdb'
-import {baseURL} from './config'
+import {apiURL, dbURL} from './config'
 import uuid from '../../utils/uuid'
 
 const userByEmail = (email, done) => {
-  fetch(`${baseURL}/api/user-by-email?email=${email}`)
+  fetch(`${apiURL}/api/user-by-email?email=${email}`)
     .then(res => res.status === 404 ? {id: null} : res.json())
     .then(
       res => done(null, res.id),
@@ -17,7 +17,7 @@ export const signup = (
   name: string, email: string, pwd: string, done: Function
 ) => {
   const id = uuid()
-  const remoteDb = new PouchDB(`${baseURL}/user_${id}`, {skipSetup: true})
+  const remoteDb = new PouchDB(`${dbURL}/user_${id}`, {skipSetup: true})
   remoteDb.signup(id, pwd, {
     metadata: {email, realName: name}
   }, (err, response) => {
@@ -39,7 +39,7 @@ export const login = (email: string, pwd: string, done: Done) => {
       // this is a new user, or a different email address
       return done('No user found for that email')
     }
-    const remoteDb = new PouchDB(`${baseURL}/user_${id}`)
+    const remoteDb = new PouchDB(`${dbURL}/user_${id}`)
     remoteDb.getSession((err, res) => {
       if (err) {
         return done('Unable to connect to syncing server')

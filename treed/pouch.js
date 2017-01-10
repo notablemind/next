@@ -9,7 +9,7 @@ export default db => ({
       // attachments: true,
       since: 'now',
     }).on('change', change => {
-      console.log('getting changes', change)
+      // console.log('getting changes', change)
       if (change.doc._deleted) {
         onChange(change.doc._id, null)
       } else {

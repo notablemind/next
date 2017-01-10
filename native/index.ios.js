@@ -20,7 +20,7 @@ import Browse from './pages/Browse'
 import Document from './pages/Document'
 
 import {login} from './utils/login'
-import {baseURL} from './config'
+import {baseURL, dbURL} from './config'
 
 import Button from './components/Button'
 import Menu from './components/Menu'
@@ -97,7 +97,7 @@ export default class Native extends Component {
   }
 
   checkSavedUser = user => {
-    const remoteUserDb = new PouchDB(`${baseURL}/user_${user.id}`)
+    const remoteUserDb = new PouchDB(`${dbURL}/user_${user.id}`)
     remoteUserDb.getSession((err, res) => {
       if (err) {
         console.log('network error', err)
@@ -201,7 +201,7 @@ export default class Native extends Component {
         onStore={store => this.setState({store})}
         makeRemoteDocDb={id => {
           const doc = `doc_${this.state.user.id}_${id}`
-          return ensureDocDb(doc).then(() => new PouchDB(`${baseURL}/${doc}`))
+          return ensureDocDb(doc).then(() => new PouchDB(`${dbURL}/${doc}`))
         }}
       />
       :

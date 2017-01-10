@@ -33,6 +33,17 @@ module.exports = {
       loaders: ['babel'],
       include: [
         path.join(__dirname, '..', 'src'),
+        path.join(__dirname, '..', '..', 'treed'),
+        path.join(__dirname, '..', '..', 'plugins'),
+        path.join(__dirname, '..', '..', 'node_modules', 'treed'),
+      ],
+    }, {
+      test: /\.json$/,
+      loader: 'json',
+      include: [
+        path.join(__dirname, '..', 'src'),
+        path.join(__dirname, '..', '..', 'server'),
+        path.join(__dirname, '..', '..', 'treed'),
         path.join(__dirname, '..', '..', 'plugins'),
         path.join(__dirname, '..', '..', 'node_modules', 'treed'),
       ],
@@ -41,6 +52,7 @@ module.exports = {
       loader: 'style-loader!css-loader!less-loader',
       include: [
         path.join(__dirname, '..', 'src'),
+        path.join(__dirname, '..', '..', 'treed'),
         path.join(__dirname, '..', '..', 'plugins'),
         path.join(__dirname, '..', '..', 'node_modules', 'treed'),
       ],
