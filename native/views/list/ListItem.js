@@ -42,10 +42,13 @@ export default class ListItem extends Component {
   render() {
     return <View style={styles.container}>
       <TouchableHighlight
+        underlayColor="#ddd"
         onPress={() => this.props.store.actions.rebase(this.props.id)}
       >
         <View style={styles.top}>
-          {render(this.state.node.content) || <Text>empty</Text>}
+          <View style={styles.content}>
+            {render(this.state.node.content) || <Text>empty</Text>}
+          </View>
           {this.props.depth >= 3 && this.state.node.children.length > 0 && <Icon
             name="ios-arrow-forward"
             style={styles.icon}
@@ -83,6 +86,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+
+  content: {
+    flex: 1,
+  },
+
   children: {
     paddingLeft: 5,
     borderLeftWidth: 1,

@@ -147,6 +147,7 @@ export default class Document extends Component {
         {text: 'Redo', action: this.state.store.redo}
       ]},
       {text: 'Quick add', action: null},
+      {type: 'spacer'},
     ].concat(Object.keys(viewTypes).map(type => (
       {
         text: viewTypes[type].title || type,
@@ -186,7 +187,7 @@ export default class Document extends Component {
       <Header
         title={this.state.title}
         onClose={this.props.onClose}
-        onOpenMenu={this.props.openMenu}
+        onOpenMenu={this.menu.toggleSlideMenu}
         syncState={this.state.syncState}
         store={this.state.store}
         // TODO show whole ancestry of current node
