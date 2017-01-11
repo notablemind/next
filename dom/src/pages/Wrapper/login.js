@@ -1,7 +1,7 @@
 // @flow
 
 import PouchDB from 'pouchdb'
-import {apiURL, dbURL} from './config'
+import {apiURL, dbURL} from '../../../../shared/config.json'
 import uuid from '../../utils/uuid'
 
 const userByEmail = (email, done) => {

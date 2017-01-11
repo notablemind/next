@@ -9,12 +9,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import {baseURL} from '../config'
-
 import PouchDB from 'pouchdb-react-native'
 import Treed from 'treed'
 import treedPouch from 'treed/pouch'
 
+import Menu from '../components/Menu'
+import SideMenu from '../SideMenu'
 import Header from './Header'
 
 import Icon from 'react-native-vector-icons/EvilIcons'
@@ -78,7 +78,6 @@ export default class Document extends Component {
     treed.ready.then(() => {
       const store = treed.registerView('root', this.state.viewType)
       const title = treed.db.data.root.content
-      this.props.onStore(store)
       this.setState({
         treed,
         store,
@@ -137,6 +136,26 @@ export default class Document extends Component {
     this.setState({title})
   }
 
+  menuItems() {
+    return [
+      {text: 'Close doc', action: this.props.onClose},
+      {type: 'spacer'},
+      {text: 'Jump to root',
+        action: () => this.state.store.actions.rebase('root')},
+      {children: [
+        {text: 'Undo', action: this.state.store.undo},
+        {text: 'Redo', action: this.state.store.redo}
+      ]},
+      {text: 'Quick add', action: null},
+    ].concat(Object.keys(viewTypes).map(type => (
+      {
+        text: viewTypes[type].title || type,
+        action: type === this.state.viewType ?
+          null : () => this.setState({viewType: type})
+      }
+    )))
+  }
+
   render() {
     if (this.state.initialSyncing) {
       return <View style={styles.container}>
@@ -163,7 +182,7 @@ export default class Document extends Component {
     }
 
     const Component = viewTypes[this.state.viewType].Component
-    return <View style={styles.container}>
+    const main =  <View style={styles.container}>
       <Header
         title={this.state.title}
         onClose={this.props.onClose}
@@ -176,6 +195,16 @@ export default class Document extends Component {
         store={this.state.store}
       />
     </View>
+
+    return <Menu
+      ref={menu => this.menu = menu}
+      width={200}
+      slideWay="left"
+      menu={<SideMenu
+        items={this.menuItems()}
+      />}
+      frontView={main}
+    />
   }
 }
 

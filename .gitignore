@@ -3,3 +3,4 @@ server/data
 server/log.txt
 secret.json
 supersecret.json
+shared/config.json

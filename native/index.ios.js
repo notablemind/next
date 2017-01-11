@@ -20,7 +20,7 @@ import Browse from './pages/Browse'
 import Document from './pages/Document'
 
 import {login} from './utils/login'
-import {baseURL, dbURL} from './config'
+import {apiURL, dbURL} from '../shared/config.json'
 
 import Button from './components/Button'
 import Menu from './components/Menu'
@@ -39,7 +39,7 @@ const getSyncData = () => AsyncStorage.getItem(SYNC_DATA_KEY).then(raw => raw ? 
 
 const ensureUserDb = (done) => {
   console.log('ensuring user db')
-  fetch(`${baseURL}/api/ensure-user`, {
+  fetch(`${apiURL}/api/ensure-user`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
@@ -51,7 +51,7 @@ const ensureUserDb = (done) => {
 
 const ensureDocDb = id => {
   console.log('ensuring doc db')
-  return fetch(`${baseURL}/api/create-doc?id=${id}`, {
+  return fetch(`${apiURL}/api/create-doc?id=${id}`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
@@ -163,7 +163,7 @@ export default class Native extends Component {
   }
 
   onCloseFile = () => {
-    this.setState({openFile: null, store: null})
+    this.setState({openFile: null})
   }
 
   setSyncedTime = date => {
@@ -187,43 +187,44 @@ export default class Native extends Component {
       )
     }
 
-    const main = this.state.openFile ?
-      <Document
+    if (this.state.openFile) {
+      return <Document
         // This makes it so that we don't reuse the component between files.
-      // Makes it a little easier on us
+        // Makes it a little easier on us
         key={this.state.openFile.id}
         id={this.state.openFile.id}
         onClose={this.onCloseFile}
+        user={this.state.user}
         initialTitle={this.state.openFile.title}
         synced={this.state.syncData[this.state.openFile.id]}
         setSyncedTime={this.setSyncedTime}
-        openMenu={this.openMenu}
-        onStore={store => this.setState({store})}
         makeRemoteDocDb={id => {
           const doc = `doc_${this.state.user.id}_${id}`
           return ensureDocDb(doc).then(() => new PouchDB(`${dbURL}/${doc}`))
         }}
       />
-      :
-      <Browse
-        userDb={this.state.userDb}
-        checkForLocalDb={this.checkForLocalDb}
-        openFile={this.openFile}
-        syncData={this.state.syncData}
-        // TODO will "browse" ever be responsible for syncing? probs not
-      />
+    }
 
     return <Menu
       ref={menu => this.menu = menu}
       width={200}
       slideWay="left"
       menu={<SideMenu
-        docId={this.state.openFile}
-        onCloseDoc={() => this.setState({openFile: null})}
-        user={this.state.user}
-        store={this.state.store}
+        items={[
+          {text: 'Quick Add', action: null},
+          {text: 'Settings', action: null},
+          this.state.user ? {text: 'Logout'} : {text: 'Login'},
+        ]}
       />}
-      frontView={main}
+      frontView={
+        <Browse
+          userDb={this.state.userDb}
+          checkForLocalDb={this.checkForLocalDb}
+          openFile={this.openFile}
+          syncData={this.state.syncData}
+          // TODO will "browse" ever be responsible for syncing? probs not
+        />
+      }
     />
 
 

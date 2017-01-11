@@ -90,9 +90,9 @@ export default class Header extends Component {
           marginRight: 10,
         }}
       />
-      <Text style={styles.syncState}>
+      {/*<Text style={styles.syncState}>
         {syncState}
-      </Text>
+      </Text>*/}
     </View>
   }
 }
@@ -118,6 +118,7 @@ const styles = StyleSheet.create({
   top: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
 
   title: {

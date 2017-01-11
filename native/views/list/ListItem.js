@@ -6,9 +6,13 @@ import {
   Text,
   View,
   AsyncStorage,
+  TouchableHighlight,
 } from 'react-native';
 
+import Icon from 'react-native-vector-icons/Ionicons'
+
 import render from '../body/render'
+
 
 export default class ListItem extends Component {
   constructor({store, id}) {
@@ -37,9 +41,17 @@ export default class ListItem extends Component {
 
   render() {
     return <View style={styles.container}>
-      <View style={styles.top}>
-        {render(this.state.node.content) || <Text>empty</Text>}
-      </View>
+      <TouchableHighlight
+        onPress={() => this.props.store.actions.rebase(this.props.id)}
+      >
+        <View style={styles.top}>
+          {render(this.state.node.content) || <Text>empty</Text>}
+          {this.props.depth >= 3 && this.state.node.children.length > 0 && <Icon
+            name="ios-arrow-forward"
+            style={styles.icon}
+          />}
+        </View>
+      </TouchableHighlight>
       {this.props.depth < 3 &&
         <View style={styles.children}>
         {this.state.node.children.map(child => (
@@ -59,9 +71,17 @@ const styles = StyleSheet.create({
   container: {
     // flex: 1,
   },
+
+  icon: {
+    marginLeft: 10,
+    marginRight: 10,
+  },
+
   top: {
     paddingVertical: 5,
     paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   children: {
     paddingLeft: 5,

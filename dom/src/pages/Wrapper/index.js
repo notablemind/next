@@ -6,7 +6,7 @@ import {css, StyleSheet} from 'aphrodite'
 import {Router, Route, IndexRoute, hashHistory} from 'react-router'
 
 import Header from './Header'
-import {apiURL, dbURL} from './config'
+import {apiURL, dbURL} from '../../../../shared/config.json'
 
 import {login, signup} from './login'
 

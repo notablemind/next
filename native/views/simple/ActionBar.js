@@ -50,7 +50,10 @@ const makePages = (store, node) => ({
     {icon: 'ios-trash', color: 'red', action: () => store.actions.remove(node._id)},
     {icon: 'ios-undo-outline', action: 'reset'},
   ],
-  'ios-more': () => store.actions.showMobileContextMenu(),
+  'ios-more': () => {
+    // store.actions.showMobileContextMenu()
+    console.warn('no implemented')
+  },
 })
 
 export default class ActionBar extends Component {

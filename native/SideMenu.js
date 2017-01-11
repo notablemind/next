@@ -10,15 +10,7 @@ import {
 } from 'react-native';
 
 
-// TODO subscribe to store if present, so undo & redo work
-const SideMenu = ({docId, user, toggleSlideMenu, onCloseDoc, store}) => {
-  const items = [
-    docId && {text: 'Close doc', action: onCloseDoc},
-    docId && {children: [{text: 'Undo', action: store && store.undo}, {text: 'Redo', action: store && store.redo}]},
-    {text: 'Quick Add', action: null},
-    {text: 'Settings', action: null},
-    user ? {text: 'Logout'} : {text: 'Login'},
-  ]
+const SideMenu = ({toggleSlideMenu, items}) => {
 
   return <View style={styles.container}>
     {items.map((item, i) => (
@@ -30,10 +22,13 @@ const SideMenu = ({docId, user, toggleSlideMenu, onCloseDoc, store}) => {
                 (() => (toggleSlideMenu(), child.action())) : null
             }>{child.text}</Button>)}
           </View> :
-          <Button key={i} action={
-            item.action ?
-              (() => (toggleSlideMenu(), item.action())) : null
-          }>{item.text}</Button>)
+          (item.type === 'spacer' ?
+            <View key={i} style={styles.spacer} />
+            :
+            <Button key={i} action={
+              item.action ?
+                (() => (toggleSlideMenu(), item.action())) : null
+            }>{item.text}</Button>))
         : null
     ))}
   </View>
@@ -82,6 +77,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomWidth: .5,
     borderColor: '#ccc',
+  },
+
+  spacer: {
+    borderBottomWidth: .5,
+    borderColor: '#ccc',
+    height: 10,
+    backgroundColor: '#eee',
   },
 
 })
