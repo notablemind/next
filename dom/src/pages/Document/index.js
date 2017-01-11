@@ -60,6 +60,7 @@ const plugins = [
   require('../../../../plugins/themes').default,
   require('../../../../plugins/todos/dom').default,
   require('../../../../plugins/image/dom').default,
+  require('../../../../plugins/date/dom').default,
 ]
 
 const viewTypes = {
