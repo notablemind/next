@@ -477,28 +477,6 @@ const actions = {
       })
     },
 
-    create(store: Store, {pid, ix, content, type, fromNode, viewData}: any) {
-      if (!type) {
-        if (fromNode && store.plugins.nodeTypes[fromNode.type].newSiblingsShouldCarryType) {
-          type = fromNode.type
-        } else {
-          type = 'normal'
-        }
-      }
-
-      const nid = uuid()
-      const nodeType = store.plugins.nodeTypes[type]
-      const types = nodeType.defaultNodeConfig ?
-        {[type]: nodeType.defaultNodeConfig(fromNode)} : {}
-      const views = viewData ? {[store.state.viewType]: viewData} : {}
-      store.execute({
-        type: 'create',
-        args: {id: nid, pid, ix, data: {content, type, types, views}},
-      }, store.state.active, nid)
-      store.actions.editStart(nid)
-      return nid
-    },
-
     createLastChild(store: Store, id: string=store.state.active, content: string='', viewData: ?any=null) {
       const node = store.db.data[id]
       if (!id || !node) return
@@ -536,6 +514,28 @@ const actions = {
         type: 'create',
         args: {id: nid, pid, ix: idx, data: {type, types}},
       }, id, nid)
+      store.actions.editStart(nid)
+      return nid
+    },
+
+    create(store: Store, {pid, ix, content, type, fromNode, viewData}: any) {
+      if (!type) {
+        if (fromNode && store.plugins.nodeTypes[fromNode.type].newSiblingsShouldCarryType) {
+          type = fromNode.type
+        } else {
+          type = 'normal'
+        }
+      }
+
+      const nid = uuid()
+      const nodeType = store.plugins.nodeTypes[type]
+      const types = nodeType.defaultNodeConfig ?
+        {[type]: nodeType.defaultNodeConfig(fromNode)} : {}
+      const views = viewData ? {[store.state.viewType]: viewData} : {}
+      store.execute({
+        type: 'create',
+        args: {id: nid, pid, ix, data: {content, type, types, views}},
+      }, store.state.active, nid)
       store.actions.editStart(nid)
       return nid
     },

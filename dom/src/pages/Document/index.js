@@ -68,6 +68,8 @@ const viewTypes = {
   whiteboard: require('treed/views/whiteboard').default,
 }
 
+const activeButtons = ['date:newEntry']
+
 type DbT = any
 
 const panesSetup = {
@@ -275,15 +277,30 @@ export default class Document extends Component {
     }
   }
 
+  getActionButtons() {
+    const allButtons = {}
+    this.state.store.plugins.actionButtons.forEach(plugin => {
+      Object.keys(plugin.buttons).forEach(key => {
+        const id = plugin.id + ':' + key
+        allButtons[id] = {...plugin.buttons[key], id}
+      })
+    })
+    return activeButtons.map(key => allButtons[key])
+  }
+
   render() {
-    if (!this.state.treed) {
+    const {treed} = this.state
+    if (!treed) {
       return <div className={css(styles.container, styles.loading)}>Loading...</div>
     }
+
+    const actionButtons = this.getActionButtons()
+
     const Component = viewTypes[this.state.viewType].Component
     return <div className={css(styles.container)}>
       <Sidebar
-        globalStore={this.state.treed.globalStore}
-        plugins={this.state.treed.config.plugins}
+        globalStore={treed.globalStore}
+        plugins={treed.config.plugins}
       />
       <div className={css(styles.syncState)}>
         {this.state.syncState}
@@ -292,13 +309,25 @@ export default class Document extends Component {
         <Component
           store={this.state.store}
         />
+        {actionButtons.length > 0 &&
+          <div className={css(styles.actionButtons)}>
+            {actionButtons.map(button => (
+              <div
+                key={button.id}
+                onClick={() => button.action(treed.activeView())}
+                className={css(styles.actionButton)}
+              >
+                {button.title}
+              </div>
+            ))}
+          </div>}
       </div>
       <KeyCompleter
-        treed={this.state.treed}
+        treed={treed}
       />
       {this.state.searching &&
         <Searcher
-          treed={this.state.treed}
+          treed={treed}
           onClose={() => this.setState({searching: false})}
         />}
     </div>
@@ -311,10 +340,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  actionButtons: {
+    position: 'absolute',
+    bottom: 10,
+    right: 20,
+    zIndex: 100000,
+  },
+
+  actionButton: {
+    padding: '10px 20px',
+    backgroundColor: '#80edff',
+    borderRadius: 20,
+  },
+
   syncState: {
     position: 'absolute',
-    top: 100,
+    // top: 100,
     right: 10,
+    fontSize: 10,
   },
 
   loading: {
@@ -327,5 +370,6 @@ const styles = StyleSheet.create({
 
   treedContainer: {
     flex: 1,
+    position: 'relative',
   },
 })

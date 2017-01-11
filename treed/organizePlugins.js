@@ -69,6 +69,7 @@ const organizePlugins = (plugins: Array<Plugin<*, *>>): PluginSummary => {
       dropFileOnto: getSubThing(plugins, 'node', 'dropFileOnto'),
       contextMenu: [typesContextMenu].concat(contextMenuFns),
     },
+    actionButtons: plugins.filter(p => p.actionButtons).map(p => ({id: p.id, buttons: p.actionButtons})),
   }
 }
 

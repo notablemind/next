@@ -170,6 +170,10 @@ export type Plugin<T, S> = {|
   destroy?: (globalPluginState: S) => void,
   leftSidePane?: any,
 
+  actionButtons?: {
+    [key: string]: any,
+  },
+
   nodeTypes?: {
     [key: string]: PluginNodeTypeConfig<*>,
   },
