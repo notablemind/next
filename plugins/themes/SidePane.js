@@ -76,7 +76,7 @@ export default class SidePane extends Component {
     this._sub = store.setupStateListener(
       this,
       store => [store.events.settingsChanged()],
-      store => store.getters.pluginConfig(PLUGIN_ID)
+      store => store.getters.pluginConfig(PLUGIN_ID) || {}
     )
   }
 
@@ -104,7 +104,7 @@ export default class SidePane extends Component {
   }
 
   render() {
-    const {headerStyles, individualStyles} = this.state
+    const {headerStyles=[], individualStyles={}} = this.state
     return <div className={css(styles.container)}>
       <div className={css(styles.title)}>
         Styling

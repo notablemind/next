@@ -8,6 +8,10 @@ import {hashHistory} from 'react-router'
 import KeyManager from 'treed/keys/Manager'
 import makeKeyLayer from 'treed/keys/makeKeyLayer'
 
+import ContextMenu from 'treed/views/context-menu/ContextMenu'
+
+import type {MenuItem} from 'treed/types'
+
 const organizeFolders = (rows) => {
   const map = {}
   const children = {root: []}
@@ -60,6 +64,12 @@ export default class Browse extends Component {
     settings: ?Object,
     children: {[key: string]: Array<string>},
     map: {[key: string]: FolderT | DocT},
+    menu?: ?{
+      pos: {left: number, top: number},
+      items: Array<MenuItem>,
+    },
+    local?: any,
+    remote?: any,
   }
 
   changes: any
@@ -73,6 +83,8 @@ export default class Browse extends Component {
       children: {},
       map: {},
       selected: 0,
+      local: null,
+      remote: null,
     }
 
     window.browse = this
@@ -137,12 +149,13 @@ export default class Browse extends Component {
       const map = {...this.state.map}
       const parent = map[id].folder || 'root'
       delete map[id]
+      const children = this.state.children[parent]
+      children.splice(this.state.children[parent].indexOf(id), 1)
       this.setState({
         map,
         children: {
           ...this.state.children,
-          [parent]: this.state.children[parent].splice(
-            this.state.children[parent].indexOf(id), 1)
+          [parent]: children
         },
       })
       return
@@ -153,10 +166,12 @@ export default class Browse extends Component {
       if (change.doc.folder !== this.state.map[id].folder) {
         const prev = this.state.map[id].folder || 'root'
         const next = change.doc.folder || 'root'
+        const prevChildren = children[prev].slice()
+        prevChildren.splice(prevChildren.indexOf(id), 1)
         children = {
           ...children,
           // TODO respect current sort order
-          [prev]: children[prev].splice(children[prev].indexOf(id), 1),
+          [prev]: prevChildren,
           [next]: (children[next] || []).concat([id]),
         }
       }
@@ -229,6 +244,46 @@ export default class Browse extends Component {
     hashHistory.push('/doc/' + id)
   }
 
+  onDelete = (id: string) => {
+    if (!this.props.userDb) return
+    if (!confirm('Really delete?')) {
+      // TODO ditch the alert
+      return
+    }
+    /*
+    const map = {...this.state.map}
+    delete map[id]
+    const children = {...this.state.children}
+    delete children[id]
+    this.setState({map, children})
+    */
+    this.props.userDb.put({
+      _id: id,
+      _rev: this.state.map[id]._rev,
+      _deleted: true,
+    })
+  }
+
+  onContextMenu = (evt: any, id: string) => {
+    evt.preventDefault()
+    evt.stopPropagation()
+    this.setState({
+      menu: {
+        pos: {left: evt.clientX, top: evt.clientY},
+        items: [{
+          text: 'Open',
+          action: () => this.onOpen(id),
+        }, {
+          text: 'Open in new tab',
+          action: () => window.open(`#/doc/${id}`, '_blank'),
+        }, {
+          text: 'Delete',
+          action: () => this.onDelete(id),
+        }]
+      },
+    })
+  }
+
   render() {
     return <div className={css(styles.container)}>
       <div className={css(styles.buttons)}>
@@ -248,30 +303,41 @@ export default class Browse extends Component {
         children={this.state.children}
         folder={{_id: 'root', title: 'All Documents'}}
         onOpen={this.onOpen}
+        onContextMenu={this.onContextMenu}
       />
+      {this.state.menu &&
+        <ContextMenu
+          pos={this.state.menu.pos}
+          menu={this.state.menu.items}
+          onClose={() => this.setState({menu: null})}
+        />}
     </div>
   }
 }
 
-const Folder = ({map, children, folder, onOpen}) => (
+const Folder = ({map, children, folder, onOpen, onContextMenu}) => (
   <div className={css(styles.folderContainer)}>
-    <div className={css(
-      styles.item,
-      styles.folder,
-      folder._id === 'root' && styles.rootName
-    )}>
+    <div
+      className={css(
+        styles.item,
+        styles.folder,
+        folder._id === 'root' && styles.rootName
+      )}
+      onContextMenu={evt => onContextMenu(evt, folder._id)}
+    >
       {folder.title}
     </div>
     <div className={css(
       styles.children,
       folder._id === 'root' && styles.rootChildren
     )}>
-      {(children[folder._id] || []).map(id => (
+      {(children[folder._id] || []).filter(x => map[x]).map(id => (
         map[id].type === 'folder' ?
           <Folder
             key={id}
             map={map}
             onOpen={onOpen}
+            onContextMenu={onContextMenu}
             children={children}
             folder={map[id]}
           /> :
@@ -279,14 +345,19 @@ const Folder = ({map, children, folder, onOpen}) => (
             key={id}
             doc={map[id]}
             onOpen={onOpen}
+            onContextMenu={onContextMenu}
           />
       ))}
     </div>
   </div>
 )
 
-const Doc = ({doc, onOpen}) => (
-  <div className={css(styles.item, styles.doc)} onClick={() => onOpen(doc._id)}>
+const Doc = ({doc, onOpen, onContextMenu}) => (
+  <div
+    className={css(styles.item, styles.doc)}
+    onContextMenu={evt => onContextMenu(evt, doc._id)}
+    onClick={() => onOpen(doc._id)}
+  >
     <div className={css(styles.itemTitle)}>
       {doc.title}
     </div>

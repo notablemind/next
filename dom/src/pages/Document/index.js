@@ -68,7 +68,7 @@ const viewTypes = {
   whiteboard: require('treed/views/whiteboard').default,
 }
 
-const activeButtons = ['date:newEntry']
+const activeButtons = [] // ['date:newEntry']
 
 type DbT = any
 
@@ -370,6 +370,6 @@ const styles = StyleSheet.create({
 
   treedContainer: {
     flex: 1,
-    position: 'relative',
+    //  position: 'relative',
   },
 })
