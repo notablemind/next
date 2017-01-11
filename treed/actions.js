@@ -390,10 +390,21 @@ const actions = {
     },
 
     createBefore(store: Store, id: string=store.state.active, content: string='', viewData: ?any=null) {
-      if (!id || !store.db.data[id]) return
-      let pid = store.db.data[id].parent
+      const node = store.db.data[id]
+      if (!id || !node) return
+      let pid = node.parent
       if (!pid || id === 'root') return
-      const idx = store.db.data[pid].children.indexOf(id)
+      const ix = store.db.data[pid].children.indexOf(id)
+
+      return store.actions.create({
+        fromNode: node,
+        viewData,
+        content,
+        pid,
+        ix,
+      })
+
+      /*
       const nid = uuid()
       const oldType = store.db.data[id].type
       const nodeType = store.plugins.nodeTypes[oldType]
@@ -408,12 +419,25 @@ const actions = {
       }, id, nid)
       store.actions.editStart(nid)
       return nid
+      */
     },
 
     createAfter(store: Store, id: string=store.state.active, content: string='', viewData: ?any=null) {
       const node = store.db.data[id]
       if (!id || !node) return
       const {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
+
+      let fromNode = pid === node.parent ? node : (node.children[0] && store.db.data[node.children[0]])
+
+      return store.actions.create({
+        fromNode,
+        viewData,
+        content,
+        ix: idx,
+        pid,
+      })
+
+      /*
       const nid = uuid()
       let type = 'normal'
       if (pid === node.parent) {
@@ -436,24 +460,41 @@ const actions = {
       }, id, nid)
       store.actions.editStart(nid)
       return nid
+      */
     },
 
     createChild(store: Store, id: string=store.state.active, content: string='') {
       const node = store.db.data[id]
       if (!id || !node) return
-      const nid = uuid()
-      let type = 'normal'
       const firstChild = node.children[0] && store.db.data[node.children[0]]
-      if (firstChild && store.plugins.nodeTypes[firstChild.type].newSiblingsShouldCarryType) {
-        type = firstChild.type
+
+      return store.actions.create({
+        fromNode: firstChild,
+        content,
+        pid: id,
+        ix: 0,
+        // type,
+      })
+    },
+
+    create(store: Store, {pid, ix, content, type, fromNode, viewData}: any) {
+      if (!type) {
+        if (fromNode && store.plugins.nodeTypes[fromNode.type].newSiblingsShouldCarryType) {
+          type = fromNode.type
+        } else {
+          type = 'normal'
+        }
       }
+
+      const nid = uuid()
       const nodeType = store.plugins.nodeTypes[type]
       const types = nodeType.defaultNodeConfig ?
-        {[type]: nodeType.defaultNodeConfig()} : {}
+        {[type]: nodeType.defaultNodeConfig(fromNode)} : {}
+      const views = viewData ? {[store.state.viewType]: viewData} : {}
       store.execute({
         type: 'create',
-        args: {id: nid, pid: id, ix: 0, data: {content, type, types}},
-      }, id, nid)
+        args: {id: nid, pid, ix, data: {content, type, types, views}},
+      }, store.state.active, nid)
       store.actions.editStart(nid)
       return nid
     },
@@ -761,8 +802,11 @@ const actions = {
           addMenuResult(pasteSpecial, fn(node, store, clipboard))
         })
         baseItems.push({
-          text: 'Paste copied item after',
+          text: 'Paste',
           action: () => store.actions.pasteClipboardAfter(id),
+        })
+        baseItems.push({
+          text: 'Paste special',
           children: pasteSpecial,
         })
       }
