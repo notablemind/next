@@ -173,7 +173,7 @@ export default class WhiteboardNode extends Component {
       this.state.node.views.whiteboard || this.props.defaultPos
     if (!x) x = 0
     if (!y) y = 0
-    const {dx, dy} = this.props
+    const {dx, dy} = (this.state.isSelected ? this.props : {dx: 0, dy: 0})
     return <div
       ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
       className={css(styles.container, this.state.isActive && styles.activeContainer)}
