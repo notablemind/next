@@ -8,6 +8,7 @@ import WhiteboardRoot from './WhiteboardRoot'
 
 import dragger from './dragger'
 import selectBoxes from './selectBoxes'
+import snapIndicators from './snapIndicators'
 
 type Props = {
   store: any,
@@ -54,10 +55,12 @@ export default class Whiteboard extends Component {
 
   componentDidMount() {
     this._sub.start()
+    this._indicators = snapIndicators(this.relative)
   }
 
   componentWillUnmount() {
     this._sub.stop()
+    this._indicators.destroy()
     if (this._dragger) this._dragger()
   }
 
@@ -174,6 +177,16 @@ export default class Whiteboard extends Component {
     />
   }
 
+  showIndicators = (x, y) => {
+    this._indicators.set(x, y)
+    /*
+    if (this._indicators) {
+      this._indicators.destroy()
+      this._indicators = null
+    }
+    */
+  }
+
   render() {
     const {x, y, zoom} = this.state
     // TODO zoom?
@@ -186,9 +199,9 @@ export default class Whiteboard extends Component {
         className={css(styles.relative)}
         ref={rel => this.relative = rel}
       >
-        <div className={css(styles.status)}>
+        {/*<div className={css(styles.status)}>
           {x}:{y}:: {zoom}
-        </div>
+        </div>*/}
         <div
           className={css(styles.offset)}
           style={{
@@ -198,6 +211,7 @@ export default class Whiteboard extends Component {
           <WhiteboardRoot
             store={this.props.store}
             nodeMap={this.props.store.state.nodeMap}
+            showIndicators={this.showIndicators}
           />
         </div>
       </div>

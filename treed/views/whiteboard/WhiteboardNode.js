@@ -61,6 +61,7 @@ export default class WhiteboardNode extends Component {
   stopDragging() {
     window.removeEventListener('mousemove', this.onDrag, true)
     window.removeEventListener('mouseup', this.onMouseUp, true)
+    this.props.showIndicators(null, null)
   }
 
   createAfter = text => {
@@ -121,12 +122,13 @@ export default class WhiteboardNode extends Component {
     const dy = e.clientY - this.state.moving.oy
     let orig = this.state.node.views.whiteboard ||
       this.props.defaultPos
-    let {x, y} = trySnapping(
+    let {x, y, xsnap, ysnap} = trySnapping(
       orig.x + dx,
       orig.y + dy,
       this.state.moving.width,
       this.state.moving.height,
       this.state.moving.snapLines)
+    this.props.showIndicators(xsnap, ysnap)
     this.setState({
       moving: {
         ...this.state.moving,
@@ -176,7 +178,8 @@ export default class WhiteboardNode extends Component {
     const {dx, dy} = (this.state.isSelected ? this.props : {dx: 0, dy: 0})
     return <div
       ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
-      className={css(styles.container, this.state.isActive && styles.activeContainer)}
+      className={css(styles.container,
+                     this.state.isActive && styles.activeContainer)}
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
       style={{

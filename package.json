@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "start": "node dom/scripts/server.js",
+    "server": "node server/server.js"
+  },
   "devDependencies": {
     "babel-core": "^6.20.0",
     "babel-loader": "^6.2.9",
