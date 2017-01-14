@@ -145,6 +145,7 @@ export default class WhiteboardRoot extends Component {
     let box = findEnclosingBox(store.state.selected, nodeMap)
     let snapLines = calcSnapLines(
       store.state.selected,
+      store.db.data[store.state.root].children,
       nodeMap,
       box.left,
       box.top,

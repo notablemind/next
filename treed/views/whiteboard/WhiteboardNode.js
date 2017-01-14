@@ -5,6 +5,8 @@ import {css, StyleSheet} from 'aphrodite'
 import Body from '../body'
 import trySnapping from './trySnapping'
 import calcSnapLines from './calcSnapLines'
+import isDomAncestor from '../utils/isDomAncestor'
+import Child from './Child'
 
 export default class WhiteboardNode extends Component {
   keyActions: any
@@ -87,6 +89,7 @@ export default class WhiteboardNode extends Component {
   onMouseDown = (e: any) => {
     if (this.state.isActive && this.state.editState) return
     if (this.state.isSelected) return this.props.onSelectedDown(e)
+    if (this.childrenNode && isDomAncestor(e.target, this.childrenNode)) return
     if (e.button !== 0) return
     // this.props.store.actions.setActive(this.props.id)
     // this.props.store.actions.normalMode()
@@ -100,6 +103,7 @@ export default class WhiteboardNode extends Component {
     const box = this.div.getBoundingClientRect()
     const snapLines = calcSnapLines(
       {[this.props.id]: true},
+      this.props.store.db.data[this.props.store.state.root].children,
       this.props.nodeMap,
       x, y,
       box
@@ -204,12 +208,17 @@ export default class WhiteboardNode extends Component {
         // isCutting={this.state.isCutting}
         actions={this.props.store.actions}
         editState={this.state.editState}
+        setChildDrop={this.props.setChildDrop}
+        releaseChildDrop={this.props.releaseChildDrop}
         keyActions={this.keyActions}
         store={this.props.store}
       />
       {this.state.node.children.length > 0 &&
         (!collapsed ?
-          <div className={css(styles.children)}>
+          <div
+            ref={node => this.childrenNode = node}
+            className={css(styles.children)}
+          >
             {this.state.node.children.map(child => (
               <Child
                 id={child}
@@ -222,45 +231,6 @@ export default class WhiteboardNode extends Component {
           <div className={css(styles.kidBadge)}>
             {this.state.node.children.length}
           </div>)}
-    </div>
-  }
-}
-
-class Child extends Component {
-  constructor({id, store}) {
-    super()
-    this._sub = store.setupStateListener(
-      this,
-      store => [store.events.node(id), store.events.nodeView(id)],
-      store => ({
-        node: store.getters.node(id)
-      }),
-    )
-  }
-
-  componentDidMount() {
-    this._sub.start()
-  }
-
-  componentWillUnmount() {
-    this._sub.stop()
-    delete this.props.nodeMap[this.props.id]
-  }
-
-  onMouseDown = evt => {
-    evt.stopPropagation()
-    evt.preventDefault()
-  }
-
-  render() {
-    return <div
-      // ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
-      className={css(styles.child,
-                     this.state.isActive && styles.activeChild)}
-      onMouseDown={this.onMouseDown}
-      onContextMenu={this.onContextMenu}
-    >
-      {this.state.node.content}
     </div>
   }
 }
@@ -285,11 +255,6 @@ const styles = StyleSheet.create({
     boxShadow: '0 0 3px #777 inset',
     borderRadius: 5,
     marginTop: 4,
-  },
-
-  child: {
-    padding: '7px 10px',
-    cursor: 'default',
   },
 
   kidBadge: {

@@ -6,15 +6,7 @@ import {css, StyleSheet} from 'aphrodite'
 import './menu.less'
 
 import type {MenuItem} from '../../types'
-
-const isParent = (child, parent) => {
-  if (child === parent) return true
-  while (child.parentNode && child !== document.body) {
-    child = child.parentNode
-    if (child === parent) return true
-  }
-  return false
-}
+import isDomAncestor from '../utils/isDomAncestor'
 
 export default class ContextMenu extends Component {
   constructor() {
@@ -36,7 +28,7 @@ export default class ContextMenu extends Component {
   }
 
   closer = (e: any) => {
-    if (!isParent(e.target, this._node)) {
+    if (!isDomAncestor(e.target, this._node)) {
       e.preventDefault()
       e.stopPropagation()
       this.props.onClose()

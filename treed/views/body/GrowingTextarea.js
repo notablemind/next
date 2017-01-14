@@ -157,5 +157,6 @@ const styles = StyleSheet.create({
   },
 })
 
+css(styles.container)
 css(styles.textarea)
 css(styles.shadow)

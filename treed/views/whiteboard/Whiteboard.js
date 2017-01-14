@@ -10,6 +10,52 @@ import dragger from './dragger'
 import selectBoxes from './selectBoxes'
 import snapIndicators from './snapIndicators'
 
+const calcChildBoxes = (me, nodes, root, nodeMap) => {
+  return nodes[root].children.map(id => {
+    const box = nodeMap[id].getBoundingClientRect()
+    let childIds = nodes[id].children
+    const children = childIds.length ?
+      nodes[id].children.map(
+        id => nodeMap[id].getBoundingClientRect().top
+      ).concat([box.bottom - 5])
+      : [box.bottom - 5]
+    return {
+      id,
+      top: box.top,
+      left: box.left,
+      right: box.right,
+      bottom: box.bottom,
+      children,
+    }
+  })
+
+}
+
+const calcChildInsertPos = (boxes, x, y) => {
+  for (let box of boxes) {
+    if (box.left <= x && x <= box.right &&
+        box.top <= y && y <= box.bottom) {
+      let idx = 0
+      for (;idx < box.children.length; idx++) {
+        if (idx === box.children.length - 1) break
+        if ((box.children[idx + 1] + box.children[idx]) / 2 >= y) {
+          break
+        }
+      }
+      return {
+        insertPos: {idx, pid: box.id},
+        indicator: {
+          left: box.left + 5,
+          right: box.right - 5,
+          top: box.children[idx],
+        },
+      }
+      break
+    }
+  }
+  return {insertPos: null, indicator: null}
+}
+
 type Props = {
   store: any,
 }
@@ -30,6 +76,7 @@ export default class Whiteboard extends Component {
   relative: any
   _sub: any
   _dragger: any
+  _childDragger: any
   constructor(props: Props) {
     super()
     props.store.state.nodeMap = {}
@@ -62,6 +109,7 @@ export default class Whiteboard extends Component {
     this._sub.stop()
     this._indicators.destroy()
     if (this._dragger) this._dragger()
+    if (this._childDragger) this._childDragger()
   }
 
   onWheel = (e: any) => {
@@ -98,6 +146,42 @@ export default class Whiteboard extends Component {
       this.setupSelector(e)
       this.clearSelection()
     }
+  }
+
+  startChildDragging = (evt, id) => {
+    let moved = false
+    const childBoxes = calcChildBoxes(
+      id,
+      this.props.store.db.data,
+      this.props.store.state.root,
+      this.nodeMap,
+    )
+
+    this._childDragger = dragger(evt, {
+      move: (x, y, w, h) => {
+        moved = moved || Math.abs(w) > 5 || Math.abs(h) > 5
+        if (!moved) return
+        const {insertPos, indicator} = calcChildInsertPos(childBoxes, x + w, y + h)
+        this.setState({
+          childDrag: {
+            pos: {x: x + w, y: y + h},
+            insertPos,
+            indicator,
+          },
+        })
+      },
+
+      done: (x, y, w, h) => {
+        if (!moved) {
+          this.props.store.actions.edit(id)
+          return
+        }
+        // TODO move the child into the place
+        this.setState({
+          childDrag: null,
+        })
+      },
+    })
   }
 
   onDblClick = (e: any) => {
