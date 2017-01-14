@@ -130,10 +130,12 @@ export default class GrowingTextarea extends Component {
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
+    cursor: 'text',
     flex: 1,
   },
 
   textarea: {
+    cursor: 'text',
     width: '100%',
     // height: 0; // will be overridden
     // border: 0,

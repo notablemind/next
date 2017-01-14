@@ -85,9 +85,11 @@ export default class WhiteboardNode extends Component {
   }
 
   onMouseDown = (e: any) => {
-    if (this.state.isActive && this.state.editMode) return
+    if (this.state.isActive && this.state.editState) return
     if (this.state.isSelected) return this.props.onSelectedDown(e)
     if (e.button !== 0) return
+    // this.props.store.actions.setActive(this.props.id)
+    // this.props.store.actions.normalMode()
 
     e.stopPropagation()
     e.preventDefault()
@@ -120,6 +122,9 @@ export default class WhiteboardNode extends Component {
   onDrag = (e: any) => {
     const dx = e.clientX - this.state.moving.ox
     const dy = e.clientY - this.state.moving.oy
+    if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return
+    e.preventDefault()
+    e.stopPropagation()
     let orig = this.state.node.views.whiteboard ||
       this.props.defaultPos
     let {x, y, xsnap, ysnap} = trySnapping(
@@ -132,14 +137,17 @@ export default class WhiteboardNode extends Component {
     this.setState({
       moving: {
         ...this.state.moving,
-        moved: this.state.moving.moved ||
-          (dx !== 0 || dy !== 0),
+        moved: true,
+        // moved: this.state.moving.moved ||
+        // (dx !== 0 || dy !== 0),
         x, y,
       }
     })
   }
 
-  onMouseUp = () => {
+  onMouseUp = evt => {
+    evt.preventDefault()
+    evt.stopPropagation()
     if (!this.state.moving) return
     if (!this.state.moving.moved) {
       this.props.store.actions.edit(this.props.id)
@@ -239,12 +247,17 @@ class Child extends Component {
     delete this.props.nodeMap[this.props.id]
   }
 
+  onMouseDown = evt => {
+    evt.stopPropagation()
+    evt.preventDefault()
+  }
+
   render() {
     return <div
       // ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
       className={css(styles.child,
                      this.state.isActive && styles.activeChild)}
-      onMouseDownCapture={this.onMouseDown}
+      onMouseDown={this.onMouseDown}
       onContextMenu={this.onContextMenu}
     >
       {this.state.node.content}

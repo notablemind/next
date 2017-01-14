@@ -78,6 +78,7 @@ export default class Whiteboard extends Component {
   }
 
   onMouseDown = (e: any) => {
+    if (e.target !== this.relative) return
     if (e.button === 0 && e.metaKey) {
       e.preventDefault()
       e.stopPropagation()
@@ -185,7 +186,11 @@ export default class Whiteboard extends Component {
         y !== null ? y - box.top : null,
       )
     } else {
-      this._indicators.set(x, y)
+      // this._indicators.set(x, y)
+      this._indicators.set(
+        x !== null ? x + this.state.x : null,
+        y !== null ? y + this.state.y: null,
+      )
     }
     /*
     if (this._indicators) {

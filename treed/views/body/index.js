@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
   },
 
   container: {
+    // cursor: 'text',
     padding: '1px 0',
     // cursor: 'pointer',
     zIndex: 1,
