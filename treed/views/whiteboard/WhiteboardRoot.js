@@ -90,8 +90,6 @@ export default class WhiteboardRoot extends Component {
   }
 
   calcDefaultPositions() {
-    // const root = this.div.offsetParent
-    // console.log(this.div)
     let top = 0
     let x = 0
     let nextX = 0
@@ -99,7 +97,6 @@ export default class WhiteboardRoot extends Component {
     this.state.node.children.forEach(id => {
       const box = this.props.nodeMap[id].getBoundingClientRect()
       if (top + box.height > window.innerHeight) {
-        // console.log(x, top, nextX)
         top = 0
         x = nextX + 5
       }
@@ -107,13 +104,9 @@ export default class WhiteboardRoot extends Component {
         x: x,
         y: top,
       })
-      if (x + box.width > nextX) {
-        // console.log('wat', box.width, x, box, nextX, id)
-      }
       nextX = Math.max(nextX, x + box.width)
       top += box.height + 5
     })
-    // console.log('positions', defaultPositions)
     this.setState({defaultPositions})
   }
 
@@ -150,18 +143,13 @@ export default class WhiteboardRoot extends Component {
     e.preventDefault()
 
     let box = findEnclosingBox(store.state.selected, nodeMap)
-    // console.log('enclosing', box, store.state.selected)
     let snapLines = calcSnapLines(
       store.state.selected,
       nodeMap,
       box.left,
       box.top,
-      // e.clientX,
-      // e.clientY,
       box,
     )
-    const ox = 0 // box.left // e.clientX - box.left + box.width
-    const oy = 0 // box.top // e.clientY - box.top + box.height
 
     this._dragger = dragger(e, {
       move: (x, y, w, h) => {
@@ -172,10 +160,10 @@ export default class WhiteboardRoot extends Component {
           box.height,
           snapLines,
         )
-        // console.log(news)
+
         this.props.showIndicators(
-          news.xsnap !== null ? news.xsnap - ox : null,
-          news.ysnap !== null ? news.ysnap - oy : null,
+          news.xsnap,
+          news.ysnap,
           true,
         )
 

@@ -173,6 +173,7 @@ export default class WhiteboardNode extends Component {
     const settings = this.state.node.views.whiteboard
     let {x, y} = this.state.handoff || this.state.moving ||
       this.state.node.views.whiteboard || this.props.defaultPos
+    const collapsed = (this.state.node.views.whiteboard || {}).collapsed
     if (!x) x = 0
     if (!y) y = 0
     const {dx, dy} = (this.state.isSelected ? this.props : {dx: 0, dy: 0})
@@ -188,20 +189,65 @@ export default class WhiteboardNode extends Component {
       }}
     >
       <Body
-        node={this.state.node}
         // depth={100}
+        node={this.state.node}
         isActive={this.state.isActive}
         isSelected={this.state.isSelected}
         // isCutting={this.state.isCutting}
-        editState={this.state.editState}
         actions={this.props.store.actions}
-        store={this.props.store}
+        editState={this.state.editState}
         keyActions={this.keyActions}
+        store={this.props.store}
       />
       {this.state.node.children.length > 0 &&
-        <div className={css(styles.kidBadge)}>
-          {this.state.node.children.length}
-        </div>}
+        (!collapsed ?
+          <div className={css(styles.children)}>
+            {this.state.node.children.map(child => (
+              <Child
+                id={child}
+                key={child}
+                store={this.props.store}
+                nodeMap={this.props.nodeMap}
+              />
+            ))}
+          </div> :
+          <div className={css(styles.kidBadge)}>
+            {this.state.node.children.length}
+          </div>)}
+    </div>
+  }
+}
+
+class Child extends Component {
+  constructor({id, store}) {
+    super()
+    this._sub = store.setupStateListener(
+      this,
+      store => [store.events.node(id), store.events.nodeView(id)],
+      store => ({
+        node: store.getters.node(id)
+      }),
+    )
+  }
+
+  componentDidMount() {
+    this._sub.start()
+  }
+
+  componentWillUnmount() {
+    this._sub.stop()
+    delete this.props.nodeMap[this.props.id]
+  }
+
+  render() {
+    return <div
+      // ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
+      className={css(styles.child,
+                     this.state.isActive && styles.activeChild)}
+      onMouseDownCapture={this.onMouseDown}
+      onContextMenu={this.onContextMenu}
+    >
+      {this.state.node.content}
     </div>
   }
 }
@@ -211,16 +257,26 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     position: 'absolute',
     backgroundColor: 'white',
-    padding: 10,
-    // minHeight: 100,
-    width: 200,
     border: '1px solid #ccc',
     cursor: 'move',
+    padding: 10,
+    width: 200,
   },
 
   activeContainer: {
-    // borderColor: 'magenta',
     zIndex: 100000,
+  },
+
+  children: {
+    backgroundColor: '#fafafa',
+    boxShadow: '0 0 3px #777 inset',
+    borderRadius: 5,
+    marginTop: 4,
+  },
+
+  child: {
+    padding: '7px 10px',
+    cursor: 'default',
   },
 
   kidBadge: {
