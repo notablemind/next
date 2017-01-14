@@ -22,9 +22,9 @@ const findEnclosingBox = (selected, nodeMap) => {
       }
     } else {
       box.left = Math.min(box.left, rect.left)
-      box.right = Math.min(box.right, rect.right)
+      box.right = Math.max(box.right, rect.right)
       box.top = Math.min(box.top, rect.top)
-      box.bottom = Math.min(box.bottom, rect.bottom)
+      box.bottom = Math.max(box.bottom, rect.bottom)
     }
   })
   if (!box) throw new Error('Nothing selected')
@@ -91,7 +91,7 @@ export default class WhiteboardRoot extends Component {
 
   calcDefaultPositions() {
     // const root = this.div.offsetParent
-    console.log(this.div)
+    // console.log(this.div)
     let top = 0
     let x = 0
     let nextX = 0
@@ -99,7 +99,7 @@ export default class WhiteboardRoot extends Component {
     this.state.node.children.forEach(id => {
       const box = this.props.nodeMap[id].getBoundingClientRect()
       if (top + box.height > window.innerHeight) {
-        console.log(x, top, nextX)
+        // console.log(x, top, nextX)
         top = 0
         x = nextX + 5
       }
@@ -108,12 +108,12 @@ export default class WhiteboardRoot extends Component {
         y: top,
       })
       if (x + box.width > nextX) {
-        console.log('wat', box.width, x, box, nextX, id)
+        // console.log('wat', box.width, x, box, nextX, id)
       }
       nextX = Math.max(nextX, x + box.width)
       top += box.height + 5
     })
-    console.log('positions', defaultPositions)
+    // console.log('positions', defaultPositions)
     this.setState({defaultPositions})
   }
 
@@ -150,39 +150,53 @@ export default class WhiteboardRoot extends Component {
     e.preventDefault()
 
     let box = findEnclosingBox(store.state.selected, nodeMap)
+    // console.log('enclosing', box, store.state.selected)
     let snapLines = calcSnapLines(
       store.state.selected,
       nodeMap,
-      e.clientX,
-      e.clientY,
+      box.left,
+      box.top,
+      // e.clientX,
+      // e.clientY,
       box,
     )
+    const ox = 0 // box.left // e.clientX - box.left + box.width
+    const oy = 0 // box.top // e.clientY - box.top + box.height
 
     this._dragger = dragger(e, {
       move: (x, y, w, h) => {
         let news = trySnapping(
-          x + w,
-          y + h,
+          box.left + w,
+          box.top + h,
           box.width,
           box.height,
           snapLines,
         )
+        // console.log(news)
+        this.props.showIndicators(
+          news.xsnap !== null ? news.xsnap - ox : null,
+          news.ysnap !== null ? news.ysnap - oy : null,
+          true,
+        )
+
         this.setState({
-          dx: news.x - x,
-          dy: news.y - y,
+          dx: news.x - box.left,
+          dy: news.y - box.top,
         })
       },
+
       done: (x, y, w, h) => {
         let news = trySnapping(
-          x + w,
-          y + h,
+          box.left + w,
+          box.top + h,
           box.width,
           box.height,
           snapLines,
         )
+        this.props.showIndicators(null, null)
         this.offsetSelected(
-          news.x - x,
-          news.y - y
+          news.x - box.left,
+          news.y - box.top,
         )
       },
     })

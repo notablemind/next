@@ -177,8 +177,16 @@ export default class Whiteboard extends Component {
     />
   }
 
-  showIndicators = (x, y) => {
-    this._indicators.set(x, y)
+  showIndicators = (x, y, relative) => {
+    if (relative) {
+      const box = this.relative.getBoundingClientRect()
+      this._indicators.set(
+        x !== null ? x - box.left : null,
+        y !== null ? y - box.top : null,
+      )
+    } else {
+      this._indicators.set(x, y)
+    }
     /*
     if (this._indicators) {
       this._indicators.destroy()
@@ -204,6 +212,7 @@ export default class Whiteboard extends Component {
         </div>*/}
         <div
           className={css(styles.offset)}
+          ref={node => this.transformed = node}
           style={{
             transform: `translate(${x}px, ${y}px)`,
           }}
