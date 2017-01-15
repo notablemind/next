@@ -210,6 +210,10 @@ const actions = {
 
     setMode(store: Store, mode: Mode) {
       if (store.state.mode === mode) return
+      if ((store.state.mode === 'visual' || store.state.mode === 'dragging')
+          && mode !== 'visual' && mode !== 'dragging') {
+        store.actions.clearSelection()
+      }
       store.state.mode = mode
       if (store.getters.isActiveView()) {
         store.emit(store.events.activeMode())

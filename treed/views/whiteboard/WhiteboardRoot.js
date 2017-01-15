@@ -137,12 +137,16 @@ export default class WhiteboardRoot extends Component {
     if (e.button !== 0) return
 
     const {store, nodeMap} = this.props
-    if (!Object.keys(store.state.selected).length) return
+    /*
+    if (!store.state.selected || !Object.keys(store.state.selected).length) {
+    }
+    */
 
     e.stopPropagation()
     e.preventDefault()
 
     let box, snapLines
+    let wasSelected = true
 
     let moved = false
     this._dragger = dragger(e, {
@@ -150,7 +154,12 @@ export default class WhiteboardRoot extends Component {
         if (!moved) {
           if (Math.abs(w) > 5 || Math.abs(h) > 5) {
             moved = true
-            if (!store.state.selected[id]) {
+            if (!store.state.selected) {
+              wasSelected = false
+              store.actions.setActive(id)
+              store.actions.select(id)
+            } else if (!store.state.selected[id]) {
+              wasSelected = false
               store.actions.clearSelection()
               store.actions.select(id)
               store.actions.setActive(id)
@@ -192,6 +201,10 @@ export default class WhiteboardRoot extends Component {
       },
 
       done: (x, y, w, h) => {
+        if (!moved) {
+          this.props.store.actions.edit(id)
+          return
+        }
         let news = trySnapping(
           box.left + w,
           box.top + h,
@@ -204,6 +217,9 @@ export default class WhiteboardRoot extends Component {
           news.x - box.left,
           news.y - box.top,
         )
+        if (!wasSelected) {
+          this.props.store.actions.normalMode()
+        }
       },
     })
   }
