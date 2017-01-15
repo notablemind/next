@@ -1,6 +1,6 @@
 
-const selectBoxes = (x, y, w, h, boxes, store) => {
-  store.actions.setMode('visual')
+const selectBoxes = (x, y, w, h, boxes) => {
+  const ids = []
   if (w < 0) {
     x += w
     w = -w
@@ -9,9 +9,6 @@ const selectBoxes = (x, y, w, h, boxes, store) => {
     y += h
     h = -h
   }
-  const oldSelected = store.state.selected || {}
-  const selected = {}
-  const events = []
   boxes.forEach(([id, box]) => {
     if (
       (x < box.left && box.left < x + w ||
@@ -21,18 +18,10 @@ const selectBoxes = (x, y, w, h, boxes, store) => {
       y < box.bottom && box.bottom < y + h ||
       box.top < y && y < box.bottom)
     ) {
-      if (!oldSelected[id]) {
-        events.push(store.events.nodeView(id))
-      }
-      selected[id] = true
-    } else if (oldSelected[id]) {
-      events.push(store.events.nodeView(id))
+      ids.push(id)
     }
   })
-  store.state.selected = selected
-  if (events.length) {
-    store.emitMany(events)
-  }
+  return ids
 }
 
 export default selectBoxes

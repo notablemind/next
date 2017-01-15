@@ -181,7 +181,7 @@ export default class ListItem extends Component {
   }
 }
 
-const activeStyles = {}
+const activeStyles: any = {}
 ;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
   activeStyles[key] =
     // {outline: `2px solid ${colors[key]}`}

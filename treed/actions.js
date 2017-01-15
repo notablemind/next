@@ -226,11 +226,14 @@ const actions = {
 
     visualMode(store: Store, id: string=store.state.active) {
       if (store.state.mode === 'visual' && store.state.active === id) return
-      store.actions.setMode('visual')
-      store.state.selection = [id]
+      // store.actions.setMode('visual')
+      store.actions.select(id)
+      /*
+      store.state.selection = {[id]: true}
       if (!store.actions.setActive(id)) {
         store.emit(store.events.nodeView(id))
       }
+      */
     },
 
     expandSelectionPrev(store: Store) {
@@ -239,6 +242,49 @@ const actions = {
 
     expandSelectionNext(store: Store) {
       throw new Error('not implt')
+    },
+
+    clearSelection(store: Store) {
+      // TODO make `selected` {ids: {}, ...} instead of just {}
+      if (!store.state.selected) return
+      Object.keys(store.state.selected).forEach(id => {
+        store.emit(store.events.nodeView(id))
+      })
+      store.state.selected = null
+    },
+
+    select(store: Store, id: string) {
+      store.actions.setMode('visual')
+      if (!store.state.selected) {
+        store.emit(store.events.nodeView(store.state.active))
+        store.state.selected = {[store.state.active]: true}
+      }
+      if (id !== store.state.active) {
+        store.state.selected[id] = true
+        store.emit(store.events.nodeView(id))
+      }
+    },
+
+    setSelection(store: Store, ids: Array<string>) {
+      const oldSelected = store.state.selected || {}
+      const selected = {}
+      store.actions.setMode('visual')
+      const events = []
+      ids.forEach(id => {
+        selected[id] = true
+        if (!oldSelected[id]) {
+          events.push(store.events.nodeView(id))
+        }
+      })
+      Object.keys(oldSelected).forEach(id => {
+        if (!selected[id]) {
+          events.push(store.events.nodeView(id))
+        }
+      })
+      if (events.length) {
+        store.emitMany(events)
+      }
+      store.state.selected = selected
     },
 
     edit: (store: Store, id: string) => store.actions.editAt(id, 'default'),

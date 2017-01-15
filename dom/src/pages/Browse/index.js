@@ -36,6 +36,7 @@ const organizeFolders = (rows) => {
 
 type FolderT = {
   _id: string,
+  _rev: string,
   type: 'folder',
   folder: ?string,
   title: string,
@@ -43,6 +44,7 @@ type FolderT = {
 
 type DocT = {
   _id: string,
+  _rev: string,
   type: 'doc',
   folder: ?string,
   title: string,

@@ -91,6 +91,7 @@ const actions: ViewActionConfig = {
         store.actions.focusParent()
       }
     },
+    description: 'Go left',
   },
 
   down: {

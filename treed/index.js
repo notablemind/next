@@ -239,7 +239,6 @@ export default class Treed {
       contextMenu: null,
       lastEdited: null,
       lastJumpOrigin: null,
-      selection: null,
     }
 
     const events = {

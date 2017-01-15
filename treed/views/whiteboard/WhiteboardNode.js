@@ -89,6 +89,7 @@ export default class WhiteboardNode extends Component {
   }
 
   shouldStartDragging = (e: any) => {
+    if (this.childrenNode && isDomAncestor(e.target, this.childrenNode)) return
     if (e.metaKey) {
       this.props.store.actions.rebase(this.props.id)
       e.preventDefault()
@@ -99,14 +100,19 @@ export default class WhiteboardNode extends Component {
       return
     }
     if (this.state.isActive && this.state.editState) return
-    if (this.state.isSelected) return this.props.onSelectedDown(e)
-    if (this.childrenNode && isDomAncestor(e.target, this.childrenNode)) return
+    // if (this.state.isSelected) return this.props.onSelectedDown(this.props.id, e)
+    if (e.shiftKey) {
+      this.props.store.actions.select(this.props.id)
+      return
+    }
     if (e.button !== 0) return
     return true
   }
 
   onMouseDown = (e: any) => {
     if (!this.shouldStartDragging(e)) return
+    return this.props.onSelectedDown(this.props.id, e)
+
     e.stopPropagation()
     e.preventDefault()
 
@@ -137,6 +143,7 @@ export default class WhiteboardNode extends Component {
     window.addEventListener('mouseup', this.onMouseUp, true)
   }
 
+  /*
   onDrag = (e: any) => {
     const dx = e.clientX - this.state.moving.ox
     const dy = e.clientY - this.state.moving.oy
@@ -194,6 +201,7 @@ export default class WhiteboardNode extends Component {
       handoff: {x, y},
     })
   }
+  */
 
   collapseChildren = evt => {
     evt.preventDefault()

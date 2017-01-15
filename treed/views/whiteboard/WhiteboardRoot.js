@@ -133,7 +133,7 @@ export default class WhiteboardRoot extends Component {
     this.props.store.emit('x-selection')
   }
 
-  onMouseDown = (e: any) => {
+  onSelectedDown = (id: string, e: any) => {
     if (e.button !== 0) return
 
     const {store, nodeMap} = this.props
@@ -142,18 +142,35 @@ export default class WhiteboardRoot extends Component {
     e.stopPropagation()
     e.preventDefault()
 
-    let box = findEnclosingBox(store.state.selected, nodeMap)
-    let snapLines = calcSnapLines(
-      store.state.selected,
-      store.db.data[store.state.root].children,
-      nodeMap,
-      box.left,
-      box.top,
-      box,
-    )
+    let box, snapLines
 
+    let moved = false
     this._dragger = dragger(e, {
       move: (x, y, w, h) => {
+        if (!moved) {
+          if (Math.abs(w) > 5 || Math.abs(h) > 5) {
+            moved = true
+            if (!store.state.selected[id]) {
+              store.actions.clearSelection()
+              store.actions.select(id)
+              store.actions.setActive(id)
+            }
+            this.props.store.actions.setMode('dragging')
+
+            box = findEnclosingBox(store.state.selected, nodeMap)
+            snapLines = calcSnapLines(
+              store.state.selected,
+              store.db.data[store.state.root].children,
+              nodeMap,
+              box.left,
+              box.top,
+              box,
+            )
+
+          } else {
+            return
+          }
+        }
         let news = trySnapping(
           box.left + w,
           box.top + h,
@@ -200,7 +217,7 @@ export default class WhiteboardRoot extends Component {
           key={child}
           store={this.props.store}
           nodeMap={this.props.nodeMap}
-          onSelectedDown={this.onMouseDown}
+          onSelectedDown={this.onSelectedDown}
           showIndicators={this.props.showIndicators}
           startChildDragging={this.props.startChildDragging}
           dx={dx}

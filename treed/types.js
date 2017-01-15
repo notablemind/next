@@ -50,7 +50,7 @@ export type StoreState = {
   lastEdited: ?string,
   editPos: ?EditPos,
   viewType: string,
-  selection: ?Array<string>,
+  selected: ?{[key: string]: boolean},
   lastJumpOrigin: ?string,
   contextMenu: ?{
     pos: {left: number, top: number},

@@ -55,7 +55,6 @@ const calcChildInsertPos = (pid, oidx, boxes, x, y) => {
           top,
         },
       }
-      break
     }
   }
   return {insertPos: null, indicator: null}
@@ -72,6 +71,12 @@ type State = {
   root: string,
   mode: string,
   selectBox: any,
+  childDrag: ?{
+    pos: {x: number, y: number},
+    insertPos: any,
+    indicator: ?{top: number, left: number, width: number},
+
+  },
 }
 
 export default class Whiteboard extends Component {
@@ -81,6 +86,7 @@ export default class Whiteboard extends Component {
   relative: any
   _sub: any
   _dragger: any
+  _indicators: any
   _childDragger: any
   constructor(props: Props) {
     super()
@@ -153,7 +159,7 @@ export default class Whiteboard extends Component {
     }
   }
 
-  startChildDragging = (evt, id) => {
+  startChildDragging = (evt: any, id: string) => {
     let moved = false
     const childBoxes = calcChildBoxes(
       id,
@@ -191,15 +197,17 @@ export default class Whiteboard extends Component {
           return
         }
         this.props.store.actions.normalMode()
-        if (this.state.childDrag.insertPos) {
-          const {pid, idx} = this.state.childDrag.insertPos
+        const {childDrag} = this.state
+        if (!childDrag) return
+        if (childDrag.insertPos) {
+          const {pid, idx} = childDrag.insertPos
           this.props.store.actions.move(
             id,
             pid,
             idx,
             false
           )
-          console.log(this.state.childDrag)
+          console.log(childDrag)
           // TODO move the child into the place
           this.setState({
             childDrag: null,
@@ -238,7 +246,10 @@ export default class Whiteboard extends Component {
           this.setState({
             selectBox: {x, y, w, h},
           })
-          selectBoxes(x, y, w, h, boxes, this.props.store)
+          const ids = selectBoxes(x, y, w, h, boxes)
+          if (ids.length) {
+            this.props.store.actions.setSelection(ids)
+          }
         }
       },
       done: (x, y, w, h) => {
@@ -289,6 +300,7 @@ export default class Whiteboard extends Component {
   }
 
   renderChildDrag() {
+    if (!this.state.childDrag) return null
     const {pos, indicator} = this.state.childDrag
     return <div>
       {indicator &&
@@ -306,7 +318,7 @@ export default class Whiteboard extends Component {
     </div>
   }
 
-  showIndicators = (x, y, relative) => {
+  showIndicators = (x: number, y: number, relative: bool) => {
     if (relative) {
       const box = this.relative.getBoundingClientRect()
       this._indicators.set(
@@ -345,7 +357,6 @@ export default class Whiteboard extends Component {
         </div>*/}
         <div
           className={css(styles.offset)}
-          ref={node => this.transformed = node}
           style={{
             transform: `translate(${x}px, ${y}px)`,
           }}
@@ -361,8 +372,7 @@ export default class Whiteboard extends Component {
       {this.state.selectBox &&
         this.renderSelectBox()}
 
-      {this.state.childDrag &&
-        this.renderChildDrag()}
+      {this.renderChildDrag()}
 
       {this.state.contextMenu &&
         <ContextMenu
