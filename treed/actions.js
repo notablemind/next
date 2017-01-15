@@ -1001,20 +1001,30 @@ const actions = {
       })
     },
 
-    focusNextSibling(store: Store, id: string=store.state.active) {
+    focusNextSibling(store: Store, id: string=store.state.active, editState: DefEditPos=false) {
       if (id === store.state.root) return
       const sibs = store.db.data[store.db.data[id].parent].children
       const idx = sibs.indexOf(id)
       if (idx === sibs.length - 1) return
-      store.actions.setActive(sibs[idx + 1], true)
+      const nid = sibs[idx + 1]
+      if (editState) {
+        store.actions.editAt(nid, editState)
+      } else {
+        store.actions.setActive(nid, true)
+      }
     },
 
-    focusPrevSibling(store: Store, id: string=store.state.active) {
+    focusPrevSibling(store: Store, id: string=store.state.active, editState: DefEditPos=false) {
       if (id === store.state.root) return
       const sibs = store.db.data[store.db.data[id].parent].children
       const idx = sibs.indexOf(id)
       if (idx === 0) return
-      store.actions.setActive(sibs[idx - 1], true)
+      const nid = sibs[idx - 1]
+      if (editState) {
+        store.actions.editAt(nid, editState)
+      } else {
+        store.actions.setActive(nid, true)
+      }
     },
 
     focusFirstSibling(store: Store, id: string=store.state.active) {

@@ -18,7 +18,24 @@ const actions: ViewActionConfig = {
       // also visual mode is separate
     },
     description: 'move the cursor up one item',
-    alias: 'focusPrev',
+    alias: 'focusPrevSibling',
+  },
+
+  left: {
+    shortcuts: {
+      normal: 'h, left',
+    },
+
+    action(store) {
+      const active = store.state.active
+      const pid = store.db.data[active].parent
+      if (!pid) return
+      // need to find "next open space" on the whiteboard
+      if (pid === store.state.root) {
+      } else {
+        store.actions.focusParent()
+      }
+    },
   },
 
   down: {
@@ -26,7 +43,41 @@ const actions: ViewActionConfig = {
       normal: 'j, down',
     },
     description: 'move the cursor down one item',
-    alias: 'focusNext',
+    alias: 'focusNextSibling',
+  },
+
+  createAfter: {
+    shortcuts: {
+      normal: 'o',
+    },
+    action(store) {
+      const active = store.state.active
+      const pid = store.db.data[active].parent
+      if (!pid) return
+      // need to find "next open space" on the whiteboard
+      if (pid === store.state.root) {
+      } else {
+        store.actions.createNextSibling(active)
+      }
+    },
+    description: 'Create node after',
+  },
+
+  createBefore: {
+    shortcuts: {
+      normal: 'O',
+    },
+    action(store) {
+      const active = store.state.active
+      const pid = store.db.data[active].parent
+      if (!pid) return
+      // need to find "next open space" on the whiteboard
+      if (pid === store.state.root) {
+      } else {
+        store.actions.createBefore(active)
+      }
+    },
+    description: 'Create node after',
   },
 
   // ???

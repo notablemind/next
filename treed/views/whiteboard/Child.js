@@ -24,10 +24,10 @@ export default class Child extends Component {
     this.keyActions = {
       setContent: text => store.actions.setContent(id, text),
       onEnter: text => store.actions.createAfter(id, text),
-      onUp: () => store.actions.focusPrev(),
-      onDown: () => store.actions.focusNext(),
-      onLeft: () => store.actions.focusPrev(),
-      onRight: () => store.actions.focusNext(),
+      onUp: () => store.actions.focusPrevSibling(),
+      onDown: () => store.actions.focusNextSibling(),
+      onLeft: () => store.actions.focusPrevSibling(id, 'end'),
+      onRight: () => store.actions.focusNextSibling(id, 'start'),
       onTab: null,
     }
   }
