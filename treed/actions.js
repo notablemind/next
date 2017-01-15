@@ -24,6 +24,9 @@ import type {
 
 export type DefEditPos = EditPos | false
 
+const isCollapsed = (id, nodes, viewType) =>
+  nodes[id].views[viewType] && nodes[id].views[viewType].collapsed
+
 const fixedChildren = (id, nodes) =>
   dedup(nodes[id].children)
     .map(cid => typeof cid === 'string' ? cid : '' + cid)
@@ -212,14 +215,13 @@ const actions = {
         store.emit(store.events.activeMode())
       }
       store.emit(store.events.mode(store.id))
+      store.emit(store.events.nodeView(store.state.active))
     },
 
     normalMode(store: Store, id: string=store.state.active) {
       if (store.state.mode === 'normal' && store.state.active === id) return
+      store.actions.setActive(id)
       store.actions.setMode('normal')
-      if (!store.actions.setActive(id)) {
-        store.emit(store.events.nodeView(id))
-      }
     },
 
     visualMode(store: Store, id: string=store.state.active) {
@@ -360,6 +362,17 @@ const actions = {
       }, did, did)
       store.emit(store.events.nodeView(did))
       store.actions.setActive(did)
+      store.actions.setMode('normal')
+    },
+
+    move(store: Store, id: string, pid: string, idx: number, expandParent: bool=true) {
+      const nextActive = expandParent || !isCollapsed(pid, store.db.data, store.state.viewType) ? id : pid
+      store.execute({
+        type: 'move',
+        args: {id, pid, expandParent, idx, viewType: store.state.viewType}
+      }, id, nextActive)
+      store.emit(store.events.nodeView(id))
+      store.actions.setActive(nextActive)
       store.actions.setMode('normal')
     },
 

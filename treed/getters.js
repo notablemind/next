@@ -25,6 +25,7 @@ export default {
     mode: store => store.state.mode,
     isActiveView: store => store.id === store.globalState.activeView,
     isActive: (store, id) => id === store.state.active,
+    // TODO check selection
     isDragging: (store, id) => id === store.state.active &&
       store.state.mode === 'dragging',
     isCutting: (store, id) => id === store.globalState.cut,

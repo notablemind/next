@@ -202,6 +202,7 @@ export default class WhiteboardRoot extends Component {
           nodeMap={this.props.nodeMap}
           onSelectedDown={this.onMouseDown}
           showIndicators={this.props.showIndicators}
+          startChildDragging={this.props.startChildDragging}
           dx={dx}
           dy={dy}
           defaultPos={defaultPositions &&

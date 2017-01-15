@@ -182,6 +182,7 @@ export default class WhiteboardNode extends Component {
   }
 
   render() {
+    if (!this.state.node) return
     const settings = this.state.node.views.whiteboard
     let {x, y} = this.state.handoff || this.state.moving ||
       this.state.node.views.whiteboard || this.props.defaultPos
@@ -225,8 +226,14 @@ export default class WhiteboardNode extends Component {
                 key={child}
                 store={this.props.store}
                 nodeMap={this.props.nodeMap}
+                startChildDragging={this.props.startChildDragging}
               />
             ))}
+            <div
+              onMouseDown={() => this.props.store.actions.createLastChild(this.props.id)}
+              className={css(styles.addChild)}>
+              Add child
+            </div>
           </div> :
           <div className={css(styles.kidBadge)}>
             {this.state.node.children.length}
@@ -255,6 +262,7 @@ const styles = StyleSheet.create({
     boxShadow: '0 0 3px #777 inset',
     borderRadius: 5,
     marginTop: 4,
+    overflow: 'hidden',
   },
 
   kidBadge: {
@@ -267,6 +275,18 @@ const styles = StyleSheet.create({
     color: '#aaa',
     // backgroundColor: '#eee',
     zIndex: 10,
+  },
+
+  addChild: {
+    textAlign: 'center',
+    fontSize: '80%',
+    padding: '5px 10px',
+    cursor: 'pointer',
+    transition: 'background-color .2s ease',
+    ':hover': {
+      backgroundColor: '#ccc',
+    },
+    // backgroundColor: 'white',
   },
 })
 

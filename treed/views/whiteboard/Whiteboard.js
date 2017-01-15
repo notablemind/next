@@ -17,8 +17,8 @@ const calcChildBoxes = (me, nodes, root, nodeMap) => {
     const children = childIds.length ?
       nodes[id].children.map(
         id => nodeMap[id].getBoundingClientRect().top
-      ).concat([box.bottom - 5])
-      : [box.bottom - 5]
+      ).concat([box.bottom - 13 - 25])
+      : [box.bottom - 10]
     return {
       id,
       top: box.top,
@@ -28,10 +28,9 @@ const calcChildBoxes = (me, nodes, root, nodeMap) => {
       children,
     }
   })
-
 }
 
-const calcChildInsertPos = (boxes, x, y) => {
+const calcChildInsertPos = (pid, oidx, boxes, x, y) => {
   for (let box of boxes) {
     if (box.left <= x && x <= box.right &&
         box.top <= y && y <= box.bottom) {
@@ -42,12 +41,17 @@ const calcChildInsertPos = (boxes, x, y) => {
           break
         }
       }
+      const top = box.children[idx]
+      if (pid === box.id && idx > oidx) {
+        idx -= 1
+      }
       return {
         insertPos: {idx, pid: box.id},
         indicator: {
-          left: box.left + 5,
-          right: box.right - 5,
-          top: box.children[idx],
+          left: box.left + 15,
+          width: (box.right - box.left) - 30,
+          // right: box.right - 5,
+          top,
         },
       }
       break
@@ -154,14 +158,23 @@ export default class Whiteboard extends Component {
       id,
       this.props.store.db.data,
       this.props.store.state.root,
-      this.nodeMap,
+      this.props.store.state.nodeMap,
     )
+    const pid = this.props.store.db.data[id].parent
+    const oidx = this.props.store.db.data[pid].children.indexOf(id)
 
     this._childDragger = dragger(evt, {
       move: (x, y, w, h) => {
-        moved = moved || Math.abs(w) > 5 || Math.abs(h) > 5
-        if (!moved) return
-        const {insertPos, indicator} = calcChildInsertPos(childBoxes, x + w, y + h)
+        if (!moved) {
+          if (Math.abs(w) > 5 || Math.abs(h) > 5) {
+            moved = true
+            this.props.store.actions.setActive(id)
+            this.props.store.actions.setMode('dragging')
+          } else {
+            return
+          }
+        }
+        const {insertPos, indicator} = calcChildInsertPos(pid, oidx, childBoxes, x + w, y + h)
         this.setState({
           childDrag: {
             pos: {x: x + w, y: y + h},
@@ -176,15 +189,26 @@ export default class Whiteboard extends Component {
           this.props.store.actions.edit(id)
           return
         }
-        // TODO move the child into the place
-        this.setState({
-          childDrag: null,
-        })
+        this.props.store.actions.normalMode()
+        if (this.state.childDrag.insertPos) {
+          const {pid, idx} = this.state.childDrag.insertPos
+          this.props.store.actions.move(
+            id,
+            pid,
+            idx,
+          )
+          console.log(this.state.childDrag)
+          // TODO move the child into the place
+          this.setState({
+            childDrag: null,
+          })
+        }
       },
     })
   }
 
   onDblClick = (e: any) => {
+    if (e.target !== this.relative) return
     const box = this.relative.getBoundingClientRect()
     const x = e.clientX - box.left + this.state.x
     const y = e.clientY - box.top + this.state.y
@@ -199,9 +223,9 @@ export default class Whiteboard extends Component {
   setupSelector(e: any) {
     let moved = false
     let boxes = []
-    for (let id in this.props.store.state.nodeMap) {
+    this.props.store.db.data[this.props.store.state.root].children.forEach(id => {
       boxes.push([id, this.props.store.state.nodeMap[id].getBoundingClientRect()])
-    }
+    })
 
     this._dragger = dragger(e, {
       move: (x, y, w, h) => {
@@ -262,6 +286,24 @@ export default class Whiteboard extends Component {
     />
   }
 
+  renderChildDrag() {
+    const {pos, indicator} = this.state.childDrag
+    return <div>
+      {indicator &&
+        <div style={{
+          top: indicator.top,
+          left: indicator.left,
+          width: indicator.width,
+        }} className={css(styles.childDragIndicator)} />}
+      <div style={{
+        top: pos.y,
+        left: pos.x,
+      }} className={css(styles.childDragCircle)}>
+        1
+      </div>
+    </div>
+  }
+
   showIndicators = (x, y, relative) => {
     if (relative) {
       const box = this.relative.getBoundingClientRect()
@@ -310,11 +352,15 @@ export default class Whiteboard extends Component {
             store={this.props.store}
             nodeMap={this.props.store.state.nodeMap}
             showIndicators={this.showIndicators}
+            startChildDragging={this.startChildDragging}
           />
         </div>
       </div>
       {this.state.selectBox &&
         this.renderSelectBox()}
+
+      {this.state.childDrag &&
+        this.renderChildDrag()}
 
       {this.state.contextMenu &&
         <ContextMenu
@@ -352,6 +398,26 @@ const styles = StyleSheet.create({
 
   status: {
     position: 'absolute',
+  },
+
+  childDragCircle: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    marginLeft: 5,
+    marginTop: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#7fa',
+    borderRadius: '50%',
+  },
+
+  childDragIndicator: {
+    height: 5,
+    backgroundColor: '#555',
+    borderRadius: 5,
+    position: 'absolute',
+    marginTop: -2,
   },
 
 })

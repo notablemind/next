@@ -14,6 +14,7 @@ export default class Child extends Component {
       store => ({
         node: store.getters.node(id),
         isActive: store.getters.isActive(id),
+        isDragging: store.getters.isDragging(id),
         isSelected: store.state.selected &&
           store.state.selected[id],
         editState: store.getters.editState(id),
@@ -22,11 +23,11 @@ export default class Child extends Component {
 
     this.keyActions = {
       setContent: text => store.actions.setContent(id, text),
-      onEnter: this.createAfter,
-      onUp: () => null,
-      onDown: () => null,
-      onLeft: () => null,
-      onRight: () => null,
+      onEnter: text => store.actions.createAfter(id, text),
+      onUp: () => store.actions.focusPrev(),
+      onDown: () => store.actions.focusNext(),
+      onLeft: () => store.actions.focusPrev(),
+      onRight: () => store.actions.focusNext(),
       onTab: null,
     }
   }
@@ -65,11 +66,17 @@ export default class Child extends Component {
     */
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextState !== this.state
+  }
+
   render() {
     return <div
-      // ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
+      ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
       className={css(styles.child,
-                     this.state.isActive && styles.activeChild)}
+                     this.state.isActive && styles.activeChild,
+                     this.state.isDragging && styles.dragging,
+                    )}
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
     >
@@ -89,9 +96,13 @@ export default class Child extends Component {
 
 const styles = StyleSheet.create({
 
+  dragging: {
+    backgroundColor: '#aaa',
+  },
+
   child: {
     padding: '3px 5px',
-    cursor: 'default',
+    cursor: 'move',
     fontSize: '90%',
   },
 })
