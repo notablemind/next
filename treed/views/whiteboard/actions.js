@@ -1,6 +1,7 @@
 // @flow
 
 import type {ViewActionConfig} from '../../types'
+import * as motion from './motion'
 
 const actions: ViewActionConfig = {
   edit: {
@@ -100,7 +101,19 @@ const actions: ViewActionConfig = {
       // also visual mode is separate
     },
     description: 'move the cursor up one item',
-    alias: 'focusPrevSibling',
+    action(store) {
+      const active = store.state.active
+      const pid = store.db.data[active].parent
+      if (!pid) return
+      if (pid === store.state.root) {
+        const next = motion.up(store.db.data[pid].children, store.state.nodeMap, active)
+        if (next) {
+          store.actions.setActive(next)
+        }
+      } else {
+        store.actions.focusPrevSibling()
+      }
+    }
   },
 
   left: {
@@ -114,6 +127,10 @@ const actions: ViewActionConfig = {
       if (!pid) return
       // need to find "next open space" on the whiteboard
       if (pid === store.state.root) {
+        const next = motion.left(store.db.data[pid].children, store.state.nodeMap, active)
+        if (next) {
+          store.actions.setActive(next)
+        }
       } else {
         store.actions.focusParent()
       }
@@ -121,12 +138,44 @@ const actions: ViewActionConfig = {
     description: 'Go left',
   },
 
+  right: {
+    shortcuts: {
+      normal: 'l, right',
+    },
+
+    action(store) {
+      const active = store.state.active
+      const pid = store.db.data[active].parent
+      if (!pid) return
+      if (pid === store.state.root) {
+        const next = motion.right(store.db.data[pid].children, store.state.nodeMap, active)
+        if (next) {
+          store.actions.setActive(next)
+        }
+      } else {
+      }
+    },
+    description: 'Go right',
+  },
+
   down: {
     shortcuts: {
       normal: 'j, down',
     },
     description: 'move the cursor down one item',
-    alias: 'focusNextSibling',
+    action(store) {
+      const active = store.state.active
+      const pid = store.db.data[active].parent
+      if (!pid) return
+      if (pid === store.state.root) {
+        const next = motion.down(store.db.data[pid].children, store.state.nodeMap, active)
+        if (next) {
+          store.actions.setActive(next)
+        }
+      } else {
+        store.actions.focusNextSibling()
+      }
+    }
   },
 
   createAfter: {
