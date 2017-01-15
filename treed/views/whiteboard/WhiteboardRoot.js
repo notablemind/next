@@ -154,6 +154,7 @@ export default class WhiteboardRoot extends Component {
     let childBoxes
     let moveCount
 
+    let childPos = null
     let moved = false
     this._dragger = dragger(e, {
       move: (x, y, w, h) => {
@@ -197,6 +198,7 @@ export default class WhiteboardRoot extends Component {
         }
 
         const {insertPos, indicator} = calcChildInsertPos(childBoxes, x + w, y + h)
+        childPos = insertPos
 
         if (!insertPos) {
           let news = trySnapping(
@@ -226,6 +228,7 @@ export default class WhiteboardRoot extends Component {
             indicator,
             moveCount,
           })
+          this.props.showIndicators(null, null)
           this.setState({
             hideSelected: true,
           })
@@ -235,6 +238,20 @@ export default class WhiteboardRoot extends Component {
       done: (x, y, w, h) => {
         if (!moved) {
           this.props.store.actions.edit(id)
+          return
+        }
+        if (childPos) {
+          this.props.setChildDrag(null)
+          const {pid, idx} = childPos
+          this.setState({
+            hideSelected: false,
+            dx: 0,
+            dy: 0,
+          })
+          this.props.store.actions.moveSelected(
+            pid,
+            idx,
+          )
           return
         }
         let news = trySnapping(
