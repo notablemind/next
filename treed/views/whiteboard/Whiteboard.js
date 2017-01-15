@@ -11,50 +11,8 @@ import selectBoxes from './selectBoxes'
 import snapIndicators from './snapIndicators'
 import * as colors from '../utils/colors'
 
-const calcChildBoxes = (me, nodes, root, nodeMap) => {
-  return nodes[root].children.map(id => {
-    const box = nodeMap[id].getBoundingClientRect()
-    let childIds = nodes[id].children
-    const children = (childIds.length && !(nodes[id].views.whiteboard && nodes[id].views.whiteboard.collapsed)) ?
-      nodes[id].children.map(
-        id => nodeMap[id].getBoundingClientRect().top
-      ).concat([box.bottom - 13 - 25])
-      : [box.bottom - 10]
-    return {
-      id,
-      top: box.top,
-      left: box.left,
-      right: box.right,
-      bottom: box.bottom,
-      children,
-    }
-  })
-}
-
-const calcChildInsertPos = (boxes, x, y) => {
-  for (let box of boxes) {
-    if (box.left <= x && x <= box.right &&
-        box.top <= y && y <= box.bottom) {
-      let idx = 0
-      for (;idx < box.children.length; idx++) {
-        if (idx === box.children.length - 1) break
-        if ((box.children[idx + 1] + box.children[idx]) / 2 >= y) {
-          break
-        }
-      }
-      return {
-        insertPos: {idx, pid: box.id},
-        indicator: {
-          left: box.left + 15,
-          width: (box.right - box.left) - 30,
-          // right: box.right - 5,
-          top: box.children[idx],
-        },
-      }
-    }
-  }
-  return {insertPos: null, indicator: null}
-}
+import calcChildBoxes from './calcChildBoxes'
+import calcChildInsertPos from './calcChildInsertPos'
 
 type Props = {
   store: any,
@@ -390,6 +348,7 @@ export default class Whiteboard extends Component {
             nodeMap={this.props.store.state.nodeMap}
             showIndicators={this.showIndicators}
             startChildDragging={this.startChildDragging}
+            setChildDrag={childDrag => this.setState({childDrag})}
           />
         </div>
       </div>

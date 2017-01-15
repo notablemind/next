@@ -57,7 +57,8 @@ export default class WhiteboardNode extends Component {
     return nextState !== this.state ||
       (!!this.state.isSelected && (
         nextProps.dx !== this.props.dx ||
-        nextProps.dy !== this.props.dy)) ||
+        nextProps.dy !== this.props.dy ||
+        nextProps.hideSelected !== this.props.hideSelected)) ||
       nextProps.defaultPos !== this.props.defaultPos
   }
 
@@ -145,10 +146,10 @@ export default class WhiteboardNode extends Component {
     const collapsed = (this.state.node.views.whiteboard || {}).collapsed
     if (!x) x = 0
     if (!y) y = 0
-    const {dx, dy} = (this.state.isSelected ? this.props : {dx: 0, dy: 0})
+    const {dx, dy, hideSelected} = (this.state.isSelected ? this.props : {dx: 0, dy: 0, hideSelected: false})
     return <div
       ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
-      className={css(styles.container) + ' ' + activityStyles}
+      className={css(styles.container, hideSelected && styles.hide) + ' ' + activityStyles}
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
       style={{
@@ -215,6 +216,7 @@ const activeStyles = {}
     `, borderColor: 'white', }
 })
 activeStyles.dragging.backgroundColor = colors.draggingBackground
+activeStyles.selected.zIndex = 1000
 // activeStyles.active.borderColor = 'white'
 
 const styles = StyleSheet.create({
@@ -228,6 +230,13 @@ const styles = StyleSheet.create({
     cursor: 'move',
     padding: 10,
     width: 200,
+    transition: 'opacity .3s ease',
+    opacity: 1,
+  },
+
+  hide: {
+    // visibility: 'hidden',
+    opacity: 0,
   },
 
   activeContainer: {

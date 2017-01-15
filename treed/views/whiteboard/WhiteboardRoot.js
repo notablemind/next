@@ -9,6 +9,9 @@ import dragger from './dragger'
 import trySnapping from './trySnapping'
 import calcSnapLines from './calcSnapLines'
 
+import calcChildBoxes from './calcChildBoxes'
+import calcChildInsertPos from './calcChildInsertPos'
+
 const findEnclosingBox = (selected, nodeMap) => {
   let box
   Object.keys(selected).forEach(id => {
@@ -39,6 +42,7 @@ type State = {
   node: any,
   root: string,
   defaultPositions: ?Array<any>,
+  hideSelected: bool,
 }
 
 export default class WhiteboardRoot extends Component {
@@ -70,6 +74,7 @@ export default class WhiteboardRoot extends Component {
     })
     this.state.dx = 0
     this.state.dy = 0
+    this.state.hideSelected = false
   }
 
   componentDidMount() {
@@ -146,6 +151,8 @@ export default class WhiteboardRoot extends Component {
 
     let box, snapLines
     let wasSelected = true
+    let childBoxes
+    let moveCount
 
     let moved = false
     this._dragger = dragger(e, {
@@ -175,28 +182,54 @@ export default class WhiteboardRoot extends Component {
               box,
             )
 
+            childBoxes = calcChildBoxes(
+              id,
+              store.db.data,
+              store.state.root,
+              store.state.nodeMap,
+              store.state.selected,
+            )
+            moveCount = Object.keys(store.state.selected).length
+
           } else {
             return
           }
         }
-        let news = trySnapping(
-          box.left + w,
-          box.top + h,
-          box.width,
-          box.height,
-          snapLines,
-        )
 
-        this.props.showIndicators(
-          news.xsnap,
-          news.ysnap,
-          true,
-        )
+        const {insertPos, indicator} = calcChildInsertPos(childBoxes, x + w, y + h)
 
-        this.setState({
-          dx: news.x - box.left,
-          dy: news.y - box.top,
-        })
+        if (!insertPos) {
+          let news = trySnapping(
+            box.left + w,
+            box.top + h,
+            box.width,
+            box.height,
+            snapLines,
+          )
+
+          this.props.showIndicators(
+            news.xsnap,
+            news.ysnap,
+            true,
+          )
+          this.props.setChildDrag(null)
+
+          this.setState({
+            dx: news.x - box.left,
+            dy: news.y - box.top,
+            hideSelected: false,
+          })
+        } else {
+          this.props.setChildDrag({
+            pos: {x: x + w, y: y + h},
+            insertPos,
+            indicator,
+            moveCount,
+          })
+          this.setState({
+            hideSelected: true,
+          })
+        }
       },
 
       done: (x, y, w, h) => {
@@ -237,6 +270,7 @@ export default class WhiteboardRoot extends Component {
           startChildDragging={this.props.startChildDragging}
           dx={dx}
           dy={dy}
+          hideSelected={this.state.hideSelected}
           defaultPos={defaultPositions &&
             defaultPositions[i] || {
               x: 0,
