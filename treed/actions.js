@@ -468,7 +468,13 @@ const actions = {
     },
 
     move(store: Store, id: string, pid: string, idx: number, expandParent: bool=true) {
-      const nextActive = expandParent || !isCollapsed(pid, store.db.data, store.state.viewType) ? id : pid
+      const opid = store.db.data[id].parent
+      if (opid === pid) {
+        const oidx = store.db.data[pid].children.indexOf(id)
+        if (oidx < idx) idx -= 1
+      }
+      const nextActive = expandParent || !isCollapsed(
+        pid, store.db.data, store.state.viewType) ? id : pid
       store.execute({
         type: 'move',
         args: {id, pid, expandParent, idx, viewType: store.state.viewType}
@@ -476,6 +482,42 @@ const actions = {
       store.emit(store.events.nodeView(id))
       store.actions.setActive(nextActive)
       store.actions.setMode('normal')
+    },
+
+    moveSelected(store: Store, pid: string, idx: number) {
+      // debugger
+      if (!store.state.selected) return
+      // TODO is there some ordering thing that I want to impose maybe?
+      const ids = Object.keys(store.state.selected)
+      if (ids.length === 1) {
+        return store.actions.move(ids[0], pid, idx, false)
+      }
+      if (!ids.length) return
+
+      const sibs = store.db.data[pid].children
+      let idxCorrection = 0
+      ids.forEach(id => {
+        if (store.db.data[id].parent === pid) {
+          const oidx = sibs.indexOf(id)
+          if (oidx < idx) {
+            idxCorrection += 1
+          }
+        }
+      })
+      idx -= idxCorrection
+
+      const nextActive = !isCollapsed(pid, store.db.data, store.state.viewType) ? ids[0] : pid
+      store.execute({
+        type: 'moveMany',
+        args: {ids, pid, idx, viewType: store.state.viewType}
+      }, store.state.active, nextActive)
+      store.emitMany(ids.map(id => store.events.nodeView(id)))
+      store.actions.setActive(nextActive)
+      if (nextActive === pid) {
+        store.actions.setMode('normal')
+      } else {
+        store.actions.setMode('visual')
+      }
     },
 
     createBeforeNormal(store: Store, id: string=store.state.active) {

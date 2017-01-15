@@ -117,7 +117,10 @@ export default class WhiteboardRoot extends Component {
       .map(node => {
         const pos = node.views.whiteboard || defaultPositions[
           this.state.node.children.indexOf(node._id)
-        ]
+        ] || {
+          x: 0,
+          y: this.state.node.children.indexOf(node._id) * 100,
+        }
         return {
           views: {
             ...node.views,
@@ -157,8 +160,8 @@ export default class WhiteboardRoot extends Component {
             } else if (!store.state.selected[id]) {
               wasSelected = false
               store.actions.clearSelection()
-              store.actions.select(id)
               store.actions.setActive(id)
+              store.actions.select(id)
             }
             this.props.store.actions.setMode('dragging')
 

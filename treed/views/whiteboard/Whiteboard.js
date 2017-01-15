@@ -31,7 +31,7 @@ const calcChildBoxes = (me, nodes, root, nodeMap) => {
   })
 }
 
-const calcChildInsertPos = (pid, oidx, boxes, x, y) => {
+const calcChildInsertPos = (boxes, x, y) => {
   for (let box of boxes) {
     if (box.left <= x && x <= box.right &&
         box.top <= y && y <= box.bottom) {
@@ -42,17 +42,13 @@ const calcChildInsertPos = (pid, oidx, boxes, x, y) => {
           break
         }
       }
-      const top = box.children[idx]
-      if (pid === box.id && idx > oidx) {
-        idx -= 1
-      }
       return {
         insertPos: {idx, pid: box.id},
         indicator: {
           left: box.left + 15,
           width: (box.right - box.left) - 30,
           // right: box.right - 5,
-          top,
+          top: box.children[idx],
         },
       }
     }
@@ -75,6 +71,7 @@ type State = {
     pos: {x: number, y: number},
     insertPos: any,
     indicator: ?{top: number, left: number, width: number},
+    moveCount: number,
   },
 }
 
@@ -169,25 +166,35 @@ export default class Whiteboard extends Component {
       this.props.store.state.nodeMap,
     )
     const pid = this.props.store.db.data[id].parent
-    const oidx = this.props.store.db.data[pid].children.indexOf(id)
+    // const oidx = this.props.store.db.data[pid].children.indexOf(id)
+    let moveCount = 1
+    let wasSelected = true
 
     this._childDragger = dragger(evt, {
       move: (x, y, w, h) => {
+        let selected = this.props.store.state.selected
         if (!moved) {
           if (Math.abs(w) > 5 || Math.abs(h) > 5) {
             moved = true
             this.props.store.actions.setActive(id)
+            if (!selected || !selected[id]) {
+              wasSelected = false
+              this.props.store.actions.selectWithSiblings(id)
+              selected = this.props.store.state.selected
+            }
+            moveCount = Object.keys(selected).length
             this.props.store.actions.setMode('dragging')
           } else {
             return
           }
         }
-        const {insertPos, indicator} = calcChildInsertPos(pid, oidx, childBoxes, x + w, y + h)
+        const {insertPos, indicator} = calcChildInsertPos(childBoxes, x + w, y + h)
         this.setState({
           childDrag: {
             pos: {x: x + w, y: y + h},
             insertPos,
             indicator,
+            moveCount,
           },
         })
       },
@@ -197,23 +204,37 @@ export default class Whiteboard extends Component {
           this.props.store.actions.edit(id)
           return
         }
-        this.props.store.actions.normalMode()
         const {childDrag} = this.state
-        if (!childDrag) return
+        if (!childDrag) {
+          return
+        }
+
         if (childDrag.insertPos) {
           const {pid, idx} = childDrag.insertPos
-          this.props.store.actions.move(
-            id,
+          this.props.store.actions.moveSelected(
             pid,
             idx,
-            false
           )
           this.setState({
             childDrag: null,
           })
         } else {
           const {x, y} = childDrag.pos
+          this.props.store.actions.moveSelected(
+            this.state.root,
+            -1,
+          )
+          // TODO set their positions to make sense
           console.log(childDrag.pos)
+          this.setState({
+            childDrag: null,
+          })
+        }
+
+        if (!wasSelected) {
+          this.props.store.actions.normalMode()
+        } else {
+          this.props.store.actions.setMode('visual')
         }
       },
     })
@@ -304,7 +325,7 @@ export default class Whiteboard extends Component {
 
   renderChildDrag() {
     if (!this.state.childDrag) return null
-    const {pos, indicator} = this.state.childDrag
+    const {pos, indicator, moveCount} = this.state.childDrag
     return <div>
       {indicator &&
         <div style={{
@@ -316,7 +337,7 @@ export default class Whiteboard extends Component {
         top: pos.y,
         left: pos.x,
       }} className={css(styles.childDragCircle)}>
-        1
+      {moveCount}
       </div>
     </div>
   }
@@ -425,6 +446,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#7fa',
     borderRadius: '50%',
+    fontSize: '80%',
   },
 
   childDragIndicator: {

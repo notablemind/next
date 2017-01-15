@@ -123,9 +123,7 @@ export default class WhiteboardNode extends Component {
       ['views', 'whiteboard', 'collapsed'],
       false
     )
-    this.props.store.actions.setActive(
-      this.state.node.children[0]
-    )
+    this.props.store.actions.setActive(this.props.id)
   }
 
   render() {

@@ -347,6 +347,68 @@ const commands: {[key: string]: Command<any>} = {
     },
   },
 
+  // TODO test all these things, right?
+  moveMany: {
+    apply({ids, pid, idx, viewType}, db, events) {
+      if (ids.some(id => isAncestor(id, pid, db.data)))  {
+        console.warn("Can't move something into one of its descendents")
+        return
+      }
+
+      const oldParents = {}
+      const oldChildren = {
+        [pid]: db.data[pid].children.slice(),
+      }
+
+      const childrens = {
+        [pid]: db.data[pid].children.slice(),
+      }
+      ids.forEach(id => {
+        const opid = db.data[id].parent
+        oldParents[id] = opid
+        const ochildren = childrens[opid] || (
+          oldChildren[opid] = db.data[opid].children.slice(),
+          childrens[opid] = db.data[opid].children.slice()
+        )
+        const oidx = ochildren.indexOf(id)
+        ochildren.splice(oidx, 1)
+      })
+
+      if (idx === -1) {
+        childrens[pid].push(...ids)
+      } else {
+        childrens[pid].splice(idx, 0, ...ids)
+      }
+
+      // TODO I should check for the no-op case...
+      const updates = Object.keys(childrens).map(opid => ({
+          ...db.data[opid],
+          children: childrens[opid],
+      })).concat(ids.map(id => ({
+        ...db.data[id],
+        parent: pid,
+      })))
+
+      return {
+        prom: db.saveMany(updates),
+        old: {oldChildren, oldParents},
+      }
+    },
+
+    undo({oldChildren, oldParents}, db, events) {
+      return {
+        prom: db.saveMany(Object.keys(oldChildren).map(pid => ({
+          ...db.data[pid],
+          children: oldChildren[pid],
+        })).concat(Object.keys(oldParents).map(id => ({
+          ...db.data[id],
+          parent: oldParents[id],
+        })))),
+      }
+    },
+  },
+
+
 }
 
 export default commands
