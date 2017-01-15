@@ -46,25 +46,11 @@ export default class Child extends Component {
     evt.stopPropagation()
     evt.preventDefault()
 
-    let moved = false
-    // Hmmmm should this all just be moved up the line?
-    // b/c then I can accound for multi-select or whatever
-    this.props.startChildDragging(evt, this.props.id)
-    /*
-    this._dragger = dragger(e, {
-      move: (x, y, w, h) => {
-        moved = moved || Math.abs(w) > 5 || Math.abs(h) > 5
-        this.props.setChildDrop(x + w, y + h)
-      },
-
-      done: (x, y, w, h) => {
-        if (!moved) {
-          this.props.store.actions.edit(this.props.id)
-        }
-        this.props.releaseChildDrop(moved)
-      },
-    })
-    */
+    if (evt.shiftKey) {
+      this.props.store.actions.selectWithSiblings(this.props.id)
+    } else {
+      this.props.startChildDragging(evt, this.props.id)
+    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {

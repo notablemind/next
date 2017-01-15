@@ -188,9 +188,9 @@ const actions = {
       store.state.activeIsJump = !nonJump
       if (store.state.mode === 'insert') {
         store.state.editPos = 'default' // do I care about this?
-      } else if (store.state.mode !== 'normal') {
+      } /*else if (store.state.mode !== 'normal') {
         store.actions.setMode('normal')
-      }
+      }*/
       if (store.db.data[old]) {
         store.emit(store.events.nodeView(old))
       }
@@ -265,11 +265,34 @@ const actions = {
       }
       if (id !== store.state.active) {
         store.state.selected[id] = true
-        store.emit(store.events.nodeView(id))
+        // store.state.active = id
+        // store.emit(store.events.nodeView(id))
+        store.actions.setActive(id)
       }
     },
 
-    setSelection(store: Store, ids: Array<string>) {
+    selectLimitingToSiblings(store: Store, id: string) {
+      if (!store.state.selected) return store.actions.select(id)
+      if (store.state.selected[id]) {
+        delete store.state.selected[id]
+        store.emit(store.events.nodeView(id))
+        return
+      }
+      const selected = store.state.selected
+      const pid = store.db.data[id].parent
+      const sibs = store.db.data[pid].children
+      const events = []
+      Object.keys(selected).forEach(key => {
+        if (store.db.data[key].parent !== pid) {
+          delete selected[key]
+          events.push(store.events.nodeView(key))
+        }
+      })
+      if (events.length) store.emitMany(events)
+      store.actions.select(id)
+    },
+
+    setSelection(store: Store, ids: Array<string>, adding: bool=false) {
       const oldSelected = store.state.selected || {}
       const selected = {}
       store.actions.setMode('visual')
@@ -282,13 +305,42 @@ const actions = {
       })
       Object.keys(oldSelected).forEach(id => {
         if (!selected[id]) {
-          events.push(store.events.nodeView(id))
+          if (adding) {
+            selected[id] = true
+          } else {
+            events.push(store.events.nodeView(id))
+          }
         }
       })
       if (events.length) {
         store.emitMany(events)
       }
       store.state.selected = selected
+    },
+
+    selectWithSiblings(store: Store, id: string) {
+      const active = store.state.active
+      const pid = store.db.data[id].parent
+      const apid = store.db.data[active].parent
+      store.actions.clearSelection()
+      if (pid !== apid) {
+        store.actions.setActive(id)
+        store.actions.select(id)
+        return
+      }
+      store.actions.setMode('visual')
+      const sibs = store.db.data[pid].children
+      const idx = sibs.indexOf(id)
+      const aidx = sibs.indexOf(active)
+      const first = Math.min(idx, aidx)
+      const last = Math.max(idx, aidx)
+      const events = []
+      store.state.selected = {}
+      for (let i = first; i <= last; i++) {
+        store.state.selected[sibs[i]] = true
+        events.push(store.events.nodeView(sibs[i]))
+      }
+      store.emitMany(events)
     },
 
     edit: (store: Store, id: string) => store.actions.editAt(id, 'default'),

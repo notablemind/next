@@ -75,7 +75,6 @@ type State = {
     pos: {x: number, y: number},
     insertPos: any,
     indicator: ?{top: number, left: number, width: number},
-
   },
 }
 
@@ -155,7 +154,9 @@ export default class Whiteboard extends Component {
       })
     } else if (e.button === 0) {
       this.setupSelector(e)
-      this.clearSelection()
+      if (!e.shiftKey) {
+        this.clearSelection()
+      }
     }
   }
 
@@ -207,11 +208,12 @@ export default class Whiteboard extends Component {
             idx,
             false
           )
-          console.log(childDrag)
-          // TODO move the child into the place
           this.setState({
             childDrag: null,
           })
+        } else {
+          const {x, y} = childDrag.pos
+          console.log(childDrag.pos)
         }
       },
     })
@@ -233,6 +235,7 @@ export default class Whiteboard extends Component {
   setupSelector(e: any) {
     let moved = false
     let boxes = []
+    const adding = e.shiftKey
     this.props.store.db.data[this.props.store.state.root].children.forEach(id => {
       boxes.push([id, this.props.store.state.nodeMap[id].getBoundingClientRect()])
     })
@@ -248,7 +251,7 @@ export default class Whiteboard extends Component {
           })
           const ids = selectBoxes(x, y, w, h, boxes)
           if (ids.length) {
-            this.props.store.actions.setSelection(ids)
+            this.props.store.actions.setSelection(ids, adding)
           }
         }
       },

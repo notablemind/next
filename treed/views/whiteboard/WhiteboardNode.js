@@ -95,7 +95,7 @@ export default class WhiteboardNode extends Component {
     if (this.state.isActive && this.state.editState) return
     // if (this.state.isSelected) return this.props.onSelectedDown(this.props.id, e)
     if (e.shiftKey) {
-      this.props.store.actions.select(this.props.id)
+      this.props.store.actions.selectLimitingToSiblings(this.props.id)
       e.preventDefault()
       e.stopPropagation()
       return

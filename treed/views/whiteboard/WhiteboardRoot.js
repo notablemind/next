@@ -137,10 +137,6 @@ export default class WhiteboardRoot extends Component {
     if (e.button !== 0) return
 
     const {store, nodeMap} = this.props
-    /*
-    if (!store.state.selected || !Object.keys(store.state.selected).length) {
-    }
-    */
 
     e.stopPropagation()
     e.preventDefault()
