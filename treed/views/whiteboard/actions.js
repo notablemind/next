@@ -11,6 +11,14 @@ const actions: ViewActionConfig = {
     description: 'Start editing',
   },
 
+  editStart: {
+    shortcuts: {
+      normal: 'I',
+    },
+    alias: 'editStart',
+    description: 'Start editing at the start',
+  },
+
   up: {
     shortcuts: {
       normal: 'k, up',
@@ -78,6 +86,23 @@ const actions: ViewActionConfig = {
       }
     },
     description: 'Create node after',
+  },
+
+  createChild: {
+    shortcuts: {
+      normal: 'cmd+o',
+    },
+    description: 'Create child',
+    action(store) {
+      const active = store.state.active
+      const pid = store.db.data[active].parent
+      if (!pid) return
+      if (pid === store.state.root) {
+        store.actions.createChild(active)
+        // TODO make sure it's not collapsed
+      } else {
+      }
+    }
   },
 
   // ???

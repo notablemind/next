@@ -7,6 +7,7 @@ import trySnapping from './trySnapping'
 import calcSnapLines from './calcSnapLines'
 import isDomAncestor from '../utils/isDomAncestor'
 import Child from './Child'
+import Icon from '../utils/Icon'
 
 export default class WhiteboardNode extends Component {
   keyActions: any
@@ -181,6 +182,30 @@ export default class WhiteboardNode extends Component {
     })
   }
 
+  collapseChildren = evt => {
+    evt.preventDefault()
+    evt.stopPropagation()
+    this.props.store.actions.setNested(
+      this.props.id,
+      ['views', 'whiteboard', 'collapsed'],
+      true
+    )
+    this.props.store.actions.setActive(this.props.id)
+  }
+
+  expandChildren = evt => {
+    evt.preventDefault()
+    evt.stopPropagation()
+    this.props.store.actions.setNested(
+      this.props.id,
+      ['views', 'whiteboard', 'collapsed'],
+      false
+    )
+    this.props.store.actions.setActive(
+      this.state.node.children[0]
+    )
+  }
+
   render() {
     if (!this.state.node) return
     const settings = this.state.node.views.whiteboard
@@ -234,8 +259,17 @@ export default class WhiteboardNode extends Component {
               className={css(styles.addChild)}>
               Add child
             </div>
+            <Icon
+              name="arrow-shrink"
+              className={css(styles.collapser)}
+              onClick={this.collapseChildren}
+            />
           </div> :
-          <div className={css(styles.kidBadge)}>
+          <div
+            onClick={this.expandChildren}
+            className={css(styles.kidBadge)}
+            ref={node => this.childrenNode = node}
+          >
             {this.state.node.children.length}
           </div>)}
     </div>
@@ -273,8 +307,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     fontSize: 10,
     color: '#aaa',
-    // backgroundColor: '#eee',
     zIndex: 10,
+    cursor: 'pointer',
+    transition: 'background-color .2s ease',
+    ':hover': {
+      backgroundColor: '#eee',
+    },
   },
 
   addChild: {
@@ -287,6 +325,23 @@ const styles = StyleSheet.create({
       backgroundColor: '#ccc',
     },
     // backgroundColor: 'white',
+  },
+
+  collapser: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    width: 25,
+    height: 25,
+    fontSize: 15,
+    textAlign: 'center',
+    justifyContent: 'center',
+    color: '#aaa',
+    transition: 'background-color .2s ease',
+    cursor: 'pointer',
+    ':hover': {
+      color: 'black',
+    },
   },
 })
 

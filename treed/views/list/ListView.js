@@ -8,20 +8,21 @@ import ListItem from './ListItem'
 import Dragger from './Dragger'
 import ContextMenu from '../context-menu/ContextMenu'
 
-const preWalk = (nodes, root, viewType, fn) => {
+const preWalk = (isRoot, nodes, root, viewType, fn) => {
   const node = nodes[root]
   const hasOpenChildren = node.children.length > 0 &&
-    !(node.views[viewType] && node.views[viewType].collapsed)
+    (!(node.views[viewType] && node.views[viewType].collapsed) || isRoot)
   const res = fn(root, hasOpenChildren)
   if (res === false) return // don't traverse
   if (hasOpenChildren) {
-    nodes[root].children.forEach(child => preWalk(nodes, child, viewType, fn))
+    nodes[root].children.forEach(child => preWalk(false, nodes, child, viewType, fn))
   }
 }
 
 const getAllMeasurements = (nodes, divs, viewType, root, moving) => {
   const measurements = []
   preWalk(
+    true,
     nodes,
     root,
     viewType,

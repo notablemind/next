@@ -5,6 +5,7 @@ import {css, StyleSheet} from 'aphrodite'
 
 import Body from '../body'
 import ensureInView from '../../ensureInView'
+import * as colors from '../utils/colors'
 
 const isAtEdge = (box, x, y) => {
   return (
@@ -121,6 +122,14 @@ export default class ListItem extends Component {
     const collapsed = this.state.node.views.list &&
       this.state.node.views.list.collapsed
     const isRoot = this.props.store.state.root === this.props.id
+    const contentClassName = css(
+      styles.contentWrapper,
+      this.state.isActive && styles.active,
+      this.state.isSelected && styles.selected,
+      this.state.isCutting && styles.cutting,
+      this.state.isDragging && styles.dragging,
+      this.state.editState && styles.editing,
+    )
 
     return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth}` + (isRoot ? ' Node_root' : '')}>
       <div
@@ -146,11 +155,9 @@ export default class ListItem extends Component {
         <Body
           node={this.state.node}
           depth={this.props.depth}
-          isActive={this.state.isActive}
-          isCutting={this.state.isCutting}
-          isDragging={this.state.isDragging}
           editState={this.state.editState}
           actions={this.props.store.actions}
+          contentClassName={contentClassName}
 
           keyActions={this.keyActions}
 
@@ -176,9 +183,53 @@ export default class ListItem extends Component {
 
 // const collapserWidth =
 
+const things = {}
+;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
+  things[key] =
+    // {outline: `2px solid ${colors[key]}`}
+    {boxShadow: `
+      -2px -2px 0 ${colors[key]},
+      -2px 2px 0 ${colors[key]},
+      2px -2px 0 ${colors[key]},
+      2px 2px 0 ${colors[key]}
+    `}
+})
+things.dragging.backgroundColor = colors.draggingBackground
+
+/*
+const outlines = {
+  active: {
+    // boxShadow: `inset 0 -2px 0 ${colors.active}`,
+    outline: `2px solid ${colors.active}`,
+  },
+  selected: {
+    outline: `2px solid ${colors.selected}`,
+    // boxShadow: `inset 0 -2px 0 ${colors.selected}`,
+  },
+  editing: {
+    outlineColor: colors.editing,
+    // boxShadow: `inset 0 -2px 0 ${colors.editing}`,
+  },
+  cutting: {
+    outline: `2px dotted ${colors.cutting}`,
+    // boxShadow: `inset 0 -2px 0 ${colors.cutting}`,
+  },
+  dragging: {
+    outline: `2px dotted ${colors.dragging}`,
+    // boxShadow: `inset 0 -2px 0 ${colors.dragging}`,
+    backgroundColor: colors.draggingBackground,
+  },
+}
+*/
+
 const styles = StyleSheet.create({
+  ...things,
   container: {
     position: 'relative',
+  },
+
+  contentWrapper: {
+    borderRadius: 3,
   },
 
   topNormal: {

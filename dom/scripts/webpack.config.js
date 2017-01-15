@@ -43,7 +43,7 @@ module.exports = {
     }, {
       test: /\.json$/,
       loader: 'json',
-      include: sourceDirectories,
+      include: sourceDirectories.concat([path.join(__dirname, '..', 'public', 'fonts')]),
     }, {
       test: /\.less$/,
       loader: 'style-loader!css-loader!less-loader',
