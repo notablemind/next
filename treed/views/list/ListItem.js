@@ -181,11 +181,9 @@ export default class ListItem extends Component {
   }
 }
 
-// const collapserWidth =
-
-const things = {}
+const activeStyles = {}
 ;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
-  things[key] =
+  activeStyles[key] =
     // {outline: `2px solid ${colors[key]}`}
     {boxShadow: `
       -2px -2px 0 ${colors[key]},
@@ -194,36 +192,11 @@ const things = {}
       2px 2px 0 ${colors[key]}
     `}
 })
-things.dragging.backgroundColor = colors.draggingBackground
-
-/*
-const outlines = {
-  active: {
-    // boxShadow: `inset 0 -2px 0 ${colors.active}`,
-    outline: `2px solid ${colors.active}`,
-  },
-  selected: {
-    outline: `2px solid ${colors.selected}`,
-    // boxShadow: `inset 0 -2px 0 ${colors.selected}`,
-  },
-  editing: {
-    outlineColor: colors.editing,
-    // boxShadow: `inset 0 -2px 0 ${colors.editing}`,
-  },
-  cutting: {
-    outline: `2px dotted ${colors.cutting}`,
-    // boxShadow: `inset 0 -2px 0 ${colors.cutting}`,
-  },
-  dragging: {
-    outline: `2px dotted ${colors.dragging}`,
-    // boxShadow: `inset 0 -2px 0 ${colors.dragging}`,
-    backgroundColor: colors.draggingBackground,
-  },
-}
-*/
+activeStyles.dragging.backgroundColor = colors.draggingBackground
 
 const styles = StyleSheet.create({
-  ...things,
+  ...activeStyles,
+
   container: {
     position: 'relative',
   },

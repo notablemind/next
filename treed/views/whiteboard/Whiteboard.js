@@ -9,12 +9,13 @@ import WhiteboardRoot from './WhiteboardRoot'
 import dragger from './dragger'
 import selectBoxes from './selectBoxes'
 import snapIndicators from './snapIndicators'
+import * as colors from '../utils/colors'
 
 const calcChildBoxes = (me, nodes, root, nodeMap) => {
   return nodes[root].children.map(id => {
     const box = nodeMap[id].getBoundingClientRect()
     let childIds = nodes[id].children
-    const children = childIds.length ?
+    const children = (childIds.length && !(nodes[id].views.whiteboard && nodes[id].views.whiteboard.collapsed)) ?
       nodes[id].children.map(
         id => nodeMap[id].getBoundingClientRect().top
       ).concat([box.bottom - 13 - 25])
@@ -196,6 +197,7 @@ export default class Whiteboard extends Component {
             id,
             pid,
             idx,
+            false
           )
           console.log(this.state.childDrag)
           // TODO move the child into the place
@@ -380,7 +382,7 @@ const styles = StyleSheet.create({
   },
 
   selectBox: {
-    outline: '3px solid blue',
+    outline: `3px solid ${colors.selected}`,
     position: 'absolute',
     pointerEvents: 'none',
   },
@@ -415,6 +417,7 @@ const styles = StyleSheet.create({
   childDragIndicator: {
     height: 5,
     backgroundColor: '#555',
+    opacity: .2,
     borderRadius: 5,
     position: 'absolute',
     marginTop: -2,

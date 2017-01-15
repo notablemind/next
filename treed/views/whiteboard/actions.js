@@ -19,6 +19,53 @@ const actions: ViewActionConfig = {
     description: 'Start editing at the start',
   },
 
+  rebase: {
+    shortcuts: {
+      normal: 'g d',
+    },
+    alias: 'rebase',
+    description: 'Zoom to node',
+  },
+
+  rebaseNext: {
+    shortcuts: {
+      normal: 'g n',
+    },
+    alias: 'rebaseNext',
+    description: 'Zoom to next sibling of root',
+  },
+
+  rebasePrev: {
+    shortcuts: {
+      normal: 'g p',
+    },
+    alias: 'rebasePrev',
+    description: 'Zoom to previous sibling of root',
+  },
+
+
+  rebaseRoot: {
+    shortcuts: {
+      normal: 'g r',
+    },
+    action(store) {
+      store.actions.rebase('root')
+    },
+    description: 'Zoom to root',
+  },
+
+  rebaseUp: {
+    shortcuts: {
+      normal: 'g u',
+    },
+    action(store) {
+      const parent = store.db.data[store.state.root].parent
+      store.actions.rebase(parent)
+    },
+    description: 'Zoom to parent of current root',
+  },
+
+
   up: {
     shortcuts: {
       normal: 'k, up',

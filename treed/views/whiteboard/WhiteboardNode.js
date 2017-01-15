@@ -8,6 +8,7 @@ import calcSnapLines from './calcSnapLines'
 import isDomAncestor from '../utils/isDomAncestor'
 import Child from './Child'
 import Icon from '../utils/Icon'
+import * as colors from '../utils/colors'
 
 export default class WhiteboardNode extends Component {
   keyActions: any
@@ -87,14 +88,25 @@ export default class WhiteboardNode extends Component {
       this.props.id, e.clientX, e.clientY)
   }
 
-  onMouseDown = (e: any) => {
+  shouldStartDragging = (e: any) => {
+    if (e.metaKey) {
+      this.props.store.actions.rebase(this.props.id)
+      e.preventDefault()
+      e.stopPropagation()
+      const children = this.state.node.children
+      const nid = children.length ? children[0] : this.props.id
+      this.props.store.actions.setActive(nid)
+      return
+    }
     if (this.state.isActive && this.state.editState) return
     if (this.state.isSelected) return this.props.onSelectedDown(e)
     if (this.childrenNode && isDomAncestor(e.target, this.childrenNode)) return
     if (e.button !== 0) return
-    // this.props.store.actions.setActive(this.props.id)
-    // this.props.store.actions.normalMode()
+    return true
+  }
 
+  onMouseDown = (e: any) => {
+    if (!this.shouldStartDragging(e)) return
     e.stopPropagation()
     e.preventDefault()
 
@@ -109,6 +121,7 @@ export default class WhiteboardNode extends Component {
       x, y,
       box
     )
+
     this.setState({
       moving: {
         x, y,
@@ -211,14 +224,24 @@ export default class WhiteboardNode extends Component {
     const settings = this.state.node.views.whiteboard
     let {x, y} = this.state.handoff || this.state.moving ||
       this.state.node.views.whiteboard || this.props.defaultPos
+
+    const activityStyles = css(
+      // styles.contentWrapper,
+      this.state.isActive && styles.active,
+      this.state.isSelected && styles.selected,
+      this.state.isCutting && styles.cutting,
+      this.state.isDragging && styles.dragging,
+      this.state.editState && styles.editing,
+    )
+
+
     const collapsed = (this.state.node.views.whiteboard || {}).collapsed
     if (!x) x = 0
     if (!y) y = 0
     const {dx, dy} = (this.state.isSelected ? this.props : {dx: 0, dy: 0})
     return <div
       ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
-      className={css(styles.container,
-                     this.state.isActive && styles.activeContainer)}
+      className={css(styles.container) + ' ' + activityStyles}
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
       style={{
@@ -229,9 +252,6 @@ export default class WhiteboardNode extends Component {
       <Body
         // depth={100}
         node={this.state.node}
-        isActive={this.state.isActive}
-        isSelected={this.state.isSelected}
-        // isCutting={this.state.isCutting}
         actions={this.props.store.actions}
         editState={this.state.editState}
         setChildDrop={this.props.setChildDrop}
@@ -276,7 +296,23 @@ export default class WhiteboardNode extends Component {
   }
 }
 
+const activeStyles = {}
+;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
+  activeStyles[key] =
+    // {outline: `2px solid ${colors[key]}`}
+    {boxShadow: `
+      -2px -2px 0 ${colors[key]},
+      -2px 2px 0 ${colors[key]},
+      2px -2px 0 ${colors[key]},
+      2px 2px 0 ${colors[key]}
+    `, borderColor: 'white', }
+})
+activeStyles.dragging.backgroundColor = colors.draggingBackground
+// activeStyles.active.borderColor = 'white'
+
 const styles = StyleSheet.create({
+  ...activeStyles,
+
   container: {
     borderRadius: 2,
     position: 'absolute',

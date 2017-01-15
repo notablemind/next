@@ -4,6 +4,7 @@ import {css, StyleSheet} from 'aphrodite'
 
 import Body from '../body'
 import dragger from './dragger'
+import * as colors from '../utils/colors'
 
 export default class Child extends Component {
   constructor({id, store}) {
@@ -71,12 +72,22 @@ export default class Child extends Component {
   }
 
   render() {
+
+    const activityStyles = css(
+      styles.contentWrapper,
+      this.state.isActive && styles.active,
+      this.state.isSelected && styles.selected,
+      this.state.isCutting && styles.cutting,
+      this.state.isDragging && styles.dragging,
+      this.state.editState && styles.editing,
+    )
+
     return <div
       ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
       className={css(styles.child,
                      this.state.isActive && styles.activeChild,
                      this.state.isDragging && styles.dragging,
-                    )}
+                    ) + ' ' + activityStyles}
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
     >
@@ -94,11 +105,31 @@ export default class Child extends Component {
   }
 }
 
-const styles = StyleSheet.create({
+const activeStyles = {}
+;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
+  activeStyles[key] =
+    // {outline: `2px solid ${colors[key]}`}
+    {boxShadow: `
+      inset -2px -2px 0 ${colors[key]},
+      inset -2px 2px 0 ${colors[key]},
+      inset 2px -2px 0 ${colors[key]},
+      inset 2px 2px 0 ${colors[key]}
+    `}
+})
+activeStyles.dragging.backgroundColor = colors.draggingBackground
 
+
+const styles = StyleSheet.create({
+  ...activeStyles,
+  contentWrapper: {
+    borderRadius: 3,
+  },
+
+  /*
   dragging: {
     backgroundColor: '#aaa',
   },
+  */
 
   child: {
     padding: '3px 5px',
