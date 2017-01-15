@@ -19,6 +19,33 @@ const actions: ViewActionConfig = {
     description: 'Start editing at the start',
   },
 
+  remove: {
+    shortcuts: {
+      normal: 'd d',
+      visual: 'd',
+    },
+    description: 'Remove the current node',
+    alias: 'remove',
+  },
+
+  copy: {
+    shortcuts: {
+      normal: 'y y',
+      visual: 'y',
+    },
+    description: 'Copy the current node',
+    alias: 'copyNode',
+  },
+
+  cut: {
+    shortcuts: {
+      normal: 'y x, cmd+x',
+    },
+    description: 'Mark the current node to cut',
+    alias: 'setCut',
+  },
+
+
   rebase: {
     shortcuts: {
       normal: 'g d',
