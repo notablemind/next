@@ -9,6 +9,7 @@ import isDomAncestor from '../utils/isDomAncestor'
 import Child from './Child'
 import Icon from '../utils/Icon'
 import * as colors from '../utils/colors'
+import dragger from './dragger'
 
 export default class WhiteboardNode extends Component {
   keyActions: any
@@ -29,6 +30,7 @@ export default class WhiteboardNode extends Component {
         // isCutting: store.getters.isCutting(id),
         editState: store.getters.editState(id),
         handoff: null,
+        height: (store.getters.nodeViewData(id) || {}).height,
       })
     )
     this.state.moving = false
@@ -83,6 +85,7 @@ export default class WhiteboardNode extends Component {
   }
 
   onMouseDown = (e: any) => {
+    if (e.target === this._heightDragger) return
     if (this.childrenNode && isDomAncestor(e.target, this.childrenNode)) return
     if (e.metaKey) {
       this.props.store.actions.rebase(this.props.id)
@@ -105,6 +108,31 @@ export default class WhiteboardNode extends Component {
     this.props.onSelectedDown(this.props.id, e)
   }
 
+  startResizingHeight = (e: any) => {
+    let moved = false
+    let oheight
+    this._dragger = dragger(e, {
+      move: (x, y, w, h) => {
+        if (!moved) {
+          if (Math.abs(h) < 5) return
+          moved = true
+          oheight = this.state.height || this.div.offsetHeight
+        }
+        this.setState({
+          height: oheight + h,
+        })
+      },
+
+      done: (x, y, w, h) => {
+        this.props.store.actions.setNodeViewData(this.props.id, 'whiteboard', {
+          ...this.props.store.getters.nodeViewData(this.props.id),
+          height: oheight + h,
+        })
+        // this.setState({height: null})
+      },
+    })
+  }
+
   collapseChildren = evt => {
     evt.preventDefault()
     evt.stopPropagation()
@@ -125,6 +153,23 @@ export default class WhiteboardNode extends Component {
       false
     )
     this.props.store.actions.setActive(this.props.id)
+  }
+
+  onWheel = (evt: any) => {
+    if (!this.state.height) return
+    if (evt.deltaY) {
+      if (evt.deltaY < 0) {
+        if (this.childrenNode.scrollTop > 0) {
+          evt.stopPropagation()
+          return
+        }
+      } else {
+        if (this.childrenNode.scrollTop < this.childrenNode.scrollHeight - this.childrenNode.offsetHeight) {
+          evt.stopPropagation()
+          return
+        }
+      }
+    }
   }
 
   render() {
@@ -155,6 +200,7 @@ export default class WhiteboardNode extends Component {
       style={{
         transform: `translate(${x + dx}px, ${y + dy}px)`,
         zIndex: this.state.moving ? 10000 : undefined,
+        height: this.state.height,
       }}
     >
       <Body
@@ -171,7 +217,8 @@ export default class WhiteboardNode extends Component {
         (!collapsed ?
           <div
             ref={node => this.childrenNode = node}
-            className={css(styles.children)}
+            className={css(styles.children, this.state.height ? styles.fixedChildren : null)}
+            onWheel={this.onWheel}
           >
             {this.state.node.children.map(child => (
               <Child
@@ -200,6 +247,11 @@ export default class WhiteboardNode extends Component {
           >
             {this.state.node.children.length}
           </div>)}
+      <div
+        ref={node => this._heightDragger = node}
+        className={css(styles.heightDragger)}
+        onMouseDown={this.startResizingHeight}
+      />
     </div>
   }
 }
@@ -232,6 +284,11 @@ const styles = StyleSheet.create({
     width: 200,
     transition: 'opacity .3s ease',
     opacity: 1,
+  },
+
+  fixedChildren: {
+    flex: 1,
+    overflow: 'auto',
   },
 
   hide: {
@@ -293,6 +350,19 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
     ':hover': {
       color: 'black',
+    },
+  },
+
+  heightDragger: {
+    cursor: 'ns-move',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 5,
+    transition: 'background-color .2s ease',
+    ':hover': {
+      backgroundColor: '#aaa',
     },
   },
 })

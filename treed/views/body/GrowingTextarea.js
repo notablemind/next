@@ -17,6 +17,7 @@ export default class GrowingTextarea extends Component {
   componentDidMount() {
     this.resize()
     window.addEventListener('resize', this.resize)
+    this._prevHeight = null
   }
 
   componentDidUpdate() {
@@ -33,14 +34,20 @@ export default class GrowingTextarea extends Component {
 
   resize = () => {
     const style = window.getComputedStyle(this.shadow)
+    let height
     if (!this.props.value.trim()) {
       const lineHeight = parseFloat(style.lineHeight)
       const paddingTop = parseFloat(style.paddingTop)
       const paddingBottom = parseFloat(style.paddingBottom)
-      this.textarea.style.height = (lineHeight + paddingTop + paddingBottom) + 'px'
+      height = (lineHeight + paddingTop + paddingBottom) + 'px'
     } else {
-      this.textarea.style.height = style.height
+      height = style.height
     }
+    if (this.props.onHeightChange && this._prevHeight && this._prevHeight !== height) {
+      this.props.onHeightChange(parseFloat(height))
+    }
+    this.textarea.style.height = height
+    this._prevHeight = height
   }
 
   // 0 == start
@@ -111,9 +118,10 @@ export default class GrowingTextarea extends Component {
   }
 
   render() {
+    const {onHeightChange, ...props} = this.props
     return <div className={css(styles.container)}>
       <textarea
-        {...this.props}
+        {...props}
         ref={n => this.textarea = n}
         className={css(styles.textarea) + ' ' + this.props.className}
       />

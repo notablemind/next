@@ -871,8 +871,7 @@ const actions = {
     openGeneralContextMenu(store: Store, x: number, y: number) {
       let menu
       if (store.state.mode === 'visual') {
-        menu = [
-        ]
+        menu = []
         if (store.viewTypes[store.state.viewType].contextMenuVisual) {
           addMenuResult(
             menu,
@@ -924,6 +923,13 @@ const actions = {
           text: 'Replace with cut item',
           action: () => store.actions.replaceFromCut(id),
         })
+      }
+      if (store.viewTypes[store.state.viewType].contextMenu) {
+        addMenuResult(
+          baseItems,
+          store.viewTypes[store.state.viewType].contextMenu(store, id)
+        )
+        // TODO add plugins stuffs
       }
       if (store.globalState.clipboard) {
         const clipboard = store.globalState.clipboard

@@ -47,6 +47,7 @@ export default class Body extends Component {
           actions={this.props.actions}
           editState={this.props.editState}
           keyActions={this.props.keyActions}
+          onHeightChange={this.props.onHeightChange}
         />
       </div>
     </div>

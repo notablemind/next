@@ -5,6 +5,7 @@ import {css, StyleSheet} from 'aphrodite'
 import Body from '../body'
 import dragger from './dragger'
 import * as colors from '../utils/colors'
+import ensureInView from '../../ensureInView'
 
 export default class Child extends Component {
   constructor({id, store}) {
@@ -14,6 +15,7 @@ export default class Child extends Component {
       store => [store.events.node(id), store.events.nodeView(id)],
       store => ({
         node: store.getters.node(id),
+        activeIsJump: store.state.activeIsJump,
         isActive: store.getters.isActive(id),
         isDragging: store.getters.isDragging(id),
         isSelected: store.state.selected &&
@@ -35,11 +37,24 @@ export default class Child extends Component {
 
   componentDidMount() {
     this._sub.start()
+    if (this.state.isActive && this.div) {
+      this.ensureInView()
+    }
   }
 
   componentWillUnmount() {
     this._sub.stop()
     delete this.props.nodeMap[this.props.id]
+  }
+
+  componentDidUpdate(_: any, prevState: any) {
+    if (!prevState.isActive && this.state.isActive && this.div) {
+      this.ensureInView()
+    }
+  }
+
+  ensureInView = () => {
+    ensureInView(this.div, this.state.activeIsJump, 30)
   }
 
   onMouseDown = evt => {
@@ -84,6 +99,7 @@ export default class Child extends Component {
         // isCutting={this.state.isCutting}
         actions={this.props.store.actions}
         editState={this.state.editState}
+        onHeightChange={this.ensureInView}
         keyActions={this.keyActions}
         store={this.props.store}
       />

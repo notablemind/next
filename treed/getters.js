@@ -32,6 +32,8 @@ export default {
     isSelected: (store, id) => false, // TODO selection
     editState: (store, id) => store.state.mode === 'insert' &&
       id === store.state.active ? store.state.editPos : null,
+
+    nodeViewData: (store, id) => store.db.data[id].views[store.state.viewType],
   },
 
 }

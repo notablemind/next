@@ -131,6 +131,7 @@ export default class Editor extends Component {
       value={this.state.tmpText}
       className={this.props.className}
       onChange={e => this.setState({tmpText: e.target.value})}
+      onHeightChange={this.props.onHeightChange}
       onKeyDown={this.onKeyDown}
       onBlur={this.onBlur}
       style={this.props.style}

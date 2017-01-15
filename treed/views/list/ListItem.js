@@ -71,7 +71,7 @@ export default class ListItem extends Component {
   componentDidMount() {
     this._sub.start(this)
     if (this.state.isActive && this._div) {
-      ensureInView(this._div, this.state.activeIsJump)
+      this.ensureInView()
     }
   }
 
@@ -81,8 +81,12 @@ export default class ListItem extends Component {
 
   componentDidUpdate(_: any, prevState: any) {
     if (!prevState.isActive && this.state.isActive && this._div) {
-      ensureInView(this._div, this.state.activeIsJump)
+      this.ensureInView()
     }
+  }
+
+  ensureInView = () => {
+    ensureInView(this._div, this.state.activeIsJump, 100)
   }
 
   onMouseMove = (e: any) => {
@@ -158,6 +162,7 @@ export default class ListItem extends Component {
           editState={this.state.editState}
           actions={this.props.store.actions}
           contentClassName={contentClassName}
+          onHeightChange={this.ensureInView}
 
           keyActions={this.keyActions}
 
