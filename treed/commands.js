@@ -272,7 +272,7 @@ const commands: {[key: string]: Command<any>} = {
   },
 
   move: {
-    apply({id, pid, idx, expandParent, viewType}, db, events) {
+    apply({id, pid, idx, viewType}, db, events) {
       if (isAncestor(id, pid, db.data))  {
         console.warn("Can't move something into one of its descendents")
         return
@@ -281,25 +281,11 @@ const commands: {[key: string]: Command<any>} = {
       const ochildren = db.data[opid].children.slice()
       const oidx = ochildren.indexOf(id)
       ochildren.splice(oidx, 1)
-      let pviews = db.data[pid].views
-      let viewsDirty = false
-      if (expandParent && pviews[viewType] && pviews[viewType].collapsed) {
-        viewsDirty = true
-        pviews = {
-          ...pviews,
-          [viewType]: {
-            ...pviews[viewType],
-            collapsed: false,
-          },
-        }
-      }
       if (opid === pid) {
         // if (oidx > idx) idx--
         ochildren.splice(idx, 0, id)
         const old = {id, oidx, opid, pid}
-        const prom = viewsDirty ?
-          db.update(pid, {children: ochildren, views: pviews})
-          : db.set(pid, 'children', ochildren)
+        const prom = db.set(pid, 'children', ochildren)
         return {prom, old}
       }
       const children = db.data[pid].children.slice()
@@ -314,7 +300,6 @@ const commands: {[key: string]: Command<any>} = {
         children: ochildren,
       }, {
         ...db.data[pid],
-        views: pviews,
         children,
       }, {
         ...db.data[id],

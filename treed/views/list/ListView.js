@@ -8,24 +8,24 @@ import ListItem from './ListItem'
 import Dragger from './Dragger'
 import ContextMenu from '../context-menu/ContextMenu'
 
-const preWalk = (isRoot, nodes, root, viewType, fn) => {
+const preWalk = (isRoot, nodes, root, isCollapsed, fn) => {
   const node = nodes[root]
   const hasOpenChildren = node.children.length > 0 &&
-    (!(node.views[viewType] && node.views[viewType].collapsed) || isRoot)
+    (!isCollapsed(root) || isRoot)
   const res = fn(root, hasOpenChildren)
   if (res === false) return // don't traverse
   if (hasOpenChildren) {
-    nodes[root].children.forEach(child => preWalk(false, nodes, child, viewType, fn))
+    nodes[root].children.forEach(child => preWalk(false, nodes, child, isCollapsed, fn))
   }
 }
 
-const getAllMeasurements = (nodes, divs, viewType, root, moving) => {
+const getAllMeasurements = (nodes, divs, isCollapsed, root, moving) => {
   const measurements = []
   preWalk(
     true,
     nodes,
     root,
-    viewType,
+    isCollapsed,
     (id, hasOpenChildren) => {
       if (id === moving) return false
       measurements.push([id, divs[id].getBoundingClientRect(), hasOpenChildren])
@@ -104,7 +104,7 @@ export default class ListView extends Component {
     const measurements = getAllMeasurements(
       this.props.store.db.data,
       this._nodes,
-      this.props.store.state.viewType,
+      this.props.store.getters.isCollapsed,
       this.props.store.state.root,
       this.props.store.state.active,
     )
@@ -137,7 +137,7 @@ export default class ListView extends Component {
       const measurements = getAllMeasurements(
         this.props.store.db.data,
         this._nodes,
-        this.props.store.state.viewType,
+        this.props.store.getters.isCollapsed,
         this.props.store.state.root,
       )
       this.dropper = new Dragger(measurements, true)
