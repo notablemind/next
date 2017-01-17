@@ -20,11 +20,14 @@ import trySnapping from './trySnapping'
 
 type Props = {
   store: any,
+  viewState: any,
+  updateViewState: (viewState: any) => void,
 }
 type State = {
   x: number,
   y: number,
   zoom: number,
+
   contextMenu: any,
   root: string,
   mode: string,
@@ -37,6 +40,14 @@ type State = {
     nodeMap: any,
     draggingIds: Array<string>,
   },
+}
+
+const debounce = (fn, time) => {
+  let _t
+  return (...args: any) => {
+    clearTimeout(_t)
+    _t = setTimeout(() => fn(...args), time)
+  }
 }
 
 export default class Whiteboard extends Component {
@@ -66,9 +77,9 @@ export default class Whiteboard extends Component {
         contextMenu: store.getters.contextMenu(),
       }),
     )
-    this.state.x = 0
-    this.state.y = 0
-    this.state.zoom = 1
+    this.state.x = props.viewState.x || 0
+    this.state.y = props.viewState.y || 0
+    this.state.zoom = props.viewState.zoom || 1
   }
 
   componentDidMount() {
@@ -83,6 +94,13 @@ export default class Whiteboard extends Component {
     if (this._childDragger) this._childDragger()
   }
 
+  updateViewState = debounce(() => {
+    const {x, y, zoom} = this.state
+    if (this.props.updateViewState) {
+      this.props.updateViewState({x, y, zoom})
+    }
+  }, 500)
+
   onWheel = (e: any) => {
     e.preventDefault()
     e.stopPropagation()
@@ -90,6 +108,7 @@ export default class Whiteboard extends Component {
       x: this.state.x - e.deltaX,
       y: this.state.y - e.deltaY,
     })
+    this.updateViewState()
   }
 
   onDragDone() {
@@ -173,7 +192,6 @@ export default class Whiteboard extends Component {
                 childBox.top,
                 childBox,
               )
-              // console.log(childBox, snapLines)
             }
           }
 
@@ -188,7 +206,6 @@ export default class Whiteboard extends Component {
 
             w = news.x - x
             h = news.y - y
-            // console.log(news)
 
             this.showIndicators(
               news.xsnap,

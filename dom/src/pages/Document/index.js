@@ -44,6 +44,7 @@ const loadLastViewState = id => maybeLoad(viewStateKey(id)) || {
   leaf: true,
   type: 'list',
   root: 'root',
+  custom: {},
 }
 const saveLastViewState = (id, data) => localStorage[viewStateKey(id)] = JSON.stringify(data)
 
@@ -54,6 +55,7 @@ type ViewState = {
   leaf: boolean,
   type: string,
   root: string,
+  custom: any,
 }
 
 class Document extends Component {
@@ -215,6 +217,13 @@ class Document extends Component {
     saveLastViewState(this.props.id, viewState)
   }
 
+  updateCustomViewState = (update: any) => {
+    this.updateViewState({custom: {
+      ...this.state.viewState.custom,
+      ...update,
+    }})
+  }
+
   setRoot(root: string) {
     if (root === this.state.viewState.root) return
     this.updateViewState({root})
@@ -295,6 +304,8 @@ class Document extends Component {
       <div className={css(styles.treedContainer) + ' Theme_basic'}>
         <Component
           store={this.state.store}
+          viewState={this.state.viewState.custom || {}}
+          updateViewState={this.updateCustomViewState}
         />
         {actionButtons.length > 0 &&
           <div className={css(styles.actionButtons)}>
