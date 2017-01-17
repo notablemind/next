@@ -5,6 +5,7 @@ import {css, StyleSheet} from 'aphrodite'
 
 import ContextMenu from '../context-menu/ContextMenu'
 import WhiteboardRoot from './WhiteboardRoot'
+import WhiteboardNode from './WhiteboardNode'
 
 import dragger from './dragger'
 import selectBoxes from './selectBoxes'
@@ -30,6 +31,8 @@ type State = {
     insertPos: any,
     indicator: ?{top: number, left: number, width: number},
     moveCount: number,
+    nodeMap: any,
+    draggingIds: Array<string>,
   },
 }
 
@@ -127,6 +130,7 @@ export default class Whiteboard extends Component {
     // const oidx = this.props.store.db.data[pid].children.indexOf(id)
     let moveCount = 1
     let wasSelected = true
+    let draggingIds = []
 
     this._childDragger = dragger(evt, {
       move: (x, y, w, h) => {
@@ -140,7 +144,8 @@ export default class Whiteboard extends Component {
               this.props.store.actions.selectWithSiblings(id)
               selected = this.props.store.state.selected
             }
-            moveCount = Object.keys(selected).length
+            draggingIds = Object.keys(selected)
+            moveCount = draggingIds.length
             this.props.store.actions.setMode('dragging')
           } else {
             return
@@ -153,6 +158,8 @@ export default class Whiteboard extends Component {
             insertPos,
             indicator,
             moveCount,
+            draggingIds,
+            nodeMap: {},
           },
         })
       },
@@ -284,7 +291,7 @@ export default class Whiteboard extends Component {
 
   renderChildDrag() {
     if (!this.state.childDrag) return null
-    const {pos, indicator, moveCount} = this.state.childDrag
+    const {pos, indicator, moveCount, draggingIds, nodeMap} = this.state.childDrag
     return <div>
       {indicator &&
         <div style={{
@@ -292,12 +299,33 @@ export default class Whiteboard extends Component {
           left: indicator.left,
           width: indicator.width,
         }} className={css(styles.childDragIndicator)} />}
-      <div style={{
+      {(indicator || !draggingIds) ? <div style={{
         top: pos.y,
         left: pos.x,
       }} className={css(styles.childDragCircle)}>
-      {moveCount}
-      </div>
+        {moveCount}
+      </div> :
+        <div
+          style={{
+            top: pos.y,
+            left: pos.x,
+            position: 'absolute',
+          }}
+        >
+          {draggingIds.map(child => (
+            <WhiteboardNode
+              id={child}
+              key={child}
+              store={this.props.store}
+              dx={0}
+              dy={0}
+              inline={true}
+              defaultPos={{x: 0, y: 0}}
+              nodeMap={nodeMap}
+            />
+          ))}
+        </div>
+      }
     </div>
   }
 

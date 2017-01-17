@@ -187,7 +187,8 @@ export default class WhiteboardNode extends Component {
     let {x, y} = this.state.handoff || this.state.moving ||
       this.state.node.views.whiteboard || this.props.defaultPos
 
-    const activityStyles = css(
+    const {inline} = this.props
+    const activityStyles = inline ? '' : css(
       // styles.contentWrapper,
       this.state.isActive && styles.active,
       this.state.isSelected && styles.selected,
@@ -196,18 +197,17 @@ export default class WhiteboardNode extends Component {
       this.state.editState && styles.editing,
     )
 
-
     const collapsed = (this.state.node.views.whiteboard || {}).collapsed
     if (!x) x = 0
     if (!y) y = 0
     const {dx, dy, hideSelected} = (this.state.isSelected ? this.props : {dx: 0, dy: 0, hideSelected: false})
     return <div
       ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
-      className={css(styles.container, hideSelected && styles.hide) + ' ' + activityStyles}
+      className={css(styles.container, hideSelected && styles.hide, inline && styles.inline) + ' ' + activityStyles}
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
       style={{
-        transform: `translate(${x + dx}px, ${y + dy}px)`,
+        transform: inline ? '' : `translate(${x + dx}px, ${y + dy}px)`,
         zIndex: this.state.moving ? 10000 : undefined,
         height: this.state.height,
       }}
@@ -295,6 +295,13 @@ const styles = StyleSheet.create({
     width: 200,
     transition: 'opacity .3s ease',
     opacity: 1,
+  },
+
+  inline: {
+    position: 'relative',
+    top: 0,
+    left: 0,
+    marginBottom: 5,
   },
 
   fixedChildren: {

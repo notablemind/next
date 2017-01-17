@@ -12,6 +12,14 @@ const actions: ViewActionConfig = {
     description: 'Start editing',
   },
 
+  normalMode: {
+    shortcuts: {
+      visual: 'escape',
+    },
+    alias: 'normalMode',
+    description: 'Quit visual mode',
+  },
+
   editStart: {
     shortcuts: {
       normal: 'I',
