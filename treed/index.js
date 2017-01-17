@@ -206,12 +206,15 @@ export default class Treed {
     this.globalStore = globalStore
   }
 
-  changeViewType(id: number, type: string): any {
+  changeViewType(id: number, type: string, persistentState: any): any {
     if (!this.viewTypes[type]) {
       throw new Error(`Unknown view type ${type}`)
     }
+    const viewTypeConfig: ViewTypeConfig = this.viewTypes[type]
     const store = this.viewStores[id]
     store.state.viewType = type
+    store.persistentState = persistentState || (viewTypeConfig.initialPersistentState ? viewTypeConfig.initialPersistentState() : {})
+    this.setupActionsAndGetters(store, viewTypeConfig)
     this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
     addPluginKeys(store, this.keys[store.id], this.config.plugins)
   }
@@ -242,7 +245,7 @@ export default class Treed {
       ...this.globalStore.events,
     }
     const args: any = [this.db, events]
-    const view: ViewTypeConfig = this.viewTypes[type]
+    const viewTypeConfig: ViewTypeConfig = this.viewTypes[type]
     const store: Store = this.viewStores[id] = {
       id,
       state,
@@ -253,7 +256,7 @@ export default class Treed {
       actions: {
         ...this.globalStore.actions,
       },
-      persistentState: persistentState || (view.initialPersistentState ? view.initialPersistentState() : {}),
+      persistentState: persistentState || (viewTypeConfig.initialPersistentState ? viewTypeConfig.initialPersistentState() : {}),
 
       // TODO maybe handle "changing active view" here too?
       // TODO test this stuff
@@ -261,15 +264,9 @@ export default class Treed {
       // and it will automatically manage unsub / resub for you
       setupStateListener: (...args) => this.setupStateListener(store, ...args),
     }
-    Object.keys(view.getters).forEach(key => {
-      store.getters[key] = view.getters[key].bind(null, store)
-    })
-    Object.keys(view.actions).forEach(key => {
-      store.actions[key] = view.actions[key].bind(null, store)
-    })
 
+    this.setupActionsAndGetters(store, viewTypeConfig)
     bindCommandProxies(store, this.commands, this.emitter, args, id)
-    bindStoreProxies(store, this.config, 'view')
 
     this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
     addPluginKeys(store, this.keys[store.id], this.config.plugins)
@@ -278,6 +275,16 @@ export default class Treed {
     this.emitter.emit(this.globalStore.events.activeView())
 
     return store
+  }
+
+  setupActionsAndGetters(store: Store, viewTypeConfig: ViewTypeConfig) {
+    Object.keys(viewTypeConfig.getters).forEach(key => {
+      store.getters[key] = viewTypeConfig.getters[key].bind(null, store)
+    })
+    Object.keys(viewTypeConfig.actions).forEach(key => {
+      store.actions[key] = viewTypeConfig.actions[key].bind(null, store)
+    })
+    bindStoreProxies(store, this.config, 'view')
   }
 
   setActive = (view: ViewId, id: string) => {

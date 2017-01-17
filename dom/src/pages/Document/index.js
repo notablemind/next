@@ -45,6 +45,7 @@ const loadLastViewState = id => maybeLoad(viewStateKey(id)) || {
   type: 'list',
   root: 'root',
   custom: {},
+  persistentState: null,
 }
 const saveLastViewState = (id, data) => localStorage[viewStateKey(id)] = JSON.stringify(data)
 
@@ -56,6 +57,7 @@ type ViewState = {
   type: string,
   root: string,
   custom: any,
+  persistentState: any,
 }
 
 class Document extends Component {
@@ -67,8 +69,7 @@ class Document extends Component {
     viewState: ViewState,
     syncState: string,
   }
-  _unsub: () => void
-  _unsub2: () => void
+  _unsubs: Array<() => void>
 
   constructor(props: any) {
     super()
@@ -81,6 +82,7 @@ class Document extends Component {
       syncState: 'unsynced',
       // panesSetup,
     }
+    this._unsubs = []
 
     if (props.makeRemoteDocDb) {
       this.setupSync(props.makeRemoteDocDb, props.id)
@@ -154,7 +156,8 @@ class Document extends Component {
   makeTreed(db: any) {
     if (this.state.treed) {
       this.state.treed.destroy()
-      this._unsub && this._unsub()
+      this._unsubs.forEach(f => f())
+      this._unsubs = []
     }
     this.props.updateFile(this.props.id, 'last_opened', Date.now())
     const treed = window._treed = new Treed(
@@ -163,9 +166,9 @@ class Document extends Component {
       viewTypes,
       this.props.id,
     )
-    this._unsub = treed.on(['node:root'], () => {
+    this._unsubs.push(treed.on(['node:root'], () => {
       this.onTitleChange(treed.db.data.root.content)
-    })
+    }))
     // TODO actually get the user shortcuts
     const userShortcuts = {}
     const globalLayer = makeKeyLayer(this.keyLayerConfig, 'global', userShortcuts)
@@ -184,10 +187,18 @@ class Document extends Component {
         </button>
         </div>)
       this.onTitleChange(treed.db.data.root.content)
-      const store = treed.registerView(this.state.viewState.root, this.state.viewState.type)
-      this._unsub2 = store.on([store.events.root()], () => {
+      const store = treed.registerView(this.state.viewState.root, this.state.viewState.type, (this.state.viewState.persistentState || {})[this.state.viewState.type])
+      this._unsubs.push(store.on([store.events.root()], () => {
         this.setRoot(store.state.root)
-      })
+      }))
+      this._unsubs.push(store.on([store.events.persistentState()], () => {
+        this.updateViewState({
+          persistentState: {
+            ...this.state.viewState.persistentState,
+            [store.state.viewType]: store.persistentState
+          }
+        })
+      }))
       this.setState({
         treed,
         store,
@@ -201,6 +212,7 @@ class Document extends Component {
       this.state.treed.changeViewType(
         this.state.treed.globalState.activeView,
         type,
+        (this.state.viewState.persistentState || {})[type]
       )
       this.updateViewState({type})
       /*
@@ -265,12 +277,7 @@ class Document extends Component {
     if (this.state.treed) {
       this.state.treed.destroy()
     }
-    if (this._unsub) {
-      this._unsub()
-    }
-    if (this._unsub2) {
-      this._unsub2()
-    }
+    this._unsubs.forEach(f => f())
   }
 
   getActionButtons() {
