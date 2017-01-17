@@ -24,9 +24,6 @@ import type {
 
 export type DefEditPos = EditPos | false
 
-const isCollapsed = (id, nodes, viewType) =>
-  nodes[id].views[viewType] && nodes[id].views[viewType].collapsed
-
 const fixedChildren = (id, nodes) =>
   dedup(nodes[id].children)
     .map(cid => typeof cid === 'string' ? cid : '' + cid)
@@ -59,14 +56,12 @@ const copyToClipboard = (data) => {
   document.execCommand('copy')
 }
 
-const afterPos = (id, nodes, root, viewType) => {
+const afterPos = (store, id, nodes, root) => {
   if (id === root) return {pid: id, idx: 0}
   let pid = nodes[id].parent
   let idx
   const views = nodes[id].views
-  const collapsed = views && views[viewType] &&
-    views[viewType].collapsed
-  if (pid && (collapsed || !nodes[id].children.length)) {
+  if (pid && (store.getters.isCollapsed(id) || !nodes[id].children.length)) {
     idx = nodes[pid].children.indexOf(id) + 1
   } else {
     pid = id
@@ -246,6 +241,18 @@ const actions = {
 
     expandSelectionNext(store: Store) {
       throw new Error('not implt')
+    },
+
+    toggleCollapse(store: Store, id: string=store.state.active) {
+      store.actions.setCollapsed(id, !store.getters.isCollapsed(id))
+    },
+
+    expand(store: Store, id: string=store.state.active) {
+      store.actions.setCollapsed(id, false)
+    },
+
+    collapse(store: Store, id: string=store.state.active) {
+      store.actions.setCollapsed(id, true)
     },
 
     clearSelection(store: Store) {
@@ -473,8 +480,7 @@ const actions = {
         const oidx = store.db.data[pid].children.indexOf(id)
         if (oidx < idx) idx -= 1
       }
-      const nextActive = expandParent || !isCollapsed(
-        pid, store.db.data, store.state.viewType) ? id : pid
+      const nextActive = expandParent || !store.getters.isCollapsed(pid) ? id : pid
       store.execute({
         type: 'move',
         args: {id, pid, expandParent, idx, viewType: store.state.viewType}
@@ -506,7 +512,7 @@ const actions = {
       })
       idx -= idxCorrection
 
-      const nextActive = !isCollapsed(pid, store.db.data, store.state.viewType) ? ids[0] : pid
+      const nextActive = !store.getters.isCollapsed(pid) ? ids[0] : pid
       store.execute({
         type: 'moveMany',
         args: {ids, pid, idx, viewType: store.state.viewType}
@@ -536,7 +542,7 @@ const actions = {
 
     createAfterNormal(store: Store, id: string=store.state.active) {
       if (!id || !store.db.data[id]) return
-      const {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
+      const {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       const nid = uuid()
       store.execute({
         type: 'create',
@@ -582,7 +588,7 @@ const actions = {
     createAfter(store: Store, id: string=store.state.active, content: string='', viewData: ?any=null) {
       const node = store.db.data[id]
       if (!id || !node) return
-      const {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
+      const {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
 
       let fromNode = pid === node.parent ? node : (node.children[0] && store.db.data[node.children[0]])
 
@@ -700,7 +706,7 @@ const actions = {
     editChange: (store: Store, id: string) => store.actions.editAt(id, 'change'),
 
     focusNext(store: Store, id: string=store.state.active, editState: DefEditPos=false) {
-      const next = nav.next(id, store.db.data, store.state.root, store.state.viewType)
+      const next = nav.next(id, store.db.data, store.state.root, store.getters.isCollapsed)
       if (editState !== false) {
         store.actions.editAt(next, editState)
       } else {
@@ -709,7 +715,7 @@ const actions = {
     },
 
     focusPrev(store: Store, id: string=store.state.active, editState: DefEditPos=false) {
-      const prev = nav.prev(id, store.db.data, store.state.root, store.state.viewType)
+      const prev = nav.prev(id, store.db.data, store.state.root, store.getters.isCollapsed)
       if (editState !== false) {
         store.actions.editAt(prev, editState)
       } else {
@@ -722,25 +728,8 @@ const actions = {
       store.actions.setActive(store.db.data[id].parent)
     },
 
-    toggleCollapse(store: Store, id: string=store.state.active) {
-      if (id === store.state.root) return
-      const views = store.db.data[id].views
-      const collapsed = views && views[store.state.viewType] && views[store.state.viewType].collapsed
-      store.actions.setNested(id, ['views', store.state.viewType, 'collapsed'], !collapsed)
-    },
-
-    collapse(store: Store, id: string=store.state.active) {
-      if (id === store.state.root) return
-      store.actions.setNested(id, ['views', store.state.viewType, 'collapsed'], true)
-    },
-
-    expand(store: Store, id: string=store.state.active) {
-      if (id === store.state.root) return
-      store.actions.setNested(id, ['views', store.state.viewType, 'collapsed'], false)
-    },
-
     insertTreeAfter(store: Store, id: string, tree: any) {
-      let {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
+      let {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       const nid = uuid()
       const items = []
       treeToItems(pid, nid, tree, items)
@@ -766,7 +755,7 @@ const actions = {
     },
 
     pasteCutAfter(store: Store, id: string=store.state.active) {
-      let {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
+      let {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       if (!store.globalState.cut) return
       const cid = store.globalState.cut
       if (store.db.data[cid].parent === pid) {
@@ -785,7 +774,7 @@ const actions = {
     },
 
     pasteClipboardAfter(store: Store, id: string=store.state.active) {
-      let {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
+      let {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       const nid = uuid()
       const items = []
       if (!store.globalState.clipboard) return
@@ -798,7 +787,7 @@ const actions = {
     },
 
     pasteClipboardAfterWithoutChildren(store: Store, id: string=store.state.active) {
-      let {pid, idx} = afterPos(id, store.db.data, store.state.root, store.state.viewType)
+      let {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       const nid = uuid()
       const item = {
         ...store.globalState.clipboard,
@@ -1089,7 +1078,7 @@ const actions = {
       let tmp = active
       while (tmp && tmp !== id) {
         const node = store.db.data[tmp]
-        if (node.views[store.state.viewType] && node.views[store.state.viewType].collapsed) {
+        if (store.getters.isCollapsed(tmp)) {
           active = tmp
         }
         tmp = node.parent
@@ -1121,7 +1110,7 @@ const actions = {
 
     movePrev(store: Store, id: string=store.state.active) {
       if (id === store.state.root) return
-      const res = move.movePrev(id, store.db.data, store.state.root, store.state.viewType)
+      const res = move.movePrev(id, store.db.data, store.state.root, store.getters.isCollapsed)
       if (!res) return
       store.execute({
         type: 'move',
@@ -1137,7 +1126,7 @@ const actions = {
 
     moveNext(store: Store, id: string=store.state.active) {
       if (id === store.state.root) return
-      const res = move.moveNext(id, store.db.data, store.state.root, store.state.viewType)
+      const res = move.moveNext(id, store.db.data, store.state.root, store.getters.isCollapsed)
       if (!res) return
       store.execute({
         type: 'move',
@@ -1199,7 +1188,7 @@ const actions = {
           nid = sibs[sibs.length - 1]
         }
       }
-      if (!nid) nid = nav.next(id, store.db.data, store.state.root, store.state.viewType)
+      if (!nid) nid = nav.next(id, store.db.data, store.state.root, store.getters.isCollapsed)
       store.actions.setActive(nid)
     },
 
@@ -1208,7 +1197,7 @@ const actions = {
     },
 
     focusLastVisibleChild(store: Store) {
-      store.actions.setActive(nav.last(store.state.root, store.db.data, store.state.viewType))
+      store.actions.setActive(nav.last(store.state.root, store.db.data, store.getters.isCollapsed))
     },
 
     // plugins things?

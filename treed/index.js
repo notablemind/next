@@ -19,7 +19,7 @@ import * as search from './search'
 import * as migrations from './migrations'
 
 import uuid from './uuid'
-import type {Plugin, Store, GlobalStore, GlobalState} from './types'
+import type {Plugin, Store, GlobalStore, GlobalState, ViewTypeConfig} from './types'
 import type {Db} from './Database'
 
 type ViewId = number
@@ -34,10 +34,7 @@ const defaultSettings = {
 }
 
 type ViewTypes = {
-  [name: string]: {
-    Component: any, // react component
-    actions: any, // things
-  },
+  [name: string]: ViewTypeConfig,
 }
 
 const bindStoreProxies = (store, config, sub) => {
@@ -215,11 +212,11 @@ export default class Treed {
     }
     const store = this.viewStores[id]
     store.state.viewType = type
-    this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].actions, `views.${type}.`, {}, store)
+    this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
     addPluginKeys(store, this.keys[store.id], this.config.plugins)
   }
 
-  registerView(root: string, type: string): any {
+  registerView(root: string, type: string, persistentState: any): any {
     if (!this.viewTypes[type]) {
       throw new Error(`Unknown view type ${type}`)
     }
@@ -245,12 +242,18 @@ export default class Treed {
       ...this.globalStore.events,
     }
     const args: any = [this.db, events]
+    const view: ViewTypeConfig = this.viewTypes[type]
     const store: Store = this.viewStores[id] = {
       id,
       state,
       ...this.globalStore,
-      getters: {...this.globalStore.getters},
-      actions: {...this.globalStore.actions},
+      getters: {
+        ...this.globalStore.getters,
+      },
+      actions: {
+        ...this.globalStore.actions,
+      },
+      persistentState: persistentState || (view.initialPersistentState ? view.initialPersistentState() : {}),
 
       // TODO maybe handle "changing active view" here too?
       // TODO test this stuff
@@ -258,11 +261,17 @@ export default class Treed {
       // and it will automatically manage unsub / resub for you
       setupStateListener: (...args) => this.setupStateListener(store, ...args),
     }
+    Object.keys(view.getters).forEach(key => {
+      store.getters[key] = view.getters[key].bind(null, store)
+    })
+    Object.keys(view.actions).forEach(key => {
+      store.actions[key] = view.actions[key].bind(null, store)
+    })
 
     bindCommandProxies(store, this.commands, this.emitter, args, id)
     bindStoreProxies(store, this.config, 'view')
 
-    this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].actions, `views.${type}.`, {}, store)
+    this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
     addPluginKeys(store, this.keys[store.id], this.config.plugins)
 
     this.globalState.activeView = store.id

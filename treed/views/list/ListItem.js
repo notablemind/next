@@ -37,6 +37,7 @@ export default class ListItem extends Component {
         activeIsJump: store.state.activeIsJump,
         isCutting: store.getters.isCutting(id),
         isDragging: store.getters.isDragging(id),
+        isCollapsed: store.getters.isCollapsed(id),
         editState: store.getters.editState(id),
       }),
     )
@@ -123,8 +124,7 @@ export default class ListItem extends Component {
       return <div>loading...</div>
     }
 
-    const collapsed = this.state.node.views.list &&
-      this.state.node.views.list.collapsed
+    const collapsed = this.state.isCollapsed
     const isRoot = this.props.store.state.root === this.props.id
     const contentClassName = css(
       styles.contentWrapper,

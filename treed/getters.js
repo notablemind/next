@@ -23,6 +23,7 @@ export default {
     root: store => store.state.root,
     active: store => store.state.active,
     mode: store => store.state.mode,
+    persistentState: store => store.persistentState,
     isActiveView: store => store.id === store.globalState.activeView,
     isActive: (store, id) => id === store.state.active,
     // TODO check selection

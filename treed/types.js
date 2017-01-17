@@ -56,13 +56,20 @@ export type StoreState = {
     pos: {left: number, top: number},
     menu: Array<MenuItem>,
   },
+  // This is for stuff like collapse state in tree-like views
 }
 
 export type ViewTypeConfig = {
   Component: any,
-  actions: ViewActionConfig,
+  keys: ViewActionConfig,
+  actions: {[key: string]: Function},
   contextMenuVisual?: (store: Store) => ?MenuResult,
   contextMenu: (store: Store, id: string) => ?MenuResult,
+  initialPersistentState?: () => any,
+  getters: {
+    isCollapsed: (store: Store, id: string) => boolean,
+    [key: string]: any,
+  },
 }
 
 export type GlobalStore = {
@@ -89,6 +96,7 @@ export type GlobalStore = {
 export type Store = GlobalStore & {
   id: number,
   state: StoreState,
+  persistentState: any,
 }
 
 // Keys!

@@ -1,13 +1,11 @@
 
-const isCol = (node, viewType) => node.views[viewType] && node.views[viewType].collapsed
-
-const lastChild = (id, nodes, viewType) => {
+const lastChild = (id, nodes, isCollapsed) => {
   const node = nodes[id]
-  if (!node || !node.children.length || isCol(node, viewType)) return id
-  return lastChild(node.children[node.children.length - 1], nodes, viewType)
+  if (!node || !node.children.length || isCollapsed(id)) return id
+  return lastChild(node.children[node.children.length - 1], nodes, isCollapsed)
 }
 
-export const prev = (id, nodes, root, viewType) => {
+export const prev = (id, nodes, root, isCollapsed) => {
   const node = nodes[id]
   if (!node) return
   if (!node.parent || !nodes[node.parent]) return
@@ -15,7 +13,7 @@ export const prev = (id, nodes, root, viewType) => {
   const sibs = nodes[node.parent].children
   const idx = sibs.indexOf(id)
   if (idx === -1) return
-  return idx === 0 ? node.parent : lastChild(sibs[idx - 1], nodes, viewType)
+  return idx === 0 ? node.parent : lastChild(sibs[idx - 1], nodes, isCollapsed)
 }
 
 export const prevSib = (id, nodes) => {
@@ -50,17 +48,17 @@ export const nextSibRec = (id, nodes, root) => {
   return nextSibRec(node.parent, nodes, root)
 }
 
-export const next = (id, nodes, root, viewType) => {
+export const next = (id, nodes, root, isCollapsed) => {
   const node = nodes[id]
   if (!node) return
-  if (node.children.length && (id === root || !isCol(node, viewType))) {
+  if (node.children.length && (id === root || !isCollapsed(id))) {
     return node.children[0]
   }
   return nextSibRec(id, nodes, root)
 }
 
-export const last = (id, nodes, viewType) => {
+export const last = (id, nodes, isCollapsed) => {
   const node = nodes[id]
-  if (!node.children.length || isCol(node, viewType)) return id
-  return last(node.children[node.children.length - 1], nodes, viewType)
+  if (!node.children.length || isCollapsed(id)) return id
+  return last(node.children[node.children.length - 1], nodes, isCollapsed)
 }

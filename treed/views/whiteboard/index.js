@@ -1,10 +1,18 @@
 
 import Component from './Whiteboard'
 import actions from './actions'
+import keys from './keys'
 
 export default {
   Component,
   actions,
+  keys,
+  getters: {
+    isCollapsed: (store, id) => (
+      store.db.data[id].views.whiteboard &&
+      store.db.data[id].views.whiteboard.collapsed
+    )
+  },
   contextMenu: (store, id) => {
     const viewData = store.getters.nodeViewData(id)
     if (viewData && viewData.height) {
