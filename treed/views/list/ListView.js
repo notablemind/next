@@ -27,8 +27,8 @@ const getAllMeasurements = (nodes, divs, isCollapsed, root, moving) => {
     root,
     isCollapsed,
     (id, hasOpenChildren) => {
+      measurements.push([id, divs[id].getBoundingClientRect(), id === moving ? false : hasOpenChildren])
       if (id === moving) return false
-      measurements.push([id, divs[id].getBoundingClientRect(), hasOpenChildren])
     }
   )
   return measurements

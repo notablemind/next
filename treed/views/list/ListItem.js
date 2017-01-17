@@ -6,6 +6,9 @@ import {css, StyleSheet} from 'aphrodite'
 import Body from '../body'
 import ensureInView from '../../ensureInView'
 import * as colors from '../utils/colors'
+import Icon from '../utils/Icon'
+
+import './index.css'
 
 const isAtEdge = (box, x, y) => {
   return (
@@ -90,6 +93,7 @@ export default class ListItem extends Component {
     ensureInView(this._div, this.state.activeIsJump, 100)
   }
 
+  /*
   onMouseMove = (e: any) => {
     if (!this.state.isActive || this.state.isDragging) return
     if (this.props.store.state.root === this.props.id) return
@@ -112,11 +116,16 @@ export default class ListItem extends Component {
     e.stopPropagation()
     this.props.store.actions.startDragging(this.props.id)
   }
+  */
 
   onContextMenu = (e: any) => {
     e.preventDefault()
     e.stopPropagation()
     this.props.store.actions.openContextMenuForNode(this.props.id, e.clientX, e.clientY)
+  }
+
+  startDragging = () => {
+    this.props.store.actions.startDragging(this.props.id)
   }
 
   render() {
@@ -140,9 +149,9 @@ export default class ListItem extends Component {
         className={css(
           styles.top,
           !this.state.editState && styles.topNormal
-        ) + ' Node_top'}
-        onMouseMove={this.onMouseMove}
-        onMouseDownCapture={this.onMouseDown}
+        ) + ' Node_top ListItem_top'}
+        // onMouseMove={this.onMouseMove}
+        // onMouseDownCapture={this.onMouseDown}
         onContextMenu={this.onContextMenu}
         ref={node => {
           this._div = node
@@ -169,6 +178,11 @@ export default class ListItem extends Component {
           store={this.props.store}
 
         />
+          <Icon
+          className={css(styles.dragger, this.state.isDragging && styles.draggerDragging) + ' ListItem_dragger'}
+          onMouseDown={this.startDragging}
+          name="arrow-move"
+          />
       </div>
 
       <div className={css(styles.children) + ' Node_children'}>
@@ -210,6 +224,10 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
 
+  top: {
+    position: 'relative',
+  },
+
   topNormal: {
     ':hover': {
       // backgroundColor: '#fafafa',
@@ -231,6 +249,28 @@ const styles = StyleSheet.create({
     ':hover': {
       opacity: 1,
     },
+  },
+
+  dragger: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 30,
+    // backgroundColor: '#aaa',
+    zIndex: 100,
+    cursor: 'move',
+    display: 'none',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#aaa',
+    ':hover': {
+      color: '#000',
+    },
+  },
+
+  draggerDragging: {
+    display: 'flex',
   },
 
   collapsed: {

@@ -1,0 +1,5 @@
+
+.ListItem_top:hover > .ListItem_dragger {
+  display: flex!important;
+}
+
