@@ -14,6 +14,9 @@ import * as colors from '../utils/colors'
 
 import calcChildBoxes from './calcChildBoxes'
 import calcChildInsertPos from './calcChildInsertPos'
+import findEnclosingBox from './findEnclosingBox'
+import calcSnapLines from './calcSnapLines'
+import trySnapping from './trySnapping'
 
 type Props = {
   store: any,
@@ -120,38 +123,81 @@ export default class Whiteboard extends Component {
 
   startChildDragging = (evt: any, id: string) => {
     let moved = false
+    const {store} = this.props
     const childBoxes = calcChildBoxes(
       id,
-      this.props.store.db.data,
-      this.props.store.state.root,
-      this.props.store.state.nodeMap,
+      store.db.data,
+      store.state.root,
+      store.state.nodeMap,
     )
-    const pid = this.props.store.db.data[id].parent
-    // const oidx = this.props.store.db.data[pid].children.indexOf(id)
+    const pid = store.db.data[id].parent
     let moveCount = 1
     let wasSelected = true
     let draggingIds = []
+    const nodeMap = {}
+    let childBox = {}
+    let snapLines = null
 
     this._childDragger = dragger(evt, {
       move: (x, y, w, h) => {
-        let selected = this.props.store.state.selected
+        let selected = store.state.selected
         if (!moved) {
           if (Math.abs(w) > 5 || Math.abs(h) > 5) {
             moved = true
-            this.props.store.actions.setActive(id)
+            store.actions.setActive(id)
             if (!selected || !selected[id]) {
               wasSelected = false
-              this.props.store.actions.selectWithSiblings(id)
-              selected = this.props.store.state.selected
+              store.actions.selectWithSiblings(id)
+              selected = store.state.selected
             }
             draggingIds = Object.keys(selected)
             moveCount = draggingIds.length
-            this.props.store.actions.setMode('dragging')
+            store.actions.setMode('dragging')
           } else {
             return
           }
         }
         const {insertPos, indicator} = calcChildInsertPos(childBoxes, x + w, y + h)
+        if (!indicator) {
+          if (!snapLines) {
+            const hasBoxes = !draggingIds.some(id => !nodeMap[id])
+            if (hasBoxes) {
+              childBox = findEnclosingBox(store.state.selected, nodeMap)
+              childBox.left = x - childBox.width / 2
+              childBox.top = y - 20
+              snapLines = calcSnapLines(
+                store.state.selected,
+                store.db.data[store.state.root].children,
+                store.state.nodeMap,
+                childBox.left,
+                childBox.top,
+                childBox,
+              )
+              // console.log(childBox, snapLines)
+            }
+          }
+
+          if (snapLines) {
+            let news = trySnapping(
+              childBox.left + w,
+              childBox.top + h,
+              childBox.width,
+              childBox.height,
+              snapLines,
+            )
+
+            w = news.x - x
+            h = news.y - y
+            // console.log(news)
+
+            this.showIndicators(
+              news.xsnap,
+              news.ysnap,
+              true,
+            )
+          }
+        }
+
         this.setState({
           childDrag: {
             pos: {x: x + w, y: y + h},
@@ -159,7 +205,7 @@ export default class Whiteboard extends Component {
             indicator,
             moveCount,
             draggingIds,
-            nodeMap: {},
+            nodeMap,
           },
         })
       },
@@ -189,6 +235,30 @@ export default class Whiteboard extends Component {
             this.state.root,
             -1,
           )
+          let relBox = this.relative.getBoundingClientRect()
+          let top = y - relBox.top
+          let left = x - relBox.left
+          const updates = draggingIds.map((id, i) => {
+            const node = store.db.data[id]
+            const height = nodeMap[id].getBoundingClientRect().height
+            let y = top
+            top += height + 5
+            return {
+              views: {
+                ...node.views,
+                whiteboard: {
+                  ...node.views.whiteboard,
+                  x: left,
+                  y,
+                },
+              },
+            }
+          })
+          this.showIndicators(
+            null,
+            null,
+          )
+          this.props.store.actions.updateMany(draggingIds, updates)
           // TODO set their positions to make sense
           console.log(childDrag.pos)
           this.setState({
@@ -299,17 +369,19 @@ export default class Whiteboard extends Component {
           left: indicator.left,
           width: indicator.width,
         }} className={css(styles.childDragIndicator)} />}
-      {(indicator || !draggingIds) ? <div style={{
+      {(indicator || !draggingIds) && <div style={{
         top: pos.y,
         left: pos.x,
       }} className={css(styles.childDragCircle)}>
         {moveCount}
-      </div> :
-        <div
+      </div>}
+      {draggingIds && <div
           style={{
             top: pos.y,
             left: pos.x,
             position: 'absolute',
+            transition: 'opacity .2s ease',
+            opacity: indicator ? 0 : 1,
           }}
         >
           {draggingIds.map(child => (
@@ -324,23 +396,23 @@ export default class Whiteboard extends Component {
               nodeMap={nodeMap}
             />
           ))}
-        </div>
+        </div>}
       }
     </div>
   }
 
-  showIndicators = (x: number, y: number, relative: bool) => {
+  showIndicators = (x: ?number, y: ?number, relative?: bool) => {
     if (relative) {
       const box = this.relative.getBoundingClientRect()
       this._indicators.set(
-        x !== null ? x - box.left : null,
-        y !== null ? y - box.top : null,
+        x != null ? x - box.left : null,
+        y != null ? y - box.top : null,
       )
     } else {
       // this._indicators.set(x, y)
       this._indicators.set(
-        x !== null ? x + this.state.x : null,
-        y !== null ? y + this.state.y: null,
+        x != null ? x + this.state.x : null,
+        y != null ? y + this.state.y: null,
       )
     }
     /*
