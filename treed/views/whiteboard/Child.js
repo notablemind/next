@@ -58,6 +58,7 @@ export default class Child extends Component {
   }
 
   onMouseDown = evt => {
+    if (evt.button !== 0) return
     evt.stopPropagation()
     evt.preventDefault()
 
@@ -70,6 +71,13 @@ export default class Child extends Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     return nextState !== this.state
+  }
+
+  onContextMenu = (e: any) => {
+    e.preventDefault()
+    e.stopPropagation()
+    this.props.store.actions.openContextMenuForNode(
+      this.props.id, e.clientX, e.clientY)
   }
 
   render() {

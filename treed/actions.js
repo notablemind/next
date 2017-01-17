@@ -467,23 +467,23 @@ const actions = {
       // TODO maybe don't do after for children
       store.execute({
         type: 'move',
-        args: {id: did, pid, expandParent: true, idx, viewType: store.state.viewType}
+        args: {id: did, pid, idx, viewType: store.state.viewType}
       }, did, did)
       store.emit(store.events.nodeView(did))
       store.actions.setActive(did)
       store.actions.setMode('normal')
     },
 
-    move(store: Store, id: string, pid: string, idx: number, expandParent: bool=true) {
+    move(store: Store, id: string, pid: string, idx: number) {
       const opid = store.db.data[id].parent
       if (opid === pid) {
         const oidx = store.db.data[pid].children.indexOf(id)
         if (oidx < idx) idx -= 1
       }
-      const nextActive = expandParent || !store.getters.isCollapsed(pid) ? id : pid
+      const nextActive = !store.getters.isCollapsed(pid) ? id : pid
       store.execute({
         type: 'move',
-        args: {id, pid, expandParent, idx, viewType: store.state.viewType}
+        args: {id, pid, idx, viewType: store.state.viewType}
       }, id, nextActive)
       store.emit(store.events.nodeView(id))
       store.actions.setActive(nextActive)
@@ -767,7 +767,7 @@ const actions = {
       store.globalState.cut = null
       store.execute({
         type: 'move',
-        args: {id: cid, pid, expandParent: true, idx, viewType: store.state.viewType}
+        args: {id: cid, pid, idx, viewType: store.state.viewType}
       }, cid, cid)
       store.emit(store.events.nodeView(cid))
       store.actions.setActive(cid, true)
@@ -843,7 +843,7 @@ const actions = {
       store.globalState.cut = null
       store.execute({
         type: 'move',
-        args: {id: cid, pid, expandParent: true, idx, viewType: store.state.viewType}
+        args: {id: cid, pid, idx, viewType: store.state.viewType}
       }, cid, cid)
       store.emit(store.events.nodeView(cid))
       store.actions.setActive(cid, true)
@@ -1046,9 +1046,13 @@ const actions = {
       const sibs = store.db.data[store.db.data[id].parent].children
       const idx = sibs.indexOf(id)
       if (idx === 0) return
+      const pid = sibs[idx - 1]
+      if (store.getters.isCollapsed(pid)) {
+        store.actions.setCollapsed(pid, false)
+      }
       store.execute({
         type: 'move',
-        args: {id, pid: sibs[idx - 1], expandParent: true, idx: -1, viewType: store.state.viewType}
+        args: {id, pid, idx: -1, viewType: store.state.viewType}
       })
     },
 
@@ -1062,7 +1066,6 @@ const actions = {
         args: {
           id,
           pid: parent.parent,
-          expandParent: true,
           idx: idx + 1,
           viewType: store.state.viewType
         }
@@ -1117,7 +1120,6 @@ const actions = {
         args: {
           id,
           pid: res.pid,
-          expandParent: false,
           idx: res.idx,
           viewType: store.state.viewType
         }
@@ -1133,7 +1135,6 @@ const actions = {
         args: {
           id,
           pid: res.pid,
-          expandParent: false,
           idx: res.idx,
           viewType: store.state.viewType
         }

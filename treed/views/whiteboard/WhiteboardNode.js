@@ -166,7 +166,7 @@ export default class WhiteboardNode extends Component {
 
   onWheel = (evt: any) => {
     if (!this.state.height) return
-    if (evt.deltaY) {
+    if (!evt.deltaX) {
       if (evt.deltaY < 0) {
         if (this.childrenNode.scrollTop > 0) {
           evt.stopPropagation()
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
     transition: 'background-color .2s ease',
     ':hover': {
-      backgroundColor: '#ccc',
+      backgroundColor: '#ddd',
     },
     // backgroundColor: 'white',
   },
