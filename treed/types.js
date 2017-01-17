@@ -62,6 +62,7 @@ export type ViewTypeConfig = {
   Component: any,
   actions: ViewActionConfig,
   contextMenuVisual?: (store: Store) => ?MenuResult,
+  contextMenu: (store: Store, id: string) => ?MenuResult,
 }
 
 export type GlobalStore = {

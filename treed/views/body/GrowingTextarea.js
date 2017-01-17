@@ -14,6 +14,8 @@ const getTestContent = (text, pos) => {
 export default class GrowingTextarea extends Component {
   textarea: any
   shadow: any
+  _prevHeight: ?string
+
   componentDidMount() {
     this.resize()
     window.addEventListener('resize', this.resize)

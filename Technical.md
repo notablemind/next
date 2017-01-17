@@ -1,4 +1,32 @@
 
+# Local-only data
+
+Things I want to save local-only
+- collapse state for each node; I'm now thinking default-closed is the best
+  way. Anyway, probably debounce to save to every second or so? Keep
+  everything in a giant object that get's JSON.stringifyied to localStorage
+- "last view state for this doc"
+
+
+# Not local-only
+
+- the "default view type & settings" for a given node
+- maybe allow to save "view states" so if you've got some complex setup, you
+  can name it n stuff.
+
+
+# Things I gotta do
+
+- split panes!
+- electron viewer
+- table view! also w/ sorting
+- tags
+- view settings - like the "bullets vs lines" thing in the list view, and
+  maybe a "compact vs spacious node size" in whiteboard
+- jupyter plugin
+
+# Other stuff
+
 Authentication!
 
 api endpoints
