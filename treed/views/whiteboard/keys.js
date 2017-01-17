@@ -246,6 +246,14 @@ const keys: ViewActionConfig = {
     }
   },
 
+  lineNodesUpVertically: {
+    shortcuts: {
+      visual: 'enter',
+    },
+    alias: 'lineNodesUpVertically',
+    description: 'Line up selected items vertically',
+  },
+
   // ???
 }
 

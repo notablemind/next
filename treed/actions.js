@@ -323,6 +323,9 @@ const actions = {
         store.emitMany(events)
       }
       store.state.selected = selected
+      if (ids.length && ids.indexOf(store.state.active) === -1) {
+        store.actions.setActive(ids[0])
+      }
     },
 
     selectWithSiblings(store: Store, id: string) {

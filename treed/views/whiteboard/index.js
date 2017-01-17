@@ -33,12 +33,10 @@ export default {
     if (ids.length < 2) return
     return [{
       text: 'Line up vertically',
-      action: () => {
-      }
+      action: store.actions.lineNodesUpVertically,
     }, {
       text: 'Line up horizontally',
-      action: () => {
-      }
+      action: store.actions.lineNodesUpHorizontally,
     }]
   }
 }
