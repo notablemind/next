@@ -119,12 +119,20 @@ const activeStyles = {}
     `}
 })
 activeStyles.dragging.backgroundColor = colors.draggingBackground
+activeStyles.active.backgroundColor = 'transparent'
 
 
 const styles = StyleSheet.create({
   ...activeStyles,
+
   contentWrapper: {
     borderRadius: 3,
+    /*
+    transition: 'background-color .2s ease',
+    ':hover': {
+      backgroundColor: '#f0f0f0',
+    },
+    */
   },
 
   /*

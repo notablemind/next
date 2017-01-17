@@ -1177,6 +1177,13 @@ const actions = {
       }
     },
 
+    focusFirstChild(store: Store, id: string=store.state.active) {
+      const child = store.db.data[id].children[0]
+      if (child) {
+        store.actions.setActive(child, true)
+      }
+    },
+
     focusFirstSibling(store: Store, id: string=store.state.active) {
       if (id === store.state.root) return
       let nid = store.db.data[store.db.data[id].parent].children[0]

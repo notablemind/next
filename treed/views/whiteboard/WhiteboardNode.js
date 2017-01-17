@@ -11,6 +11,8 @@ import Icon from '../utils/Icon'
 import * as colors from '../utils/colors'
 import dragger from './dragger'
 
+const roundBy = (n, by) => parseInt(n / by) * by
+
 export default class WhiteboardNode extends Component {
   keyActions: any
 
@@ -109,6 +111,13 @@ export default class WhiteboardNode extends Component {
   }
 
   startResizingHeight = (e: any) => {
+    if (e.button === 2) {
+      this.props.store.actions.setNodeViewData(this.props.id, 'whiteboard', {
+        ...this.props.store.getters.nodeViewData(this.props.id),
+        height: null,
+      })
+      return
+    }
     let moved = false
     let oheight
     this._dragger = dragger(e, {
@@ -119,14 +128,14 @@ export default class WhiteboardNode extends Component {
           oheight = this.state.height || this.div.offsetHeight
         }
         this.setState({
-          height: oheight + h,
+          height: roundBy(oheight + h, 20),
         })
       },
 
       done: (x, y, w, h) => {
         this.props.store.actions.setNodeViewData(this.props.id, 'whiteboard', {
           ...this.props.store.getters.nodeViewData(this.props.id),
-          height: oheight + h,
+          height: roundBy(oheight + h, 20),
         })
         // this.setState({height: null})
       },
@@ -213,7 +222,7 @@ export default class WhiteboardNode extends Component {
         keyActions={this.keyActions}
         store={this.props.store}
       />
-      {this.state.node.children.length > 0 &&
+      {(this.state.node.children.length > 0 || this.state.height) &&
         (!collapsed ?
           <div
             ref={node => this.childrenNode = node}
@@ -229,6 +238,7 @@ export default class WhiteboardNode extends Component {
                 startChildDragging={this.props.startChildDragging}
               />
             ))}
+            <div style={{flex: 1}}/>
             <div
               onMouseDown={() => this.props.store.actions.createLastChild(this.props.id)}
               className={css(styles.addChild)}>
@@ -251,6 +261,7 @@ export default class WhiteboardNode extends Component {
         ref={node => this._heightDragger = node}
         className={css(styles.heightDragger)}
         onMouseDown={this.startResizingHeight}
+        onContextMenu={e => (e.preventDefault(), e.stopPropagation())}
       />
     </div>
   }
@@ -306,6 +317,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 4,
     overflow: 'hidden',
+    cursor: 'default',
   },
 
   kidBadge: {
@@ -354,7 +366,7 @@ const styles = StyleSheet.create({
   },
 
   heightDragger: {
-    cursor: 'ns-move',
+    cursor: 'ns-resize',
     position: 'absolute',
     bottom: 0,
     left: 0,

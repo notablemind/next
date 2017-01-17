@@ -236,7 +236,8 @@ export default class Whiteboard extends Component {
       },
       done: (x, y, w, h) => {
         if (!moved) {
-          this.props.store.actions.setActive(this.props.store.state.root)
+          this.props.store.actions.normalMode()
+          // this.props.store.actions.setActive(this.props.store.state.root)
         }
         this.setState({selectBox: null})
       },

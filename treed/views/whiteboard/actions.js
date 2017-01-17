@@ -138,6 +138,15 @@ const actions: ViewActionConfig = {
     description: 'Go left',
   },
 
+  toChild: {
+    shortcuts: {
+      normal: 'alt+down, alt+j',
+    },
+
+    alias: 'focusFirstChild',
+    description: 'Go do the first child',
+  },
+
   right: {
     shortcuts: {
       normal: 'l, right',
