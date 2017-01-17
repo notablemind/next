@@ -93,38 +93,16 @@ export default class ListItem extends Component {
     ensureInView(this._div, this.state.activeIsJump, 100)
   }
 
-  /*
-  onMouseMove = (e: any) => {
-    if (!this.state.isActive || this.state.isDragging) return
-    if (this.props.store.state.root === this.props.id) return
-    const box = this._div.getBoundingClientRect()
-    const atEdge = isAtEdge(box, e.clientX, e.clientY)
-    const deff = this.state.editState ? 'text' : 'default'
-    this._div.style.setProperty('cursor', atEdge ? 'move' : deff, 'important')
-  }
-
-  onMouseDown = (e: any) => {
-    if (e.button !== 0) return e.preventDefault()
-    if (!this.state.isActive) return
-    if (this.props.store.state.root === this.props.id) return
-    const box = this._div.getBoundingClientRect()
-    const atEdge = isAtEdge(box, e.clientX, e.clientY)
-    if (!atEdge) {
-      return
-    }
-    e.preventDefault()
-    e.stopPropagation()
-    this.props.store.actions.startDragging(this.props.id)
-  }
-  */
-
   onContextMenu = (e: any) => {
     e.preventDefault()
     e.stopPropagation()
     this.props.store.actions.openContextMenuForNode(this.props.id, e.clientX, e.clientY)
   }
 
-  startDragging = () => {
+  startDragging = (e: any) => {
+    if (e.button !== 0) return
+    e.preventDefault()
+    e.stopPropagation()
     this.props.store.actions.startDragging(this.props.id)
   }
 
