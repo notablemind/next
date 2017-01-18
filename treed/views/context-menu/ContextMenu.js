@@ -66,6 +66,7 @@ const renderItem = (onClose, item, i) => (
       <div className={css(styles.text, item.disabled && styles.itemTextDisabled)}>
         {item.text}
       </div>
+      {item.keyShortcut && <div className={css(styles.keyShortcut)}>{item.keyShortcut}</div>}
       {item.children && item.children.length ?
         <div className={css(styles.childMarker)}>▸</div> : null}
       {item.radioChecked != null ?
@@ -98,6 +99,14 @@ const styles = StyleSheet.create({
     boxShadow: '0px 0px 1px #555',
     // border: '1px solid #ccc',
     minWidth: 200,
+  },
+
+  keyShortcut: {
+    backgroundColor: '#eee',
+    padding: '2px 4px',
+    borderRadius: 4,
+    fontSize: '70%',
+    textShadow: '1px 1px 0 white',
   },
 
   subChildren: {
@@ -147,6 +156,7 @@ const styles = StyleSheet.create({
 
   itemTop: {
     padding: '5px 10px',
+    paddingRight: 5,
     flexDirection: 'row',
     cursor: 'default',
   },

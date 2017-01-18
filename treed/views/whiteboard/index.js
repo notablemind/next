@@ -33,6 +33,7 @@ export default {
     if (ids.length < 2) return
     return [{
       text: 'Line up vertically',
+      keyShortcut: 'enter',
       action: store.actions.lineNodesUpVertically,
     }, {
       text: 'Line up horizontally',
