@@ -4,3 +4,8 @@ server/log.txt
 secret.json
 supersecret.json
 shared/config.json
+files.zip
+_parsed
+files
+html
+json
