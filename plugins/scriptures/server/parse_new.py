@@ -77,7 +77,7 @@ def process_book(file):
         itemd[item['uri']] = item
         if item['nav_section_id'] not in colid:
             item['nav_section_id'] = colid.keys()[0]
-        cold[colid[item['nav_section_id']]]['children'].append(item['_id'])
+        cold[colid[item['nav_section_id']]]['children'].append(item['uri'])
 
     raws = {}
 
@@ -95,7 +95,7 @@ def process_book(file):
 
 item_keys = '_id title language_id uri item_cover_renditions'.split()
 
-def process_catalog(file):
+def process_catalog(file, downloaded):
     con = opendb(file)
     cur = con.cursor()
 
@@ -108,18 +108,18 @@ def process_catalog(file):
         category['items'] = []
 
     for item in items:
+        if str(item['_id']) not in downloaded:
+            continue
         keep = {}
         for name in item_keys:
             keep[name] = item[name]
+        keep['filename'] = downloaded[str(item['_id'])]
         library[item['item_category_id']]['items'].append(keep)
 
     return library
 
 import os
 import os.path
-
-library = process_catalog('./files/catalog/catalog')
-json.dump(library, open('./json/library.json', 'w')) # , indent=2)
 
 base = './files/content/content-databases/'
 for name in os.listdir(base):
@@ -137,4 +137,7 @@ for name in os.listdir(base):
         pass
     for key in raws:
         open(os.path.join('html', name, key.replace('/', '_') + '.html'), 'w').write(raws[key])
+
+library = process_catalog('./files/catalog/catalog', {x.split('.')[0]: x for x in os.listdir('json')})
+json.dump(library, open('./json/library.json', 'w') , indent=2)
 
