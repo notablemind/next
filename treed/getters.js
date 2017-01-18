@@ -23,7 +23,7 @@ export default {
     root: store => store.state.root,
     active: store => store.state.active,
     mode: store => store.state.mode,
-    persistentState: store => store.persistentState,
+    sharedViewData: store => store.sharedViewData,
     isActiveView: store => store.id === store.globalState.activeView,
     isActive: (store, id) => id === store.state.active,
     // TODO check selection
@@ -33,6 +33,7 @@ export default {
     isSelected: (store, id) => false, // TODO selection
     editState: (store, id) => store.state.mode === 'insert' &&
       id === store.state.active ? store.state.editPos : null,
+    viewState: store => store.state.view,
 
     nodeViewData: (store, id) => store.db.data[id].views[store.state.viewType],
   },

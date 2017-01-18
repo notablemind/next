@@ -7,6 +7,13 @@ export default {
   Component,
   actions,
   keys,
+  getInitialState: () => ({
+    x: 5,
+    y: 5,
+    zoom: 1,
+  }),
+  defaultActive: 'firstChild',
+  serializeState: state => state,
   getters: {
     isCollapsed: (store, id) => (
       store.db.data[id].views.whiteboard &&

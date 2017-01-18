@@ -70,7 +70,7 @@ export default class Treed {
   globalStore: GlobalStore
   viewTypes: ViewTypes
 
-  constructor(db: Db, plugins: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string) {
+  constructor(db: Db, plugins: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string, sharedViewData: any) {
     this.emitter = new FlushingEmitter()
     this.viewTypes = viewTypes
     this.commands = new Commandeger(commands, this.setActive)
@@ -175,6 +175,13 @@ export default class Treed {
       }))
     })
 
+    sharedViewData = {...sharedViewData}
+    Object.keys(viewTypes).forEach(key => {
+      if (!sharedViewData[key]) {
+        sharedViewData[key] = viewTypes[key].initialSharedViewData ? viewTypes[key].initialSharedViewData() : {}
+      }
+    })
+
     const events = {}
     const args: any = [this.db, events]
     const globalStore: any = {
@@ -191,6 +198,7 @@ export default class Treed {
       addListener: (evt, fn) => this.emitter.on(evt, fn),
       removeListener: (evt, fn) => this.emitter.off(evt, fn),
       viewTypes: this.viewTypes,
+      sharedViewData,
 
       undo: () => this.emitter.emitMany(this.commands.undo(args)),
       redo: () => this.emitter.emitMany(this.commands.redo(args)),
@@ -206,30 +214,49 @@ export default class Treed {
     this.globalStore = globalStore
   }
 
-  changeViewType(id: number, type: string, persistentState: any): any {
+  changeViewType(id: number, type: string): any {
     if (!this.viewTypes[type]) {
       throw new Error(`Unknown view type ${type}`)
     }
     const viewTypeConfig: ViewTypeConfig = this.viewTypes[type]
     const store = this.viewStores[id]
     store.state.viewType = type
-    store.persistentState = persistentState || (viewTypeConfig.initialPersistentState ? viewTypeConfig.initialPersistentState() : {})
+    store.state.view = viewTypeConfig.getInitialState ? viewTypeConfig.getInitialState() : {}
     this.setupActionsAndGetters(store, viewTypeConfig)
     this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
     addPluginKeys(store, this.keys[store.id], this.config.plugins)
+    store.emit(store.events.viewType())
+    store.emit(store.events.serializableState())
   }
 
-  registerView(root: string, type: string, persistentState: any): any {
+  serializeViewState(id: number): any {
+    const {state} = this.viewStores[id]
+    const viewTypeConfig: ViewTypeConfig = this.viewTypes[state.viewType]
+    const plugins = {}
+    this.config.plugins.forEach(plugin => (
+      plugin.serializeState ?
+        plugins[plugin.id] = plugin.serializeState(state.plugins[plugin.id])
+          : null))
+    return {
+      root: state.root,
+      viewType: state.viewType,
+      view: viewTypeConfig.serializeState ? viewTypeConfig.serializeState(state.view) : null,
+      plugins,
+    }
+  }
+
+  registerView(initialState: Object): Store {
+    const type = initialState.viewType
     if (!this.viewTypes[type]) {
       throw new Error(`Unknown view type ${type}`)
     }
     const id = this.nextViewId++
-    if (!root || !this.db.data[root]) root = 'root'
+    const viewTypeConfig: ViewTypeConfig = this.viewTypes[type]
 
     const state = {
       id,
-      root,
-      active: root,
+      root: 'root',
+      active: 'root',
       activeIsJump: false,
       selected: null,
       editPos: null,
@@ -239,13 +266,27 @@ export default class Treed {
       contextMenu: null,
       lastEdited: null,
       lastJumpOrigin: null,
+      plugins: {},
+      view: null,
+      ...initialState,
     }
+    if (!state.view) {
+      state.view = viewTypeConfig.getInitialState ?
+        viewTypeConfig.getInitialState() : {}
+    }
+
+    this.config.plugins.forEach(
+      plugin => !state.plugins[plugin.id] &&
+        (state.plugins[plugin.id] = plugin.getInitialState ?
+          plugin.getInitialState() : null))
+
+    if (!state.root || !this.db.data[state.root]) state.root = 'root'
+    state.active = viewTypeConfig.defaultActive === 'firstChild' && this.db.data[state.root].children[0] || state.root
 
     const events = {
       ...this.globalStore.events,
     }
     const args: any = [this.db, events]
-    const viewTypeConfig: ViewTypeConfig = this.viewTypes[type]
     const store: Store = this.viewStores[id] = {
       id,
       state,
@@ -256,7 +297,6 @@ export default class Treed {
       actions: {
         ...this.globalStore.actions,
       },
-      persistentState: persistentState || (viewTypeConfig.initialPersistentState ? viewTypeConfig.initialPersistentState() : {}),
 
       // TODO maybe handle "changing active view" here too?
       // TODO test this stuff

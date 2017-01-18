@@ -4,11 +4,11 @@ import actions from './actions'
 import keys from './keys'
 
 export default {
-  initialPersistentState: () => ({expanded: {}}),
+  initialSharedViewData: () => ({expanded: {}}),
   Component,
   actions,
   keys,
   getters: {
-    isCollapsed: (store, id) => !store.persistentState.expanded[id],
+    isCollapsed: (store, id) => !store.sharedViewData.list.expanded[id],
   },
 }

@@ -1079,6 +1079,7 @@ const actions = {
       if (!id) return
       store.state.root = id
       store.emit(store.events.root())
+      store.emit(store.events.serializableState())
       // Ensure that the selected node is visible, given collapsednesses
       let active = store.state.active
       let tmp = active

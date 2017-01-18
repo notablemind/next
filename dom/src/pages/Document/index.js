@@ -37,15 +37,16 @@ const panesSetup = {
   // width? or something... maybe view state?
 }
 */
+const maybeLoad = key => { try { return JSON.parse(localStorage[key] || '') } catch (e) { return null } }
+
+const sharedViewDataKey = id => `shared-view-data:${id}`
+const loadSharedViewData = id => maybeLoad(sharedViewDataKey(id)) || null
+const saveSharedViewData = (id, data) => localStorage[sharedViewDataKey(id)] = JSON.stringify(data)
 
 const viewStateKey = id => `last-view-state:${id}`
-const maybeLoad = key => { try { return JSON.parse(localStorage[key] || '') } catch (e) { return null } }
 const loadLastViewState = id => maybeLoad(viewStateKey(id)) || {
-  leaf: true,
-  type: 'list',
+  viewType: 'list',
   root: 'root',
-  custom: {},
-  persistentState: null,
 }
 const saveLastViewState = (id, data) => localStorage[viewStateKey(id)] = JSON.stringify(data)
 
@@ -55,9 +56,10 @@ export default DocumentPage
 type ViewState = {
   leaf: boolean,
   type: string,
-  root: string,
   custom: any,
-  persistentState: any,
+  initialState: {
+    root: string,
+  },
 }
 
 class Document extends Component {
@@ -66,7 +68,7 @@ class Document extends Component {
     treed: ?Treed,
     store: any,
     searching: bool,
-    viewState: ViewState,
+    // sharedViewData: any,
     syncState: string,
   }
   _unsubs: Array<() => void>
@@ -78,7 +80,7 @@ class Document extends Component {
       searching: false,
       treed: null,
       store: null,
-      viewState: loadLastViewState(props.id),
+      // sharedViewData: loadSharedViewData(props.id),
       syncState: 'unsynced',
       // panesSetup,
     }
@@ -165,6 +167,8 @@ class Document extends Component {
       plugins,
       viewTypes,
       this.props.id,
+      loadSharedViewData(this.props.id),
+      // (this.state.sharedViewData || {})
     )
     this._unsubs.push(treed.on(['node:root'], () => {
       this.onTitleChange(treed.db.data.root.content)
@@ -186,18 +190,21 @@ class Document extends Component {
           Whiteboard
         </button>
         </div>)
+
       this.onTitleChange(treed.db.data.root.content)
-      const store = treed.registerView(this.state.viewState.root, this.state.viewState.type, (this.state.viewState.persistentState || {})[this.state.viewState.type])
-      this._unsubs.push(store.on([store.events.root()], () => {
-        this.setRoot(store.state.root)
+      const viewState = loadLastViewState(this.props.id)
+      if (!viewState.viewType) viewState.viewType = 'whiteboard'
+      const store = treed.registerView(viewState)
+      this._unsubs.push(store.on([store.events.serializableState()], () => {
+        const state = treed.serializeViewState(store.id)
+        // TODO debounce
+        saveLastViewState(this.props.id, state)
       }))
-      this._unsubs.push(store.on([store.events.persistentState()], () => {
-        this.updateViewState({
-          persistentState: {
-            ...this.state.viewState.persistentState,
-            [store.state.viewType]: store.persistentState
-          }
-        })
+      this._unsubs.push(store.on([store.events.sharedViewData()], () => {
+        saveSharedViewData(this.props.id, store.sharedViewData)
+      }))
+      this._unsubs.push(store.on([store.events.viewType()], () => {
+        this.setState({viewType: store.state.viewType})
       }))
       this.setState({
         treed,
@@ -207,38 +214,13 @@ class Document extends Component {
   }
 
   setViewType(type: string) {
-    if (this.state.viewState.type === type) return
+    if (this.state.store.state.viewType === type) return
     if (this.state.treed) {
       this.state.treed.changeViewType(
         this.state.treed.globalState.activeView,
         type,
-        (this.state.viewState.persistentState || {})[type]
       )
-      this.updateViewState({type})
-      /*
-      this.setState({
-        viewState
-      })
-      */
     }
-  }
-
-  updateViewState(update: any) {
-    const viewState = {...this.state.viewState, ...update}
-    this.setState({viewState})
-    saveLastViewState(this.props.id, viewState)
-  }
-
-  updateCustomViewState = (update: any) => {
-    this.updateViewState({custom: {
-      ...this.state.viewState.custom,
-      ...update,
-    }})
-  }
-
-  setRoot(root: string) {
-    if (root === this.state.viewState.root) return
-    this.updateViewState({root})
   }
 
   onTitleChange(title: string) {
@@ -299,7 +281,7 @@ class Document extends Component {
 
     const actionButtons = this.getActionButtons()
 
-    const Component = viewTypes[this.state.viewState.type].Component
+    const Component = viewTypes[this.state.store.state.viewType].Component
     return <div className={css(styles.container)}>
       <Sidebar
         globalStore={treed.globalStore}
@@ -309,11 +291,7 @@ class Document extends Component {
         {this.state.syncState}
       </div>
       <div className={css(styles.treedContainer) + ' Theme_basic'}>
-        <Component
-          store={this.state.store}
-          viewState={this.state.viewState.custom || {}}
-          updateViewState={this.updateCustomViewState}
-        />
+        <Component store={this.state.store} />
         {actionButtons.length > 0 &&
           <div className={css(styles.actionButtons)}>
             {actionButtons.map(button => (

@@ -20,13 +20,15 @@ import trySnapping from './trySnapping'
 
 type Props = {
   store: any,
-  viewState: any,
-  updateViewState: (viewState: any) => void,
+  // viewState: any,
+  // updateViewState: (viewState: any) => void,
 }
 type State = {
-  x: number,
-  y: number,
-  zoom: number,
+  view: {
+    x: number,
+    y: number,
+    zoom: number,
+  },
 
   contextMenu: any,
   root: string,
@@ -69,17 +71,19 @@ export default class Whiteboard extends Component {
         store.events.mode(),
         store.events.activeView(),
         store.events.contextMenu(),
+        store.events.viewState(),
       ],
       store => ({
         root: store.getters.root(),
         mode: store.getters.mode(),
         isActiveView: store.getters.isActiveView(),
         contextMenu: store.getters.contextMenu(),
+        view: store.getters.viewState(),
       }),
     )
-    this.state.x = props.viewState.x || 0
-    this.state.y = props.viewState.y || 0
-    this.state.zoom = props.viewState.zoom || 1
+    // this.state.x = props.viewState.x || 0
+    // this.state.y = props.viewState.y || 0
+    // this.state.zoom = props.viewState.zoom || 1
   }
 
   componentDidMount() {
@@ -94,21 +98,34 @@ export default class Whiteboard extends Component {
     if (this._childDragger) this._childDragger()
   }
 
+  /*
   updateViewState = debounce(() => {
     const {x, y, zoom} = this.state
     if (this.props.updateViewState) {
       this.props.updateViewState({x, y, zoom})
     }
   }, 500)
+  */
 
   onWheel = (e: any) => {
     e.preventDefault()
     e.stopPropagation()
-    this.setState({
-      x: this.state.x - e.deltaX,
-      y: this.state.y - e.deltaY,
-    })
-    this.updateViewState()
+    this.setPos(
+      this.state.view.x - e.deltaX,
+      this.state.view.y - e.deltaY,
+    )
+    // this.updateViewState()
+  }
+
+  updateSerializedState = debounce(() => {
+    this.props.store.emit(this.props.store.events.serializableState())
+  }, 500)
+
+  setPos(x: number, y: number) {
+    const {store} = this.props
+    store.state.view = {...store.state.view, x, y}
+    store.emit(store.events.viewState())
+    this.updateSerializedState()
   }
 
   onDragDone() {
@@ -120,13 +137,18 @@ export default class Whiteboard extends Component {
     if (e.button === 0 && e.metaKey) {
       e.preventDefault()
       e.stopPropagation()
-      const {x, y} = this.state
+      const {x, y} = this.state.view
       this._dragger = dragger(e, {
         move: (a, b, w, h) => {
+          this.setPos(x + w, y + h)
+          /*
           this.setState({
-            x: x + w,
-            y: y + h,
+            view: {
+              x: x + w,
+              y: y + h,
+            },
           })
+          */
         },
         done: (x, y, w, h) => {
           this.onDragDone()
@@ -295,8 +317,8 @@ export default class Whiteboard extends Component {
   onDblClick = (e: any) => {
     if (e.target !== this.relative) return
     const box = this.relative.getBoundingClientRect()
-    const x = e.clientX - box.left + this.state.x
-    const y = e.clientY - box.top + this.state.y
+    const x = e.clientX - box.left + this.state.view.x
+    const y = e.clientY - box.top + this.state.view.y
     console.warn('TODO create a new node')
     const viewData = { x, y }
     let nid = this.props.store.actions.createLastChild(this.state.root, '', viewData)
@@ -428,8 +450,8 @@ export default class Whiteboard extends Component {
     } else {
       // this._indicators.set(x, y)
       this._indicators.set(
-        x != null ? x + this.state.x : null,
-        y != null ? y + this.state.y: null,
+        x != null ? x + this.state.view.x : null,
+        y != null ? y + this.state.view.y: null,
       )
     }
     /*
@@ -441,7 +463,7 @@ export default class Whiteboard extends Component {
   }
 
   render() {
-    const {x, y, zoom} = this.state
+    const {x, y, zoom} = this.state.view
     // TODO zoom?
     return <div className={css(styles.container)}>
       <div
@@ -455,6 +477,8 @@ export default class Whiteboard extends Component {
         {/*<div className={css(styles.status)}>
           {x}:{y}:: {zoom}
         </div>*/}
+        <div className={css(styles.xAxis)} style={{top: y}} />
+        <div className={css(styles.yAxis)} style={{left: x}} />
         <div
           className={css(styles.offset)}
           style={{
@@ -490,6 +514,24 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch',
     overflow: 'hidden',
+  },
+
+  xAxis: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 1,
+    // backgroundColor: '#aaa',
+    borderBottom: '1px dashed #eee',
+  },
+
+  yAxis: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 1,
+    // backgroundColor: '#aaa',
+    borderLeft: '1px dashed #eee',
   },
 
   selectBox: {

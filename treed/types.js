@@ -63,9 +63,12 @@ export type ViewTypeConfig = {
   Component: any,
   keys: ViewActionConfig,
   actions: {[key: string]: Function},
+  defaultActive?: 'firstChild' | 'root',
   contextMenuVisual?: (store: Store) => ?MenuResult,
   contextMenu: (store: Store, id: string) => ?MenuResult,
-  initialPersistentState?: () => any,
+  initialSharedViewData?: () => any,
+  serializeState?: (state: any) => any,
+  getInitialState?: () => any,
   getters: {
     isCollapsed: (store: Store, id: string) => boolean,
     [key: string]: any,
@@ -91,12 +94,12 @@ export type GlobalStore = {
   addNormalKeyLayer: (layer: any) => () => void,
   on: (evts: Array<string>, fn: Function) => () => void,
   viewTypes: {[key: string]: ViewTypeConfig},
+  sharedViewData: {[key: string]: any},
 }
 
 export type Store = GlobalStore & {
   id: number,
   state: StoreState,
-  persistentState: any,
 }
 
 // Keys!

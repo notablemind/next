@@ -14,11 +14,14 @@ export default {
   view: {
     nodeView: (store, id) => `node:${id}:view:${store.id}`,
     contextMenu: store => `context-menu:${store.id}`,
-    persistentState: store => `persistent-state:${store.id}`,
+    sharedViewData: store => `shared-view-data:${store.id}`,
+    serializableState: store => `serializable-state:${store.id}`,
 
     activeNode: store => `active-node:${store.id}`,
     root: store => `root:${store.id}`,
     mode: store => `mode:${store.id}`,
+    viewState: store => `view-state:${store.id}`,
+    viewType: store => `view-type:${store.id}`,
   }
 }
 
