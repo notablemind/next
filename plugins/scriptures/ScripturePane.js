@@ -27,11 +27,33 @@ export default class ScripturePane extends Component {
     getCatalog().then(catalog => this.setState({catalog}))
   }
 
+  onSelect = item => {
+    getItem(item._id).then(children => this.setState({
+      selectedItem: {
+        ...item,
+        children,
+      }
+    }))
+  }
+
   render() {
     if (!this.state.catalog) return <div>Loading...</div>
 
+    if (!this.state.selectedItem) {
+      return <div className={css(styles.container)}>
+        <CatalogViewer
+          catalog={this.state.catalog}
+          onSelect={this.onSelect}
+        />
+      </div>
+    }
+
     return <div className={css(styles.container)}>
-      <CatalogViewer catalog={this.state.catalog} />
+      {this.state.selectedItem.children.map(item => (
+        <div
+          className={css(styles.item)}
+          dangerouslySetInnerHTML={{__html: item.title_html}} />
+      ))}
     </div>
   }
 }
@@ -41,6 +63,15 @@ const styles = StyleSheet.create({
     flex: 1,
     overflow: 'auto',
     width: 300,
+  },
+
+  item: {
+    padding: '5px 10px',
+    cursor: 'pointer',
+
+    ':hover': {
+      backgroundColor: '#eee',
+    },
   },
 
 })

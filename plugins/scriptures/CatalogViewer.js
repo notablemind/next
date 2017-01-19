@@ -35,7 +35,10 @@ export default class CatalogViewer extends Component {
           {key === this.state.selected &&
             <div className={css(styles.sectionItems)}>
               {catalog[key].items.map(item => (
-                <div className={css(styles.item)}>
+                <div
+                  className={css(styles.item)}
+                  onClick={() => this.props.onSelect(item)}
+                >
                   {item.title}
                 </div>
               ))}
@@ -54,14 +57,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: '5px 10px',
     cursor: 'pointer',
+    backgroundColor: '#ebf5ff',
 
     ':hover': {
-      backgroundColor: '#eee',
+      backgroundColor: '#d3e9ff',
     },
   },
 
   count: {
-    backgroundColor: '#aaa',
+    backgroundColor: '#ccc',
     color: 'black',
     width: 20,
     height: 20,
