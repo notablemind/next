@@ -15,10 +15,12 @@ import KeyCompleter from './KeyCompleter'
 import ViewTypeSwitcher from './ViewTypeSwitcher'
 
 const plugins = [
+  require('../../../../plugins/minimap').default,
   require('../../../../plugins/themes').default,
   require('../../../../plugins/todos/dom').default,
   require('../../../../plugins/image/dom').default,
   require('../../../../plugins/date/dom').default,
+  require('../../../../plugins/scriptures').default,
 ]
 
 const viewTypes = {
@@ -204,7 +206,7 @@ class Document extends Component {
         saveSharedViewData(this.props.id, store.sharedViewData)
       }))
       this._unsubs.push(store.on([store.events.viewType()], () => {
-        this.setState({viewType: store.state.viewType})
+        this.setState({})
       }))
       this.setState({
         treed,
@@ -284,14 +286,16 @@ class Document extends Component {
     const Component = viewTypes[this.state.store.state.viewType].Component
     return <div className={css(styles.container)}>
       <Sidebar
+        side="left"
         globalStore={treed.globalStore}
         plugins={treed.config.plugins}
       />
-      <div className={css(styles.syncState)}>
+      {/*<div className={css(styles.syncState)}>
         {this.state.syncState}
-      </div>
+      </div>*/}
       <div className={css(styles.treedContainer) + ' Theme_basic'}>
         <Component store={this.state.store} />
+
         {actionButtons.length > 0 &&
           <div className={css(styles.actionButtons)}>
             {actionButtons.map(button => (
@@ -305,6 +309,12 @@ class Document extends Component {
             ))}
           </div>}
       </div>
+      <Sidebar
+        side="right"
+        globalStore={treed.globalStore}
+        plugins={treed.config.plugins}
+      />
+
       <KeyCompleter
         treed={treed}
       />

@@ -1,12 +1,9 @@
 
-# Local-only data
+# List view
+- multi-select & associated keyboard shortcuts
 
-Things I want to save local-only
-- collapse state for each node; I'm now thinking default-closed is the best
-  way. Anyway, probably debounce to save to every second or so? Keep
-  everything in a giant object that get's JSON.stringifyied to localStorage
-! "last view state for this doc"
-
+# Whiteboard view
+- keyboard shortcut to line things up vertically
 
 # Not local-only
 
@@ -29,6 +26,14 @@ Things I want to save local-only
   - I want a bunch of options like
   - "number of headings to `##` instead of making into lists"
   - [x] toplevel is paragraphs instead of list items
+
+# Local-only data
+
+Things I want to save local-only
+[x] collapse state for each node; I'm now thinking default-closed is the best
+  way. Anyway, probably debounce to save to every second or so? Keep
+  everything in a giant object that get's JSON.stringifyied to localStorage
+[x] "last view state for this doc"
 
 # Other stuff
 

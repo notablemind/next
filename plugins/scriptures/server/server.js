@@ -4,7 +4,7 @@ const path = require('path')
 const cors = require('cors')
 const fs = require('fs')
 
-const jsonBase = path.join(__dirname, '..', 'json')
+const jsonBase = path.join(__dirname, 'json')
 const publicBase = path.join(__dirname, 'public')
 const app = express()
 

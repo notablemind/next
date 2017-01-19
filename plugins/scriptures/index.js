@@ -1,4 +1,11 @@
 
+import ScripturePane from './ScripturePane'
+
+const PLUGIN_ID = 'scriptures'
+
 export default {
-  id: 'scriptures',
+  id: PLUGIN_ID,
+  defaultGlobalConfig: {
+  },
+  rightSidePane: ScripturePane,
 }
