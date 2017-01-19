@@ -17,7 +17,7 @@ export default class CatalogViewer extends Component {
     return <div>
       {keys.map(key => (
         catalog[key].items.length > 0 &&
-        <div className={css(styles.catalogSection)}>
+        <div key={key} className={css(styles.catalogSection)}>
           <div
             className={css(styles.top)}
             onClick={() => this.setState({
@@ -36,6 +36,7 @@ export default class CatalogViewer extends Component {
             <div className={css(styles.sectionItems)}>
               {catalog[key].items.map(item => (
                 <div
+                  key={item._id}
                   className={css(styles.item)}
                   onClick={() => this.props.onSelect(item)}
                 >

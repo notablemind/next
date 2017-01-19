@@ -32,7 +32,8 @@ app.get('/api/:id', (req, res) => {
     const data = JSON.parse(buffer)
     const collections = Object.keys(data.collections).sort()
     const items = data.collections[collections[0]].children
-    res.json(items.map(uri => data.items[uri]))
+    res.json(data)
+    // res.json(items.map(uri => data.items[uri]))
     // res.header('content-type', 'application/json')
     // res.end(buffer)
   })
@@ -41,10 +42,10 @@ app.get('/api/:id', (req, res) => {
 app.get('/api/:id/*', (req, res) => {
   const {id} = req.params
   const item = req.params[0]
-  const filename = itemsById[id].filename
+  const filename = itemsById[id].filename + '-contents'
   fs.readFile(path.join(jsonBase, filename), 'utf8', (err, buffer) => {
     const data = JSON.parse(buffer)
-    res.json(data.contents['/' + item])
+    res.json(data['/' + item])
 
     // const collections = Object.keys(data.collections).sort()
     // res.header('content-type', 'application/json')
