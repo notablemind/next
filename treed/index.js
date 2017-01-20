@@ -221,6 +221,7 @@ export default class Treed {
     const viewTypeConfig: ViewTypeConfig = this.viewTypes[type]
     const store = this.viewStores[id]
     store.state.viewType = type
+    store.state.viewTypeConfig = viewTypeConfig
     store.state.view = viewTypeConfig.getInitialState ? viewTypeConfig.getInitialState() : {}
     this.setupActionsAndGetters(store, viewTypeConfig)
     this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
@@ -266,6 +267,7 @@ export default class Treed {
       contextMenu: null,
       lastEdited: null,
       lastJumpOrigin: null,
+      viewTypeConfig,
       plugins: {},
       view: null,
       ...initialState,
@@ -296,6 +298,7 @@ export default class Treed {
       },
       actions: {
         ...this.globalStore.actions,
+        changeViewType: this.changeViewType.bind(this, id),
       },
 
       // TODO maybe handle "changing active view" here too?

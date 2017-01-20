@@ -1075,8 +1075,14 @@ const actions = {
       })
     },
 
+    rebaseLast(store: Store) {
+      store.actions.rebase(store.state.lastRoot)
+    },
+
     rebase(store: Store, id: string=store.state.active) {
       if (!id) return
+      if (id === store.state.root) return
+      store.state.lastRoot = store.state.root
       store.state.root = id
       store.emit(store.events.root())
       store.emit(store.events.serializableState())
@@ -1089,6 +1095,11 @@ const actions = {
           active = tmp
         }
         tmp = node.parent
+      }
+      if (active === store.state.root && store.state.viewTypeConfig.defaultActive === 'firstChild') {
+        if (store.db.data[active].children.length) {
+          active = store.db.data[active].children[0]
+        }
       }
       store.actions.setActive(active, true)
     },
@@ -1156,6 +1167,7 @@ const actions = {
       } else {
         store.actions.setActive(nid, true)
       }
+      return true
     },
 
     focusPrevSibling(store: Store, id: string=store.state.active, editState: DefEditPos=false) {
@@ -1169,6 +1181,7 @@ const actions = {
       } else {
         store.actions.setActive(nid, true)
       }
+      return true
     },
 
     focusFirstChild(store: Store, id: string=store.state.active) {

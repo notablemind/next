@@ -44,14 +44,18 @@ export type GlobalState = {
 
 export type StoreState = {
   root: string,
+  lastRoot: string,
   active: string,
   activeIsJump: bool,
   mode: Mode,
   lastEdited: ?string,
   editPos: ?EditPos,
   viewType: string,
+  viewTypeConfig: ViewTypeConfig,
   selected: ?{[key: string]: boolean},
   lastJumpOrigin: ?string,
+  nodeMap: any, // TODO move this to the `view` state
+  view: any,
   contextMenu: ?{
     pos: {left: number, top: number},
     menu: Array<MenuItem>,

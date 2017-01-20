@@ -12,7 +12,7 @@ export default class CatalogViewer extends Component {
   }
 
   render() {
-    const {catalog} = this.props
+    const {catalog, itemsById} = this.props
     const keys = Object.keys(catalog)
     return <div>
       {keys.map(key => (
@@ -34,13 +34,13 @@ export default class CatalogViewer extends Component {
 
           {key === this.state.selected &&
             <div className={css(styles.sectionItems)}>
-              {catalog[key].items.map(item => (
+              {catalog[key].items.map(id => (
                 <div
-                  key={item._id}
+                  key={id}
                   className={css(styles.item)}
-                  onClick={() => this.props.onSelect(item)}
+                  onClick={() => this.props.onSelect(id)}
                 >
-                  {item.title}
+                  {itemsById[id].title}
                 </div>
               ))}
             </div>

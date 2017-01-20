@@ -63,6 +63,14 @@ const keys: ViewActionConfig = {
     description: 'Zoom to node',
   },
 
+  rebaseLast: {
+    shortcuts: {
+      normal: 'g \'',
+    },
+    alias: 'rebaseLast',
+    description: 'Go to previous zoom state',
+  },
+
   rebaseNext: {
     shortcuts: {
       normal: 'g n',
@@ -104,7 +112,7 @@ const keys: ViewActionConfig = {
 
   up: {
     shortcuts: {
-      normal: 'k, up',
+      normal: 'k, up, alt+k, alt+up',
       // this has no insert b/c maybe up is within the thing
       // also visual mode is separate
     },
@@ -119,14 +127,16 @@ const keys: ViewActionConfig = {
           store.actions.setActive(next)
         }
       } else {
-        store.actions.focusPrevSibling()
+        if (!store.actions.focusPrevSibling()) {
+          store.actions.focusParent()
+        }
       }
     }
   },
 
   left: {
     shortcuts: {
-      normal: 'h, left',
+      normal: 'h, left, alt+h, alt+left',
     },
 
     action(store) {
@@ -146,18 +156,30 @@ const keys: ViewActionConfig = {
     description: 'Go left',
   },
 
-  toChild: {
+  toNextSibling: {
     shortcuts: {
       normal: 'alt+down, alt+j',
     },
 
-    alias: 'focusFirstChild',
+    action(store) {
+      const active = store.state.active
+      const pid = store.db.data[active].parent
+      if (!pid) return
+      if (pid === store.state.root) {
+        const next = motion.down(store.db.data[pid].children, store.state.nodeMap, active)
+        if (next) {
+          store.actions.setActive(next)
+        }
+      } else {
+        store.actions.focusNextSibling()
+      }
+    },
     description: 'Go do the first child',
   },
 
   right: {
     shortcuts: {
-      normal: 'l, right',
+      normal: 'l, right, alt+l, alt+right',
     },
 
     action(store) {
@@ -170,6 +192,7 @@ const keys: ViewActionConfig = {
           store.actions.setActive(next)
         }
       } else {
+        store.actions.focusParent()
       }
     },
     description: 'Go right',
@@ -185,12 +208,22 @@ const keys: ViewActionConfig = {
       const pid = store.db.data[active].parent
       if (!pid) return
       if (pid === store.state.root) {
+        if (store.db.data[active].children.length && !store.getters.isCollapsed(active)) {
+          store.actions.focusFirstChild(active)
+          return
+        }
         const next = motion.down(store.db.data[pid].children, store.state.nodeMap, active)
         if (next) {
           store.actions.setActive(next)
         }
       } else {
-        store.actions.focusNextSibling()
+        if (!store.actions.focusNextSibling()) {
+          const pid = store.db.data[active].parent
+          const next = motion.down(store.db.data[store.state.root].children, store.state.nodeMap, pid)
+          if (next) {
+            store.actions.setActive(next)
+          }
+        }
       }
     }
   },
