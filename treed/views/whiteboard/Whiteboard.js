@@ -42,10 +42,6 @@ type State = {
     nodeMap: any,
     draggingIds: Array<string>,
   },
-
-  // x: number,
-  // y: number,
-  zoom: number,
 }
 
 const debounce = (fn, time) => {
@@ -65,8 +61,6 @@ export default class Whiteboard extends Component {
   _dragger: any
   _indicators: any
   _childDragger: any
-  _x: number
-  _y: number
   constructor(props: Props) {
     super()
     props.store.state.nodeMap = {}
@@ -87,9 +81,9 @@ export default class Whiteboard extends Component {
         view: store.getters.viewState(),
       }),
     )
-    this._x = this.state.view.x || 0
-    this._y = this.state.view.y || 0
-    this.state.zoom = 1
+    // this.state.x = props.viewState.x || 0
+    // this.state.y = props.viewState.y || 0
+    // this.state.zoom = props.viewState.zoom || 1
   }
 
   componentDidMount() {
@@ -117,8 +111,8 @@ export default class Whiteboard extends Component {
     e.preventDefault()
     e.stopPropagation()
     this.setPos(
-      this._x - e.deltaX,
-      this._y - e.deltaY,
+      this.state.view.x - e.deltaX,
+      this.state.view.y - e.deltaY,
     )
     // this.updateViewState()
   }
@@ -128,16 +122,10 @@ export default class Whiteboard extends Component {
   }, 500)
 
   setPos(x: number, y: number) {
-    this.translator.style.transform = `translate(${x}px, ${y}px)`
-    this._x = x
-    this._y = y
-    // this.setState({x, y})
-    /*
     const {store} = this.props
     store.state.view = {...store.state.view, x, y}
     store.emit(store.events.viewState())
     this.updateSerializedState()
-    */
   }
 
   onDragDone() {
@@ -149,7 +137,7 @@ export default class Whiteboard extends Component {
     if (e.button === 0 && e.metaKey) {
       e.preventDefault()
       e.stopPropagation()
-      const {x, y} = this.state
+      const {x, y} = this.state.view
       this._dragger = dragger(e, {
         move: (a, b, w, h) => {
           this.setPos(x + w, y + h)
@@ -329,8 +317,8 @@ export default class Whiteboard extends Component {
   onDblClick = (e: any) => {
     if (e.target !== this.relative) return
     const box = this.relative.getBoundingClientRect()
-    const x = e.clientX - box.left + this._x
-    const y = e.clientY - box.top + this._y
+    const x = e.clientX - box.left + this.state.view.x
+    const y = e.clientY - box.top + this.state.view.y
     console.warn('TODO create a new node')
     const viewData = { x, y }
     let nid = this.props.store.actions.createLastChild(this.state.root, '', viewData)
@@ -462,8 +450,8 @@ export default class Whiteboard extends Component {
     } else {
       // this._indicators.set(x, y)
       this._indicators.set(
-        x != null ? x + this._x : null,
-        y != null ? y + this._y: null,
+        x != null ? x + this.state.view.x : null,
+        y != null ? y + this.state.view.y: null,
       )
     }
     /*
@@ -475,9 +463,7 @@ export default class Whiteboard extends Component {
   }
 
   render() {
-    const x = this._x
-    const y = this._y
-    const {zoom} = this.state
+    const {x, y, zoom} = this.state.view
     // TODO zoom?
     return <div className={css(styles.container)}>
       <div
@@ -488,14 +474,16 @@ export default class Whiteboard extends Component {
         className={css(styles.relative)}
         ref={rel => this.relative = rel}
       >
-        {/*<div className={css(styles.status)}>
-          {x}:{y}:: {zoom}
-        </div>*/}
-        <div className={css(styles.xAxis)} style={{top: y}} />
-        <div className={css(styles.yAxis)} style={{left: x}} />
+        <div className={css(styles.xAxis)} style={{
+          transform: `translateY(${y}px)`,
+          willChange: 'transform',
+        }} />
+        <div className={css(styles.yAxis)} style={{
+          transform: `translateX(${x}px)`,
+          willChange: 'transform',
+        }} />
         <div
           className={css(styles.offset)}
-          ref={node => this.translator = node}
           style={{
             transform: `translate(${x}px, ${y}px)`,
             willChange: 'transform',
