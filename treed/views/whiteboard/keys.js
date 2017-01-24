@@ -272,7 +272,7 @@ const keys: ViewActionConfig = {
       const pid = store.db.data[active].parent
       if (!pid) return
       if (pid === store.state.root) {
-        store.actions.createChild(active)
+        store.actions.createLastChild(active)
         // TODO make sure it's not collapsed
       } else {
       }
