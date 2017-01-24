@@ -270,13 +270,13 @@ export default class WhiteboardNode extends Component {
 const activeStyles = {}
 ;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
   activeStyles[key] =
-    // {outline: `2px solid ${colors[key]}`}
-    {boxShadow: `
+    {outline: `2px solid ${colors[key]}`}
+    /*{boxShadow: `
       -2px -2px 0 ${colors[key]},
       -2px 2px 0 ${colors[key]},
       2px -2px 0 ${colors[key]},
       2px 2px 0 ${colors[key]}
-    `, borderColor: 'white', }
+    `, borderColor: 'white', }*/
 })
 activeStyles.dragging.backgroundColor = colors.draggingBackground
 activeStyles.selected.zIndex = 1000
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
 
   children: {
     backgroundColor: '#fafafa',
-    boxShadow: '0 0 3px #777 inset',
+    // boxShadow: '0 0 3px #777 inset',
     borderRadius: 5,
     marginTop: 4,
     overflow: 'hidden',

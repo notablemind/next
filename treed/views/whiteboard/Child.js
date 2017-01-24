@@ -127,13 +127,13 @@ export default class Child extends Component {
 const activeStyles = {}
 ;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
   activeStyles[key] =
-    // {outline: `2px solid ${colors[key]}`}
-    {boxShadow: `
+    {outline: `2px solid ${colors[key]}`}
+    /*{boxShadow: `
       inset -2px -2px 0 ${colors[key]},
       inset -2px 2px 0 ${colors[key]},
       inset 2px -2px 0 ${colors[key]},
       inset 2px 2px 0 ${colors[key]}
-    `}
+    `}*/
 })
 activeStyles.dragging.backgroundColor = colors.draggingBackground
 activeStyles.active.backgroundColor = 'transparent'
