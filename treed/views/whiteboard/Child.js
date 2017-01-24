@@ -6,6 +6,7 @@ import Body from '../body'
 import dragger from './dragger'
 import * as colors from '../utils/colors'
 import ensureInView from '../../ensureInView'
+import Icon from '../utils/Icon'
 
 export default class Child extends Component {
   constructor({id, store}) {
@@ -100,6 +101,7 @@ export default class Child extends Component {
       onMouseDownCapture={this.onMouseDown}
       onContextMenu={this.onContextMenu}
     >
+    <div style={{flex: 1}}>
       <Body
         node={this.state.node}
         isActive={this.state.isActive}
@@ -111,6 +113,13 @@ export default class Child extends Component {
         keyActions={this.keyActions}
         store={this.props.store}
       />
+      </div>
+      {this.state.node.children.length > 0 &&
+        <Icon
+          name="chevron-right"
+          className={css(styles.childrenIndicator)}
+          size={10}
+        />}
     </div>
   }
 }
@@ -146,6 +155,16 @@ const styles = StyleSheet.create({
     //*/
   },
 
+  childrenIndicator: {
+    paddingRight: 10,
+    paddingLeft: 10,
+    // TODO allow expanding of sub-children
+    // cursor: 'pointer',
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   /*
   dragging: {
     backgroundColor: '#aaa',
@@ -156,5 +175,7 @@ const styles = StyleSheet.create({
     padding: '3px 5px',
     cursor: 'move',
     fontSize: '90%',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 })
