@@ -94,6 +94,7 @@ export default class Treed {
       activeView: 1,
       plugins: {},
       clipboard: null,
+      dropping: null,
       runtimeId: uuid(),
       documentId,
     }

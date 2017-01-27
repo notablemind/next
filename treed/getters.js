@@ -35,6 +35,8 @@ export default {
       id === store.state.active ? store.state.editPos : null,
     viewState: store => store.state.view,
 
+    dropping: (store) => store.state.mode === 'dropping' &&
+      store.globalState.dropping,
     nodeViewData: (store, id) => store.db.data[id].views[store.state.viewType],
   },
 

@@ -37,6 +37,7 @@ export type GlobalState = {
   activeView: number,
   plugins: {},
   clipboard: ?ClipboardContents,
+  dropping: ?Array<DumpedNode>, // TODO other things?
   runtimeId: string,
   documentId: string,
   cut: ?string,

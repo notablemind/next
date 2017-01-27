@@ -13,6 +13,29 @@ import dragger from './dragger'
 
 const roundBy = (n, by) => parseInt(n / by) * by
 
+export const WhiteboardNodeRendered = ({
+  id,
+  node,
+  nodeMap,
+  store,
+}) => {
+  return <div
+    ref={n => n && (nodeMap[id] = n)}
+    className={css(styles.container, styles.inline)}
+  >
+    <Body
+      // depth={100}
+      node={node}
+      actions={store.actions}
+      // setChildDrop={setChildDrop}
+      // releaseChildDrop={releaseChildDrop}
+      editState={false}
+      keyActions={null}
+      store={store}
+    />
+  </div>
+}
+
 export default class WhiteboardNode extends Component {
   keyActions: any
 

@@ -176,7 +176,27 @@ export default class ScripturePane extends Component {
         <ContentViewer
           item={this.state.subitem}
           parent={this.state.selectedItem.title}
-          onDragStart={text => {
+          onDragStart={(text, startId, endId) => {
+            const {uri, subtitle, title} = this.state.subitem
+            this.props.store.actions.startDropping([
+              {
+                type: 'scriptureReference',
+                content: '',
+                created: Date.now(),
+                modified: Date.now(),
+                plugins: {},
+                views: {},
+                types: {
+                  scriptureReference: {
+                    startId, endId,
+                    subtitle,
+                    title,
+                    text,
+                    uri,
+                  },
+                },
+              }
+            ])
             // TODO make things happen
           }}
           onBack={() => {

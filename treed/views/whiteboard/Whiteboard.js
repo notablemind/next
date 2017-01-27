@@ -5,7 +5,7 @@ import {css, StyleSheet} from 'aphrodite'
 
 import ContextMenu from '../context-menu/ContextMenu'
 import WhiteboardRoot from './WhiteboardRoot'
-import WhiteboardNode from './WhiteboardNode'
+import WhiteboardNode, {WhiteboardNodeRendered} from './WhiteboardNode'
 
 import dragger from './dragger'
 import selectBoxes from './selectBoxes'
@@ -18,8 +18,11 @@ import findEnclosingBox from './findEnclosingBox'
 import calcSnapLines from './calcSnapLines'
 import trySnapping from './trySnapping'
 
+import type {Store} from 'treed/types'
+import type {Node, DumpedNode} from 'treed/Database'
+
 type Props = {
-  store: any,
+  store: any, // Store,
   // viewState: any,
   // updateViewState: (viewState: any) => void,
 }
@@ -30,6 +33,7 @@ type State = {
     zoom: number,
   },
 
+  dropping: ?Array<DumpedNode>,
   contextMenu: any,
   root: string,
   mode: string,
@@ -79,11 +83,9 @@ export default class Whiteboard extends Component {
         isActiveView: store.getters.isActiveView(),
         contextMenu: store.getters.contextMenu(),
         view: store.getters.viewState(),
+        dropping: store.getters.dropping(),
       }),
     )
-    // this.state.x = props.viewState.x || 0
-    // this.state.y = props.viewState.y || 0
-    // this.state.zoom = props.viewState.zoom || 1
   }
 
   componentDidMount() {
@@ -96,16 +98,51 @@ export default class Whiteboard extends Component {
     this._indicators.destroy()
     if (this._dragger) this._dragger()
     if (this._childDragger) this._childDragger()
+    window.removeEventListener('mousemove', this.dropMove)
+    window.removeEventListener('mouseup', this.dropUp)
   }
 
-  /*
-  updateViewState = debounce(() => {
-    const {x, y, zoom} = this.state
-    if (this.props.updateViewState) {
-      this.props.updateViewState({x, y, zoom})
+  componentDidUpdate(prevProps: any, prevState: any) {
+    if (this.state.dropping && !prevState.dropping) {
+      window.addEventListener('mousemove', this.dropMove)
+      window.addEventListener('mouseup', this.dropUp)
     }
-  }, 500)
-  */
+    if (!this.state.dropping && prevState.dropping) {
+      window.removeEventListener('mousemove', this.dropMove)
+      window.removeEventListener('mouseup', this.dropUp)
+    }
+  }
+
+  dropMove = (e: any) => {
+    this.dropNode.style.display = 'block'
+    this.dropNode.style.top = (e.clientY - 20) + 'px'
+    this.dropNode.style.left = (e.clientX - 100) + 'px'
+  }
+
+  dropUp = (e: any) => {
+    const x = e.clientX - 100
+    const y = e.clientY - 20
+    const [node] = this.props.store.globalState.dropping
+    // TODO umm be more specific. done send the whole node
+    const typeData = node.types.scriptureReference
+    const viewData = { x, y }
+    let nid = this.props.store.actions
+    // .createLastChild(this.state.root, '', viewData, typeData)
+    .create({
+      pid: this.state.root,
+      ix: -1,
+      content: '',
+      type: 'scriptureReference',
+      fromNode: null,
+      viewData,
+      typeData
+    })
+    if (nid) {
+      this.props.store.actions.edit(nid)
+    }
+    this.props.store.globalState.dropping = null
+    this.props.store.actions.normalMode()
+  }
 
   onWheel = (e: any) => {
     e.preventDefault()
@@ -141,14 +178,6 @@ export default class Whiteboard extends Component {
       this._dragger = dragger(e, {
         move: (a, b, w, h) => {
           this.setPos(x + w, y + h)
-          /*
-          this.setState({
-            view: {
-              x: x + w,
-              y: y + h,
-            },
-          })
-          */
         },
         done: (x, y, w, h) => {
           this.onDragDone()
@@ -454,12 +483,31 @@ export default class Whiteboard extends Component {
         y != null ? y + this.state.view.y: null,
       )
     }
-    /*
-    if (this._indicators) {
-      this._indicators.destroy()
-      this._indicators = null
-    }
-    */
+  }
+
+  renderDropping() {
+    const {dropping} = this.state
+    if (!dropping) return
+    const nodeMap = {}
+    return <div
+      ref={dropNode => this.dropNode = dropNode}
+      style={{
+        position: 'absolute',
+        display: 'none',
+        left: '50%',
+        top: '50%',
+      }}
+    >
+      {dropping.map((node, i) => (
+        <WhiteboardNodeRendered
+          id={i}
+          key={i}
+          node={node}
+          nodeMap={nodeMap}
+          store={this.props.store}
+        />
+      ))}
+    </div>
   }
 
   render() {
@@ -502,6 +550,9 @@ export default class Whiteboard extends Component {
         this.renderSelectBox()}
 
       {this.renderChildDrag()}
+
+      {this.state.dropping &&
+        this.renderDropping()}
 
       {this.state.contextMenu &&
         <ContextMenu

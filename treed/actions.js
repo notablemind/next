@@ -9,6 +9,7 @@ import * as move from './move'
 import type {
   Db,
   Node,
+  DumpedNode,
 } from './Database'
 
 import type {
@@ -444,7 +445,10 @@ const actions = {
       store.actions.setMode('dragging')
     },
 
-    startDropping(store: Store, nodes: Array<Node>) {
+    startDropping(store: Store, nodes: Array<DumpedNode>) {
+      store.globalState.dropping = nodes
+      // TODO how do I type `actions`?
+      store.actions.setMode('dropping')
     },
 
     dragTo(store: Store, id: string, at: 'before' | 'after') {
@@ -687,7 +691,7 @@ const actions = {
       return nid
     },
 
-    create(store: Store, {pid, ix, content, type, fromNode, viewData}: any) {
+    create(store: Store, {pid, ix, content, type, fromNode, viewData, typeData}: any) {
       if (!type) {
         if (fromNode && store.plugins.nodeTypes[fromNode.type].newSiblingsShouldCarryType) {
           type = fromNode.type
@@ -698,8 +702,10 @@ const actions = {
 
       const nid = uuid()
       const nodeType = store.plugins.nodeTypes[type]
-      const types = nodeType.defaultNodeConfig ?
-        {[type]: nodeType.defaultNodeConfig(fromNode)} : {}
+      const types = typeData ?
+        {[type]: typeData} :
+        (nodeType.defaultNodeConfig ?
+        {[type]: nodeType.defaultNodeConfig(fromNode)} : {})
       const views = viewData ? {[store.state.viewType]: viewData} : {}
       store.execute({
         type: 'create',
