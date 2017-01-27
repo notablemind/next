@@ -444,6 +444,9 @@ const actions = {
       store.actions.setMode('dragging')
     },
 
+    startDropping(store: Store, nodes: Array<Node>) {
+    },
+
     dragTo(store: Store, id: string, at: 'before' | 'after') {
       const did = store.state.active
 

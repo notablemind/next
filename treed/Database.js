@@ -1,29 +1,53 @@
 // @flow
 
 export type Settings = {
-  plugins: any,
+  plugins: {[pluginId: string]: {}},
   views: {
-    [viewType: string]: any,
+    [viewType: string]: {},
   },
   defaultViews: {
     [nodeId: string]: {
       type: string,
-      settings: any,
+      settings: {},
     },
   },
 }
 
-export type Node = any
+const defaultSettings = {
+  plugins: {},
+  views: {},
+  defaultViews: {},
+}
 
-export type DumpedNode = Node & {
+export type Node = {
+  _id: string,
+  _attachments: {[id: string]: {}},
+  _rev: string,
+  parent: string,
+  children: Array<string>,
+  type: string,
+  content: string,
+  modified: number,
+  created: number,
+  types: {[type: string]: {}},
+  views: {[type: string]: {}},
+}
+
+export type DumpedNode = {
+  _id: string,
+  _attachments: {[id: string]: {}},
+  _rev: string,
+  parent: string,
   children: [DumpedNode],
+  type: string,
+  content: string,
+  modified: number,
+  created: number,
+  types: {[type: string]: {}},
+  views: {[type: string]: {}},
 }
 
 export type Db = {
-  data: {
-    settings: Settings,
-    [key: string]: any,
-  },
   save: (doc: any) => Promise<void>,
   saveMany: (docs: Array<any>) => Promise<void>,
   update: (id: string, doc: any) => Promise<void>,
@@ -80,7 +104,10 @@ export default class Database {
   db: Db
   plugins: any
   settings: any
-  data: any
+  data: {
+    settings: any,
+    [key: string]: Node,
+  }
   _onReady: () => void
   _onNotReady: () => void
   ready: Promise<void>
@@ -90,7 +117,7 @@ export default class Database {
   myrevs: Set<string>
 
   constructor(db: any, plugins: any, onNodeChanged: any, onSettingsChanged: any) {
-    this.data = {}
+    this.data = {settings: defaultSettings}
     this.ready = new Promise((res, rej) => {
       this._onReady = res
       this._onNotReady = rej
@@ -176,7 +203,7 @@ export default class Database {
         // Something to think about.
       } else {
         this.myrevs.add(r.rev)
-        if (action.id) {
+        if (typeof action.id === 'string') {
           if (this.data[action.id]) {
             this.data[action.id]._rev = r.rev
           }

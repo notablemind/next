@@ -176,6 +176,9 @@ export default class ScripturePane extends Component {
         <ContentViewer
           item={this.state.subitem}
           parent={this.state.selectedItem.title}
+          onDragStart={text => {
+            // TODO make things happen
+          }}
           onBack={() => {
             if (this.state.prejump) {
               this.setState({...this.state.prejump, prejump: null})

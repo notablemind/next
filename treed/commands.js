@@ -1,15 +1,15 @@
 // @flow
 
-import type {Db} from './Database'
+import Database from './Database'
 type Events = any
 
 type Command<T> = {
-  apply: (args: T, db: Db, events: Events) => ?{
+  apply: (args: T, db: Database, events: Events) => ?{
     old: any,
     prom?: Promise<void>,
     events?: Array<string>
   },
-  undo: (old: any, db: Db, events: Events) => ?{
+  undo: (old: any, db: Database, events: Events) => ?{
     prom?: Promise<void>,
     events?: Array<string>,
   }

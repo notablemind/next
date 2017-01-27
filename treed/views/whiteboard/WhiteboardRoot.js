@@ -54,7 +54,7 @@ export default class WhiteboardRoot extends Component {
     this.state.hideSelected = false
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps: any, nextState: State) {
     return nextState !== this.state
   }
 

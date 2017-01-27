@@ -166,6 +166,7 @@ export default class WhiteboardNode extends Component {
 
   onWheel = (evt: any) => {
     if (!this.state.height) return
+    return evt.stopPropagation()
     if (!evt.deltaX) {
       if (evt.deltaY < 0) {
         if (this.childrenNode.scrollTop > 0) {
@@ -225,10 +226,14 @@ export default class WhiteboardNode extends Component {
       {(this.state.node.children.length > 0 || this.state.height) &&
         (!collapsed ?
           <div
+            className={css(styles.children)}
             ref={node => this.childrenNode = node}
-            className={css(styles.children, this.state.height ? styles.fixedChildren : null)}
-            onWheel={this.onWheel}
           >
+            <div
+              onWheel={this.onWheel}
+              className={css(this.state.height ? styles.fixedChildren : null)}
+              style={{flex: 1}}
+            >
             {this.state.node.children.map(child => (
               <Child
                 id={child}
@@ -238,7 +243,7 @@ export default class WhiteboardNode extends Component {
                 startChildDragging={this.props.startChildDragging}
               />
             ))}
-            <div style={{flex: 1}}/>
+            </div>
             <div
               onMouseDown={() => this.props.store.actions.createLastChild(this.props.id)}
               className={css(styles.addChild)}>
@@ -319,8 +324,9 @@ const styles = StyleSheet.create({
   },
 
   children: {
+    flex: 1,
     backgroundColor: '#fafafa',
-    // boxShadow: '0 0 3px #777 inset',
+    boxShadow: '0 0 2px #777 inset',
     borderRadius: 5,
     marginTop: 4,
     overflow: 'hidden',

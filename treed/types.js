@@ -18,7 +18,7 @@ export type MenuItem = {
 
 export type EditPos = 'start' | 'end' | 'default' | 'change'
 
-export type Mode = 'normal' | 'insert' | 'visual'
+export type Mode = 'normal' | 'insert' | 'visual' | 'dragging' | 'dropping'
 
 export type PluginSummary = {
   node: {
@@ -127,7 +127,7 @@ export type KeyAction = {|
     [mode: string]: string,
   },
   description: string,
-  action: (store: Store, node: Node) => void,
+  action: (store: Store) => void,
 |}
 
 export type ViewKeyAction = KeyAction | {|
