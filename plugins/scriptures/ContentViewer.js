@@ -31,13 +31,19 @@ export default class ContentViewer extends Component {
     if (box.left < x && x < box.right && box.top < y && y < box.bottom) {
       e.preventDefault()
       e.stopPropagation()
-      const start = selection.anchorNode.parentElement.getAttribute('data-id')
-      const end = selection.extentNode.parentElement.getAttribute('data-id')
+      const startEl = selection.anchorNode.parentElement
+      const endEl = selection.extentNode.parentElement
+      const startId = startEl.getAttribute('data-id')
+      const endId = endEl.getAttribute('data-id')
+      const startVerseEl = startEl.querySelector('.verse-number')
+      const endVerseEl = endEl.querySelector('.verse-number')
+      const startVerse = startVerseEl && startVerseEl.textContent.trim()
+      const endVerse = endVerseEl && endVerseEl.textContent.trim()
       const contents = range.cloneContents()
       ;[...contents.querySelectorAll('.note-ref')].forEach(m => m.parentNode.removeChild(m))
+      ;[...contents.querySelectorAll('sup')].forEach(m => m.parentNode.removeChild(m))
       const text = contents.textContent
-      console.log('booyah', text, start, end, this.props.item.uri)
-      this.props.onDragStart(text, start, end)
+      this.props.onDragStart(text, startId, endId, startVerse, endVerse)
     }
   }
 

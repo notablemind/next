@@ -141,6 +141,7 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 10,
     maxHeight: 200,
+    maxWidth: 200,
     overflow: 'auto',
   },
 

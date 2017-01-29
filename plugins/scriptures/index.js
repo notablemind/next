@@ -9,6 +9,8 @@ export default {
   defaultGlobalConfig: {
   },
   rightSidePane: ScripturePane,
+  serializeState: state => state,
+  getInitialState: () => null,
 
   nodeTypes: {
     scriptureReference: {

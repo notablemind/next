@@ -21,6 +21,14 @@ import trySnapping from './trySnapping'
 import type {Store} from 'treed/types'
 import type {Node, DumpedNode} from 'treed/Database'
 
+const isNodeParent = (node, parent) => {
+  while (node && node !== document.body) {
+    if (node === parent) return true
+    node = node.parentNode
+  }
+  return false
+}
+
 type Props = {
   store: any, // Store,
   // viewState: any,
@@ -61,6 +69,7 @@ export default class Whiteboard extends Component {
   state: State
   nodeMap: any
   relative: any
+  dropNode: any
   _sub: any
   _dragger: any
   _indicators: any
@@ -114,34 +123,38 @@ export default class Whiteboard extends Component {
   }
 
   dropMove = (e: any) => {
+    if (!isNodeParent(e.target, this.relative)) {
+      this.dropNode.style.display = 'none'
+      return
+    }
     this.dropNode.style.display = 'block'
     this.dropNode.style.top = (e.clientY - 20) + 'px'
     this.dropNode.style.left = (e.clientX - 100) + 'px'
   }
 
   dropUp = (e: any) => {
-    const x = e.clientX - 100
-    const y = e.clientY - 20
+    if (!isNodeParent(e.target, this.relative)) {
+      this.props.store.globalState.dropping = null
+      return this.props.store.actions.normalMode()
+    }
+    const relBox = this.relative.getBoundingClientRect()
+
+    const x = e.clientX - 100 - relBox.left
+    const y = e.clientY - 20 - relBox.top
     const [node] = this.props.store.globalState.dropping
-    // TODO umm be more specific. done send the whole node
-    const typeData = node.types.scriptureReference
-    const viewData = { x, y }
-    let nid = this.props.store.actions
-    // .createLastChild(this.state.root, '', viewData, typeData)
-    .create({
+    let nid = this.props.store.actions.createFull({
       pid: this.state.root,
       ix: -1,
-      content: '',
-      type: 'scriptureReference',
-      fromNode: null,
-      viewData,
-      typeData
+      node: {
+        ...node,
+        views: {
+          ...node.views,
+          whiteboard: { x, y },
+        },
+      },
     })
-    if (nid) {
-      this.props.store.actions.edit(nid)
-    }
     this.props.store.globalState.dropping = null
-    this.props.store.actions.normalMode()
+    this.props.store.actions.normalMode(nid)
   }
 
   onWheel = (e: any) => {
@@ -492,11 +505,10 @@ export default class Whiteboard extends Component {
     return <div
       ref={dropNode => this.dropNode = dropNode}
       style={{
-        position: 'absolute',
-        display: 'none',
-        left: '50%',
-        top: '50%',
-      }}
+    position: 'absolute',
+    display: 'none',
+    pointerEvents: 'none',
+  }}
     >
       {dropping.map((node, i) => (
         <WhiteboardNodeRendered

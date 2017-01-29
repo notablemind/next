@@ -691,6 +691,15 @@ const actions = {
       return nid
     },
 
+    createFull(store: Store, {pid, ix, node}: {pid: string, ix: string, node: Node}) {
+      const nid = uuid()
+      store.execute({
+        type: 'create',
+        args: {id: nid, pid, ix, data: node},
+      }, store.state.active, nid)
+      return nid
+    },
+
     create(store: Store, {pid, ix, content, type, fromNode, viewData, typeData}: any) {
       if (!type) {
         if (fromNode && store.plugins.nodeTypes[fromNode.type].newSiblingsShouldCarryType) {

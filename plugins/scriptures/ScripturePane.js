@@ -6,72 +6,70 @@ import {css, StyleSheet} from 'aphrodite'
 import Icon from 'treed/views/utils/Icon'
 import CatalogViewer from './CatalogViewer'
 import ContentViewer from './ContentViewer'
+import Searcher from './Searcher'
 
-const url = last => `http://localhost:6207/api/${last}`
-const get = last => fetch(url(last)).then(r => r.json())
-
-const getCatalog = () => get('')
-const getItem = id => get(id)
-const getSubitem = (id, uri) => get(id + uri)
-const searchByTitle = title => get('search/by-title?title=' + encodeURIComponent(title))
+import {getCatalog, getItem, getSubitem, searchByTitle} from './api'
 
 const debounce = (fn, by) => {
   let last = Date.now()
   let wait
-  return (...args) => {
+  return (...args: Array<any>) => {
     clearTimeout(wait)
     if (Date.now() - last > by) return fn(...args)
     wait = setTimeout(() => fn(...args), by)
   }
 }
 
-class Searcher extends Component {
-  state: any
-  constructor(props) {
-    super()
-    this.state = {
-      text: '',
-    }
-  }
 
-  fetch = debounce(text => {
-    searchByTitle(text).then(this.props.onResults)
-  }, 500)
+const PLUGIN_ID = 'scriptures'
 
-  onChange = e => {
-    this.setState({text: e.target.value})
-    if (e.target.value.length > 2) {
-      this.fetch(e.target.value)
-    } else {
-      this.props.onResults([])
-    }
-  }
-
-  render() {
-    return <div>
-      <input
-        className={css(styles.input)}
-        value={this.state.text}
-        onChange={this.onChange}
-        onKeyDown={e => e.stopPropagation()}
-      />
-    </div>
-  }
+// Fix flow
+const makeTitle = (parentTitle, startVerse: any, endVerse: any) => {
+  if (!startVerse && !endVerse) return parentTitle
+  if (!startVerse) startVerse = endVerse
+  if (!endVerse) endVerse = startVerse
+  const range = startVerse === endVerse ? startVerse : `${startVerse}-${endVerse}`
+  return `${parentTitle}:${range}`
 }
 
+type Route = null | {path: 'search', query: string} | {path: 'item', uri: string}
+
 export default class ScripturePane extends Component {
-  state: any
+  state: {
+    results: any,
+    // route: Route,
+    subitem: any,
+    prejump: any,
+    showSearch: boolean,
+    library: any,
+    selectedItem: any,
+  }
+
   constructor({store}: any) {
     super()
     this.state = {
+      // route: store.state.plugins[PLUGIN_ID],
+      results: [],
+      showSearch: true,
       library: null,
       selectedItem: null,
       subitem: null,
+      prejump: null,
     }
   }
 
   componentDidMount() {
-    getCatalog().then(library => this.setState({library}))
+    getCatalog().then(library => {
+      this.setState({library})
+      const route = this.props.store.state.plugins[PLUGIN_ID]
+      if (route) {
+        if (route.path === 'search') {
+          this.runSearch(route.query)
+        } else if (route.path === 'item') {
+          this.navigateTo(route.uri)
+        }
+      }
+    })
   }
 
   dataForId = (id: string) => {
@@ -88,7 +86,16 @@ export default class ScripturePane extends Component {
   }
 
   onSelectUri = (uri: string) => {
+    this.savePath({
+      path: 'item',
+      uri,
+    })
     return getSubitem('' + this.state.selectedItem._id, uri).then(subitem => this.setState({subitem}))
+  }
+
+  savePath = path => {
+    this.props.store.state.plugins[PLUGIN_ID] = path
+    this.props.store.emit(this.props.store.events.serializableState())
   }
 
   baseUri = (uri: string) => {
@@ -103,8 +110,14 @@ export default class ScripturePane extends Component {
     return null
   }
 
-  navigateTo = (uri: string, pid: string) => {
+  navigateTo = (uri: string) => {
+    if (!uri) return
     const nuri = this.baseUri(uri)
+    if (!nuri) return
+    this.savePath({
+      path: 'item',
+      uri,
+    })
     const id = this.state.library.uriIndex[nuri]
     this.dataForId(id).then(selectedItem => {
       return getSubitem(id, uri).then(subitem => this.setState({
@@ -124,41 +137,87 @@ export default class ScripturePane extends Component {
     .then(() => this.setState({showSearch: false}))
   }
 
+  onDragStart = (text: string, startId: string, endId: string, startVerse: ?string, endVerse: ?string) => {
+    const {uri, subtitle, title_html} = this.state.subitem
+    const title = makeTitle(title_html, startVerse, endVerse)
+    this.props.store.actions.startDropping([
+      {
+        type: 'scriptureReference',
+        content: '',
+        created: Date.now(),
+        modified: Date.now(),
+        plugins: {},
+        views: {},
+        types: {
+          scriptureReference: {
+            startId, endId,
+            startVerse, endVerse,
+            subtitle,
+            parentTitle: title_html,
+            title,
+            text,
+            uri,
+          },
+        },
+      }
+    ])
+  }
+
+  renderSearchResults() {
+    return <div className={css(styles.container)}>
+      <Searcher
+        key="search"
+        onSearch={this.runSearch}
+      />
+      <div className={css(styles.searchResults)}>
+      {this.state.results.slice(0, 200).map(result => (
+        <div
+          key={result.uri}
+          onClick={() => this.onSelectSearchResult(result)}
+          className={css(styles.searchResult)}
+        >
+          {result.title}
+          <div className={css(styles.subtitle)}>
+          {result.subtitle}
+          </div>
+          <div className={css(styles.subtitle)}>
+          {this.state.library.itemsById[result.id].title}
+          </div>
+        </div>
+      ))}
+      </div>
+    </div>
+  }
+
+  runSearch = debounce(text => {
+    this.props.store.state.plugins[PLUGIN_ID] = {
+      path: 'search',
+      query: text,
+    }
+    this.props.store.emit(this.props.store.events.serializableState())
+    searchByTitle(text).then(
+      results => this.setState({results, showSearch: true})
+    )
+  }, 500)
+
   render() {
     if (!this.state.library) return <div>Loading...</div>
 
     if (this.state.results && this.state.results.length && this.state.showSearch) {
-      return <div className={css(styles.container)}>
-        <Searcher
-          key="search"
-          onResults={results => this.setState({results, showSearch: true})}
-        />
-        <div className={css(styles.searchResults)}>
-        {this.state.results.slice(0, 200).map(result => (
-          <div
-            key={result.uri}
-            onClick={() => this.onSelectSearchResult(result)}
-            className={css(styles.searchResult)}
-          >
-            {result.title}
-            <div className={css(styles.subtitle)}>
-            {result.subtitle}
-            </div>
-            <div className={css(styles.subtitle)}>
-            {this.state.library.itemsById[result.id].title}
-            </div>
-          </div>
-        ))}
-        </div>
-      </div>
+      return this.renderSearchResults()
     }
 
     if (!this.state.selectedItem) {
       return <div className={css(styles.container)}>
         <Searcher
           key="search"
-          onResults={results => this.setState({results, showSearch: true})}
+          onSearch={this.runSearch}
         />
+        {!this.state.showSearch && this.state.results.length ?
+          <div onClick={() => this.setState({showSearch: true})}>
+            Back to search results
+          </div>
+          : null}
         <CatalogViewer
           catalog={this.state.library.library}
           itemsById={this.state.library.itemsById}
@@ -171,34 +230,17 @@ export default class ScripturePane extends Component {
       return <div className={css(styles.container)}>
         <Searcher
           key="search"
-          onResults={results => this.setState({results, showSearch: true})}
+          onSearch={this.runSearch}
         />
+        {!this.state.showSearch && this.state.results.length ?
+          <div onClick={() => this.setState({showSearch: true})}>
+            Back to search results
+          </div>
+          : null}
         <ContentViewer
           item={this.state.subitem}
           parent={this.state.selectedItem.title}
-          onDragStart={(text, startId, endId) => {
-            const {uri, subtitle, title} = this.state.subitem
-            this.props.store.actions.startDropping([
-              {
-                type: 'scriptureReference',
-                content: '',
-                created: Date.now(),
-                modified: Date.now(),
-                plugins: {},
-                views: {},
-                types: {
-                  scriptureReference: {
-                    startId, endId,
-                    subtitle,
-                    title,
-                    text,
-                    uri,
-                  },
-                },
-              }
-            ])
-            // TODO make things happen
-          }}
+          onDragStart={this.onDragStart}
           onBack={() => {
             if (this.state.prejump) {
               this.setState({...this.state.prejump, prejump: null})
@@ -225,6 +267,11 @@ export default class ScripturePane extends Component {
           {this.state.selectedItem.title}
         </div>
       </div>
+        {!this.state.showSearch && this.state.results.length ?
+          <div onClick={() => this.setState({showSearch: true})}>
+            Back to search results
+          </div>
+          : null}
       <div className={css(styles.subitems)}>
       {this.state.selectedItem.children.map(item => (
         <div
@@ -292,11 +339,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: '90%',
     color: '#555',
-  },
-
-  input: {
-    padding: '5px 10px',
-    fontSize: 16,
   },
 
 })

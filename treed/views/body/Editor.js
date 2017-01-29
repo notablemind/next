@@ -4,6 +4,7 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import GrowingTextarea from './GrowingTextarea'
+import textStyle from './textStyle'
 
 export default class Editor extends Component {
   state: {
@@ -129,7 +130,7 @@ export default class Editor extends Component {
     return <GrowingTextarea
       ref={node => this.input = node}
       value={this.state.tmpText}
-      className={this.props.className}
+      className={css(styles.input) + ' Node_input'}
       onChange={e => this.setState({tmpText: e.target.value})}
       onHeightChange={this.props.onHeightChange}
       onKeyDown={this.onKeyDown}
@@ -139,3 +140,6 @@ export default class Editor extends Component {
   }
 }
 
+const styles = StyleSheet.create({
+  input: textStyle,
+})
