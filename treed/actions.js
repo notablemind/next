@@ -641,6 +641,10 @@ const actions = {
       if (!id || !node) return
       const firstChild = node.children[0] && store.db.data[node.children[0]]
 
+      if (store.getters.isCollapsed(id)) {
+        store.actions.setCollapsed(id, false)
+      }
+
       return store.actions.create({
         fromNode: firstChild,
         content,
@@ -663,6 +667,11 @@ const actions = {
       const types = nodeType.defaultNodeConfig ?
         {[type]: nodeType.defaultNodeConfig()} : {}
       const views = viewData ? {[store.state.viewType]: viewData} : {}
+
+      if (store.getters.isCollapsed(id)) {
+        store.actions.setCollapsed(id, false)
+      }
+
       store.execute({
         type: 'create',
         args: {id: nid, pid: id, ix: -1, data: {content, type, types, views}},

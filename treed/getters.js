@@ -37,7 +37,8 @@ export default {
 
     dropping: (store) => store.state.mode === 'dropping' &&
       store.globalState.dropping,
-    nodeViewData: (store, id) => store.db.data[id].views[store.state.viewType],
+    nodeViewData: (store, id) => store.db.data[id] &&
+      store.db.data[id].views[store.state.viewType],
   },
 
 }

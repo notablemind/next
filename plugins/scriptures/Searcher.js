@@ -21,11 +21,14 @@ export default class Searcher extends Component {
 
   onChange = (e: any) => {
     this.setState({text: e.target.value})
+    this.props.onSearch(e.target.value)
+    /*
     if (e.target.value.length > 2) {
       this.props.onSearch(e.target.value)
     } else {
-      this.props.onResults([])
+      // this.props.onResults([])
     }
+    */
   }
 
   render() {

@@ -4,6 +4,7 @@ import actions from './actions'
 import keys from './keys'
 
 export default {
+  title: 'Whiteboard',
   Component,
   actions,
   keys,
@@ -46,6 +47,7 @@ export default {
       text: 'Line up horizontally',
       action: store.actions.lineNodesUpHorizontally,
     }]
-  }
+  },
+  shortcut: 'w',
 }
 

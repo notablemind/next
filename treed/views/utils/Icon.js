@@ -7,10 +7,10 @@ import buildData from '../../../dom/public/fonts/ionicons.json'
 const byName = {}
 buildData.icons.forEach(icon => byName[icon.name] = String.fromCharCode(parseInt(icon.code.slice(2), 16)))
 
-const Icon = ({name, size, color, className, ...props}) => (
+const Icon = ({name, size, color, style, className, ...props}) => (
   <div
     className={css(styles.icon) + ' ' + (className || '')}
-    style={{fontSize: size, color}}
+    style={{fontSize: size, color, ...style}}
     {...props}
   >
     {byName[name] || byName['help']}

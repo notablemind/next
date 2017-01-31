@@ -9,13 +9,14 @@ import render from './render'
 type Props = {
   style?: any,
   content: string,
+  className?: string,
 }
 
-const Renderer = ({style, content}: Props) => {
+const Renderer = ({style, content, className}: Props) => {
   return <div style={style} className={
     css(
       styles.text,
-    ) + ' Node_rendered'
+    ) + ' Node_rendered ' + (className || '')
   }>
     {content.trim() ?
       <div dangerouslySetInnerHTML={{
@@ -37,3 +38,4 @@ const styles = StyleSheet.create({
     padding: '4px 5px',
   },
 })
+css(styles.text)

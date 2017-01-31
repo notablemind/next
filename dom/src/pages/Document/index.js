@@ -32,6 +32,18 @@ const activeButtons = [] // ['date:newEntry']
 
 type DbT = any
 
+const makeViewTypeLayerConfig = (viewTypes, setViewType) => {
+  const layer = {}
+  Object.keys(viewTypes).forEach(key => {
+    layer['setViewType' + key] = {
+      shortcut: `alt+v ${viewTypes[key].shortcut}`,
+      description: `Change view type to ${viewTypes[key].title}`,
+      action: () => setViewType(key),
+    }
+  })
+  return layer
+}
+
 /*
 const panesSetup = {
   leaf: true,
@@ -177,7 +189,10 @@ class Document extends Component {
     }))
     // TODO actually get the user shortcuts
     const userShortcuts = {}
-    const globalLayer = makeKeyLayer(this.keyLayerConfig, 'global', userShortcuts)
+    const globalLayer = makeKeyLayer({
+      ...this.keyLayerConfig,
+      ...makeViewTypeLayerConfig(viewTypes, this.setViewType),
+    }, 'global', userShortcuts)
     treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
     treed.ready.then(() => {
       this.props.setTitle(<ViewTypeSwitcher
@@ -185,13 +200,14 @@ class Document extends Component {
       />)
       this.props.setTitle(
         <div>
-        <button onClick={() => this.setViewType('list')}>
-          List
-        </button>
-        <button onClick={() => this.setViewType('whiteboard')}>
-          Whiteboard
-        </button>
-        </div>)
+          <button onClick={() => this.setViewType('list')}>
+            List
+          </button>
+          <button onClick={() => this.setViewType('whiteboard')}>
+            Whiteboard
+          </button>
+        </div>
+      )
 
       this.onTitleChange(treed.db.data.root.content)
       const viewState = loadLastViewState(this.props.id)
@@ -215,7 +231,7 @@ class Document extends Component {
     })
   }
 
-  setViewType(type: string) {
+  setViewType = (type: string) => {
     if (this.state.store.state.viewType === type) return
     if (this.state.treed) {
       this.state.treed.changeViewType(

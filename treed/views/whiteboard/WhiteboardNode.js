@@ -373,6 +373,7 @@ const styles = StyleSheet.create({
   },
 
   addChild: {
+    color: '#999',
     textAlign: 'center',
     fontSize: '80%',
     padding: '5px 10px',
@@ -380,6 +381,7 @@ const styles = StyleSheet.create({
     transition: 'background-color .2s ease',
     ':hover': {
       backgroundColor: '#ddd',
+      color: 'black',
     },
     // backgroundColor: 'white',
   },

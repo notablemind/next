@@ -112,6 +112,7 @@ export default class Child extends Component {
         onHeightChange={this.ensureInView}
         keyActions={this.keyActions}
         store={this.props.store}
+        textClassName={css(styles.text)}
       />
       </div>
       {this.state.node.children.length > 0 &&
@@ -170,6 +171,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#aaa',
   },
   */
+
+  text: {
+    fontSize: '90%',
+  },
 
   child: {
     padding: '3px 5px',

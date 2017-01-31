@@ -130,7 +130,7 @@ export default class Editor extends Component {
     return <GrowingTextarea
       ref={node => this.input = node}
       value={this.state.tmpText}
-      className={css(styles.input) + ' Node_input'}
+      className={css(styles.input) + ' Node_input ' + (this.props.className || '')}
       onChange={e => this.setState({tmpText: e.target.value})}
       onHeightChange={this.props.onHeightChange}
       onKeyDown={this.onKeyDown}
@@ -143,3 +143,4 @@ export default class Editor extends Component {
 const styles = StyleSheet.create({
   input: textStyle,
 })
+css(styles.input)

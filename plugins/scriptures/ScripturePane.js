@@ -93,7 +93,7 @@ export default class ScripturePane extends Component {
     return getSubitem('' + this.state.selectedItem._id, uri).then(subitem => this.setState({subitem}))
   }
 
-  savePath = path => {
+  savePath = (path: Route) => {
     this.props.store.state.plugins[PLUGIN_ID] = path
     this.props.store.emit(this.props.store.events.serializableState())
   }
@@ -190,6 +190,9 @@ export default class ScripturePane extends Component {
   }
 
   runSearch = debounce(text => {
+    if (text.length <= 2) {
+      return this.setState({results: [], showSearch: false})
+    }
     this.props.store.state.plugins[PLUGIN_ID] = {
       path: 'search',
       query: text,

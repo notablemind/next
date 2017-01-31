@@ -16,6 +16,7 @@ export default {
     scriptureReference: {
       title: 'Scripture Reference',
       newSiblingsShouldCarryType: false,
+      brief: node => node.types.scriptureReference.text,
       creatable: false,
 
       render: ScriptureReference,

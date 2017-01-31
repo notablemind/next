@@ -21,6 +21,7 @@ export default (props: Props) => {
   }
   return <Renderer
     style={props.style}
+    className={props.className}
     content={props.node.content}
   />
 }

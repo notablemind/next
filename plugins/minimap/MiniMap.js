@@ -15,6 +15,14 @@ const shortened = txt => {
   return txt.slice(0, maxLen) + '...'
 }
 
+const brief = (node, store) => {
+  const nodeType = store.plugins.nodeTypes[node.type]
+  if (nodeType && nodeType.brief) {
+    return nodeType.brief(node).slice(0, 50)
+  }
+  return node.content.slice(0, 50)
+}
+
 class MiniItem extends Component {
   state: {
     node: any,
@@ -79,7 +87,7 @@ class MiniItem extends Component {
           root === id && styles.active,
         )}
       >
-        {shortened(node.content) || '<blank>'}
+        {brief(node, store) || '<blank>'}
       </div>
       <div className={css(styles.children)}>
         {activePath && node.children.map(
@@ -141,7 +149,7 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 10,
     maxHeight: 200,
-    maxWidth: 200,
+    width: 200,
     overflow: 'auto',
   },
 
@@ -154,6 +162,10 @@ const styles = StyleSheet.create({
   name: {
     cursor: 'pointer',
     padding: '2px 4px',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+
     ':hover': {
       outline: '1px solid #ccc',
     },

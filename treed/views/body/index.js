@@ -25,7 +25,7 @@ export default class Body extends Component {
   }
 
   render() {
-    const {depth, editState, contentClassName} = this.props
+    const {depth, editState, contentClassName, textClassName} = this.props
     const pluginCls = this.props.store.plugins.node.className ?
       this.props.store.plugins.node.className(this.props.node, this.props.store) :
         ''
@@ -48,6 +48,8 @@ export default class Body extends Component {
           editState={this.props.editState}
           keyActions={this.props.keyActions}
           onHeightChange={this.props.onHeightChange}
+          style={this.props.style}
+          className={textClassName}
         />
       </div>
     </div>
