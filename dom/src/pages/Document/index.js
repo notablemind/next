@@ -13,6 +13,10 @@ import Sidebar from './Sidebar'
 import Searcher from './Searcher'
 import KeyCompleter from './KeyCompleter'
 import ViewTypeSwitcher from './ViewTypeSwitcher'
+import ViewHeader from './ViewHeader'
+import withStore from './withStore'
+
+import type {Store} from 'treed/types'
 
 const plugins = [
   require('../../../../plugins/minimap').default,
@@ -44,13 +48,6 @@ const makeViewTypeLayerConfig = (viewTypes, setViewType) => {
   return layer
 }
 
-/*
-const panesSetup = {
-  leaf: true,
-  type: 'list',
-  // width? or something... maybe view state?
-}
-*/
 const maybeLoad = key => { try { return JSON.parse(localStorage[key] || '') } catch (e) { return null } }
 
 const sharedViewDataKey = id => `shared-view-data:${id}`
@@ -69,12 +66,26 @@ export default DocumentPage
 
 type ViewState = {
   leaf: boolean,
-  type: string,
+  viewType: string,
   custom: any,
   initialState: {
     root: string,
   },
 }
+
+const ViewWrapper = withStore({
+  events: store => [store.events.viewType()],
+  state: store => ({
+    viewType: store.getters.viewType(),
+  }),
+  render({store, viewTypes, viewType}) {
+    const Component = viewTypes[viewType].Component
+    return <div style={{flex: 1}}>
+      <ViewHeader store={store} viewTypes={viewTypes} />
+      <Component store={store} />
+    </div>
+  }
+})
 
 class Document extends Component {
   state: {
@@ -198,20 +209,10 @@ class Document extends Component {
       this.props.setTitle(<ViewTypeSwitcher
         globalStore={treed.globalStore}
       />)
-      this.props.setTitle(
-        <div>
-          <button onClick={() => this.setViewType('list')}>
-            List
-          </button>
-          <button onClick={() => this.setViewType('whiteboard')}>
-            Whiteboard
-          </button>
-        </div>
-      )
 
       this.onTitleChange(treed.db.data.root.content)
       const viewState = loadLastViewState(this.props.id)
-      if (!viewState.viewType) viewState.viewType = 'whiteboard'
+      if (!viewState.viewType) viewState.viewType = 'list'
       const store = treed.registerView(viewState)
       this._unsubs.push(store.on([store.events.serializableState()], () => {
         const state = treed.serializeViewState(store.id)
@@ -299,18 +300,17 @@ class Document extends Component {
 
     const actionButtons = this.getActionButtons()
 
-    const Component = viewTypes[this.state.store.state.viewType].Component
     return <div className={css(styles.container)}>
       <Sidebar
         side="left"
         globalStore={treed.globalStore}
         plugins={treed.config.plugins}
       />
-      {/*<div className={css(styles.syncState)}>
-        {this.state.syncState}
-      </div>*/}
       <div className={css(styles.treedContainer) + ' Theme_basic'}>
-        <Component store={this.state.store} />
+        <ViewWrapper
+          viewTypes={viewTypes}
+          store={this.state.store}
+        />
 
         {actionButtons.length > 0 &&
           <div className={css(styles.actionButtons)}>

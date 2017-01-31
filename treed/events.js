@@ -6,9 +6,11 @@ export default {
     activeMode: (globalStore) => 'active-mode',
     settingsChanged: (globalStore) => 'node:settings',
     clipboardChanged: globalStore => 'clipboard',
+    searching: globalStore => 'searching',
     // changed: () => 'changed',
     // TODO do I need this?
     // I guess maybe for db sync or something
+    defaultView: (globalStore, id) => `default-view:${id}`,
   },
 
   view: {

@@ -171,6 +171,11 @@ const actions = {
       }
     },
 
+    setDefaultView(store: Store, defaultView: any) {
+      store.actions.setNested('settings', ['defaultViews', store.state.root], defaultView)
+      store.emit(store.events.defaultView(store.state.root))
+    },
+
     setActive(store: Store, id: string, nonJump: bool=false) {
       if (!id || !store.db.data[id]) return
       const old = store.state.active
@@ -178,6 +183,7 @@ const actions = {
       if (id === old) return
       if (!nonJump) {
         // TODO maybe allow you to jump back multiple jumps?
+        // vscode allows this, and it's cool
         store.state.lastJumpOrigin = old
       }
       store.state.active = id
@@ -1109,8 +1115,16 @@ const actions = {
     rebase(store: Store, id: string=store.state.active) {
       if (!id) return
       if (id === store.state.root) return
+      // TODO track a full history of roots?
       store.state.lastRoot = store.state.root
       store.state.root = id
+
+      // TODO climb up parentage to see what the view should be?
+      const defaultView = store.getters.defaultView(id) || store.getters.defaultView('root')
+      if (defaultView) {
+        store.actions.changeViewType(defaultView.viewType, defaultView)
+      }
+
       store.emit(store.events.root())
       store.emit(store.events.serializableState())
       // Ensure that the selected node is visible, given collapsednesses

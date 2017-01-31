@@ -9,6 +9,7 @@ export default {
     pluginState: (globalStore, pluginId) =>
       globalStore.globalState.plugins[pluginId],
     clipboard: globalStore => globalStore.globalState.clipboard,
+    searching: globalStore => globalStore.globalState.searching,
 
     viewSettings: (globalStore, viewType) =>
       globalStore.db.data.settings.views[viewType],
@@ -35,6 +36,7 @@ export default {
       id === store.state.active ? store.state.editPos : null,
     viewState: store => store.state.view,
 
+    viewType: store => store.state.viewType,
     dropping: (store) => store.state.mode === 'dropping' &&
       store.globalState.dropping,
     nodeViewData: (store, id) => store.db.data[id] &&

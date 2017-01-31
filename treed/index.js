@@ -15,6 +15,7 @@ import KeyManager from './keys/Manager'
 
 import organizePlugins from './organizePlugins'
 import bindCommandProxies from './bindCommandProxies'
+import handlePaste from './handlePaste'
 import * as search from './search'
 import * as migrations from './migrations'
 
@@ -135,33 +136,15 @@ export default class Treed {
           version: 1,
           defaultViews: {
             root: {
-              type: 'list',
+              viewType: 'list',
               settings: {},
             },
           },
-          // TODO what other things go in settings?
         }])
       } else if (!this.db.data.settings.version ||
                  this.db.data.settings.version < migrations.version) {
         return migrations.migrate(this.db)
       }
-
-      /*
-      // TODO remove
-      if (!this.db.data.settings) {
-        const pluginSettings = plugins.reduce((settings, plugin) => (
-          settings[plugin.id] = plugin.defaultGlobalConfig, settings
-        ), {})
-        return this.db.save({
-          _id: 'settings',
-          created: now,
-          modified: now,
-          plugins: pluginSettings,
-          views: {},
-          // TODO what other things go in settings?
-        })
-      }
-      */
     }).then(() => {
       const settings = this.db.data.settings
       return Promise.all(plugins.map(plugin => {
@@ -215,7 +198,7 @@ export default class Treed {
     this.globalStore = globalStore
   }
 
-  changeViewType(id: number, type: string): any {
+  changeViewType(id: number, type: string, initialState: ?Object=null): any {
     if (!this.viewTypes[type]) {
       throw new Error(`Unknown view type ${type}`)
     }
@@ -224,6 +207,12 @@ export default class Treed {
     store.state.viewType = type
     store.state.viewTypeConfig = viewTypeConfig
     store.state.view = viewTypeConfig.getInitialState ? viewTypeConfig.getInitialState() : {}
+    if (initialState) {
+      store.state = {
+        ...store.state,
+        ...initialState,
+      }
+    }
     this.setupActionsAndGetters(store, viewTypeConfig)
     this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
     addPluginKeys(store, this.keys[store.id], this.config.plugins)
@@ -302,10 +291,6 @@ export default class Treed {
         changeViewType: this.changeViewType.bind(this, id),
       },
 
-      // TODO maybe handle "changing active view" here too?
-      // TODO test this stuff
-      // call with (this, store => [], store => {})
-      // and it will automatically manage unsub / resub for you
       setupStateListener: (...args) => this.setupStateListener(store, ...args),
     }
 
@@ -350,76 +335,26 @@ export default class Treed {
   }
 
   handlePaste = (e: any) => {
-    if (e.target.nodeName === 'TEXTAREA') {
-      return // allow normal pasting into text input
-    }
-    if (e.target.nodeName === 'INPUT') {
-      return // allow normal pasting into text input
-    }
-    const data = e.clipboardData
-    if (data.items.length === 1) {
-      if (data.items[0].kind === 'string') {
-        if (data.items[0].kind === 'string' && data.items[0].type === 'application/x-notablemind') {
-          data.items[0].getAsString(string => {
-            let data
-            try {
-              data = JSON.parse(string)
-            } catch (e) {
-              // TODO toast
-              console.warn('failed to parse json from string of length ' + string.length)
-              return
-            }
-            if (data.runtime === this.globalState.runtimeId) {
-              if (data.source === 'clipboard') {
-                this.activeView().actions.pasteAfter()
-                return
-              } else if (data.source === 'cut') {
-                // umm yeah this is the same I think
-                this.activeView().actions.pasteAfter()
-                return
-              }
-            } else {
-              const store = this.activeView()
-              store.actions.insertTreeAfter(store.state.active, data.tree)
-              return
-            }
-          })
+    handlePaste(e, (type, data) => {
+      if (type === 'notablemind') {
+        if (data.runtime === this.globalState.runtimeId) {
+          if (data.source === 'clipboard') {
+            this.activeView().actions.pasteAfter()
+            return
+          } else if (data.source === 'cut') {
+            // umm yeah this is the same I think
+            this.activeView().actions.pasteAfter()
+            return
+          }
+        } else {
+          const store = this.activeView()
+          store.actions.insertTreeAfter(store.state.active, data.tree)
           return
         }
-        if (e.target.nodeName === 'INPUT') {
-          return // allow normal pasting into text input
-        }
+      } else if (type === 'file') {
+        this.activeView().actions.pasteFile(data.file, data.type, data.filename)
       }
-      if (data.items[0].kind === 'file') {
-        const file = data.items[0].getAsFile()
-        this.activeView().actions.pasteFile(file, data.items[0].type, '<pasted file>')
-        return
-      }
-    }
-
-    e.preventDefault()
-    if (
-      data.items.length === 2 &&
-      data.items[0].kind === 'string' &&
-        data.items[1].kind === 'file'
-    ) {
-      // looks like a "copy/pasted a file"
-      // note this will only work if they pasted an image. (at least in chrome)
-      const file = data.items[1].getAsFile()
-      console.log(data.items[1], file)
-      if (!file) { // wasn't an image I guess
-        // TODO toast
-        console.warn("Bad file - not an image?")
-        return
-      }
-      const type = data.items[1].type
-      data.items[0].getAsString(filename => {
-        this.activeView().actions.pasteFile(file, type, filename)
-      })
-    } else {
-      // TODO other pastes
-      debugger
-    }
+    })
   }
 
   addKeyLayer(layer: Function | any): () => void {
@@ -433,12 +368,6 @@ export default class Treed {
   settingsChanged = () => {
     this.emitter.emit(this.globalStore.events.settingsChanged())
     console.log('TODO proces settings change')
-  }
-
-  pluginStore(pluginId: string): any {
-    const store = {
-      events: {},
-    }
   }
 
   setupStateListener = (
