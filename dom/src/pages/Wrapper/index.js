@@ -22,7 +22,7 @@ type State = {
   user: ?User,
   loading: bool,
   online: bool,
-  remoteUserDb: any,
+  remoteSession: any,
   userDb: any,
   title: string,
   settings: ?any,
@@ -40,14 +40,14 @@ export default class Wrapper extends Component {
       loading: !!user,
       loginError: null,
       online: true,
-      remoteUserDb: null,
+      remoteSession: null,
       userDb: new PouchDB('notablemind_user'),
       title: 'Notablemind',
       settings: null, // do I need the settings?
     }
 
     if (user) {
-      couchApi.restoreFromUser(user, (err, remoteUserDb) => {
+      couchApi.restoreFromUser(user, (err, remoteSession) => {
         if (err === 'network') {
           this.setState({
             loading: false,
@@ -57,13 +57,13 @@ export default class Wrapper extends Component {
         } else if (err === 'invalid') {
           this.setState({
             user: null,
-            remoteUserDb: null,
+            remoteSession: null,
             loading: false,
           })
-        } else if (remoteUserDb) {
+        } else if (remoteSession) {
           this.setState({
             loading: false,
-            remoteUserDb,
+            remoteSession,
           })
         }
       })
@@ -71,64 +71,44 @@ export default class Wrapper extends Component {
   }
 
   componentDidUpdate(_: {}, prevState: State) {
-    if (this.state.userDb && this.state.remoteUserDb &&
-        !(prevState.userDb && prevState.remoteUserDb)) {
+    if (this.state.userDb && this.state.remoteSession &&
+        !(prevState.userDb && prevState.remoteSession)) {
       console.log('starting sync')
-      this.state.userDb.sync(this.state.remoteUserDb, {
-        live: true,
-        retry: true,
-      })
+      this.state.remoteSession.sync(this.state.userDb)
     }
   }
 
-  getUser = (id: string, remoteUserDb: any) => {
-    remoteUserDb.getUser(id, (err, res) => {
-      if (err) {
+  getUser = (id: string, remoteSession: any) => {
+    remoteSession.getUser(id).then(
+      user => this.setState({user, remoteSession}),
+      err => {
         console.log('failed to get user :(')
-        // TODO abstract
-        couchApi.clearUser()
-        this.setState({user: null, remoteUserDb: null})
-        return
+        this.setState({user: null, remoteSession: null, loading: false})
       }
-      console.log(err, res)
-      const user = {
-        id,
-        email: res.email,
-        realName: res.realName,
-      }
-      // TODO abstract?
-      couchApi.saveUser(user)
-      couchApi.ensureUserDb(err => {
-        if (err) return this.setState({loading: false, remoteUserDb: null, user: null})
-        this.setState({user, remoteUserDb})
-      })
-    })
+    )
   }
 
   onLogin = (email: string, pwd: string) => {
-    couchApi.login(email, pwd, (err, id, remoteUserDb) => {
-      if (err) this.setState({loginError: err})
-      else this.getUser(id, remoteUserDb)
-
-    })
+    couchApi.login(email, pwd).then(
+      ({id, remoteSession}) => this.getUser(id, remoteSession),
+      err => this.setState({loginError: err}),
+    )
   }
 
   onSignUp = (name: string, email: string, pwd: string) => {
-    couchApi.signup(name, email, pwd, (err, id, remoteUserDb) => {
+    couchApi.signup(name, email, pwd, (err, id, remoteSession) => {
       if (err) this.setState({loginError: err})
-      else this.getUser(id, remoteUserDb)
+      else this.getUser(id, remoteSession)
     })
   }
 
   onLogout = () => {
-    if (this.state.remoteUserDb) {
-      this.state.remoteUserDb.logout()
+    if (this.state.remoteSession) {
+      this.state.remoteSession.logout()
     }
-    // TODO abstract
-    couchApi.clearUser()
     this.setState({
       user: null,
-      remoteUserDb: null,
+      remoteSession: null,
     })
   }
 
@@ -162,7 +142,7 @@ export default class Wrapper extends Component {
         loginError={this.state.loginError}
       />
       {React.cloneElement(this.props.children, {
-        makeRemoteDocDb: this.state.remoteUserDb && (
+        makeRemoteDocDb: this.state.remoteSession && (
           id => {
             if (!this.state.user) return Promise.reject(new Error('no user'))
             const doc = `doc_${this.state.user.id}_${id}`
