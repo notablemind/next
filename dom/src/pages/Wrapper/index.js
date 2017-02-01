@@ -6,9 +6,8 @@ import {css, StyleSheet} from 'aphrodite'
 import {Router, Route, IndexRoute, hashHistory} from 'react-router'
 
 import Header from './Header'
-import {apiURL, dbURL} from '../../../../shared/config.json'
 
-import {login, signup} from './login'
+import * as couchApi from './couchApi'
 
 import PouchDB from 'pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
@@ -18,56 +17,6 @@ PouchDB.plugin(require('pouchdb-upsert'))
 import type {User} from './types'
 
 window.pouchdb = PouchDB
-
-const USER_KEY = 'notablemind:user'
-
-const ensureUserDb = (done) => {
-  fetch(`${apiURL}/api/ensure-user`, {
-    method: 'POST',
-    mode: 'cors',
-    credentials: 'include',
-  }).then(
-    res => (console.log('good', res), done()),
-    err => (console.log('bad'), done(err))
-  )
-}
-
-const ensureDocDb = id => {
-  return fetch(`${apiURL}/api/create-doc?id=${id}`, {
-    method: 'POST',
-    mode: 'cors',
-    credentials: 'include',
-  }).then(
-    res => console.log('good', res),
-    err => console.log('bad')
-  )
-}
-
-const getUser = () => {
-  let val = localStorage[USER_KEY]
-  try {
-    return val ? JSON.parse(val) : null
-  } catch (e) {
-    return null
-  }
-}
-
-const saveUser = (user) => {
-  localStorage[USER_KEY] = JSON.stringify(user)
-}
-
-const clearUser = () => {
-  localStorage[USER_KEY] = ''
-}
-
-const userSchema = {
-  additionalProperties: true,
-  title: 'User Doc Schema',
-  type: 'object',
-  properties: {
-    id: {type: 'string', primary: true}
-  }
-}
 
 type State = {
   user: ?User,
@@ -85,7 +34,7 @@ export default class Wrapper extends Component {
 
   constructor() {
     super()
-    const user = getUser()
+    const user = couchApi.getUser()
     this.state = {
       user,
       loading: !!user,
@@ -98,33 +47,25 @@ export default class Wrapper extends Component {
     }
 
     if (user) {
-      const remoteUserDb = new PouchDB(`${dbURL}/user_${user.id}`)
-      remoteUserDb.getSession((err, res) => {
-        if (err) {
-          console.log('network error', err)
-          // TODO try to connect periodically.
+      couchApi.restoreFromUser(user, (err, remoteUserDb) => {
+        if (err === 'network') {
           this.setState({
             loading: false,
             online: false,
           })
           return
-        }
-
-        if (!res.userCtx || res.userCtx.name !== user.id) {
-          clearUser()
+        } else if (err === 'invalid') {
           this.setState({
             user: null,
             remoteUserDb: null,
+            loading: false,
           })
-        }
-
-        ensureUserDb(err => {
-          if (err) return this.setState({loading: false, remoteUserDb: null, user: null})
+        } else if (remoteUserDb) {
           this.setState({
             loading: false,
             remoteUserDb,
           })
-        })
+        }
       })
     }
   }
@@ -144,7 +85,8 @@ export default class Wrapper extends Component {
     remoteUserDb.getUser(id, (err, res) => {
       if (err) {
         console.log('failed to get user :(')
-        clearUser()
+        // TODO abstract
+        couchApi.clearUser()
         this.setState({user: null, remoteUserDb: null})
         return
       }
@@ -154,8 +96,9 @@ export default class Wrapper extends Component {
         email: res.email,
         realName: res.realName,
       }
-      saveUser(user)
-      ensureUserDb(err => {
+      // TODO abstract?
+      couchApi.saveUser(user)
+      couchApi.ensureUserDb(err => {
         if (err) return this.setState({loading: false, remoteUserDb: null, user: null})
         this.setState({user, remoteUserDb})
       })
@@ -163,7 +106,7 @@ export default class Wrapper extends Component {
   }
 
   onLogin = (email: string, pwd: string) => {
-    login(email, pwd, (err, id, remoteUserDb) => {
+    couchApi.login(email, pwd, (err, id, remoteUserDb) => {
       if (err) this.setState({loginError: err})
       else this.getUser(id, remoteUserDb)
 
@@ -171,7 +114,7 @@ export default class Wrapper extends Component {
   }
 
   onSignUp = (name: string, email: string, pwd: string) => {
-    signup(name, email, pwd, (err, id, remoteUserDb) => {
+    couchApi.signup(name, email, pwd, (err, id, remoteUserDb) => {
       if (err) this.setState({loginError: err})
       else this.getUser(id, remoteUserDb)
     })
@@ -181,7 +124,8 @@ export default class Wrapper extends Component {
     if (this.state.remoteUserDb) {
       this.state.remoteUserDb.logout()
     }
-    clearUser()
+    // TODO abstract
+    couchApi.clearUser()
     this.setState({
       user: null,
       remoteUserDb: null,
@@ -222,7 +166,7 @@ export default class Wrapper extends Component {
           id => {
             if (!this.state.user) return Promise.reject(new Error('no user'))
             const doc = `doc_${this.state.user.id}_${id}`
-            return ensureDocDb(doc).then(() => new PouchDB(`${dbURL}/${doc}`))
+            return couchApi.ensureDocDb(doc)
           }
         ),
         remoteUser: this.state.user,

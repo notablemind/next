@@ -4,7 +4,75 @@ import PouchDB from 'pouchdb'
 import {apiURL, dbURL} from '../../../../shared/config.json'
 import uuid from '../../utils/uuid'
 
-const userByEmail = (email, done) => {
+import type {User} from './types'
+
+const USER_KEY = 'notablemind:user'
+
+export const ensureUserDb = (done: Function) => {
+  fetch(`${apiURL}/api/ensure-user`, {
+    method: 'POST',
+    mode: 'cors',
+    credentials: 'include',
+  }).then(
+    res => (console.log('good', res), done()),
+    err => (console.log('bad'), done(err))
+  )
+}
+
+export const ensureDocDb = (id: string) => {
+  return fetch(`${apiURL}/api/create-doc?id=${id}`, {
+    method: 'POST',
+    mode: 'cors',
+    credentials: 'include',
+  }).then(res => new PouchDB(`${dbURL}/${id}`))
+}
+
+export const getUser = () => {
+  let val = localStorage[USER_KEY]
+  try {
+    return val ? JSON.parse(val) : null
+  } catch (e) {
+    return null
+  }
+}
+
+export const saveUser = (user: User) => {
+  localStorage[USER_KEY] = JSON.stringify(user)
+}
+
+export const clearUser = () => {
+  localStorage[USER_KEY] = ''
+}
+
+export const restoreFromUser = (user: User, done: Function) => {
+  const remoteUserDb = new PouchDB(`${dbURL}/user_${user.id}`)
+  remoteUserDb.getSession((err, res) => {
+    if (err) {
+      console.log('network error', err)
+      // TODO try to connect periodically.
+      done('network')
+      return
+    }
+
+    if (!res.userCtx || res.userCtx.name !== user.id) {
+      clearUser()
+      done('invalid')
+      return
+    }
+
+    ensureUserDb(err => {
+      if (err) {
+        clearUser()
+        done('invalid')
+        return
+      }
+      done(null, remoteUserDb)
+    })
+  })
+}
+
+
+const userByEmail = (email: string, done: Function) => {
   fetch(`${apiURL}/api/user-by-email?email=${email}`)
     .then(res => res.status === 404 ? {id: null} : res.json())
     .then(
