@@ -98,10 +98,10 @@ class Document extends Component {
   }
   _unsubs: Array<() => void>
 
-  constructor(props: any) {
+  constructor({id, userSession}: any) {
     super()
     this.state = {
-      db: new PouchDB('doc_' + props.id),
+      db: new PouchDB('doc_' + id),
       searching: false,
       treed: null,
       store: null,
@@ -109,10 +109,13 @@ class Document extends Component {
       syncState: 'unsynced',
       // panesSetup,
     }
-    this._unsubs = []
+    this._unsubs = [
+    ]
 
-    if (props.makeRemoteDocDb) {
-      this.setupSync(props.makeRemoteDocDb, props.id)
+    if (userSession) {
+      this._unsubs.push(userSession.syncDoc(this.state.db, id, syncState => {
+        this.setState({syncState})
+      }))
     }
   }
 
@@ -250,23 +253,11 @@ class Document extends Component {
   }
 
   componentWillReceiveProps(nextProps: any) {
-    if (nextProps.makeRemoteDocDb && !this.props.makeRemoteDocDb) {
-      this.setupSync(nextProps.makeRemoteDocDb, nextProps.id)
+    if (nextProps.userSession && !this.props.userSession) {
+      this._unsubs.push(nextProps.userSession.syncDoc(this.state.db, nextProps.id, syncState => {
+        this.setState({syncState})
+      }))
     }
-  }
-
-  setupSync(makeRemoteDocDb: () => Promise<DbT>, id: string) {
-    this.setState({syncState: 'syncing'})
-    makeRemoteDocDb(id).then(db => {
-      this.state.db.sync(db, {retry: true})
-        .on('error', e => this.setState({syncState: 'error'}))
-        .on('complete', () => {
-          this.setState({syncState: 'synced'})
-
-          this.state.db.sync(db, {live: true, retry: true})
-            .on('error', e => this.setState({syncState: 'error'}))
-        })
-    })
   }
 
   componentWillUnmount() {

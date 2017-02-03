@@ -6,11 +6,17 @@ import uuid from '../../utils/uuid'
 
 import type {User} from './types'
 
+export class UserNotFound extends Error {}
+export class NetworkError extends Error {}
+export class InvalidPassword extends Error {}
+
 const USER_KEY = 'notablemind:user'
 
 class Session {
+  user: User
   db: any
-  constructor(remoteUserDb) {
+  constructor(user, remoteUserDb) {
+    this.user = user
     this.db = remoteUserDb
   }
 
@@ -21,22 +27,24 @@ class Session {
     })
   }
 
-  getUser(id: string): Promise<User> {
-    return this.db.getUser(id).then(
-      res => {
-        console.log('got user', id, res)
-        const user = {
-          id,
-          email: res.email,
-          realName: res.realName,
-        }
-        saveUser(user)
-        return ensureUserDb().then(() => user)
-      }
-    ).catch(err => {
-      clearUser()
-      throw err
+  syncDoc(docDb: any, id: string, onStateChange: Function) {
+    const doc = `doc_${this.user.id}_${id}`
+    let sync
+    ensureDocDb(doc).then(remoteDb => {
+      sync = docDb.sync(remoteDb, {retry: true})
+        .on('error', e => onStateChange('error'))
+        .on('complete', () => {
+          onStateChange('synced')
+
+          sync = docDb.sync(remoteDb, {live: true, retry: true})
+            .on('error', e => onStateChange('error'))
+        })
     })
+    return () => {
+      if (sync) {
+        sync.cancel()
+      }
+    }
   }
 
   logout() {
@@ -45,6 +53,19 @@ class Session {
   }
 }
 
+
+const getSession = (id, remoteUserDb) => {
+  return remoteUserDb.getUser(id).then(
+    res => {
+      const user = {
+        id,
+        email: res.email,
+        realName: res.realName,
+      }
+      return new Session(user, remoteUserDb)
+    }
+  )
+}
 
 
 
@@ -68,7 +89,7 @@ export const ensureDocDb = (id: string) => {
   }).then(res => new PouchDB(`${dbURL}/${id}`))
 }
 
-export const getUser = () => {
+export const loadUser = () => {
   let val = localStorage[USER_KEY]
   try {
     return val ? JSON.parse(val) : null
@@ -77,11 +98,11 @@ export const getUser = () => {
   }
 }
 
-export const saveUser = (user: User) => {
+const saveUser = (user: User) => {
   localStorage[USER_KEY] = JSON.stringify(user)
 }
 
-export const clearUser = () => {
+const clearUser = () => {
   localStorage[USER_KEY] = ''
 }
 
@@ -102,7 +123,7 @@ export const restoreFromUser = (user: User, done: Function) => {
     }
 
     ensureUserDb().then(
-      res => done(null, new Session(remoteUserDb)),
+      res => done(null, new Session(user, remoteUserDb)),
       err => {
         if (err) {
           clearUser()
@@ -113,10 +134,6 @@ export const restoreFromUser = (user: User, done: Function) => {
     )
   })
 }
-
-class UserNotFound extends Error {}
-class NetworkError extends Error {}
-class InvalidPassword extends Error {}
 
 const userByEmail = (email: string): Promise<string> => {
   return fetch(`${apiURL}/api/user-by-email?email=${email}`)
@@ -157,22 +174,21 @@ const authWithApiServer = (id: string, pwd: string): Promise<void> => {
 }
 
 export const signup = (
-  name: string, email: string, pwd: string, done: Function
-) => {
+  name: string, email: string, pwd: string
+): Promise<any> => {
   const id = uuid()
   const remoteUserDb = new PouchDB(`${dbURL}/user_${id}`, {skipSetup: true})
-  remoteUserDb.signup(id, pwd, {
+  return remoteUserDb.signup(id, pwd, {
     metadata: {email, realName: name}
-  }, (err, response) => {
-    if (err) return done('Failed to create user')
-    done(null, id, new Session(remoteUserDb))
-    console.log(response)
+  }).then(res => {
+    console.log(res)
+    return new Session({id, realName: name, email}, remoteUserDb)
   })
 }
 
 type Done = Function // (err: ?string, id: ?string, db: ?any) => void
 
-export const login = (email: string, pwd: string): Promise<{id: string, remoteSession: any}> => {
+export const login = (email: string, pwd: string): Promise<any> => {
   return userByEmail(email).then(id => {
     const remoteUserDb = new PouchDB(`${dbURL}/user_${id}`)
     return remoteUserDb.getSession().then(res => {
@@ -196,8 +212,8 @@ export const login = (email: string, pwd: string): Promise<{id: string, remoteSe
           console.error('unexpected response', response)
           throw new Error("Unexpected response")
         })
-      })
-      .then(() => authWithApiServer(id, pwd))
-      .then(() => ({id, remoteSession: new Session(remoteUserDb)}))
     })
+    .then(() => authWithApiServer(id, pwd))
+    .then(() => getSession(id, remoteUserDb))
+  })
 }

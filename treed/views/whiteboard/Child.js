@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
 
   child: {
-    padding: '3px 5px',
+    padding: '0px 5px',
     cursor: 'move',
     fontSize: '90%',
     flexDirection: 'row',

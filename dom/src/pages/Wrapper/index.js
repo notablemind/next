@@ -3,11 +3,10 @@
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
-import {Router, Route, IndexRoute, hashHistory} from 'react-router'
-
 import Header from './Header'
 
-import * as couchApi from './couchApi'
+import * as googleApi from './googleApi'
+import * as userApi from './couchApi'
 
 import PouchDB from 'pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
@@ -34,7 +33,7 @@ export default class Wrapper extends Component {
 
   constructor() {
     super()
-    const user = couchApi.getUser()
+    const user = userApi.loadUser()
     this.state = {
       user,
       loading: !!user,
@@ -47,7 +46,7 @@ export default class Wrapper extends Component {
     }
 
     if (user) {
-      couchApi.restoreFromUser(user, (err, remoteSession) => {
+      userApi.restoreFromUser(user, (err, remoteSession) => {
         if (err === 'network') {
           this.setState({
             loading: false,
@@ -78,28 +77,22 @@ export default class Wrapper extends Component {
     }
   }
 
-  getUser = (id: string, remoteSession: any) => {
-    remoteSession.getUser(id).then(
-      user => this.setState({user, remoteSession}),
-      err => {
-        console.log('failed to get user :(')
-        this.setState({user: null, remoteSession: null, loading: false})
-      }
-    )
+  onGoogleLogin = () => {
+    googleApi.login()
   }
 
   onLogin = (email: string, pwd: string) => {
-    couchApi.login(email, pwd).then(
-      ({id, remoteSession}) => this.getUser(id, remoteSession),
+    userApi.login(email, pwd).then(
+      remoteSession => this.setState({remoteSession, user: remoteSession.user}),
       err => this.setState({loginError: err}),
     )
   }
 
   onSignUp = (name: string, email: string, pwd: string) => {
-    couchApi.signup(name, email, pwd, (err, id, remoteSession) => {
-      if (err) this.setState({loginError: err})
-      else this.getUser(id, remoteSession)
-    })
+    userApi.signup(name, email, pwd).then(
+      remoteSession => this.setState({remoteSession, user: remoteSession.user}),
+      err => this.setState({loginError: err}),
+    )
   }
 
   onLogout = () => {
@@ -142,13 +135,7 @@ export default class Wrapper extends Component {
         loginError={this.state.loginError}
       />
       {React.cloneElement(this.props.children, {
-        makeRemoteDocDb: this.state.remoteSession && (
-          id => {
-            if (!this.state.user) return Promise.reject(new Error('no user'))
-            const doc = `doc_${this.state.user.id}_${id}`
-            return couchApi.ensureDocDb(doc)
-          }
-        ),
+        userSession: this.state.remoteSession,
         remoteUser: this.state.user,
         userDb: this.state.userDb,
         updateFile: this.updateFile,
