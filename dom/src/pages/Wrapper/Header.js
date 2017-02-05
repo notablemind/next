@@ -15,16 +15,16 @@ export default class Header extends Component {
         {title}
       </div>
       <div style={{flex: 1, alignItems: 'flex-end'}}>
-      {/*user ?
+      {user ?
         <div>{user.realName}</div> :
         <button
           onClick={onLogin}
         >
           Login
-        </button>*/}
-      <LoginStatus
+        </button>}
+      {/*<LoginStatus
         {...this.props}
-      />
+      />*/}
       </div>
     </div>
   }

@@ -5,8 +5,8 @@ import {css, StyleSheet} from 'aphrodite'
 
 import Header from './Header'
 
-import * as googleApi from './googleApi'
-import * as userApi from './couchApi'
+import * as userApi from './googleApi'
+import * as couchApi from './couchApi'
 
 import PouchDB from 'pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
@@ -45,28 +45,17 @@ export default class Wrapper extends Component {
       settings: null, // do I need the settings?
     }
 
-    if (user) {
-      userApi.restoreFromUser(user, (err, remoteSession) => {
-        if (err === 'network') {
-          this.setState({
-            loading: false,
-            online: false,
-          })
-          return
-        } else if (err === 'invalid') {
-          this.setState({
-            user: null,
-            remoteSession: null,
-            loading: false,
-          })
-        } else if (remoteSession) {
-          this.setState({
-            loading: false,
-            remoteSession,
-          })
-        }
-      })
-    }
+    userApi.getSession((err, remoteSession) => {
+      if (err === 'network') {
+        this.setState({ loading: false, online: false, })
+      } else if (err === 'invalid') {
+        this.setState({ user: null, remoteSession: null, loading: false, })
+      } else if (remoteSession) {
+        this.setState({ loading: false, remoteSession, user: remoteSession.user })
+      } else {
+        this.setState({ user: null, remoteSession: null, loading: false, })
+      }
+    })
   }
 
   componentDidUpdate(_: {}, prevState: State) {
@@ -77,11 +66,11 @@ export default class Wrapper extends Component {
     }
   }
 
-  onGoogleLogin = () => {
-    googleApi.login()
+  onLogin = () => {
+    userApi.login()
   }
 
-  onLogin = (email: string, pwd: string) => {
+  onCouchLogin = (email: string, pwd: string) => {
     userApi.login(email, pwd).then(
       remoteSession => this.setState({remoteSession, user: remoteSession.user}),
       err => this.setState({loginError: err}),

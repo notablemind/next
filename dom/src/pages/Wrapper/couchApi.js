@@ -54,7 +54,7 @@ class Session {
 }
 
 
-const getSession = (id, remoteUserDb) => {
+const createUserSession = (id, remoteUserDb) => {
   return remoteUserDb.getUser(id).then(
     res => {
       const user = {
@@ -106,7 +106,12 @@ const clearUser = () => {
   localStorage[USER_KEY] = ''
 }
 
-export const restoreFromUser = (user: User, done: Function) => {
+export const getSession = (done: Function) => {
+  const user = loadUser()
+  if (!user) {
+    return setTimeout(() => done('logged out'), 0)
+  }
+
   const remoteUserDb = new PouchDB(`${dbURL}/user_${user.id}`)
   remoteUserDb.getSession((err, res) => {
     if (err) {
@@ -214,6 +219,6 @@ export const login = (email: string, pwd: string): Promise<any> => {
         })
     })
     .then(() => authWithApiServer(id, pwd))
-    .then(() => getSession(id, remoteUserDb))
+    .then(() => createUserSession(id, remoteUserDb))
   })
 }
