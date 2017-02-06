@@ -61,11 +61,12 @@ type PouchChange = any // TODO can be polymorphic
 export default class Browse extends Component {
   keyManager: KeyManager
   state: {
-    sortBy: string,
-    sortReverse: bool,
+    // sortBy: string,
+    // sortReverse: bool,
     settings: ?Object,
-    children: {[key: string]: Array<string>},
-    map: {[key: string]: FolderT | DocT},
+    // children: {[key: string]: Array<string>},
+    // map: {[key: string]: FolderT | DocT},
+    data: {[key: string]: any},
     menu?: ?{
       pos: {left: number, top: number},
       items: Array<MenuItem>,
@@ -79,11 +80,18 @@ export default class Browse extends Component {
   constructor(props: Props) {
     super()
     this.state = {
-      sortBy: 'title',
-      sortReverse: false,
+      // sortBy: 'title',
+      // sortReverse: false,
       settings: null,
-      children: {},
-      map: {},
+      // children: {},
+      // map: {},
+      data: {
+        root: {
+          _id: 'root',
+          title: 'Root',
+          children: [],
+        },
+      },
       selected: 0,
       local: null,
       remote: null,
@@ -112,6 +120,7 @@ export default class Browse extends Component {
     }
   }
 
+  /*
   syncAllTheThings = (skipList: Array<string>) => {
     const docs = this.state.children.root
     const PouchDB = require('pouchdb')
@@ -139,60 +148,23 @@ export default class Browse extends Component {
       err => console.log('failed', err)
     )
   }
+  */
 
   goDown = () => {
     // TODO
   }
 
-  onChange = (change: PouchChange) => {
-    console.log('on change!', change)
-    const id = change.doc._id
-    if (change.doc._deleted) {
-      const map = {...this.state.map}
-      const parent = map[id].folder || 'root'
-      delete map[id]
-      const children = this.state.children[parent]
-      children.splice(this.state.children[parent].indexOf(id), 1)
-      this.setState({
-        map,
-        children: {
-          ...this.state.children,
-          [parent]: children
-        },
-      })
+  onChange = ({doc}: PouchChange) => {
+    console.log('on change!', doc)
+    const id = doc._id
+    if (doc._deleted) {
+      console.log('IGNORING DELETION')
+      // ignoring for the moment
       return
     }
 
-    let children = this.state.children
-    if (this.state.map[id]) {
-      if (change.doc.folder !== this.state.map[id].folder) {
-        const prev = this.state.map[id].folder || 'root'
-        const next = change.doc.folder || 'root'
-        const prevChildren = children[prev].slice()
-        prevChildren.splice(prevChildren.indexOf(id), 1)
-        children = {
-          ...children,
-          // TODO respect current sort order
-          [prev]: prevChildren,
-          [next]: (children[next] || []).concat([id]),
-        }
-      }
-    } else {
-      const parent = change.doc.folder || 'root'
-      children = {
-        ...children,
-        // TODO respect sort order
-        [parent]: (children[parent] || []).concat([id]),
-      }
-    }
-
-    this.setState({
-      children,
-      map: {
-        ...this.state.map,
-        [change.doc._id]: change.doc,
-      },
-    })
+    const data = {...this.state.data, [doc._id]: doc}
+    this.setState({data})
   }
 
   listen(userDb: any) {
@@ -208,7 +180,21 @@ export default class Browse extends Component {
 
     userDb.allDocs({include_docs: true}).then(result => {
       console.log('alldocs', result.rows)
-      this.setState(organizeFolders(result.rows))
+      const data = {root: {_id: 'root', children: [], title: 'Root', type: 'folder'}}
+      result.rows.forEach(({doc}) => {
+        doc.children = doc.children || []
+        data[doc._id] = doc
+      })
+      result.rows.forEach(({doc}) => {
+        if (doc._id === 'root') return
+        if (!doc.parent) {
+          doc.parent = 'root'
+          data.root.children.push(doc._id)
+        }
+      })
+      this.setState({data})
+      // TODO: backfill
+      // this.setState(organizeFolders(result.rows))
     }, err => {
       console.log('failed to get docs list', err)
     })
@@ -247,41 +233,61 @@ export default class Browse extends Component {
   }
 
   onDelete = (id: string) => {
+    return console.error('not deleting')
+    /*
     if (!this.props.userDb) return
     if (!confirm('Really delete?')) {
       // TODO ditch the alert
       return
     }
-    /*
     const map = {...this.state.map}
     delete map[id]
     const children = {...this.state.children}
     delete children[id]
     this.setState({map, children})
-    */
     this.props.userDb.put({
       _id: id,
       _rev: this.state.map[id]._rev,
       _deleted: true,
     })
+    */
   }
 
-  onContextMenu = (evt: any, id: string) => {
+  startSyncing = (doc: any) => {
+    this.props.userSession.setupSyncing(doc._id).then(() => {
+      this.props.userDb.put({
+        ...doc,
+        synced: true,
+      })
+    }, err => {
+      console.error('failure', err)
+      // umm
+    })
+  }
+
+  onContextMenu = (evt: any, doc: any) => {
     evt.preventDefault()
     evt.stopPropagation()
+    const actions = [{
+      text: 'Open',
+      action: () => this.onOpen(doc._id),
+    }, {
+      text: 'Open in new tab',
+      action: () => window.open(`#/doc/${doc._id}`, '_blank'),
+    }, {
+      text: 'Delete',
+      action: () => this.onDelete(doc._id),
+    }]
+    if (!doc.synced) {
+      actions.push({
+        text: 'Start syncing',
+        action: () => this.startSyncing(doc),
+      })
+    }
     this.setState({
       menu: {
         pos: {left: evt.clientX, top: evt.clientY},
-        items: [{
-          text: 'Open',
-          action: () => this.onOpen(id),
-        }, {
-          text: 'Open in new tab',
-          action: () => window.open(`#/doc/${id}`, '_blank'),
-        }, {
-          text: 'Delete',
-          action: () => this.onDelete(id),
-        }]
+        items: actions
       },
     })
   }
@@ -301,9 +307,8 @@ export default class Browse extends Component {
         </button>
       </div>
       <Folder
-        map={this.state.map}
-        children={this.state.children}
-        folder={{_id: 'root', title: 'All Documents'}}
+        data={this.state.data}
+        folder={this.state.data.root}
         onOpen={this.onOpen}
         onContextMenu={this.onContextMenu}
       />
@@ -317,7 +322,7 @@ export default class Browse extends Component {
   }
 }
 
-const Folder = ({map, children, folder, onOpen, onContextMenu}) => (
+const Folder = ({data, folder, onOpen, onContextMenu}) => (
   <div className={css(styles.folderContainer)}>
     <div
       className={css(
@@ -325,7 +330,7 @@ const Folder = ({map, children, folder, onOpen, onContextMenu}) => (
         styles.folder,
         folder._id === 'root' && styles.rootName
       )}
-      onContextMenu={evt => onContextMenu(evt, folder._id)}
+      // onContextMenu={evt => onContextMenu(evt, folder._id)}
     >
       {folder.title}
     </div>
@@ -333,23 +338,22 @@ const Folder = ({map, children, folder, onOpen, onContextMenu}) => (
       styles.children,
       folder._id === 'root' && styles.rootChildren
     )}>
-      {(children[folder._id] || []).filter(x => map[x]).map(id => (
-        map[id].type === 'folder' ?
+      {(folder.children.map(id => (
+        data[id].type === 'folder' ?
           <Folder
             key={id}
-            map={map}
+            data={data}
             onOpen={onOpen}
             onContextMenu={onContextMenu}
-            children={children}
-            folder={map[id]}
+            folder={data[id]}
           /> :
           <Doc
             key={id}
-            doc={map[id]}
+            doc={data[id]}
             onOpen={onOpen}
             onContextMenu={onContextMenu}
           />
-      ))}
+      )))}
     </div>
   </div>
 )
@@ -357,11 +361,14 @@ const Folder = ({map, children, folder, onOpen, onContextMenu}) => (
 const Doc = ({doc, onOpen, onContextMenu}) => (
   <div
     className={css(styles.item, styles.doc)}
-    onContextMenu={evt => onContextMenu(evt, doc._id)}
+    onContextMenu={evt => onContextMenu(evt, doc)}
     onClick={() => onOpen(doc._id)}
   >
     <div className={css(styles.itemTitle)}>
       {doc.title}
+    </div>
+    <div className={css(styles.synced)}>
+      {doc.synced ? 'Synced' : 'Not synced'}
     </div>
     <div className={css(styles.size)}>
       {doc.size}
@@ -390,6 +397,12 @@ const styles = StyleSheet.create({
 
   doc: {
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  synced: {
+    fontSize: 10,
+    padding: '0 10px',
   },
 
   lastOpened: {

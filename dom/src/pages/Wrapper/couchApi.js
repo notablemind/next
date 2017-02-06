@@ -27,6 +27,10 @@ class Session {
     })
   }
 
+  setupSyncing(id: string) {
+    throw new Error('Not supported yet')
+  }
+
   syncDoc(docDb: any, id: string, onStateChange: Function) {
     const doc = `doc_${this.user.id}_${id}`
     let sync

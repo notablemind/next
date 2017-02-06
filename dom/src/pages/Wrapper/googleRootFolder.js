@@ -1,4 +1,4 @@
-// @flow
+// @-flow
 
 const gerr = ({result: {error}}) => {throw error}
 
@@ -26,7 +26,7 @@ const get = (): Promise<*> => {
 
 const children = (id: string): Promise<*> => {
   return gapi.client.drive.files.list({
-    q: `'${id}' in parents and appProperties has { key='nmId' }`,
+    q: `'${id}' in parents`,
   }).then(({result: {items}}) => {
     return items
   }, gerr)
