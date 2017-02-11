@@ -48,6 +48,7 @@ export default class Body extends Component {
           editState={this.props.editState}
           keyActions={this.props.keyActions}
           onHeightChange={this.props.onHeightChange}
+          Content={Content}
           style={this.props.style}
           className={textClassName}
         />

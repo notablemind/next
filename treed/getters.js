@@ -19,6 +19,9 @@ export default {
   },
 
   view: {
+    // @override from global
+    viewSettings: store => store.db.data.settings.views[store.state.viewType],
+
     contextMenu: store => store.state.contextMenu,
     activeNode: store => store.db.data[store.state.active],
     root: store => store.state.root,

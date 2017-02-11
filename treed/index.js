@@ -25,15 +25,6 @@ import type {Db} from './Database'
 
 type ViewId = number
 
-const defaultSettings = {
-  _id: 'settings',
-  viewConfig: {
-    leaf: true,
-    type: 'list',
-    root: 'root',
-  },
-}
-
 type ViewTypes = {
   [name: string]: ViewTypeConfig,
 }
@@ -50,6 +41,42 @@ const bindStoreProxies = (store, config, sub) => {
   Object.keys(config.actions[sub]).forEach(name => {
     store.actions[name] = config.actions[sub][name].bind(null, store)
   })
+}
+
+const createRoot = now => {
+  return {
+    _id: 'root',
+    created: now,
+    modified: now,
+    parent: null,
+    children: [],
+    type: 'normal',
+    content: '',
+    plugins: {},
+    types: {},
+    views: {},
+  }
+}
+
+const createSettings = (now, plugins) => {
+  const pluginSettings = plugins.reduce((settings, plugin) => (
+    settings[plugin.id] = plugin.defaultGlobalConfig, settings
+  ), {})
+  console.log('plugin settings', pluginSettings)
+  return {
+    _id: 'settings',
+    created: now,
+    modified: now,
+    plugins: pluginSettings,
+    views: {},
+    version: 1,
+    defaultViews: {
+      root: {
+        viewType: 'list',
+        settings: {},
+      },
+    },
+  }
 }
 
 export default class Treed {
@@ -112,35 +139,7 @@ export default class Treed {
       // open this up until we've had a full sync.
       if (!this.db.data.root) {
         console.log('creating')
-        const pluginSettings = plugins.reduce((settings, plugin) => (
-          settings[plugin.id] = plugin.defaultGlobalConfig, settings
-        ), {})
-        console.log('plungin settings', pluginSettings)
-        return this.db.saveMany([{
-          _id: 'root',
-          created: now,
-          modified: now,
-          parent: null,
-          children: [],
-          type: 'normal',
-          content: '',
-          plugins: {},
-          types: {},
-          views: {},
-        }, {
-          _id: 'settings',
-          created: now,
-          modified: now,
-          plugins: pluginSettings,
-          views: {},
-          version: 1,
-          defaultViews: {
-            root: {
-              viewType: 'list',
-              settings: {},
-            },
-          },
-        }])
+        return this.db.saveMany([createRoot(now), createSettings(now, plugins)])
       } else if (!this.db.data.settings.version ||
                  this.db.data.settings.version < migrations.version) {
         return migrations.migrate(this.db)

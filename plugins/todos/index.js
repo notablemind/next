@@ -1,3 +1,4 @@
+// @flow
 
 import type {Plugin} from 'treed/types'
 
@@ -55,7 +56,8 @@ const plugin: Plugin<void, void> =  {
             insert: 'alt+enter',
           },
           description: 'Toggle "done"',
-          action(store, node) {
+          action(store) {
+            const node = store.getters.activeNode()
             const config = node.types.todo || {}
             store.actions.setNested(node._id, ['types', 'todo'], {
               ...config,

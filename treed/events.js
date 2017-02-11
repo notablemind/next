@@ -24,6 +24,7 @@ export default {
     mode: store => `mode:${store.id}`,
     viewState: store => `view-state:${store.id}`,
     viewType: store => `view-type:${store.id}`,
+    viewSettings: store => `view-settings:${store.id}`,
   }
 }
 

@@ -22,7 +22,7 @@ type State = {
   loading: bool,
   online: bool,
   remoteSession: any,
-  userDb: any,
+  userDb: PouchDB,
   title: string,
   settings: ?any,
   loginError: ?string,
@@ -98,6 +98,8 @@ export default class Wrapper extends Component {
     this.setState({title})
   }
 
+  // this is used by `Document` to update last-opened. would be good to not
+  // expose this and just handle it here.
   updateFile = (id: string, attr: string, value: any) => {
     if (!this.state.userDb) {
       return console.error('No user db - unable to update file')
@@ -127,7 +129,7 @@ export default class Wrapper extends Component {
         userSession: this.state.remoteSession,
         remoteUser: this.state.user,
         userDb: this.state.userDb,
-        updateFile: this.updateFile,
+        // updateFile: this.updateFile,
         setTitle: this.setTitle,
       })}
     </div>

@@ -7,32 +7,8 @@ import ListItem from './ListItem'
 
 import Dragger from './Dragger'
 import ContextMenu from '../context-menu/ContextMenu'
-
-const preWalk = (isRoot, nodes, root, isCollapsed, fn) => {
-  const node = nodes[root]
-  const hasOpenChildren = node.children.length > 0 &&
-    (!isCollapsed(root) || isRoot)
-  const res = fn(root, hasOpenChildren)
-  if (res === false) return // don't traverse
-  if (hasOpenChildren) {
-    nodes[root].children.forEach(child => preWalk(false, nodes, child, isCollapsed, fn))
-  }
-}
-
-const getAllMeasurements = (nodes, divs, isCollapsed, root, moving) => {
-  const measurements = []
-  preWalk(
-    true,
-    nodes,
-    root,
-    isCollapsed,
-    (id, hasOpenChildren) => {
-      measurements.push([id, divs[id].getBoundingClientRect(), id === moving ? false : hasOpenChildren])
-      if (id === moving) return false
-    }
-  )
-  return measurements
-}
+import processDrop from './processDrop'
+import getAllMeasurements from './getAllMeasurements'
 
 type MenuItem = any
 type Store = any
@@ -89,6 +65,8 @@ export default class ListView extends Component {
     this._sub.stop()
   }
 
+  // Reorder Nodes
+
   componentDidUpdate(prevProps: Props, prevState: State) {
     const nowDragging = this.state.mode === 'dragging' && this.state.isActiveView
     const prevDragging = prevState.mode === 'dragging' && prevState.isActiveView
@@ -130,6 +108,8 @@ export default class ListView extends Component {
     this.props.store.actions.dragTo(id, at)
   }
 
+  // Drag & drop files n stuff
+
   onDrag = (e: any) => {
     this.dropAgain = true
     e.stopPropagation()
@@ -160,24 +140,18 @@ export default class ListView extends Component {
     this.dropper.destroy()
     this.dropper = null
     const data = e.dataTransfer
-    if (data.items.length === 1 && data.files.length === 0 &&
-        data.items[0].kind === 'string') {
-      const type = data.items[0].type
-      data.items[0].getAsString(text => {
-        this.props.store.actions.dropString(id, at, text, type)
-      })
-    } else if (
-      data.files.length === 1 &&
-      data.items.length === 1
-    ) {
-      this.props.store.actions.dropFile(id, at, data.files[0])
-    } else if (data.files.length === data.items.length) {
-      this.props.store.actions.dropFiles(id, at, [...data.files])
-    } else {
-      // Find a text/plain, and go with it.
-      // ummm what other cases are there?
-      debugger
-    }
+    processDrop(data).then(result => {
+      if (result.type === 'string') {
+        this.props.store.actions.dropString(id, at, result.text, result.mimeType)
+      } else {
+        const files = result.files
+        if (files.length === 1) {
+          this.props.store.actions.dropFile(id, at, files[0])
+        } else {
+          this.props.store.actions.dropFiles(id, at, files)
+        }
+      }
+    })
   }
 
   stopDropping = (e: any) => {
