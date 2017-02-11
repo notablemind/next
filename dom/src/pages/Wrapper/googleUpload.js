@@ -37,43 +37,36 @@ export const updateFile = ({
 
   return new Promise((res, rej) => {
     request.execute(response => {
-      console.log('got response from upload', response)
-      if (response.status !== 200) {
-        rej()
-      } else {
-        res()
-      }
+      res(response)
     });
   })
 }
 
 export const insertFile = ({
-  title,
+  name,
   mimeType,
+  parents,
   contents,
 }) => {
 
   var request = gapi.client.request({
-    'path': '/upload/drive/v2/files',
+    'path': '/upload/drive/v3/files',
     'method': 'POST',
     'params': {'uploadType': 'multipart'},
     'headers': {
       'Content-Type': 'multipart/mixed; boundary="' + BOUNDARY + '"'
     },
     'body': makeBody(BOUNDARY, {
-      title,
+      name,
       mimeType,
+      parents,
     }, mimeType, contents)
   });
 
   return new Promise((res, rej) => {
     request.execute(response => {
       console.log('got response from upload', response)
-      if (response.status !== 200) {
-        rej()
-      } else {
-        res()
-      }
+      res(response)
     });
   })
 }

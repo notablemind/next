@@ -7,6 +7,7 @@ import {hashHistory} from 'react-router'
 
 import KeyManager from 'treed/keys/Manager'
 import makeKeyLayer from 'treed/keys/makeKeyLayer'
+import SettingsModal from './Settings/SettingsModal'
 
 import ContextMenu from 'treed/views/context-menu/ContextMenu'
 
@@ -73,6 +74,7 @@ export default class Browse extends Component {
     },
     local?: any,
     remote?: any,
+    showSettings?: boolean,
   }
 
   changes: any
@@ -190,6 +192,8 @@ export default class Browse extends Component {
         if (!doc.parent) {
           doc.parent = 'root'
           data.root.children.push(doc._id)
+        } else if (data[doc.parent].children.indexOf(doc._id)) {
+          data[doc.parent].children.push(doc._id)
         }
       })
       this.setState({data})
@@ -209,11 +213,13 @@ export default class Browse extends Component {
       _id: uuid(),
       type: 'doc',
       title: 'New document',
-      folder: null,
+      parent: 'root',
       size: 0,
       modified: Date.now(),
       opened: Date.now(),
     })
+    // TODO add to children
+    // but really, let's just use treed, for reals
   }
 
   onNewFolder = () => {
@@ -278,12 +284,12 @@ export default class Browse extends Component {
       text: 'Delete',
       action: () => this.onDelete(doc._id),
     }]
-    if (!doc.synced) {
+    // if (!doc.synced) {
       actions.push({
         text: 'Start syncing',
         action: () => this.startSyncing(doc),
       })
-    }
+    // }
     this.setState({
       menu: {
         pos: {left: evt.clientX, top: evt.clientY},
@@ -305,6 +311,9 @@ export default class Browse extends Component {
         >
           New folder
         </button>
+        <button onClick={() => this.setState({showSettings: true})}>
+          Settings
+        </button>
       </div>
       <Folder
         data={this.state.data}
@@ -317,6 +326,11 @@ export default class Browse extends Component {
           pos={this.state.menu.pos}
           menu={this.state.menu.items}
           onClose={() => this.setState({menu: null})}
+        />}
+      {this.state.showSettings &&
+        <SettingsModal
+          onClose={() => this.setState({showSettings: false})}
+          data={this.state.data}
         />}
     </div>
   }

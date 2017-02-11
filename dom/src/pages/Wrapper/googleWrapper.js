@@ -54,7 +54,7 @@ const refresh =  ({clientId, scopes}): Promise<?Object> => {
       window.nm_checkAuth = () => {
         initialized = true
         Promise.all([
-          prom(done => gapi.client.load('drive', 'v2', done)),
+          prom(done => gapi.client.load('drive', 'v3', done)),
           prom(done => gapi.client.load('people', 'v1', done)),
         ]).then(run, rej)
       }

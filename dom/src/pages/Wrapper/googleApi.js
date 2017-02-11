@@ -3,6 +3,8 @@ import {googleClientId} from '../../../../shared/config.json'
 import type {User} from './types'
 import googleWrapper from './googleWrapper'
 import getRootFolder from './googleRootFolder'
+import * as pouchDump from './pouchDump'
+import * as googleUpload from './googleUpload'
 
 const MIME_TYPE = 'application/x-notablemind-db'
 const FIVE_MINUTES = 1000 * 60 * 5 // TODO maybe save more often?
@@ -102,32 +104,30 @@ export const login = () => {
 }
 
 const getOldestItem = query => {
-  return gapi.client.drive.files.list({
-    q: query
-  }).then(({result: {items}}) => {
-    if (items.length === 1) return items[0]
-    items.sort((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())
-    return items[0]
+  return Promise.resolve(gapi.client.drive.files.list({
+    q: query,
+    fields: 'files(id, name, appProperties, version, size, trashed)',
+  })).then(({result: {files}}) => {
+    files = files.filter(file => !file.trashed)
+    if (files.length === 1) return files[0]
+    files.sort((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())
+    return files[0]
   })
 }
 
 const fetchFileContents = file => {
-  if (file.downloadUrl) {
-    const accessToken = gapi.auth.getToken().access_token
-    return fetch(
-      file.downloadUrl,
-      {headers: {Authorization: `Bearer ${accessToken}`}}
-    )
-  } else {
-    return Promise.reject(new Error("Not downloadable"))
-  }
+  return fetch(
+    `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
+    {headers: {Authorization: `Bearer ${accessToken}`}}
+  )
 }
 
 const createDocFolder = (root, id): Promise<*> => {
-  return gapi.client.drive.files.insert({
-    title: 'Untitled',
+  return gapi.client.drive.files.create({
+    name: 'Untitled',
     mimeType: 'application/vnd.google-apps.folder',
     appProperties: {nmId: id},
+    parents: [root],
   }).then(({result, status}) => {
     if (status !== 200) throw new Error('failed to create')
     return result
@@ -142,7 +142,7 @@ const getDocFolder = id => {
 
 const getDocContents = driveId => {
   return getOldestItem(
-    `'${id}' in parents and title = 'contents.nm'`
+    `'${id}' in parents and name = 'contents.nm'`
   ).then(downloadFile).then(res => res.json())
 }
 
@@ -157,6 +157,7 @@ class Session {
     this.init = getRootFolder().then(({folder, children}) => {
       console.log('folders n stuff', folder, children)
       children.forEach(child => {
+        if (!child.appProperties || !child.appProperties.nmId) return
         this.docs[child.appProperties.nmId] = child
       })
       // TODO: folders n stuff
@@ -191,6 +192,7 @@ class Session {
   }
 
   uploadDoc(docDb: any, contentsId: string) {
+    console.log('uploading', contentsId)
     return pouchDump.toString(docDb).then(contents => {
       return googleUpload.updateFile({
         id: contentsId,
@@ -200,75 +202,103 @@ class Session {
     })
   }
 
-  syncDoc(docDb: any, id: string, onStateChange: Function): () => void {
-    if (!this.docs[id]) throw new Error('wat')
-
-    const parentId = this.docs[id].id
-    const vid = id + ':latestVersion'
-    const tid = id + ':lastCheckTime'
-    const cid = id + ':pendingChanges'
-    let latestVersion = +(localStorage[vid] || 0)
-    // TODO work for multiple tabs
-    // This is to distinguish between multiple tabs
-    let lastCheckTime = +(localStorage[tid] || 0)
-    let pendingChanges = !!localStorage[cid]
-
-    return getOldestItem(`'${parentId} in parents and title = 'contents.nm'`)
-      .then(doc => {
-        // Hmmmmm how do I keep track of the most recently synced version of a
-        // thing?
-        if (doc) {
-          if (doc.version > latestVersion) {
-            console.warn("Should update from doc but I'm not")
-            // TODO update from doc, then push changes back
-            return doc
-          } else if (pendingChanges) {
-            return this.uploadDoc(docDb, doc.id)
-              .then(() => doc)
-          }
-        } else {
-          return pouchDump.toString(docDb).then(contents => {
-            return googleUpload.insertFile({
-              title: 'contents.nm',
-              mimeType: MIME_TYPE,
-              parents: [parentId],
-              contents
-            })
-          })
-        }
-      }).then(doc => {
-        docDb.changes({
-          include_docs: true,
-          live: true,
-          since: 'now',
-        })
-        .on('change', () => {
-          if (!lastCheckTime || lastCheckTime < Date.now() - TEN_MINUTES) {
-            lastCheckTime = Date.now()
-            localStorage[tid] = lastCheckTime
-            setTimeout(() => {
-              this.uploadDoc(docDb, doc.id)
-            }, FIVE_MINUTES)
-          }
-          pendingChanges = true
-          localStorage[cid] = true
-        })
-        .on('error', err => {
-          console.log('error syncing', err)
-        })
-      })
-
-    // TODO dump doc contents
-    // TODO fetch doc contents
-    // TODO do the sync n stuff
-    getDocFolder(id).then(doc => {
-      if (doc) {
-        console.log('done w/ that', doc)
-      }
-    }, err => {
-      // Umm try again later?
-      console.warn(`failed to get doc for ${id}`, err)
+  getDocFolder(id: string): Promise<*> {
+    if (this.docs[id]) return Promise.resolve(this.docs[id])
+    return getDocFolder(id).then(doc => {
+      if (!doc) throw new Error("Doc folder doesn't exist")
+      this.docs[id] = doc
+      return doc
     })
+  }
+
+  syncDoc(docDb: any, id: string, onStateChange: Function): () => void {
+    // TODO update the document title
+    let changes = null
+    const stop = () => {
+      console.log('STOPPING')
+      if (changes) {
+        changes.cancel()
+      } else {
+        console.log('never really started')
+      }
+    }
+    this.getDocFolder(id).then(parent => {
+
+      const parentId = parent.id
+      const vid = id + ':latestVersion'
+      const tid = id + ':lastCheckTime'
+      const cid = id + ':pendingChanges'
+      let latestVersion = +(localStorage[vid] || 0)
+      // This is to distinguish between multiple tabs
+      let lastCheckTime = +(localStorage[tid] || 0)
+      let pendingChanges = !!localStorage[cid]
+      console.log('v', 'check', 'pend', latestVersion, lastCheckTime, pendingChanges)
+
+      return getOldestItem(`'${parentId}' in parents and name = 'contents.nm'`)
+        .then(doc => {
+          // Hmmmmm how do I keep track of the most recently synced version of a
+          // thing?
+          if (doc) {
+            if (+doc.version > latestVersion) {
+              console.warn("Should update from doc but I'm not")
+              // TODO update from doc, then push changes back
+              return doc
+            } else if (pendingChanges) {
+              console.log('uploading pending changes', pendingChanges)
+              return this.uploadDoc(docDb, doc.id)
+                .then(() => doc)
+            } else {
+              return doc
+            }
+          } else {
+            console.log('creating contents doc')
+            return pouchDump.toString(docDb).then(contents => {
+              return googleUpload.insertFile({
+                name: 'contents.nm',
+                mimeType: MIME_TYPE,
+                parents: [parentId],
+                contents
+              }).then(doc => {
+                return gapi.client.drive.files.get({
+                  fileId: doc.id,
+                  fields: 'id, name, version, size',
+                }).then(res => {
+                  if (res.status !== 200) throw new Error('not 200 on get')
+                  return res.result
+                })
+              })
+            })
+          }
+        }).then(doc => {
+          console.log('ok version', doc.version, doc)
+          latestVersion = doc.version
+          localStorage[vid] = latestVersion
+          pendingChanges = false
+          localStorage.removeItem(cid)
+          console.log('listening for changes')
+          changes = docDb.changes({
+            include_docs: true,
+            live: true,
+            since: 'now',
+          })
+          .on('change', () => {
+            if (!lastCheckTime || lastCheckTime < Date.now() - TEN_MINUTES) {
+              console.log('gonna sync in 5 minutes')
+              lastCheckTime = Date.now()
+              localStorage[tid] = lastCheckTime
+              setTimeout(() => {
+                this.uploadDoc(docDb, doc.id)
+              }, FIVE_MINUTES)
+            }
+            pendingChanges = true
+            localStorage[cid] = true
+          })
+          .on('error', err => {
+            console.log('error syncing', err)
+          })
+        })
+    })
+    return stop
   }
 
   logout() {
