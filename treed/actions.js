@@ -660,6 +660,21 @@ const actions = {
       })
     },
 
+    createParentsNextSibling(store: Store, id: string=store.state.active, content: string='') {
+      const node = store.db.data[id]
+      if (!id || !node || !node.parent || id === 'root' || id === store.state.root) return
+      const gparent = store.db.data[node.parent].parent
+      const parentSibs = store.db.data[gparent].children
+      const pidx = parentSibs.indexOf(node.parent)
+
+      return store.actions.create({
+        fromNode: store.db.data[node.parent],
+        content,
+        pid: gparent,
+        ix: pidx + 1,
+      })
+    },
+
     createLastChild(store: Store, id: string=store.state.active, content: string='', viewData: ?any=null) {
       const node = store.db.data[id]
       if (!id || !node) return

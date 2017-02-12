@@ -173,8 +173,18 @@ const keys: ViewActionConfig = {
   createChild: {
     shortcuts: {
       normal: 'cmd+o',
+      insert: 'cmd+o',
     },
     alias: 'createChild',
+    description: 'Create child',
+  },
+
+  createParentsNextSibling: {
+    shortcuts: {
+      normal: 'cmd+shift+o',
+      insert: 'cmd+shift+o',
+    },
+    alias: 'createParentsNextSibling',
     description: 'Create child',
   },
 
