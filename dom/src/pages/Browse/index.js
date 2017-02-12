@@ -25,7 +25,7 @@ const plugins = [
 ]
 
 const viewTypes = {
-  table: require('treed/views/table').default,
+  // table: require('treed/views/table').default,
   list: require('treed/views/list').default,
   // whiteboard: require('treed/views/whiteboard').default,
 }
@@ -118,6 +118,22 @@ export default class Browse extends Component {
     treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
     treed.ready.then(() => {
       const store = treed.registerView({viewType: 'list'})
+      this._unsubs.push(store.on(['file:setup sync'], () => {
+        const node = store.getters.activeNode()
+        if (node.type !== 'file') {
+          return console.error("Can't setup sync for something that's not a file")
+        }
+        this.props.userSession.setupSyncing(node._id)
+        // TODO sync it then
+      }))
+      this._unsubs.push(store.on(['navigate-to-current-active'], () => {
+        console.log('want to navigate to', store.state.active)
+        const node = store.getters.activeNode()
+        if (node.type !== 'file') {
+          return console.error("Can't navigate to something that's not a file")
+        }
+        hashHistory.push('/doc/' + store.state.active)
+      }))
       this._unsubs.push(store.on([store.events.sharedViewData()], () => {
         saveSharedViewData('notablemind_user', store.sharedViewData)
       }))
@@ -162,7 +178,7 @@ export default class Browse extends Component {
 
   render() {
     const {store} = this.state
-    const TableView = viewTypes.table.Component
+    const ListView = viewTypes.list.Component
     return <div className={css(styles.container)}>
       <div className={css(styles.buttons)}>
         <button
@@ -179,7 +195,7 @@ export default class Browse extends Component {
           Settings
         </button>
       </div>
-      {store && <TableView store={store} />}
+      {store && <ListView store={store} />}
       {this.state.menu &&
         <ContextMenu
           pos={this.state.menu.pos}

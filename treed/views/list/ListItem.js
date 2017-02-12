@@ -10,15 +10,6 @@ import Icon from '../utils/Icon'
 
 import './index.css'
 
-const isAtEdge = (box, x, y) => {
-  return (
-    x - box.left < 5 ||
-    y - box.top < 5 ||
-    x > box.right - 5 ||
-    y > box.bottom - 5
-  )
-}
-
 export default class ListItem extends Component {
   _sub: any
   _div: any
@@ -156,11 +147,11 @@ export default class ListItem extends Component {
           store={this.props.store}
 
         />
-          <Icon
+        <Icon
           className={css(styles.dragger, this.state.isDragging && styles.draggerDragging) + ' ListItem_dragger'}
           onMouseDown={this.startDragging}
           name="arrow-move"
-          />
+        />
       </div>
 
       <div className={css(styles.children) + ' Node_children'}>
@@ -204,6 +195,7 @@ const styles = StyleSheet.create({
 
   top: {
     position: 'relative',
+    paddingRight: 30,
   },
 
   topNormal: {

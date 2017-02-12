@@ -95,6 +95,7 @@ class Document extends Component {
     searching: bool,
     // sharedViewData: any,
     syncState: string,
+    shouldSync: boolean,
   }
   _unsubs: Array<() => void>
 
@@ -107,16 +108,11 @@ class Document extends Component {
       store: null,
       // sharedViewData: loadSharedViewData(props.id),
       syncState: 'unsynced',
+      shouldSync: false,
       // panesSetup,
     }
     this._unsubs = [
     ]
-
-    if (userSession) {
-      this._unsubs.push(userSession.syncDoc(this.state.db, id, syncState => {
-        this.setState({syncState})
-      }))
-    }
   }
 
   componentDidMount() {
@@ -130,7 +126,7 @@ class Document extends Component {
   goBack = () => {
     if (this.state.treed) {
       const numItems = Object.keys(this.state.treed.db.data).length
-      this.props.updateFile(this.props.id, 'size', numItems)
+      this.props.updateFile(this.props.id, ['types', 'file', 'size'], numItems)
     }
     hashHistory.push('/')
   }
@@ -189,48 +185,60 @@ class Document extends Component {
       this._unsubs.forEach(f => f())
       this._unsubs = []
     }
-    this.props.updateFile(this.props.id, 'last_opened', Date.now())
-    const treed = window._treed = new Treed(
-      treedPouch(this.state.db),
-      plugins,
-      viewTypes,
-      this.props.id,
-      loadSharedViewData(this.props.id),
-      // (this.state.sharedViewData || {})
-    )
-    this._unsubs.push(treed.on(['node:root'], () => {
-      this.onTitleChange(treed.db.data.root.content)
-    }))
-    // TODO actually get the user shortcuts
-    const userShortcuts = {}
-    const globalLayer = makeKeyLayer({
-      ...this.keyLayerConfig,
-      ...makeViewTypeLayerConfig(viewTypes, this.setViewType),
-    }, 'global', userShortcuts)
-    treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
-    treed.ready.then(() => {
-      this.props.setTitle(<ViewTypeSwitcher
-        globalStore={treed.globalStore}
-      />)
+    // TODO maybe let other docs have nested docs. could be cool
+    this.props.updateFile(this.props.id, ['types', 'file', 'lastOpened'], Date.now()).then(node => {
+      const shouldSync = node.types.file.synced
+      this.setState({shouldSync})
 
-      this.onTitleChange(treed.db.data.root.content)
-      const viewState = loadLastViewState(this.props.id)
-      if (!viewState.viewType) viewState.viewType = 'list'
-      const store = treed.registerView(viewState)
-      this._unsubs.push(store.on([store.events.serializableState()], () => {
-        const state = treed.serializeViewState(store.id)
-        // TODO debounce
-        saveLastViewState(this.props.id, state)
+      if (shouldSync && this.props.userSession) {
+        this._unsubs.push(this.props.userSession.syncDoc(this.state.db, this.props.id, syncState => {
+          this.setState({syncState})
+        }))
+      }
+
+      const treed = window._treed = new Treed(
+        treedPouch(this.state.db),
+        plugins,
+        viewTypes,
+        this.props.id,
+        loadSharedViewData(this.props.id),
+        node.content,
+        // (this.state.sharedViewData || {})
+      )
+      this._unsubs.push(treed.on(['node:root'], () => {
+        this.onTitleChange(treed.db.data.root.content)
       }))
-      this._unsubs.push(store.on([store.events.sharedViewData()], () => {
-        saveSharedViewData(this.props.id, store.sharedViewData)
-      }))
-      this._unsubs.push(store.on([store.events.viewType()], () => {
-        this.setState({})
-      }))
-      this.setState({
-        treed,
-        store,
+      // TODO actually get the user shortcuts
+      const userShortcuts = {}
+      const globalLayer = makeKeyLayer({
+        ...this.keyLayerConfig,
+        ...makeViewTypeLayerConfig(viewTypes, this.setViewType),
+      }, 'global', userShortcuts)
+      treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
+      treed.ready.then(() => {
+        this.props.setTitle(<ViewTypeSwitcher
+          globalStore={treed.globalStore}
+        />)
+
+        this.onTitleChange(treed.db.data.root.content)
+        const viewState = loadLastViewState(this.props.id)
+        if (!viewState.viewType) viewState.viewType = 'list'
+        const store = treed.registerView(viewState)
+        this._unsubs.push(store.on([store.events.serializableState()], () => {
+          const state = treed.serializeViewState(store.id)
+          // TODO debounce
+          saveLastViewState(this.props.id, state)
+        }))
+        this._unsubs.push(store.on([store.events.sharedViewData()], () => {
+          saveSharedViewData(this.props.id, store.sharedViewData)
+        }))
+        this._unsubs.push(store.on([store.events.viewType()], () => {
+          this.setState({})
+        }))
+        this.setState({
+          treed,
+          store,
+        })
       })
     })
   }
@@ -249,11 +257,13 @@ class Document extends Component {
     document.title = title
     // this.props.setTitle(title)
     const id = this.props.id
-    this.props.updateFile(id, 'title', title)
+    this.props.updateFile(id, ['content'], title)
   }
 
   componentWillReceiveProps(nextProps: any) {
-    if (nextProps.userSession && !this.props.userSession) {
+    if (this.state.shouldSync &&
+        nextProps.userSession &&
+        !this.props.userSession) {
       this._unsubs.push(nextProps.userSession.syncDoc(this.state.db, nextProps.id, syncState => {
         this.setState({syncState})
       }))

@@ -24,7 +24,7 @@ const plugin: Plugin<*, *> = {
   nodeTypes: {
     file: {
       title: 'File',
-      newSiblingsShouldCarryType: true,
+      newSiblingsShouldCarryType: false,
       // TODO hook this up
       warnOnTypeChange: (store: Store, node: any) => {
         return getDatabaseNames().then(names => {
@@ -42,7 +42,7 @@ const plugin: Plugin<*, *> = {
       },
       shortcut: 'f',
       attributeColumns: {
-        last_opened: {
+        lastOpened: {
           editable: false,
           title: 'Last opened',
         },
@@ -51,6 +51,33 @@ const plugin: Plugin<*, *> = {
           title: 'Size',
         },
       },
+
+      contextMenu: (typeData, node, store) => {
+        return {
+          text: 'Synced',
+          checked: !!typeData.synced,
+          action: () => {
+            store.actions.setNested(node._id, ['types', 'file', 'synced'], !typeData.synced)
+            if (!typeData.synced) {
+              // Am I just organizing this wrong? There should be a better way
+              // to indicate to outside ppl what's going on.
+              store.actions.setActive(node._id)
+              store.emit('file:setup sync')
+            }
+            // TODO
+          },
+        }
+      },
+
+      defaultNodeConfig() {
+        return {
+          size: 0,
+          synced: true,
+          lastOpened: null,
+          // TODO 'repl' etc.
+        }
+      },
+
       actions: {
         navigate: {
           shortcuts: {
@@ -63,10 +90,13 @@ const plugin: Plugin<*, *> = {
           },
         },
       },
-      render: props => (
-        <div
+
+      render: props => {
+        const {lastOpened = null, size = 0, synced = false} = props.node.types.file || {}
+        return <div
           className={css(styles.row)}
           onMouseDownCapture={(e) => {
+            if (e.button !== 0) return
             e.stopPropagation()
             e.preventDefault()
             props.store.actions.setActive(props.node._id)
@@ -75,18 +105,88 @@ const plugin: Plugin<*, *> = {
         >
           <Icon className={css(styles.icon)} name="document-text" />
           <props.Content {...props} style={{flex: 1}} />
+          <Strut size={10} />
+          <div className={css(styles.date)}>
+          {lastOpened && readableDate(lastOpened)}
+          </div>
+          <Strut size={10} />
+          {size + ''}
+          <Strut size={10} />
+          <SyncIcon synced={synced} />
+          <Strut size={5} />
         </div>
-      )
+      }
     },
   },
 }
 export default plugin
+
+const startOfDay = date => {
+  const d = new Date(date)
+  d.setHours(0)
+  d.setMinutes(0)
+  d.setSeconds(0)
+  d.setMilliseconds(0)
+  return d.getTime()
+}
+
+const daysOfWeek = ['Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun']
+
+const readableDate = date => {
+  const today = Date.now()
+  const startOfToday = startOfDay(today)
+  const startOfThat = startOfDay(date)
+  const d = new Date(date)
+  if (startOfToday === startOfThat) {
+    let h = d.getHours()
+    let pm = false
+    let m = d.getMinutes()
+    if (h === 12) pm = true
+    if (h > 12) {
+      h -= 12
+    }
+    if (m < 10) m = `0${m}`
+    return `${h}:${m}${pm ? 'pm' : 'am'}`
+  }
+  const daysBetween = Math.round((startOfToday - startOfThat) / (1000 * 60 * 60 * 24))
+  if (daysBetween === 1) {
+    return 'Yesterday'
+  } else if (daysBetween < 7) {
+    return daysOfWeek[d.getDay()]
+  } else {
+    return d.toLocaleDateString()
+  }
+}
+
+const Strut = ({size}) => <div style={{flexBasis: size}} />
+
+const SyncIcon = ({synced}) => {
+  if (synced) {
+    return <Icon size={24} name="ios-loop" />
+  } else {
+    return <div style={{position: 'relative'}}>
+      <Icon size={24} color="#aaa" name="ios-loop" />
+      <Icon size={24} color="#aaa" name="ios-close-empty" style={{
+        // transform: 'rotate(-45deg)',
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        // left: -1,
+      }} />
+    </div>
+  }
+}
 
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'stretch',
+  },
+
+  date: {
+    fontSize: '70%',
   },
 
   icon: {

@@ -43,7 +43,7 @@ const bindStoreProxies = (store, config, sub) => {
   })
 }
 
-const createRoot = now => {
+const createRoot = (now, rootContents = '') => {
   return {
     _id: 'root',
     created: now,
@@ -51,7 +51,7 @@ const createRoot = now => {
     parent: null,
     children: [],
     type: 'normal',
-    content: '',
+    content: rootContents,
     plugins: {},
     types: {},
     views: {},
@@ -98,7 +98,7 @@ export default class Treed {
   globalStore: GlobalStore
   viewTypes: ViewTypes
 
-  constructor(db: Db, plugins: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string, sharedViewData: any) {
+  constructor(db: Db, plugins: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string, sharedViewData: any, defaultRootContents: string = '') {
     this.emitter = new FlushingEmitter()
     this.viewTypes = viewTypes
     this.commands = new Commandeger(commands, this.setActive)
@@ -139,7 +139,7 @@ export default class Treed {
       // open this up until we've had a full sync.
       if (!this.db.data.root) {
         console.log('creating')
-        return this.db.saveMany([createRoot(now), createSettings(now, plugins)])
+        return this.db.saveMany([createRoot(now, defaultRootContents), createSettings(now, plugins)])
       } else if (!this.db.data.settings.version ||
                  this.db.data.settings.version < migrations.version) {
         return migrations.migrate(this.db)

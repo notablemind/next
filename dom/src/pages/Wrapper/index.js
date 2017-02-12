@@ -100,15 +100,28 @@ export default class Wrapper extends Component {
 
   // this is used by `Document` to update last-opened. would be good to not
   // expose this and just handle it here.
-  updateFile = (id: string, attr: string, value: any) => {
+  updateFile = (id: string, path: Array<string>, value: any) => {
     if (!this.state.userDb) {
       return console.error('No user db - unable to update file')
     }
 
-    this.state.userDb.get(id).then(doc => {
-      if (doc[attr] !== value) {
-        console.log(`saving doc ${id}: ${attr}`)
-        this.state.userDb.upsert(id, doc => ({...doc, [attr]: value}))
+    return this.state.userDb.get(id).then(node => {
+      const last = path.pop()
+      const parent = path.reduce((obj, a) => obj[a] ? obj[a] : (obj[a] = {}), node)
+      if (parent[last] !== value) {
+        parent[last] = value
+        console.log(`saving doc ${id}: ${path.join('|')}`)
+        return this.state.userDb.upsert(id, node => {
+          const parent = path.reduce((obj, a) => obj[a] ? obj[a] : (obj[a] = {}), node)
+          if (parent[last] !== value) {
+            parent[last] = value
+            return node
+          } else {
+            return false
+          }
+        }).then(() => node)
+      } else {
+        return node
       }
     })
   }
@@ -129,7 +142,7 @@ export default class Wrapper extends Component {
         userSession: this.state.remoteSession,
         remoteUser: this.state.user,
         userDb: this.state.userDb,
-        // updateFile: this.updateFile,
+        updateFile: this.updateFile,
         setTitle: this.setTitle,
       })}
     </div>
