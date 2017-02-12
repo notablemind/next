@@ -5,9 +5,8 @@ secret.json
 supersecret.json
 shared/config.json
 files.zip
-_parsed
-files
-html
-json
 uri-index.json
 titles.json
+plugins/scriptures/server/files
+plugins/scriptures/server/html
+plugins/scriptures/server/json
