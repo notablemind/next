@@ -199,6 +199,9 @@ export default class Browse extends Component {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   settingsButton: {
     padding: '5px 10px',
     border: '1px solid #aaa',

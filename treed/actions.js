@@ -95,14 +95,14 @@ const nextActiveAfterRemoval = (id, nodes, goUp) => {
   return nid
 }
 
-const treeToItems = (pid, id, node, items) => {
+const treeToItems = (pid, id, node, items, preserveIds) => {
   items.push({
     ...node,
     _id: id,
     parent: pid,
     children: node.children.map(child => {
-      const nid = uuid()
-      treeToItems(id, nid, child, items)
+      const nid = preserveIds ? child._id : uuid()
+      treeToItems(id, nid, child, items, preserveIds)
       return nid
     }),
   })
@@ -779,11 +779,11 @@ const actions = {
       store.actions.setActive(store.db.data[id].parent)
     },
 
-    insertTreeAfter(store: Store, id: string, tree: any) {
+    insertTreeAfter(store: Store, id: string, tree: *, preserveIds: boolean = false) {
       let {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       const nid = uuid()
       const items = []
-      treeToItems(pid, nid, tree, items)
+      treeToItems(pid, nid, tree, items, preserveIds)
       store.execute({
         type: 'insertTree',
         args: {id: nid, pid, ix: idx, items},
@@ -1136,7 +1136,7 @@ const actions = {
 
       // TODO climb up parentage to see what the view should be?
       const defaultView = store.getters.defaultView(id) || store.getters.defaultView('root')
-      if (defaultView) {
+      if (defaultView && defaultView.viewType) {
         store.actions.changeViewType(defaultView.viewType, defaultView)
       }
 

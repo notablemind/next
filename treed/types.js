@@ -115,6 +115,7 @@ export type KeyLayerAction = {
   fn: Function,
   description: string,
   original: string,
+  fallback?: ?KeyLayerAction,
 }
 export type KeyLayer = {
   prefixes: {[prefix: string]: true},

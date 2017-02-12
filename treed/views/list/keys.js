@@ -114,7 +114,7 @@ const keys: ViewActionConfig = {
 
   cut: {
     shortcuts: {
-      normal: 'y x, cmd+x',
+      normal: 'y x, cmd+x, d x, x',
     },
     description: 'Mark the current node to cut',
     alias: 'setCut',

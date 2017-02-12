@@ -36,8 +36,9 @@ const addPluginKeys = (store, layers, plugins) => {
                   } else {
                     console.warn("that shortcut isn't defined for this node type")
                     console.log(scut, node.type, byType)
+                    return false
                   }
-                })
+                }, adef.description, true)
               }
               typeSpecific[mode][scut][type] = adef.action
             })

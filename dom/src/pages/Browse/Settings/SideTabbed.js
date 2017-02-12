@@ -21,6 +21,7 @@ export default class SideTabbed extends Component {
       <div className={css(styles.leftPane)}>
         {Object.keys(tabs).map(title => (
           <div
+            key={title}
             onClick={() => this.setState({currentTab: title})}
             className={css(styles.tabTitle, title === currentTab && styles.tabTitleCurrent)}>
             {title}

@@ -50,18 +50,36 @@ export default class ImageBody extends Component {
       return this.setState({error: 'attachment not found'})
     }
     if (node._attachments[attachmentId] && node._attachments[attachmentId].data) {
+      //* TODO figure out why this isn't working???
       const url = URL.createObjectURL(
         node._attachments[attachmentId].data
       )
       urlCache[key] = url
       this.setState({src: url})
+      // */
+      /*
+      const f = new FileReader()
+      f.readAsDataURL(node._attachments[attachmentId].data)
+      f.onload = () => {
+        const url = f.result
+        urlCache[key] = url
+        this.setState({src: url})
+      }
+      */
       return
     }
     this.props.store.db.getAttachment(node._id, attachmentId).then(
       blob => {
+        /*
+        const f = new FileReader()
+        f.readAsDataURL(blob)
+        f.onload = () => {
+          const url = f.result
+        }
+        // */
         const url = URL.createObjectURL(blob)
-        urlCache[key] = url
-        this.setState({src: url})
+          urlCache[key] = url
+          this.setState({src: url})
       },
       error => this.setState({error}),
     )
