@@ -6,23 +6,23 @@ import exportAll from './exportAll'
 
 const getFiles = data => {
   return Object.keys(data)
-    .filter(id => data[id].type === 'doc')
+    .filter(id => data[id].type === 'file')
     .map(id => data[id])
     .map(file => ({
       id: file._id,
-      title: file.title,
-      last_opened: file.last_opened,
-      size: file.size,
+      title: file.content,
+      lastOpened: file.types.file.lastOpened,
+      size: file.types.file.size,
       selected: true
-    })).sort((a, b) => a.last_opened - b.last_opened)
+    })).sort((a, b) => a.lastOpened - b.lastOpened)
 }
 
 export default class ExportModal extends Component {
-  constructor({data}) {
+  constructor({store}) {
     super()
 
     this.state = {
-      files: getFiles(data)
+      files: getFiles(store.db.data)
     }
   }
 
@@ -52,8 +52,6 @@ export default class ExportModal extends Component {
   render() {
     return <div
       className={css(styles.container)}
-      // TODO onClick should close
-      // onClick=
     >
       <div className={css(styles.title)}>
         Select docs to export
@@ -71,8 +69,8 @@ export default class ExportModal extends Component {
             <div className={css(styles.spacer)} />
             {file.size}
             <div className={css(styles.date)}>
-            {file.last_opened ?
-              new Date(file.last_opened).toLocaleDateString()
+            {file.lastOpened ?
+              new Date(file.lastOpened).toLocaleDateString()
               : ''}
             </div>
           </div>
@@ -85,7 +83,7 @@ export default class ExportModal extends Component {
       {this.state.link &&
         <a
           href={this.state.link}
-          download="ExportedDocuments.zip"
+          download="ExportedNotableMindDocuments.zip"
         >Download</a>}
     </div>
   }
@@ -110,6 +108,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: '5px 10px',
     borderBottom: '2px solid #fff',
+    alignItems: 'center',
     ':hover': {
       backgroundColor: '#eee',
     },

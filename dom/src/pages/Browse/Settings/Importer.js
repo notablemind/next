@@ -30,7 +30,12 @@ export default class Importer extends Component {
 
   onImport = () => {
     console.log('gonna import')
-    debugger
+    importAll(this.state.file).then(
+      files => this.props.onImported(files),
+      err => {
+        console.error(err)
+      }
+    )
   }
 
   render() {

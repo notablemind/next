@@ -1,6 +1,7 @@
 // @flow
 
 import Database from './Database'
+import newNode from './newNode'
 type Events = any
 
 type Command<T> = {
@@ -100,16 +101,7 @@ const commands: {[key: string]: Command<any>} = {
       if (ix === -1) ix = children.length
       children.splice(ix, 0, id)
       const prom = db.saveMany([{
-        _id: id,
-        created: now,
-        modified: now,
-        parent: pid,
-        children: [],
-        type: 'normal',
-        content: '',
-        plugins: {},
-        types: {},
-        views: {},
+        ...newNode(id, pid, now),
         ...data,
       }, {
         ...db.data[pid],

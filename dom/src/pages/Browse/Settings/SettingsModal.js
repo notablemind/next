@@ -9,13 +9,13 @@ import SideTabbed from './SideTabbed'
 
 export default class ExportModal extends Component {
   render() {
-    const {onClose, data} = this.props
+    const {onClose, store} = this.props
     return <Modal onClose={onClose} className={css(styles.container)}>
       <SideTabbed
         className={css(styles.tabContainer)}
         tabs={{
-          ['Import']: () => <Importer data={data} />,
-          ['Export']: () => <Exporter data={data} />,
+          ['Import']: () => <Importer store={store} />,
+          ['Export']: () => <Exporter store={store} />,
         }}
       />
     </Modal>

@@ -170,28 +170,15 @@ export default class Browse extends Component {
     }
   }
 
-  onNewFile = () => {
-  }
-
-  onNewFolder = () => {
-  }
-
   render() {
     const {store} = this.state
     const ListView = viewTypes.list.Component
     return <div className={css(styles.container)}>
       <div className={css(styles.buttons)}>
         <button
-          onClick={this.onNewFile}
+          className={css(styles.settingsButton)}
+          onClick={() => this.setState({showSettings: true})}
         >
-          New file
-        </button>
-        <button
-          onClick={this.onNewFolder}
-        >
-          New folder
-        </button>
-        <button onClick={() => this.setState({showSettings: true})}>
           Settings
         </button>
       </div>
@@ -205,11 +192,21 @@ export default class Browse extends Component {
       {this.state.showSettings &&
         <SettingsModal
           onClose={() => this.setState({showSettings: false})}
+          store={store}
         />}
     </div>
   }
 }
 
 const styles = StyleSheet.create({
+  settingsButton: {
+    padding: '5px 10px',
+    border: '1px solid #aaa',
+    backgroundColor: 'white',
+    borderRadius: 4,
+    alignSelf: 'flex-end',
+    marginRight: 10,
+    cursor: 'pointer',
+  },
 })
 

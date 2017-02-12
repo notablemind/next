@@ -13,6 +13,7 @@ import addPluginKeys from './keys/addPluginKeys'
 import makeViewKeyLayers from './keys/makeViewKeyLayers'
 import KeyManager from './keys/Manager'
 
+import newNode from './newNode'
 import organizePlugins from './organizePlugins'
 import bindCommandProxies from './bindCommandProxies'
 import handlePaste from './handlePaste'
@@ -41,21 +42,6 @@ const bindStoreProxies = (store, config, sub) => {
   Object.keys(config.actions[sub]).forEach(name => {
     store.actions[name] = config.actions[sub][name].bind(null, store)
   })
-}
-
-const createRoot = (now, rootContents = '') => {
-  return {
-    _id: 'root',
-    created: now,
-    modified: now,
-    parent: null,
-    children: [],
-    type: 'normal',
-    content: rootContents,
-    plugins: {},
-    types: {},
-    views: {},
-  }
 }
 
 const createSettings = (now, plugins) => {
@@ -139,7 +125,7 @@ export default class Treed {
       // open this up until we've had a full sync.
       if (!this.db.data.root) {
         console.log('creating')
-        return this.db.saveMany([createRoot(now, defaultRootContents), createSettings(now, plugins)])
+        return this.db.saveMany([newNode('root', null, now, defaultRootContents), createSettings(now, plugins)])
       } else if (!this.db.data.settings.version ||
                  this.db.data.settings.version < migrations.version) {
         return migrations.migrate(this.db)
