@@ -1,11 +1,15 @@
 
 const BOUNDARY = '-------314159265358979323846';
 
+const toBase64 = text => {
+  return btoa(unescape(encodeURIComponent(text)))
+}
+
 const makeBody = (boundary, metadata, contentType, contents) => {
   const delimiter = "\r\n--" + boundary + "\r\n";
   const close_delim = "\r\n--" + boundary + "--";
 
-  var base64Data = btoa(contents);
+  var base64Data = toBase64(contents);
   var multipartRequestBody = (
       delimiter +
       'Content-Type: application/json\r\n\r\n' +

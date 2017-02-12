@@ -10,6 +10,8 @@ import treedPouch from 'treed/pouch'
 import KeyManager from 'treed/keys/Manager'
 import makeKeyLayer from 'treed/keys/makeKeyLayer'
 import SettingsModal from './Settings/SettingsModal'
+import Searcher from '../Document/Searcher'
+import KeyCompleter from '../Document/KeyCompleter'
 
 import ContextMenu from 'treed/views/context-menu/ContextMenu'
 
@@ -171,7 +173,7 @@ export default class Browse extends Component {
   }
 
   render() {
-    const {store} = this.state
+    const {store, treed} = this.state
     const ListView = viewTypes.list.Component
     return <div className={css(styles.container)}>
       <div className={css(styles.buttons)}>
@@ -193,6 +195,14 @@ export default class Browse extends Component {
         <SettingsModal
           onClose={() => this.setState({showSettings: false})}
           store={store}
+        />}
+        {treed && <KeyCompleter
+          treed={treed}
+        />}
+      {treed && this.state.searching &&
+        <Searcher
+          treed={treed}
+          onClose={() => this.setState({searching: false})}
         />}
     </div>
   }
