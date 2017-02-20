@@ -12,6 +12,7 @@ import baseEvents from './events'
 import addPluginKeys from './keys/addPluginKeys'
 import addViewKeys from './keys/addViewKeys'
 import KeyManager from './keys/Manager'
+import makeKeyLayer from './keys/makeKeyLayer'
 
 import newNode from './newNode'
 import organizePlugins from './organizePlugins'
@@ -114,7 +115,13 @@ export default class Treed {
       runtimeId: uuid(),
       documentId,
     }
-    this.keyManager = new KeyManager([
+    this.keyManager = new KeyManager([makeKeyLayer({
+      normalMode: {
+        shortcut: 'escape',
+        action: () => this.activeView().actions.normalMode(),
+        description: 'go back to normal mode',
+      },
+    }, 'general.', {}),
       () => this.getCurrentKeyLayer(),
     ])
     // this._pluginKeyLayer = this.keyManager.addLayer(pluginKeys(plugins))
@@ -318,6 +325,14 @@ export default class Treed {
     })
     Object.keys(viewTypeConfig.actions).forEach(key => {
       store.actions[key] = viewTypeConfig.actions[key].bind(null, store)
+    })
+    this.enabledPlugins.forEach(plugin => {
+      const {actions} = plugin
+      if (actions) {
+        Object.keys(actions).forEach(key => {
+          store.actions[key] = actions[key].bind(null, store)
+        })
+      }
     })
     bindStoreProxies(store, this.config, 'view')
   }
