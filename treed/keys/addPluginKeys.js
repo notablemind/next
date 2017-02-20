@@ -1,15 +1,21 @@
 // @-flow
 
 import addKey from './addKey'
+import addViewKeys from './addViewKeys'
 
 const addPluginKeys = (store, layers, plugins) => {
   const typeSpecific = {insert: {}, normal: {}, visual: {}}
   const setNormalType = () => {
     store.actions.setNodeType(store.state.active, 'normal')
   }
+  if (!layers.normal) layers.normal = {prefixes: {}, actions: {}}
+  if (!layers.insert) layers.insert = {prefixes: {}, actions: {}}
   addKey(layers.normal, `t n`, setNormalType, 'Set type: Normal')
   addKey(layers.insert, `alt+t n`, setNormalType, 'Set type: Normal')
   plugins.forEach(plugin => {
+    if (plugin.keys) {
+      addViewKeys(layers, plugin.keys, `plugins.${plugin.id}.`, {}, store)
+    }
     if (plugin.nodeTypes) {
       Object.keys(plugin.nodeTypes).forEach(type => {
         const defn = plugin.nodeTypes[type]
@@ -27,6 +33,7 @@ const addPluginKeys = (store, layers, plugins) => {
               const scut = adef.shortcuts[mode]
               if (!typeSpecific[mode][scut]) {
                 const byType = typeSpecific[mode][scut] = {}
+                if (!layers[mode]) layers[mode] = {prefixes: {}, actions: {}}
                 addKey(layers[mode], scut, () => {
                   const node = store.db.data[store.state.active]
                   if (node && byType[node.type]) {

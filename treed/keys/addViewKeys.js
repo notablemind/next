@@ -4,13 +4,7 @@ import addKey from './addKey'
 
 import type {ViewActionConfig, Store, UserShortcuts} from '../types'
 
-export default (config: ViewActionConfig, namePrefix: string, userShortcuts: UserShortcuts, store: Store) => {
-  const layers = {
-    insert: {prefixes: {}, actions: {}},
-    normal: {prefixes: {}, actions: {}},
-    visual: {prefixes: {}, actions: {}},
-    // hmmm I wonder if there will ever be other modes...
-  }
+export default (layers: any, config: ViewActionConfig, namePrefix: string, userShortcuts: UserShortcuts, store: Store) => {
   Object.keys(config).forEach(name => {
     Object.keys(config[name].shortcuts).forEach(mode => {
       const shortcut = userShortcuts[namePrefix + name + '.' + mode] || config[name].shortcuts[mode]
@@ -29,9 +23,11 @@ export default (config: ViewActionConfig, namePrefix: string, userShortcuts: Use
       } else {
         throw new Error('Invalid shortcut config')
       }
+      if (!layers[mode]) {
+        layers[mode] = {prefixes: {}, actions: {}}
+      }
       addKey(layers[mode], shortcut, action, config[name].description)
     })
   })
-  return layers
 }
 

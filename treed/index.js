@@ -10,7 +10,7 @@ import baseGetters from './getters'
 import baseEvents from './events'
 
 import addPluginKeys from './keys/addPluginKeys'
-import makeViewKeyLayers from './keys/makeViewKeyLayers'
+import addViewKeys from './keys/addViewKeys'
 import KeyManager from './keys/Manager'
 
 import newNode from './newNode'
@@ -204,7 +204,8 @@ export default class Treed {
       }
     }
     this.setupActionsAndGetters(store, viewTypeConfig)
-    this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
+    this.keys[store.id] = {}
+    addViewKeys(this.keys[store.id], this.viewTypes[type].keys, `views.${type}.`, {}, store)
     addPluginKeys(store, this.keys[store.id], this.enabledPlugins)
     store.emit(store.events.viewType())
     store.emit(store.events.serializableState())
@@ -301,7 +302,8 @@ export default class Treed {
     this.setupActionsAndGetters(store, viewTypeConfig)
     bindCommandProxies(store, this.commands, this.emitter, args, id)
 
-    this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
+    this.keys[store.id] = {}
+    addViewKeys(this.keys[store.id], this.viewTypes[type].keys, `views.${type}.`, {}, store)
     addPluginKeys(store, this.keys[store.id], this.enabledPlugins)
 
     this.globalState.activeView = store.id

@@ -198,6 +198,9 @@ export type Plugin<T, S> = {|
     [key: string]: PluginNodeTypeConfig<*>,
   },
 
+  keys?: ViewActionConfig,
+  actions?: {[key: string]: Function},
+
   node?: {
     className?: (pluginData: any, node: Node, store: Store) => ?string,
     contextMenu?: (pluginData: any, node: Node, store: Store) => ?MenuResult,

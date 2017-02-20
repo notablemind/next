@@ -26,6 +26,7 @@ const plugins = [
   require('../../../../plugins/image/dom').default,
   require('../../../../plugins/date/dom').default,
   require('../../../../plugins/scriptures').default,
+  require('../../../../plugins/tags').default,
 ]
 
 const viewTypes = {
