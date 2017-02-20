@@ -1,5 +1,5 @@
 
-.ListItem_top:hover > .ListItem_dragger {
+.ListItem_top:hover .Treed_show_on_top_hover {
   display: flex!important;
 }
 

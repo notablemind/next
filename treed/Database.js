@@ -31,6 +31,7 @@ export type Node = {
   created: number,
   types: {[type: string]: {}},
   views: {[type: string]: {}},
+  plugins: {[type: string]: {}},
 }
 
 export type DumpedNode = {

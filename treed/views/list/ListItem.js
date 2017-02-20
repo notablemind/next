@@ -148,7 +148,7 @@ export default class ListItem extends Component {
 
         />
         <Icon
-          className={css(styles.dragger, this.state.isDragging && styles.draggerDragging) + ' ListItem_dragger'}
+          className={css(styles.dragger, this.state.isDragging && styles.draggerDragging) + ' Treed_show_on_top_hover'}
           onMouseDown={this.startDragging}
           name="arrow-move"
         />

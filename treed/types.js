@@ -179,6 +179,8 @@ export type PluginNodeTypeConfig<T> = {
   },
 }
 
+export type Block = (node: Node, store: Store) => ?React$Element<*>
+
 export type Plugin<T, S> = {|
   id: string,
   node?: PluginNodeConfig,
@@ -194,6 +196,19 @@ export type Plugin<T, S> = {|
 
   nodeTypes?: {
     [key: string]: PluginNodeTypeConfig<*>,
+  },
+
+  node?: {
+    className?: (pluginData: any, node: Node, store: Store) => ?string,
+    contextMenu?: (pluginData: any, node: Node, store: Store) => ?MenuResult,
+    blocks?: {
+      left?: Block,
+      right?: Block,
+      above?: Block,
+      below?: Block,
+      before?: Block, // to the left on a ~flat display, or above in a ~tall display
+      after?: Block, // to the right in a ~flat display, or below in a ~tall display
+    },
   },
 
   view?: {

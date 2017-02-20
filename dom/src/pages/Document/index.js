@@ -15,6 +15,7 @@ import KeyCompleter from './KeyCompleter'
 import ViewTypeSwitcher from './ViewTypeSwitcher'
 import ViewHeader from './ViewHeader'
 import withStore from './withStore'
+import Settings from '../Settings/DocumentSettings'
 
 import type {Store} from 'treed/types'
 
@@ -96,6 +97,8 @@ class Document extends Component {
     // sharedViewData: any,
     syncState: string,
     shouldSync: boolean,
+    showingSettings: boolean,
+    tick: number,
   }
   _unsubs: Array<() => void>
 
@@ -109,6 +112,8 @@ class Document extends Component {
       // sharedViewData: loadSharedViewData(props.id),
       syncState: 'unsynced',
       shouldSync: false,
+      showingSettings: false,
+      tick: 0,
       // panesSetup,
     }
     this._unsubs = [
@@ -120,7 +125,17 @@ class Document extends Component {
     window.addEventListener('dragover', this.onDrag)
     window.addEventListener('paste', this.onPaste)
     window.addEventListener('drop', this.onDrop)
-    this.makeTreed(this.state.db)
+    this.props.updateFile(this.props.id, ['types', 'file', 'lastOpened'], Date.now()).then(node => {
+      const shouldSync = node.types.file.synced
+      this.setState({shouldSync})
+
+      if (shouldSync && this.props.userSession) {
+        this._unsubs.push(this.props.userSession.syncDoc(this.state.db, this.props.id, syncState => {
+          this.setState({syncState})
+        }))
+      }
+      this.makeTreed(node.content)
+    })
   }
 
   goBack = () => {
@@ -179,67 +194,73 @@ class Document extends Component {
     }
   }
 
-  makeTreed(db: any) {
+  makeTreed(title: string) {
     if (this.state.treed) {
       this.state.treed.destroy()
       this._unsubs.forEach(f => f())
       this._unsubs = []
     }
     // TODO maybe let other docs have nested docs. could be cool
-    this.props.updateFile(this.props.id, ['types', 'file', 'lastOpened'], Date.now()).then(node => {
-      const shouldSync = node.types.file.synced
-      this.setState({shouldSync})
 
-      if (shouldSync && this.props.userSession) {
-        this._unsubs.push(this.props.userSession.syncDoc(this.state.db, this.props.id, syncState => {
-          this.setState({syncState})
-        }))
-      }
+    const treed = window._treed = new Treed(
+      treedPouch(this.state.db),
+      plugins,
+      viewTypes,
+      this.props.id,
+      loadSharedViewData(this.props.id),
+      title,
+      // (this.state.sharedViewData || {})
+    )
+    this._unsubs.push(treed.on(['node:root'], () => {
+      this.onTitleChange(treed.db.data.root.content)
+    }))
+    // TODO actually get the user shortcuts
+    const userShortcuts = {}
+    const globalLayer = makeKeyLayer({
+      ...this.keyLayerConfig,
+      ...makeViewTypeLayerConfig(viewTypes, this.setViewType),
+    }, 'global', userShortcuts)
+    treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
+    treed.ready.then(() => {
+      this.props.setTitle(<ViewTypeSwitcher
+        globalStore={treed.globalStore}
+      />)
 
-      const treed = window._treed = new Treed(
-        treedPouch(this.state.db),
-        plugins,
-        viewTypes,
-        this.props.id,
-        loadSharedViewData(this.props.id),
-        node.content,
-        // (this.state.sharedViewData || {})
-      )
-      this._unsubs.push(treed.on(['node:root'], () => {
-        this.onTitleChange(treed.db.data.root.content)
+      this.onTitleChange(treed.db.data.root.content)
+      const viewState = loadLastViewState(this.props.id)
+      if (!viewState.viewType) viewState.viewType = 'list'
+      const store = treed.registerView(viewState)
+      this._unsubs.push(store.on([store.events.serializableState()], () => {
+        const state = treed.serializeViewState(store.id)
+        saveLastViewState(this.props.id, state)
       }))
-      // TODO actually get the user shortcuts
-      const userShortcuts = {}
-      const globalLayer = makeKeyLayer({
-        ...this.keyLayerConfig,
-        ...makeViewTypeLayerConfig(viewTypes, this.setViewType),
-      }, 'global', userShortcuts)
-      treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
-      treed.ready.then(() => {
-        this.props.setTitle(<ViewTypeSwitcher
-          globalStore={treed.globalStore}
-        />)
-
-        this.onTitleChange(treed.db.data.root.content)
-        const viewState = loadLastViewState(this.props.id)
-        if (!viewState.viewType) viewState.viewType = 'list'
-        const store = treed.registerView(viewState)
-        this._unsubs.push(store.on([store.events.serializableState()], () => {
-          const state = treed.serializeViewState(store.id)
-          // TODO debounce
-          saveLastViewState(this.props.id, state)
-        }))
-        this._unsubs.push(store.on([store.events.sharedViewData()], () => {
-          saveSharedViewData(this.props.id, store.sharedViewData)
-        }))
-        this._unsubs.push(store.on([store.events.viewType()], () => {
-          this.setState({})
-        }))
-        this.setState({
-          treed,
-          store,
-        })
+      this._unsubs.push(store.on([store.events.sharedViewData()], () => {
+        saveSharedViewData(this.props.id, store.sharedViewData)
+      }))
+      this._unsubs.push(store.on([store.events.viewType()], () => {
+        this.setState({})
+      }))
+      this.setState({
+        treed,
+        store,
+        tick: this.state.tick + 1,
       })
+    })
+  }
+
+  onSetPlugins = (ids: string[]) => {
+    const {treed} = this.state
+    if (!treed) return
+    const plugins = treed.config.plugins
+    const settings = treed.db.data.settings
+    const pluginSettings = ids.reduce((obj, pid) => (
+      obj[pid] = settings.plugins[pid] || plugins[pid].defaultGlobalConfig || {}, obj
+    ), {})
+    treed.db.save({
+      ...settings,
+      plugins: pluginSettings,
+    }).then(() => {
+      this.makeTreed('')
     })
   }
 
@@ -302,50 +323,82 @@ class Document extends Component {
     const actionButtons = this.getActionButtons()
 
     return <div className={css(styles.container)}>
-      <Sidebar
-        side="left"
-        globalStore={treed.globalStore}
-        plugins={treed.enabledPlugins}
-      />
-      <div className={css(styles.treedContainer) + ' Theme_basic'}>
-        <ViewWrapper
-          viewTypes={viewTypes}
-          store={this.state.store}
+      <div
+        className={css(styles.top)}
+      >
+        Hello
+        <button
+          onClick={() => this.setState({showingSettings: true})}
+        >
+          Settings
+        </button>
+      </div>
+      <div
+        className={css(styles.main)}
+      >
+        <Sidebar
+          side="left"
+          globalStore={treed.globalStore}
+          plugins={treed.enabledPlugins}
+        />
+        <div className={css(styles.treedContainer) + ' Theme_basic'}>
+          <ViewWrapper
+            key={'view:' + this.state.tick}
+            viewTypes={viewTypes}
+            store={this.state.store}
+          />
+
+          {actionButtons.length > 0 &&
+            <div className={css(styles.actionButtons)}>
+              {actionButtons.map(button => (
+                <div
+                  key={button.id}
+                  onClick={() => button.action(treed.activeView())}
+                  className={css(styles.actionButton)}
+                >
+                  {button.title}
+                </div>
+              ))}
+            </div>}
+        </div>
+        <Sidebar
+          side="right"
+          globalStore={treed.globalStore}
+          plugins={treed.enabledPlugins}
         />
 
-        {actionButtons.length > 0 &&
-          <div className={css(styles.actionButtons)}>
-            {actionButtons.map(button => (
-              <div
-                key={button.id}
-                onClick={() => button.action(treed.activeView())}
-                className={css(styles.actionButton)}
-              >
-                {button.title}
-              </div>
-            ))}
-          </div>}
-      </div>
-      <Sidebar
-        side="right"
-        globalStore={treed.globalStore}
-        plugins={treed.enabledPlugins}
-      />
-
-      <KeyCompleter
-        treed={treed}
-      />
-      {this.state.searching &&
-        <Searcher
+        <KeyCompleter
           treed={treed}
-          onClose={() => this.setState({searching: false})}
-        />}
+        />
+        {this.state.searching &&
+          <Searcher
+            treed={treed}
+            onClose={() => this.setState({searching: false})}
+          />}
+        {this.state.showingSettings &&
+          <Settings
+            treed={treed}
+            store={this.state.store}
+            onClose={() => this.setState({showingSettings: false})}
+            onSetPlugins={this.onSetPlugins}
+          />}
+      </div>
     </div>
   }
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+
+  top: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  main: {
     flexDirection: 'row',
     flex: 1,
   },

@@ -127,8 +127,6 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
     },
   },
 
-  // globalContextMenu?
-
 }
 
 export default plugin

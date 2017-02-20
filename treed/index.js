@@ -46,7 +46,7 @@ const bindStoreProxies = (store, config, sub) => {
 
 const createSettings = (now, plugins) => {
   const pluginSettings = Object.keys(plugins).reduce((settings, pid) => (
-    settings[pid] = plugins[pid].defaultGlobalConfig, settings
+    settings[pid] = plugins[pid].defaultGlobalConfig || {}, settings
   ), {})
   console.log('plugin settings', pluginSettings)
   return {
@@ -153,7 +153,6 @@ export default class Treed {
         }
       }))
     })
-
   }
 
   setupGlobalStore(pluginSettings: {[pluginId: string]: any}, sharedViewData: *) {
