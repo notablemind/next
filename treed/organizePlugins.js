@@ -33,9 +33,10 @@ const typesContextMenu = (node, store) => {
 }
 
 
-const organizePlugins = (plugins: Array<Plugin<*, *>>): PluginSummary => {
-  const classNameGetters = getPluginThing(plugins, 'node', 'className')
-  const contextMenuFns = getPluginThing(plugins, 'node', 'contextMenu')
+const organizePlugins = (pluginSettings: {[pluginId: string]: any}, plugins: {[pluginId: string]: Plugin<*, *>}): PluginSummary => {
+  const enabledPlugins = Object.keys(pluginSettings).map(id => plugins[id])
+  const classNameGetters = getPluginThing(enabledPlugins, 'node', 'className')
+  const contextMenuFns = getPluginThing(enabledPlugins, 'node', 'contextMenu')
 
   const nodeTypes: {[key: string]: PluginNodeTypeConfig<any>} = {
     normal: {
@@ -46,7 +47,7 @@ const organizePlugins = (plugins: Array<Plugin<*, *>>): PluginSummary => {
       // TODO anything here?
     },
   }
-  plugins.forEach(plugin => {
+  enabledPlugins.forEach(plugin => {
     const pnodeTypes = plugin.nodeTypes
     if (!pnodeTypes) return
     Object.keys(pnodeTypes).forEach(type => {
@@ -63,13 +64,13 @@ const organizePlugins = (plugins: Array<Plugin<*, *>>): PluginSummary => {
       className: classNameGetters.length === 1 ? classNameGetters[0] :
         (classNameGetters.length === 0 ? null :
          (node, store) => classNameGetters.map(f => f(node, store)).join(' ')),
-      pasteFile: getSubThing(plugins, 'node', 'pasteFile'),
-      pasteSpecial: getSubThing(plugins, 'node', 'pasteSpecial'),
-      dropFileNew: getSubThing(plugins, 'node', 'dropFileNew'),
-      dropFileOnto: getSubThing(plugins, 'node', 'dropFileOnto'),
+      pasteFile: getSubThing(enabledPlugins, 'node', 'pasteFile'),
+      pasteSpecial: getSubThing(enabledPlugins, 'node', 'pasteSpecial'),
+      dropFileNew: getSubThing(enabledPlugins, 'node', 'dropFileNew'),
+      dropFileOnto: getSubThing(enabledPlugins, 'node', 'dropFileOnto'),
       contextMenu: [typesContextMenu].concat(contextMenuFns),
     },
-    actionButtons: plugins.filter(p => p.actionButtons).map(p => ({id: p.id, buttons: p.actionButtons})),
+    actionButtons: enabledPlugins.filter(p => p.actionButtons).map(p => ({id: p.id, buttons: p.actionButtons})),
   }
 }
 

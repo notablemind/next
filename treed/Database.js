@@ -14,7 +14,7 @@ export type Settings = {
 }
 
 const defaultSettings = {
-  plugins: {},
+  // plugins: {},
   views: {},
   defaultViews: {},
 }
@@ -102,7 +102,7 @@ const dumpNode = (root: string, nodes: any, keepIds: bool) => {
 
 export default class Database {
   db: Db
-  plugins: any
+  // plugins: any
   settings: any
   data: {
     settings: any,
@@ -116,14 +116,14 @@ export default class Database {
   queue: Promise<void>
   myrevs: Set<string>
 
-  constructor(db: any, plugins: any, onNodeChanged: any, onSettingsChanged: any) {
+  constructor(db: any, onNodeChanged: any, onSettingsChanged: any) {
     this.data = {settings: defaultSettings}
     this.ready = new Promise((res, rej) => {
       this._onReady = res
       this._onNotReady = rej
     })
     this.db = db
-    this.plugins = plugins
+    // this.plugins = plugins
     this.onNodeChanged = onNodeChanged
     this.onSettingsChanged = onSettingsChanged
     this.db.sync(this._onDump, this._onChange, this._onError)

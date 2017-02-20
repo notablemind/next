@@ -305,7 +305,7 @@ class Document extends Component {
       <Sidebar
         side="left"
         globalStore={treed.globalStore}
-        plugins={treed.config.plugins}
+        plugins={treed.enabledPlugins}
       />
       <div className={css(styles.treedContainer) + ' Theme_basic'}>
         <ViewWrapper
@@ -329,7 +329,7 @@ class Document extends Component {
       <Sidebar
         side="right"
         globalStore={treed.globalStore}
-        plugins={treed.config.plugins}
+        plugins={treed.enabledPlugins}
       />
 
       <KeyCompleter

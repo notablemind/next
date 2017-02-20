@@ -2,10 +2,10 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
-import Modal from './Modal'
+import Modal from '../utils/Modal'
 import Exporter from './Exporter'
 import Importer from './Importer'
-import SideTabbed from './SideTabbed'
+import SideTabbed from '../utils/SideTabbed'
 
 export default class ExportModal extends Component {
   render() {

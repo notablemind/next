@@ -45,8 +45,8 @@ const bindStoreProxies = (store, config, sub) => {
 }
 
 const createSettings = (now, plugins) => {
-  const pluginSettings = plugins.reduce((settings, plugin) => (
-    settings[plugin.id] = plugin.defaultGlobalConfig, settings
+  const pluginSettings = Object.keys(plugins).reduce((settings, pid) => (
+    settings[pid] = plugins[pid].defaultGlobalConfig, settings
   ), {})
   console.log('plugin settings', pluginSettings)
   return {
@@ -74,8 +74,9 @@ export default class Treed {
     events: any,
     getters: any,
     actions: any,
-    plugins: Array<any>
+    plugins: {[pluginId: string]: Plugin<*,*>},
   }
+  enabledPlugins: Array<Plugin<*, *>>
   keys: any
   nextViewId: number
   viewStores: any
@@ -84,15 +85,16 @@ export default class Treed {
   globalStore: GlobalStore
   viewTypes: ViewTypes
 
-  constructor(db: Db, plugins: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string, sharedViewData: any, defaultRootContents: string = '') {
+  constructor(db: Db, pluginsArray: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string, sharedViewData: any, defaultRootContents: string = '') {
     this.emitter = new FlushingEmitter()
     this.viewTypes = viewTypes
     this.commands = new Commandeger(commands, this.setActive)
     this.db = new Database(
-      db, plugins, id => this.emitter.emit('node:' + id),
+      db, id => this.emitter.emit('node:' + id),
       this.settingsChanged
     )
 
+    const plugins = pluginsArray.reduce((obj, p) => (obj[p.id] = p, obj), {})
     this.config = {
       actions: baseActions,
       getters: baseGetters,
@@ -132,32 +134,36 @@ export default class Treed {
       }
     }).then(() => {
       const settings = this.db.data.settings
-      return Promise.all(plugins.map(plugin => {
-        if (plugin.init) {
-          return Promise.resolve(plugin.init(
-            settings.plugins[plugin.id] || plugin.defaultGlobalConfig,
+      sharedViewData = {...sharedViewData}
+      Object.keys(viewTypes).forEach(key => {
+        if (!sharedViewData[key]) {
+          sharedViewData[key] = viewTypes[key].initialSharedViewData ? viewTypes[key].initialSharedViewData() : {}
+        }
+      })
+      this.enabledPlugins = Object.keys(settings.plugins).map(id => this.config.plugins[id])
+      this.setupGlobalStore(settings.plugins, sharedViewData)
+      return Promise.all(Object.keys(settings.plugins).map(pid => {
+        if (plugins[pid].init) {
+          return Promise.resolve(plugins[pid].init(
+            settings.plugins[pid] || plugins[pid].defaultGlobalConfig,
             this.globalStore
           )).then(state => {
-            this.globalState.plugins[plugin.id] = state
+            this.globalState.plugins[pid] = state
           })
         }
       }))
     })
 
-    sharedViewData = {...sharedViewData}
-    Object.keys(viewTypes).forEach(key => {
-      if (!sharedViewData[key]) {
-        sharedViewData[key] = viewTypes[key].initialSharedViewData ? viewTypes[key].initialSharedViewData() : {}
-      }
-    })
+  }
 
+  setupGlobalStore(pluginSettings: {[pluginId: string]: any}, sharedViewData: *) {
     const events = {}
     const args: any = [this.db, events]
     const globalStore: any = {
       db: this.db,
       emit: this.emitter.emit,
       emitMany: this.emitter.emitMany,
-      plugins: organizePlugins(this.config.plugins),
+      plugins: organizePlugins(pluginSettings, this.config.plugins),
       addKeyLayer: this.keyManager.addLayer,
       addNormalKeyLayer: this.addNormalKeyLayer,
       globalState: this.globalState,
@@ -200,7 +206,7 @@ export default class Treed {
     }
     this.setupActionsAndGetters(store, viewTypeConfig)
     this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
-    addPluginKeys(store, this.keys[store.id], this.config.plugins)
+    addPluginKeys(store, this.keys[store.id], this.enabledPlugins)
     store.emit(store.events.viewType())
     store.emit(store.events.serializableState())
   }
@@ -209,7 +215,7 @@ export default class Treed {
     const {state} = this.viewStores[id]
     const viewTypeConfig: ViewTypeConfig = this.viewTypes[state.viewType]
     const plugins = {}
-    this.config.plugins.forEach(plugin => (
+    this.enabledPlugins.forEach(plugin => (
       plugin.serializeState ?
         plugins[plugin.id] = plugin.serializeState(state.plugins[plugin.id])
           : null))
@@ -266,7 +272,7 @@ export default class Treed {
         viewTypeConfig.getInitialState() : {}
     }
 
-    this.config.plugins.forEach(
+    this.enabledPlugins.forEach(
       plugin => !state.plugins[plugin.id] &&
         (state.plugins[plugin.id] = plugin.getInitialState ?
           plugin.getInitialState() : null))
@@ -297,7 +303,7 @@ export default class Treed {
     bindCommandProxies(store, this.commands, this.emitter, args, id)
 
     this.keys[store.id] = makeViewKeyLayers(this.viewTypes[type].keys, `views.${type}.`, {}, store)
-    addPluginKeys(store, this.keys[store.id], this.config.plugins)
+    addPluginKeys(store, this.keys[store.id], this.enabledPlugins)
 
     this.globalState.activeView = store.id
     this.emitter.emit(this.globalStore.events.activeView())
@@ -424,7 +430,8 @@ export default class Treed {
   }
 
   destroy() {
-    this.config.plugins.map(plugin => {
+    Object.keys(this.globalState.plugins).forEach(pid => {
+      const plugin = this.config.plugins[pid]
       if (plugin.destroy) {
         plugin.destroy(this.globalState.plugins[plugin.id])
       }

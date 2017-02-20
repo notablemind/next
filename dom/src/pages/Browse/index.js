@@ -9,7 +9,7 @@ import Treed from 'treed'
 import treedPouch from 'treed/pouch'
 import KeyManager from 'treed/keys/Manager'
 import makeKeyLayer from 'treed/keys/makeKeyLayer'
-import SettingsModal from './Settings/SettingsModal'
+import SettingsModal from '../Settings/SettingsModal'
 import Searcher from '../Document/Searcher'
 import KeyCompleter from '../Document/KeyCompleter'
 
