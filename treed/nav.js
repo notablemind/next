@@ -57,8 +57,8 @@ export const next = (id, nodes, root, isCollapsed) => {
   return nextSibRec(id, nodes, root)
 }
 
-export const last = (id, nodes, isCollapsed) => {
+export const last = (id, nodes, isCollapsed, isRoot: boolean = false) => {
   const node = nodes[id]
-  if (!node.children.length || isCollapsed(id)) return id
+  if (!node.children.length || (!isRoot && isCollapsed(id))) return id
   return last(node.children[node.children.length - 1], nodes, isCollapsed)
 }

@@ -40,3 +40,10 @@ p code {
     text-shadow: 1px 1px 0px white;
     white-space: nowrap;
 }
+
+@font-face {
+    font-family:ionicons;
+    font-style:normal;
+    font-weight:normal;
+    src:url("./fonts/ionicons.woff") format("woff");
+}

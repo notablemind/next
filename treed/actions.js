@@ -1271,7 +1271,7 @@ const actions = {
     },
 
     focusLastVisibleChild(store: Store) {
-      store.actions.setActive(nav.last(store.state.root, store.db.data, store.getters.isCollapsed))
+      store.actions.setActive(nav.last(store.state.root, store.db.data, store.getters.isCollapsed, true))
     },
 
     // plugins things?

@@ -21,12 +21,12 @@ export default Icon
 
 const styles = StyleSheet.create({
   icon: {
-    fontFamily: [{
+    fontFamily: 'ionicons', /*[{
       fontFamily: 'ionicons',
       fontStyle: 'normal',
       fontWeight: 'normal',
       src: 'url("/fonts/ionicons.woff") format("woff")'
-    }],
+    }],*/
   },
 })
 

@@ -221,6 +221,20 @@ export default class Treed {
     }
   }
 
+  exportMarkdown() {
+    const root = this.activeView().state.root
+    const nodes = this.db.data
+    const white = num => {
+      let res = ''
+      for (let i=0; i<num; i++) res += ' '
+      return res
+    }
+    const walk = (id, level) => {
+      return white(level * 2) + '- ' + nodes[id].content + '\n' + nodes[id].children.map(child => walk(child, level + 1)).join('\n')
+    }
+    return walk(root, 0)
+  }
+
   registerView(initialState: Object): Store {
     const type = initialState.viewType
     if (!this.viewTypes[type]) {
