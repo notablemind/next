@@ -44,6 +44,15 @@ class ViewTypeSwitcher extends Component {
       }
     )
   }
+
+  componentDidMount() {
+    this._sub.start()
+  }
+
+  componentWillUnmount() {
+    this._sub.stop()
+  }
+
   render() {
     return <div>
     {this.state.defaultView.type}

@@ -141,11 +141,9 @@ export default class ListItem extends Component {
           actions={this.props.store.actions}
           contentClassName={contentClassName}
           onHeightChange={this.ensureInView}
-
           keyActions={this.keyActions}
-
           store={this.props.store}
-
+          orientation="wide"
         />
         <Icon
           className={css(styles.dragger, this.state.isDragging && styles.draggerDragging) + ' Treed_show_on_top_hover'}

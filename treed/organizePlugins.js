@@ -68,10 +68,20 @@ const organizePlugins = (pluginSettings: {[pluginId: string]: any}, plugins: {[p
       pasteSpecial: getSubThing(enabledPlugins, 'node', 'pasteSpecial'),
       dropFileNew: getSubThing(enabledPlugins, 'node', 'dropFileNew'),
       dropFileOnto: getSubThing(enabledPlugins, 'node', 'dropFileOnto'),
+      blocks: arrayToObjOfArrays(getSubThing(enabledPlugins, 'node', 'blocks')),
       contextMenu: [typesContextMenu].concat(contextMenuFns),
     },
     actionButtons: enabledPlugins.filter(p => p.actionButtons).map(p => ({id: p.id, buttons: p.actionButtons})),
   }
+}
+
+const arrayToObjOfArrays = array => {
+  const res = {}
+  array.forEach(item => Object.keys(item).forEach(key => {
+    if (!res[key]) res[key] = [item[key]]
+    else res[key].push(item[key])
+  }))
+  return res
 }
 
 export default organizePlugins

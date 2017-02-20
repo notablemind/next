@@ -115,14 +115,15 @@ export default class Treed {
       runtimeId: uuid(),
       documentId,
     }
-    this.keyManager = new KeyManager([makeKeyLayer({
-      normalMode: {
-        shortcut: 'escape',
-        action: () => this.activeView().actions.normalMode(),
-        description: 'go back to normal mode',
-      },
-    }, 'general.', {}),
+    this.keyManager = new KeyManager([
       () => this.getCurrentKeyLayer(),
+      makeKeyLayer({
+        normalMode: {
+          shortcut: 'escape',
+          action: () => this.activeView().actions.normalMode(),
+          description: 'go back to normal mode',
+        },
+      }, 'general.', {}),
     ])
     // this._pluginKeyLayer = this.keyManager.addLayer(pluginKeys(plugins))
 
@@ -408,6 +409,19 @@ export default class Treed {
         evts = nevts
       }
       reactElement.setState(stateFromStore(store))
+    }
+    if (process.env.NODE_ENV !== 'production') {
+      const err = new Error("`setupStateListener` called, but `start` was never called")
+      const startTimer = setTimeout(() => {
+        console.error(err)
+      }, 1000)
+      return {
+        start: () => {
+          clearTimeout(startTimer)
+          evts.forEach(ev => this.emitter.on(ev, fn))
+        },
+        stop: () => evts.forEach(ev => this.emitter.off(ev, fn)),
+      }
     }
     return {
       start: () => evts.forEach(ev => this.emitter.on(ev, fn)),

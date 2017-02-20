@@ -8,11 +8,6 @@ import Content from './Content'
 export default class Body extends Component {
   onClick = (e: any) => {
     if (e.button !== 0) return
-    if (e.metaKey) {
-      this.props.actions.setActive(this.props.node._id)
-      this.props.actions.rebase(this.props.node._id)
-      return
-    }
     if (e.target.nodeName === 'A') {
       window.open(e.target.href, '_blank')
       e.preventDefault()
@@ -21,40 +16,89 @@ export default class Body extends Component {
     }
     e.preventDefault()
     e.stopPropagation()
-    this.props.actions.edit(this.props.node._id)
+    if (e.metaKey) {
+      this.props.actions.setActive(this.props.node._id)
+      this.props.actions.rebase(this.props.node._id)
+    } else {
+      this.props.actions.edit(this.props.node._id)
+    }
   }
 
   render() {
-    const {depth, editState, contentClassName, textClassName} = this.props
-    const pluginCls = this.props.store.plugins.node.className ?
-      this.props.store.plugins.node.className(this.props.node, this.props.store) :
-        ''
+    const {store, depth, editState, contentClassName, textClassName, node, orientation} = this.props
+    const {className, blocks} = store.plugins.node
+    const pluginCls = className ? className(node, store) : ''
     const cls = `${contentClassName || ''} Node_body Node_body_level_${depth} ${pluginCls || ''}`
 
-    const Component = this.props.node.type !== 'normal' &&
-      this.props.store.plugins.nodeTypes[this.props.node.type] &&
-      this.props.store.plugins.nodeTypes[this.props.node.type].render ||
+    const Component = node.type !== 'normal' &&
+      store.plugins.nodeTypes[node.type] &&
+      store.plugins.nodeTypes[node.type].render ||
       Content
+
+    const main = <Component
+      node={node}
+      store={store}
+      actions={this.props.actions}
+      editState={editState}
+      keyActions={this.props.keyActions}
+      onHeightChange={this.props.onHeightChange}
+      Content={Content}
+      style={this.props.style}
+      className={textClassName}
+    />
 
     return <div
       onMouseDown={editState ? null : this.onClick}
       className={css(styles.container)}
     >
       <div className={cls}>
-        <Component
-          node={this.props.node}
-          store={this.props.store}
-          actions={this.props.actions}
-          editState={this.props.editState}
-          keyActions={this.props.keyActions}
-          onHeightChange={this.props.onHeightChange}
-          Content={Content}
-          style={this.props.style}
-          className={textClassName}
-        />
+        {surroundWithBlocks(main, organizeBlocks(blocks, orientation), node, store)}
       </div>
     </div>
   }
+}
+
+const organizeBlocks = (blocks, orientation) => {
+  let top = blocks.top
+  let bottom = blocks.bottom
+  let left = blocks.left
+  let right = blocks.right
+  if (blocks.before) {
+    if (orientation === 'tall') {
+      top = (top || []).concat(blocks.before)
+    } else {
+      left = (left || []).concat(blocks.before)
+    }
+  }
+
+  if (blocks.after) {
+    if (orientation === 'tall') {
+      bottom = (bottom || []).concat(blocks.after)
+    } else {
+      right = (right || []).concat(blocks.after)
+    }
+  }
+  return {top, left, bottom, right}
+}
+
+const surroundWithBlocks = (main, blocks, node, store) => {
+  let wrapped = false
+  if (blocks.left || blocks.right) {
+    wrapped = true
+    main = <div className={css(styles.vert)}>
+      {(blocks.left || []).map((item, i) => item(i, node, store))}
+      {<div className={css(styles.wrapper)}>{main}</div>}
+      {(blocks.right || []).map((item, i) => item(i, node, store))}
+    </div>
+  }
+  if (blocks.top || blocks.bottom) {
+    main = <div className={css(styles.horiz)}>
+      {(blocks.top || []).map((item, i) => item(i, node, store))}
+      {wrapped ? main : <div className={css(styles.wrapper)}>{main}</div>}
+      {(blocks.bottom || []).map((item, i) => item(i, node, store))}
+    </div>
+  }
+  return main
 }
 
 const styles = StyleSheet.create({
@@ -65,5 +109,23 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
+  vert: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    justifyContent: 'center',
+    alignSelf: 'stretch',
+    flex: 1,
+  },
+
+  horiz: {
+    alignItems: 'stretch',
+    justifyContent: 'center',
+    alignSelf: 'stretch',
+    flex: 1,
+  },
+
+  wrapper: {
+    flex: 1,
+  },
 })
 

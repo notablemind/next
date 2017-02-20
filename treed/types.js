@@ -179,7 +179,7 @@ export type PluginNodeTypeConfig<T> = {
   },
 }
 
-export type Block = (node: Node, store: Store) => ?React$Element<*>
+export type Block = (key: string, node: Node, store: Store) => ?React$Element<*>
 
 export type Plugin<T, S> = {|
   id: string,

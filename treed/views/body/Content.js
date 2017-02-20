@@ -13,7 +13,7 @@ type Props = {
   style?: any,
 }
 
-export default (props: Props) => {
+const Content = (props: Props) => {
   if (props.editState) {
     return <Editor
       {...props}
@@ -25,3 +25,4 @@ export default (props: Props) => {
     content={props.node.content}
   />
 }
+export default Content

@@ -6,14 +6,14 @@ const PLUGIN_ID = 'tags'
 
 export default class Tags extends Component {
   state: *
+  _sub: *
   constructor({id, store}) {
     super()
-    store.setupStateListener(
+    this._sub = store.setupStateListener(
       this,
       store => [store.events.nodeView(id), store.events.settingsChanged(), store.events.mode()],
       store => ({
         node: store.getters.node(id),
-        editState: store.getters.editState(id),
         pluginConfig: store.getters.pluginConfig(PLUGIN_ID),
         isTagging: store.getters.mode() === 'tagging' &&
           store.getters.active() === id,
@@ -21,10 +21,18 @@ export default class Tags extends Component {
     )
   }
 
+  componentDidMount() {
+    this._sub.start()
+  }
+
+  componentWillUnmount() {
+    this._sub.stop()
+  }
+
   render() {
     const {node, pluginConfig, isTagging} = this.state
     const ids: Array<string> = (node.plugins[PLUGIN_ID]: any) || []
-    if (!ids.length) return null
+    if (!ids.length && !isTagging) return null
     const {tags} = pluginConfig
     return <div className={css(styles.tags)}>
       {ids.map(id => (

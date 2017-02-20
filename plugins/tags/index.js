@@ -88,7 +88,7 @@ const plugin: Plugin<*, *> = {
 
   node: {
     blocks: {
-      after: (node, store) => <Tags id={node._id} store={store} />,
+      after: (key, node, store) => <Tags key={key} id={node._id} store={store} />,
     },
   },
 }
