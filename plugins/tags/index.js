@@ -3,7 +3,9 @@
 import React, {Component} from 'react';
 import type {Plugin, Store} from 'treed/types'
 import uuid from 'treed/uuid'
+import colors from './colors'
 
+import TagSidebar from './TagSidebar'
 import Tags from './Tags'
 
 const PLUGIN_ID = 'tags'
@@ -18,10 +20,10 @@ type GlobalConfig = {
   tags: {[tagId: string]: Tag}
 }
 
-const COLORS = ['#aaf', '#faf', '#faa']
+// const COLORS = ['#aaf', '#faf', '#faa']
 
 const randomColor = () => {
-  return COLORS[parseInt(Math.random() * COLORS.length)]
+  return colors[parseInt(Math.random() * colors.length)]
 }
 
 const plugin: Plugin<*, *> = {
@@ -37,15 +39,18 @@ const plugin: Plugin<*, *> = {
     }
   },
 
+  leftSidePane: TagSidebar,
+
   actions: {
-    addTag(store: Store, tagId: string) {
+    addTag(store: Store, tagId: string, id: string = store.state.active) {
       const node = store.getters.activeNode()
       const tags = node.plugins[PLUGIN_ID] || []
       if (tags.indexOf(tagId) !== -1) return
       store.actions.setPluginData(node._id, PLUGIN_ID, tags.concat([tagId]))
+      store.emit(store.events.node(id))
     },
 
-    createTag(store: Store, tagText: string) {
+    createTag(store: Store, tagText: string, id: string = store.state.active) {
       const config = store.getters.pluginConfig(PLUGIN_ID)
       const node = store.getters.activeNode()
       const nodeTags = node.plugins[PLUGIN_ID] || []
@@ -62,14 +67,17 @@ const plugin: Plugin<*, *> = {
         },
       });
       store.actions.setPluginData(node._id, PLUGIN_ID, nodeTags.concat([tid]))
+      store.emitMany([store.events.node(id), store.events.settingsChanged()])
     },
 
-    removeTag(store: Store, tagId: string) {
+    removeTag(store: Store, tagId: string, id: string = store.state.active) {
       const node = store.getters.activeNode()
       const tags = node.plugins[PLUGIN_ID] || []
       if (tags.indexOf(tagId) === -1) return
       store.actions.setPluginData(node._id, PLUGIN_ID, tags.filter(id => id !== tagId))
+      store.emit(store.events.node(id))
     },
+
     editTags(store: Store) {
       store.actions.setMode('tagging')
     },

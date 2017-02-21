@@ -13,7 +13,11 @@ export default class Tags extends Component {
     super()
     this._sub = store.setupStateListener(
       this,
-      store => [store.events.nodeView(id), store.events.settingsChanged(), store.events.mode()],
+      store => [
+        store.events.node(id),
+        store.events.nodeView(id),
+        store.events.settingsChanged(),
+        store.events.mode()],
       store => ({
         node: store.getters.node(id),
         pluginConfig: store.getters.pluginConfig(PLUGIN_ID),
@@ -41,7 +45,7 @@ export default class Tags extends Component {
       {ids.map(id => (
         <div
           key={id}
-          style={{color: tags[id].color}}
+          style={{backgroundColor: tags[id].color}}
           onClick={() => {}} // TODO
           className={css(styles.tag)}
         >
@@ -67,7 +71,9 @@ const styles = StyleSheet.create({
   },
 
   tag: {
-    padding: '3px 5px',
+    padding: '2px 5px',
+    margin: 1,
+    borderRadius: 2,
     fontSize: 10,
     cursor: 'pointer',
     ':hover': {
