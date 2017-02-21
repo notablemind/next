@@ -50,7 +50,7 @@ const plugin: Plugin<*, *> = {
       const node = store.getters.activeNode()
       const nodeTags = node.plugins[PLUGIN_ID] || []
       const tid = uuid()
-      store.actions.setGlobalPluginConfig({
+      store.actions.setGlobalPluginConfig(PLUGIN_ID, {
         ...config,
         tags: {
           ...config.tags,

@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     // cursor: 'text',
     padding: '1px 0',
     // cursor: 'pointer',
-    zIndex: 1,
+    // zIndex: 1,
   },
 
   vert: {

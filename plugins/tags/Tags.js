@@ -2,6 +2,8 @@
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
+import TagInput from './TagInput'
+
 const PLUGIN_ID = 'tags'
 
 export default class Tags extends Component {
@@ -31,21 +33,28 @@ export default class Tags extends Component {
 
   render() {
     const {node, pluginConfig, isTagging} = this.state
-    const ids: Array<string> = (node.plugins[PLUGIN_ID]: any) || []
-    if (!ids.length && !isTagging) return null
+    const {store} = this.props
     const {tags} = pluginConfig
-    return <div className={css(styles.tags)}>
+    const ids: Array<string> = ((node.plugins[PLUGIN_ID]: any) || []).filter(id => tags[id])
+    if (!ids.length && !isTagging) return null
+    return <div className={css(styles.tags)} onMouseDown={e => e.stopPropagation()}>
       {ids.map(id => (
         <div
           key={id}
-          style={{color: tags.color}}
+          style={{color: tags[id].color}}
           onClick={() => {}} // TODO
           className={css(styles.tag)}
         >
           {tags[id].label}
         </div>
       ))}
-      {isTagging && <div>TAGGING</div>}
+      {isTagging && <TagInput
+        tags={Object.keys(tags).map(id => tags[id])}
+        onNormalMode={() => store.actions.normalMode()}
+        onCreateTag={label => store.actions.createTag(label)}
+        onAddTag={tag => store.actions.addTag(tag.id)}
+        ids={ids}
+      />}
     </div>
   }
 }
@@ -54,9 +63,12 @@ const styles = StyleSheet.create({
   tags: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingRight: 3,
   },
+
   tag: {
     padding: '3px 5px',
+    fontSize: 10,
     cursor: 'pointer',
     ':hover': {
       backgroundColor: '#eee',
