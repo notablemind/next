@@ -189,6 +189,7 @@ export type Plugin<T, S> = {|
   init?: (globalPluginConfig: T, globalStore: GlobalStore) => S,
   destroy?: (globalPluginState: S) => void,
   leftSidePane?: any,
+  rightSidePane?: any,
 
   actionButtons?: {
     [key: string]: any,

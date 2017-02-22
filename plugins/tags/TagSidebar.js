@@ -85,7 +85,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
+  container: {
+    flexShrink: 1,
+  },
+
   tags: {
+    flexShrink: 1,
+    overflow: 'auto',
   },
 
   tag: {

@@ -48,7 +48,7 @@ export default class Sidebar extends Component {
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    minWidth: 200,
+    // minWidth: 200,
     borderRight: '1px solid #ccc',
   },
 })

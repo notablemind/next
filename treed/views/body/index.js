@@ -9,6 +9,7 @@ export default class Body extends Component {
   onClick = (e: any) => {
     if (e.button !== 0) return
     if (e.target.nodeName === 'A') {
+      if (e.metaKey) return
       window.open(e.target.href, '_blank')
       e.preventDefault()
       e.stopPropagation()

@@ -3,6 +3,7 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import TagInput from './TagInput'
+import Icon from 'treed/views/utils/Icon'
 
 const PLUGIN_ID = 'tags'
 
@@ -50,6 +51,12 @@ export default class Tags extends Component {
           className={css(styles.tag)}
         >
           {tags[id].label}
+          {isTagging &&
+            <Icon
+              onMouseDown={e => (e.preventDefault(), store.actions.removeTag(id))}
+              className={css(styles.deleteIcon)}
+              name="ios-close-empty"
+            />}
         </div>
       ))}
       {isTagging && <TagInput
@@ -70,7 +77,20 @@ const styles = StyleSheet.create({
     paddingRight: 3,
   },
 
+  deleteIcon: {
+    padding: 2,
+    marginLeft: 2,
+    color: 'white',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    ':hover': {
+      backgroundColor: 'white',
+      color: 'black',
+    },
+  },
+
   tag: {
+    flexDirection: 'row',
     padding: '2px 5px',
     margin: 1,
     borderRadius: 2,
