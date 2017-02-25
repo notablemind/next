@@ -47,7 +47,7 @@ export default class Tags extends Component {
         <div
           key={id}
           style={{backgroundColor: tags[id].color}}
-          onClick={() => {}} // TODO
+          onClick={() => store.emitIntent('filter-by-tag', id)} // TODO
           className={css(styles.tag)}
         >
           {tags[id].label}
@@ -64,6 +64,7 @@ export default class Tags extends Component {
         onNormalMode={() => store.actions.normalMode()}
         onCreateTag={label => store.actions.createTag(label)}
         onAddTag={tag => store.actions.addTag(tag.id)}
+        autoFocus
         ids={ids}
       />}
     </div>

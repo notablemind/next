@@ -13,12 +13,13 @@ type Tag = {
 
 export default class Input extends Component {
   node: *
-  state: {text: string, position: number, results: Tag[]}
+  state: {text: string, position: number, results: Tag[], focused: boolean}
   constructor({tags, ids}: any) {
     super()
     this.state = {
       text: '',
       position: 0,
+      focused: false,
       results: tags.filter(tag => ids.indexOf(tag.id) === -1)
     }
   }
@@ -78,7 +79,20 @@ export default class Input extends Component {
   }
 
   componentDidMount() {
-    this.node.focus()
+    if (this.props.autoFocus) {
+      this.node.focus()
+    }
+  }
+
+  onFocus = () => {
+    this.setState({focused: true})
+  }
+
+  onBlur = () => {
+    this.setState({focused: false})
+    if (this.props.onNormalMode) {
+      this.props.onNormalMode()
+    }
   }
 
   render() {
@@ -92,10 +106,11 @@ export default class Input extends Component {
         ref={node => this.node = node}
         onKeyDown={this.onKeyDown}
         onChange={this.onChange}
-        onBlur={this.props.onNormalMode}
+        onFocus={this.onFocus}
+        onBlur={this.onBlur}
       />
-      <div className={css(styles.autocomplete)}>
-        {this.state.text && <div
+      {this.state.focused && <div className={css(styles.autocomplete)}>
+        {this.props.onCreateTag && this.state.text && <div
           className={css(styles.result, position === 0 && styles.selected)}
         >
           Create new tag "{this.state.text}"
@@ -109,7 +124,7 @@ export default class Input extends Component {
             {tag.label}
           </div>
         ))}
-      </div>
+      </div>}
     </div>
   }
 }

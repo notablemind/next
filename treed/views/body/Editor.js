@@ -7,6 +7,18 @@ import GrowingTextarea from './GrowingTextarea'
 import textStyle from './textStyle'
 
 export default class Editor extends Component {
+  props: {
+    [key: string]: any,
+    keyActions: {
+      onTab: (shitfKey: boolean) => void,
+      onEnter: (text: string) => void,
+      onLeft: () => void,
+      onRight: () => void,
+      onUp: () => void,
+      onDown: () => void,
+      setContent: (text: string) => void,
+    },
+  }
   state: {
     tmpText: string,
   }
@@ -58,6 +70,11 @@ export default class Editor extends Component {
     case 13: // enter
       if (e.shiftKey) return
       if (!e.ctrlKey && e.target.value.indexOf('\n') !== -1) return
+      if (!this.props.keyActions.onEnter) {
+        e.preventDefault()
+        e.stopPropagation()
+        return
+      }
       const prev = e.target.value.slice(0, e.target.selectionStart)
       const next = e.target.value.slice(e.target.selectionStart)
       this.setState({tmpText: prev})

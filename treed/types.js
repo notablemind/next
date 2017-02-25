@@ -91,6 +91,7 @@ export type GlobalStore = {
   }) => void,
   emit: (evt: string) => void,
   emitMany: (evts: Array<string>) => void,
+  emitIntent: (evt: string, viewId: ?number, extra: any) => void,
   events: {[key: string]: (...args: any) => string},
   getters: {[key: string]: Function},
   globalState: GlobalState,
@@ -98,6 +99,7 @@ export type GlobalStore = {
   activeView: () => Store,
   addNormalKeyLayer: (layer: any) => () => void,
   on: (evts: Array<string>, fn: Function) => () => void,
+  onIntent: (evt: string, fn: Function) => () => void,
   viewTypes: {[key: string]: ViewTypeConfig},
   sharedViewData: {[key: string]: any},
 }

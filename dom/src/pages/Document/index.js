@@ -33,6 +33,7 @@ const plugins = [
 const viewTypes = {
   list: require('treed/views/list').default,
   whiteboard: require('treed/views/whiteboard').default,
+  search: require('treed/views/search').default,
 }
 
 const activeButtons = [] // ['date:newEntry']
@@ -101,6 +102,14 @@ class Document extends Component {
     shouldSync: boolean,
     showingSettings: boolean,
     tick: number,
+    overlayState: ?({
+      type: 'search',
+      tagIds: string[],
+      query: string,
+    } | {
+      type: 'list',
+      root: string,
+    }),
   }
   _unsubs: Array<() => void>
 
@@ -116,6 +125,7 @@ class Document extends Component {
       shouldSync: false,
       showingSettings: false,
       tick: 0,
+      overlayState: null,
       // panesSetup,
     }
     this._unsubs = [
@@ -239,6 +249,16 @@ class Document extends Component {
       this._unsubs.push(store.on([store.events.sharedViewData()], () => {
         saveSharedViewData(this.props.id, store.sharedViewData)
       }))
+      this._unsubs.push(store.onIntent('filter-by-tag', (viewId, tagid) => {
+        if (viewId !== store.id) return
+        this.setState({
+          overlayState: {
+            type: 'search',
+            tagIds: [tagid],
+            query: '',
+          },
+        })
+      }))
       this._unsubs.push(store.on([store.events.viewType()], () => {
         this.setState({})
       }))
@@ -328,7 +348,6 @@ class Document extends Component {
       <div
         className={css(styles.top)}
       >
-        Hello
         <button
           onClick={() => this.setState({showingSettings: true})}
         >
@@ -397,7 +416,8 @@ const styles = StyleSheet.create({
   top: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    alignSelf: 'stretch',
   },
 
   main: {

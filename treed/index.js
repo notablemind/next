@@ -66,8 +66,34 @@ const createSettings = (now, plugins) => {
   }
 }
 
+class Emitter {
+  listeners: {[evt: string]: Set<Function>}
+
+  constructor() {
+    this.listeners = {}
+  }
+
+  on = (evt, fn) => {
+    if (!this.listeners[evt]) this.listeners[evt] = new Set()
+    this.listeners[evt].add(fn)
+  }
+
+  off = (evt, fn) => {
+    if (!this.listeners[evt]) return
+    this.listeners[evt].delete(fn)
+  }
+
+  emit = (evt, ...extra) => {
+    if (!evt || !this.listeners[evt]) return
+    for (let fn of this.listeners[evt]) {
+      fn(...extra)
+    }
+  }
+}
+
 export default class Treed {
   emitter: FlushingEmitter
+  intentEmitter: Emitter
   commands: Commandeger<*, *>
   ready: Promise<*>
   db: Database
@@ -88,6 +114,7 @@ export default class Treed {
 
   constructor(db: Db, pluginsArray: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string, sharedViewData: any, defaultRootContents: string = '') {
     this.emitter = new FlushingEmitter()
+    this.intentEmitter = new Emitter()
     this.viewTypes = viewTypes
     this.commands = new Commandeger(commands, this.setActive)
     this.db = new Database(
@@ -170,6 +197,7 @@ export default class Treed {
       db: this.db,
       emit: this.emitter.emit,
       emitMany: this.emitter.emitMany,
+      emitIntent: this.intentEmitter.emit,
       plugins: organizePlugins(pluginSettings, this.config.plugins),
       addKeyLayer: this.keyManager.addLayer,
       addNormalKeyLayer: this.addNormalKeyLayer,
@@ -177,6 +205,7 @@ export default class Treed {
       activeView: () => this.activeView(),
       handleKey: this.handleKey,
       on: this.on,
+      onIntent: this.onIntent,
       addListener: (evt, fn) => this.emitter.on(evt, fn),
       removeListener: (evt, fn) => this.emitter.off(evt, fn),
       viewTypes: this.viewTypes,
@@ -305,6 +334,7 @@ export default class Treed {
       },
 
       setupStateListener: (...args) => this.setupStateListener(store, ...args),
+      emitIntent: (intent, extra) => this.intentEmitter.emit(intent, store.id, extra),
     }
 
     this.setupActionsAndGetters(store, viewTypeConfig)
@@ -457,6 +487,11 @@ export default class Treed {
     return () => {
       evts.forEach(evt => this.emitter.off(evt, fn))
     }
+  }
+
+  onIntent = (evt: string, fn: Function) => {
+    this.intentEmitter.on(evt, fn)
+    return () => this.intentEmitter.off(evt, fn)
   }
 
   destroy() {
