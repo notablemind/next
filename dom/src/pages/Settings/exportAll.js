@@ -3,7 +3,7 @@
 // import Treed from 'treed'
 import Database from 'treed/Database'
 import JSZip from 'jszip'
-import PouchDB from 'PouchDB'
+import getFileDb from '../utils/getFileDb'
 
 type File = {id: string, title: string}
 
@@ -54,21 +54,22 @@ const extForMime = {
 
 export default (files: Array<File>) => {
   return Promise.all(files.map(file => {
-    const pdb = new PouchDB('doc_' + file.id)
-    return pouchToJsonAndBlobs(pdb).then(({json, blobs}) => {
-      pdb.close()
-      return {
-        id: file.id,
-        title: file.title,
-        json,
-        blobs,
-      }
+    return getFileDb(file.id).then(pdb => {
+      return pouchToJsonAndBlobs(pdb).then(({json, blobs}) => {
+        pdb.close()
+        return {
+          id: file.id,
+          title: file.title,
+          json,
+          blobs,
+        }
+      })
     })
   })).then(dumped => {
     const zip = new JSZip()
     const dir = zip.folder('ExportedDocuments')
     dumped.forEach(dump => {
-      const sub = dir.folder(`${dump.title} - ${dump.id}`)
+      const sub = dir.folder(`${dump.title.replace('/', '-')} - ${dump.id}`)
       sub.file(`contents.nm`, JSON.stringify(dump.json))
       Object.keys(dump.blobs).forEach(aid => {
         // TODO maybe prepend w/ the original file name if we have it?

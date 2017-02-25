@@ -38,7 +38,10 @@ export default (file: File): Promise<Result[]> => {
 
     return Promise.all(docs.map(doc => {
       console.log('processing', doc.title)
-      return doc.byName['contents.nm'].async('string').then(text => {
+      const contents = doc.byName['contents.nm']
+        ? doc.byName['contents.nm'].async('string')
+        : Promise.resolve('{}')
+      return contents.then(text => {
         console.log('have contents for', doc.title)
         let contents
         try {

@@ -4,25 +4,19 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import Header from './Header'
+import getFileDb from '../utils/getFileDb'
 
 import * as userApi from './googleApi'
 import * as couchApi from './couchApi'
 
-import PouchDB from 'pouchdb'
-PouchDB.plugin(require('pouchdb-authentication'))
-PouchDB.plugin(require('pouchdb-adapter-idb'))
-PouchDB.plugin(require('pouchdb-upsert'))
-
 import type {User} from './types'
-
-window.pouchdb = PouchDB
 
 type State = {
   user: ?User,
   loading: bool,
   online: bool,
   remoteSession: any,
-  userDb: PouchDB,
+  userDb: any, // TODO type this
   title: string,
   settings: ?any,
   loginError: ?string,
@@ -40,11 +34,12 @@ export default class Wrapper extends Component {
       loginError: null,
       online: true,
       remoteSession: null,
-      userDb: new PouchDB('notablemind_user'),
+      userDb: null,
       title: 'Notablemind',
       settings: null, // do I need the settings?
     }
 
+    /*
     userApi.getSession((err, remoteSession) => {
       if (err === 'network') {
         this.setState({ loading: false, online: false, })
@@ -56,14 +51,21 @@ export default class Wrapper extends Component {
         this.setState({ user: null, remoteSession: null, loading: false, })
       }
     })
+    */
+  }
+
+  componentDidMount() {
+    getFileDb(null).then(db => this.setState({userDb: db}))
   }
 
   componentDidUpdate(_: {}, prevState: State) {
+    /*
     if (this.state.userDb && this.state.remoteSession &&
         !(prevState.userDb && prevState.remoteSession)) {
       console.log('starting sync')
       this.state.remoteSession.sync(this.state.userDb)
     }
+    */
   }
 
   onLogin = () => {
@@ -100,6 +102,7 @@ export default class Wrapper extends Component {
 
   // this is used by `Document` to update last-opened. would be good to not
   // expose this and just handle it here.
+  /*
   updateFile = (id: string, path: Array<string>, value: any) => {
     if (!this.state.userDb) {
       return console.error('No user db - unable to update file')
@@ -125,8 +128,10 @@ export default class Wrapper extends Component {
       }
     })
   }
+  */
 
   render() {
+    if (!this.state.userDb) return <div>Loading</div>
     return <div className={css(styles.container)}>
       <Header
         user={this.state.user}

@@ -28,12 +28,18 @@ module.exports = {
     new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
+    new webpack.DefinePlugin({
+      DEV: process.env.NODE_ENV !== 'production',
+      ELECTRON: !!process.env.ELECTRON,
+    }),
   ],
   resolve: {
     alias: {
       // treed: path.join(__dirname, '..', '..', 'shared', 'treed'),
     },
   },
+
+  target: process.env.ELECTRON ? 'electron-renderer' : 'web',
 
   module: {
     loaders: [{

@@ -4,8 +4,8 @@ import {css, StyleSheet} from 'aphrodite'
 
 import uuid from 'treed/uuid'
 import newNode from 'treed/newNode'
-import PouchDB from 'pouchdb'
 
+import getFileDb from '../utils/getFileDb'
 import importAll from './importAll'
 
 const round = (n, by) => parseInt(n * by) / by
@@ -69,17 +69,18 @@ export default class Importer extends Component {
     const actions = files.map(({file, getContents}) => () => {
       const {withAttachments, withoutAttachments} = getContents()
       console.log('now inserting', file.title)
-      const pouchDb = new PouchDB(`doc_${file._id}`)
-      let p = Promise.resolve()
-      if (withoutAttachments.length) {
-        p = pouchDb.bulkDocs({docs: withoutAttachments, new_edits: false})
-      }
-      withAttachments.forEach(fn => {
-        p = p.then(() => fn().then(doc => {
-          return pouchDb.bulkDocs({docs: [doc], new_edits: false})
-        }))
+      return getFileDb(file._id).then(pouchDb => {
+        let p = Promise.resolve()
+        if (withoutAttachments.length) {
+          p = pouchDb.bulkDocs({docs: withoutAttachments, new_edits: false})
+        }
+        withAttachments.forEach(fn => {
+          p = p.then(() => fn().then(doc => {
+            return pouchDb.bulkDocs({docs: [doc], new_edits: false})
+          }))
+        })
+        return p.then(() => pouchDb.close())
       })
-      return p.then(() => pouchDb.close())
     })
     this.setState({left: actions.length, total: actions.length})
     const next = () => (

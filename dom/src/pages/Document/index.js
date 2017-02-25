@@ -2,12 +2,12 @@
 
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
-import PouchDB from 'pouchdb'
 import {hashHistory} from 'react-router'
 
 import Treed from 'treed'
 import treedPouch from 'treed/pouch'
 import makeKeyLayer from 'treed/keys/makeKeyLayer'
+import getFileDb from '../utils/getFileDb'
 
 import Sidebar from './Sidebar'
 import Searcher from './Searcher'
@@ -116,7 +116,7 @@ class Document extends Component {
   constructor({id, userSession}: any) {
     super()
     this.state = {
-      db: new PouchDB('doc_' + id),
+      db: null, // getFileDb(id),
       searching: false,
       treed: null,
       store: null,
@@ -133,10 +133,14 @@ class Document extends Component {
   }
 
   componentDidMount() {
+    getFileDb(this.props.id).then(db => {
+      this.setState({db}, () => this.makeTreed('a root you know'))
+    })
     window.addEventListener('keydown', this.onKeyDown)
     window.addEventListener('dragover', this.onDrag)
     window.addEventListener('paste', this.onPaste)
     window.addEventListener('drop', this.onDrop)
+    /*
     this.props.updateFile(this.props.id, ['types', 'file', 'lastOpened'], Date.now()).then(node => {
       const shouldSync = node.types.file.synced
       this.setState({shouldSync})
@@ -148,12 +152,13 @@ class Document extends Component {
       }
       this.makeTreed(node.content)
     })
+    */
   }
 
   goBack = () => {
     if (this.state.treed) {
       const numItems = Object.keys(this.state.treed.db.data).length
-      this.props.updateFile(this.props.id, ['types', 'file', 'size'], numItems)
+      // this.props.updateFile(this.props.id, ['types', 'file', 'size'], numItems)
     }
     hashHistory.push('/')
   }
@@ -300,7 +305,7 @@ class Document extends Component {
     document.title = title
     // this.props.setTitle(title)
     const id = this.props.id
-    this.props.updateFile(id, ['content'], title)
+    // this.props.updateFile(id, ['content'], title)
   }
 
   componentWillReceiveProps(nextProps: any) {

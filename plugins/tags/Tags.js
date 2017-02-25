@@ -40,6 +40,7 @@ export default class Tags extends Component {
     const {node, pluginConfig, isTagging} = this.state
     const {store} = this.props
     const {tags} = pluginConfig
+    if (!node) return null
     const ids: Array<string> = ((node.plugins[PLUGIN_ID]: any) || []).filter(id => tags[id])
     if (!ids.length && !isTagging) return null
     return <div className={css(styles.tags)} onMouseDown={e => e.stopPropagation()}>
