@@ -70,7 +70,7 @@ const loadLastViewState = id => maybeLoad(viewStateKey(id)) || {
 }
 const saveLastViewState = (id, data) => localStorage[viewStateKey(id)] = JSON.stringify(data)
 
-const DocumentPage = ({params, ...props}: any) => <Document key={params.id} id={params.id} {...props} />
+const DocumentPage = ({params, ...props}: any) => <Document key={params.id || 'root'} id={params.id} {...props} />
 export default DocumentPage
 
 type ViewState = {
@@ -231,7 +231,7 @@ class Document extends Component {
       this.props.id,
       loadSharedViewData(this.props.id),
       title,
-      plugins.map(pl => id).filter(id => optionalPlugins.indexOf(id) === -1),
+      plugins.map(pl => pl.id).filter(id => optionalPlugins.indexOf(id) === -1),
       // (this.state.sharedViewData || {})
     )
     this._unsubs.push(treed.on(['node:root'], () => {

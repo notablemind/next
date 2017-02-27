@@ -50,7 +50,9 @@ ipcMain.on('sync', (evt, uid, docid) => {
     attachments: true,
   }).then(response => {
     console.log('sending the stuff')
-    evt.sender.send(uid, response.rows.map(row => row.doc))
+    if (!evt.sender.isDestroyed()) {
+      evt.sender.send(uid, response.rows.map(row => row.doc))
+    }
   }, err => {
     console.log('failed to get all docs', uid, docid, err)
   })
@@ -66,7 +68,10 @@ ipcMain.on('sync', (evt, uid, docid) => {
     } else {
       Object.keys(mplex[docid]).forEach(mid => {
         if (mid !== uid) {
-          mplex[docid][mid].send(mid, change.doc)
+          const sender = mplex[docid][mid]
+          if (!sender.isDestroyed()) {
+            sender.send(mid, change.doc)
+          }
         }
       })
       db.bulkDocs({docs: [change.doc], new_edits: false}).catch(err => {

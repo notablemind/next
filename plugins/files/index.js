@@ -35,13 +35,13 @@ const plugin: Plugin<*, *> = {
     let files = loadFiles()
     if (files === null) {
       let files = {}
-      return getDatabaseNames().then(names => {
+      // return getDatabaseNames().then(names => {
         const nodes = globalStore.db.data
         const ids = []
         const updates = []
         Object.keys(nodes).forEach(id => {
           if (nodes[id].type === 'file') {
-            if (names.indexOf(`_pouch_doc_${id}`) !== -1) {
+            // if (names.indexOf(`_pouch_doc_${id}`) !== -1) {
               files[id] = {
                 id,
                 title: nodes[id].content,
@@ -59,18 +59,19 @@ const plugin: Plugin<*, *> = {
               }
               updates.push({types: {
                 ...nodes[id].types,
-                [PLUGIN_ID]: {
+                file: {
                   fileid: id,
                 }
               }})
               ids.push(id)
-            }
+            // }
           }
         })
+        debugger
         globalStore.actions.updateMany(ids, updates)
         saveFiles(files)
         return {files}
-      })
+      // })
     }
     return {files}
   },

@@ -24,7 +24,7 @@ export default class App extends Component {
   render() {
     return <Router history={hashHistory}>
       <Route path="/" component={Wrapper}>
-        <IndexRoute component={Browse}/>
+        <IndexRoute component={Document}/>
         <Route path="doc/:id" component={Document} />
       </Route>
     </Router>
