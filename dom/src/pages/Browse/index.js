@@ -19,6 +19,12 @@ import type {MenuItem} from 'treed/types'
 
 const plugins = [
   require('../../../../plugins/files').default,
+  require('../../../../plugins/minimap').default,
+  require('../../../../plugins/themes').default,
+  require('../../../../plugins/todos/dom').default,
+  require('../../../../plugins/image/dom').default,
+  require('../../../../plugins/date/dom').default,
+  require('../../../../plugins/tags').default,
   // require('../../../../plugins/themes').default,
   // require('../../../../plugins/todos/dom').default,
   // require('../../../../plugins/image/dom').default,

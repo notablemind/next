@@ -175,15 +175,15 @@ export default class Treed {
           sharedViewData[key] = viewTypes[key].initialSharedViewData ? viewTypes[key].initialSharedViewData() : {}
         }
       })
-      this.enabledPlugins = Object.keys(settings.plugins).map(id => this.config.plugins[id])
+      this.enabledPlugins = Object.keys(settings.plugins).map(id => this.config.plugins[id]).filter(plugin => !!plugin)
       this.setupGlobalStore(settings.plugins, sharedViewData)
-      return Promise.all(Object.keys(settings.plugins).map(pid => {
-        if (plugins[pid].init) {
-          return Promise.resolve(plugins[pid].init(
-            settings.plugins[pid] || plugins[pid].defaultGlobalConfig,
+      return Promise.all(this.enabledPlugins.map(plugin => {
+        if (plugin.init) {
+          return Promise.resolve(plugin.init(
+            settings.plugins[plugin.id] || plugin.defaultGlobalConfig,
             this.globalStore
           )).then(state => {
-            this.globalState.plugins[pid] = state
+            this.globalState.plugins[plugin.id] = state
           })
         }
       }))

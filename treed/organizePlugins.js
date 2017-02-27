@@ -7,7 +7,7 @@ const getSubThing = (plugins: Array<Plugin<*, *>>, sub: string, thing: string) =
   .map(p => p[sub][thing])
 
 const getPluginThing = (plugins: Array<Plugin<*, *>>, sub: string, thing: string) => plugins
-  .filter(p => p[sub] && p[sub][thing])
+  .filter(p => p && p[sub] && p[sub][thing])
   .map(p => (node, store) => p[sub][thing](
     node.plugins[p.id],
     node,
@@ -34,7 +34,7 @@ const typesContextMenu = (node, store) => {
 
 
 const organizePlugins = (pluginSettings: {[pluginId: string]: any}, plugins: {[pluginId: string]: Plugin<*, *>}): PluginSummary => {
-  const enabledPlugins = Object.keys(pluginSettings).map(id => plugins[id])
+  const enabledPlugins = Object.keys(pluginSettings).map(id => plugins[id]).filter(plugin => !!plugin)
   const classNameGetters = getPluginThing(enabledPlugins, 'node', 'className')
   const contextMenuFns = getPluginThing(enabledPlugins, 'node', 'contextMenu')
 
