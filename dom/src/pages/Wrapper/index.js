@@ -7,7 +7,7 @@ import Header from './Header'
 import getFileDb from '../utils/getFileDb'
 
 import * as userApi from './googleApi'
-import * as couchApi from './couchApi'
+// import * as couchApi from './couchApi'
 
 import type {User} from './types'
 
@@ -16,7 +16,7 @@ type State = {
   loading: bool,
   online: bool,
   remoteSession: any,
-  userDb: any, // TODO type this
+  // userDb: any, // TODO type this
   title: string,
   settings: ?any,
   loginError: ?string,
@@ -25,7 +25,7 @@ type State = {
 export default class Wrapper extends Component {
   state: State
 
-  constructor() {
+  constructor(props) {
     super()
     const user = userApi.loadUser()
     this.state = {
@@ -34,10 +34,11 @@ export default class Wrapper extends Component {
       loginError: null,
       online: true,
       remoteSession: null,
-      userDb: null,
+      // userDb: null,
       title: 'Notablemind',
       settings: null, // do I need the settings?
     }
+    console.log('wrapper construct', props.params)
 
     /*
     userApi.getSession((err, remoteSession) => {
@@ -55,7 +56,7 @@ export default class Wrapper extends Component {
   }
 
   componentDidMount() {
-    getFileDb(null).then(db => this.setState({userDb: db}))
+    // getFileDb(null).then(db => this.setState({userDb: db}))
   }
 
   componentDidUpdate(_: {}, prevState: State) {
@@ -131,7 +132,8 @@ export default class Wrapper extends Component {
   */
 
   render() {
-    if (!this.state.userDb) return <div>Loading</div>
+    // if (!this.state.userDb) return <div>Loading</div>
+    console.log('wrapper render')
     return <div className={css(styles.container)}>
       <Header
         user={this.state.user}
@@ -146,7 +148,7 @@ export default class Wrapper extends Component {
       {React.cloneElement(this.props.children, {
         userSession: this.state.remoteSession,
         remoteUser: this.state.user,
-        userDb: this.state.userDb,
+        // userDb: this.state.userDb,
         updateFile: this.updateFile,
         setTitle: this.setTitle,
       })}

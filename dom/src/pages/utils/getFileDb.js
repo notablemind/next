@@ -15,6 +15,7 @@ if (ELECTRON) {
     return new Promise((res, rej) => {
       const db = new PouchDB(id ? `doc_${id}` : 'home', {adapter: 'memory'})
       const uid = Math.random().toString(16).slice(2)
+      console.log('getFileDb', id, uid)
       const {ipcRenderer} = require('electron')
 
       const gotChanges = {}
@@ -22,8 +23,20 @@ if (ELECTRON) {
       ipcRenderer.once(uid, (evt, docs) => {
         db.bulkDocs({docs, new_edits: false}).then(
           () => {
+            db.flushAndClose = () => {
+              db.allDocs({
+                include_docs: true,
+                attachments: true,
+              }).then(results => {
+                ipcRenderer.send(uid, results.rows.map(row => row.doc))
+                db.close()
+              }, err => {
+                console.error('failed to get all contents', id, err)
+              })
+            }
             res(db)
             ipcRenderer.on(uid, listener)
+            console.log('got', docs.length, 'from back', id, uid)
             db.changes({
               live: true,
               since: 'now',
@@ -31,21 +44,25 @@ if (ELECTRON) {
               attachments: true,
             }).on('change', change => {
               if (!gotChanges[change.doc._rev]) {
+                console.log('sending change back home', id)
                 ipcRenderer.send(uid, change) // YOLO
               } else {
+                console.log('saw this one already', id, change.doc._rev)
                 // keep this tidy
                 delete gotChanges[change.doc._rev]
               }
             }).on('complete', info => {
-              console.log("closing", uid)
+              console.warn("closing", id, uid)
               ipcRenderer.send(uid, null) // closing this one
               ipcRenderer.removeListener(uid, listener)
             }).on('error', err => {
-              console.log('error eith', uid, err)
+              console.error('error syncing', uid, err)
             })
           },
           err => console.log('failed to update in response to server', err)
-        )
+        ).catch(err => {
+          console.error('failed to set things up', err)
+        })
       })
 
       let first = true
@@ -62,7 +79,11 @@ if (ELECTRON) {
 
   }
 } else {
-  getFileDb = id => Promise.resolve(new PouchDB(id ? `doc_${id}` : 'notablemind_user', {adapter: 'idb'}))
+  getFileDb = id => {
+    const db = new PouchDB(id ? `doc_${id}` : 'notablemind_user', {adapter: 'idb'})
+    db.flushAndClose = () => db.close()
+    Promise.resolve(db)
+  }
 }
 
 export default getFileDb

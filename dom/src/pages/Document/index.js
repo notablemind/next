@@ -120,6 +120,7 @@ class Document extends Component {
 
   constructor({id, userSession}: any) {
     super()
+    console.log('Document constructor', id)
     this.state = {
       db: null, // getFileDb(id),
       searching: false,
@@ -271,9 +272,11 @@ class Document extends Component {
         })
       }))
       this._unsubs.push(store.onIntent('navigate-to-file', (viewId, nodeid) => {
+        console.log('navigaet by node', nodeid)
         if (viewId !== store.id) return
         const {types: {file: {fileid}}} = store.getters.node(nodeid)
         if (fileid) {
+          console.log('going to doc', fileid)
           hashHistory.push('/doc/' + fileid)
         }
       }))
@@ -332,7 +335,6 @@ class Document extends Component {
   }
 
   componentWillUnmount() {
-    this.state.db.close()
     window.removeEventListener('keydown', this.onKeyDown)
     window.removeEventListener('dragover', this.onDrag)
     window.removeEventListener('paste', this.onPaste)
@@ -341,6 +343,7 @@ class Document extends Component {
       this.state.treed.destroy()
     }
     this._unsubs.forEach(f => f())
+    this.state.db.close()
   }
 
   getActionButtons() {

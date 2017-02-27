@@ -50,17 +50,24 @@ export default class Importer extends Component {
     console.log('ok got some things', files)
     const npid = uuid()
     const now = Date.now()
+    const fileData = {}
+    const addFile = file => {
+      const fileObj = {
+        id: file._id,
+        size: file.size,
+        lastOpened: file.opened,
+        lastModified: file.modified,
+        synced: false, // TODO use a global setting to prefill this
+      }
+      fileData[file._id] = fileObj
+      return {fileid: file._id}
+    }
     const tree = {
       ...newNode(npid, null, now, `Imported documents ${new Date().toLocaleDateString()}`),
       children: files.map(({file}) => ({
-        ...newNode(file._id, npid, now, file.title),
+        ...newNode(uuid(), npid, now, file.title),
         type: 'file',
-        types: {file: {
-          size: file.size,
-          lastOpened: file.opened,
-          lastModified: file.modified,
-          synced: false, // TODO use a global setting to prefill this
-        }},
+        types: {file: addFile(file)},
       })),
     }
     const {store} = this.props
@@ -72,14 +79,24 @@ export default class Importer extends Component {
       return getFileDb(file._id).then(pouchDb => {
         let p = Promise.resolve()
         if (withoutAttachments.length) {
-          p = pouchDb.bulkDocs({docs: withoutAttachments, new_edits: false})
+          p = pouchDb.bulkDocs({docs: withoutAttachments, new_edits: false}).then(() => {
+            console.log('bulkdocsd', withoutAttachments.length, 'documents', file.title)
+          })
         }
         withAttachments.forEach(fn => {
           p = p.then(() => fn().then(doc => {
             return pouchDb.bulkDocs({docs: [doc], new_edits: false})
           }))
         })
-        return p.then(() => pouchDb.close())
+        // FlushAndClose is my special thing for syncing to the
+        // electron backend
+        return p.then(() => pouchDb.flushAndClose()).then(
+          () => {
+            console.warn('finished importing', file._id, file.title)
+          },
+          err => {
+            console.log('not workin', file._id, err)
+          })
       })
     })
     this.setState({left: actions.length, total: actions.length})
