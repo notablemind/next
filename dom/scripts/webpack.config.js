@@ -39,6 +39,10 @@ module.exports = {
     },
   },
 
+  externals: {
+    bindings: true,
+  },
+
   target: process.env.ELECTRON ? 'electron-renderer' : 'web',
 
   module: {

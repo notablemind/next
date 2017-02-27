@@ -35,6 +35,10 @@ export default class ExportModal extends Component {
     })
   }
 
+  deselectAll = () => {
+    this.setState({files: this.state.files.map(file => ({...file, selected: false}))})
+  }
+
   prepare = () => {
     this.setState({loading: true})
     exportAll(this.state.files.filter(f => f.selected))
@@ -56,6 +60,9 @@ export default class ExportModal extends Component {
       <div className={css(styles.title)}>
         Select docs to export
       </div>
+      <button onClick={this.deselectAll}>
+        Deselect all
+      </button>
       <div className={css(styles.files)}>
         {this.state.files.map(file => (
           <div

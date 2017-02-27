@@ -45,8 +45,8 @@ const bindStoreProxies = (store, config, sub) => {
   })
 }
 
-const createSettings = (now, plugins) => {
-  const pluginSettings = Object.keys(plugins).reduce((settings, pid) => (
+const createSettings = (now, plugins, defaultPlugins) => {
+  const pluginSettings = (defaultPlugins || Object.keys(plugins)).reduce((settings, pid) => (
     settings[pid] = plugins[pid].defaultGlobalConfig || {}, settings
   ), {})
   console.log('plugin settings', pluginSettings)
@@ -84,7 +84,7 @@ class Emitter {
   }
 
   emit = (evt, ...extra) => {
-    if (!evt || !this.listeners[evt]) return
+    if (!evt || !this.listeners[evt]) return console.warn('unhandled intent', evt, extra)
     for (let fn of this.listeners[evt]) {
       fn(...extra)
     }
@@ -112,7 +112,7 @@ export default class Treed {
   globalStore: GlobalStore
   viewTypes: ViewTypes
 
-  constructor(db: Db, pluginsArray: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string, sharedViewData: any, defaultRootContents: string = '') {
+  constructor(db: Db, pluginsArray: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string, sharedViewData: any, defaultRootContents: string = '', defaultPlugins: ?Array<string> = null) {
     this.emitter = new FlushingEmitter()
     this.intentEmitter = new Emitter()
     this.viewTypes = viewTypes
@@ -162,7 +162,7 @@ export default class Treed {
       // open this up until we've had a full sync.
       if (!this.db.data.root) {
         console.log('creating')
-        return this.db.saveMany([newNode('root', null, now, defaultRootContents), createSettings(now, plugins)])
+        return this.db.saveMany([newNode('root', null, now, defaultRootContents), createSettings(now, plugins, defaultPlugins)])
       } else if (!this.db.data.settings.version ||
                  this.db.data.settings.version < migrations.version) {
         return migrations.migrate(this.db)

@@ -188,7 +188,7 @@ export type Plugin<T, S> = {|
   node?: PluginNodeConfig,
   defaultGlobalConfig?: T,
 
-  init?: (globalPluginConfig: T, globalStore: GlobalStore) => S,
+  init?: (globalPluginConfig: T, globalStore: GlobalStore) => S | Promise<S>,
   destroy?: (globalPluginState: S) => void,
   leftSidePane?: any,
   rightSidePane?: any,

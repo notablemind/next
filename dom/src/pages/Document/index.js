@@ -20,6 +20,7 @@ import Settings from '../Settings/DocumentSettings'
 import type {Store} from 'treed/types'
 
 const plugins = [
+  require('../../../../plugins/files').default,
   require('../../../../plugins/minimap').default,
   require('../../../../plugins/themes').default,
   require('../../../../plugins/todos/dom').default,
@@ -29,6 +30,10 @@ const plugins = [
   require('../../../../plugins/tags').default,
   require('../../../../plugins/browser').default,
 ]
+
+const optionalPlugins = ['scriptures', 'browser']
+// const defaultPlugins = ['minimap', 'themes', 'todos', 'image', 'date', 'tags']
+// const alwaysPlugins = ['files', 'themes', 'todos', 'image']
 
 const viewTypes = {
   list: require('treed/views/list').default,
@@ -226,6 +231,7 @@ class Document extends Component {
       this.props.id,
       loadSharedViewData(this.props.id),
       title,
+      plugins.map(pl => id).filter(id => optionalPlugins.indexOf(id) === -1),
       // (this.state.sharedViewData || {})
     )
     this._unsubs.push(treed.on(['node:root'], () => {
@@ -263,6 +269,13 @@ class Document extends Component {
             query: '',
           },
         })
+      }))
+      this._unsubs.push(store.onIntent('navigate-to-file', (viewId, nodeid) => {
+        if (viewId !== store.id) return
+        const {types: {file: {fileid}}} = store.getters.node(nodeid)
+        if (fileid) {
+          hashHistory.push('/doc/' + fileid)
+        }
       }))
       this._unsubs.push(store.on([store.events.viewType()], () => {
         this.setState({})
