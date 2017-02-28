@@ -1,47 +1,26 @@
 // @flow
 
 import React from 'react'
-import type {Store, Plugin, GlobalStore} from 'treed/types'
 import {css, StyleSheet} from 'aphrodite'
 
 import uuid from 'treed/uuid'
-
 import Icon from 'treed/views/utils/Icon'
+import type {Store, Plugin, GlobalStore} from 'treed/types'
+
+import * as storage from './storage'
 
 const PLUGIN_ID = 'files'
 
-const LS_KEY = 'nm:files'
-const loadFiles = () => {
-  try {
-    return JSON.parse(localStorage[LS_KEY] || '')
-  } catch (e) {
-    return null
-  }
-}
-const saveFiles = files => localStorage[LS_KEY] = JSON.stringify(files)
-
-const getDatabaseNames = () => {
-  return new Promise((res, rej) => {
-    const request = window.indexedDB.webkitGetDatabaseNames()
-    request.onerror = () => rej()
-    request.onsuccess = () => res([...request.result])
-  })
-}
-
-const onOpenFile = (files, fileid) => {
-  files[documentId].lastOpened = Date.now()
-}
-
 const addFile = (files, id, title) => {
-  files[id] = {
+  // files[id] =
+  storage.updateFile(files, id, {
     id,
     title,
     lastOpened: Date.now(),
     lastModified: Date.now(),
     size: 0,
     sync: null,
-  }
-  saveFiles(files)
+  })
 }
 
 // Need to set "default node type" to "file"
@@ -50,7 +29,8 @@ const plugin: Plugin<*, *> = {
   id: PLUGIN_ID,
 
   init(globalConfig: any, globalStore: GlobalStore) {
-    let files = loadFiles()
+    return storage.loadFiles().then(files => {
+    // let files = loadFiles()
     if (files === null) {
       let files = {}
       const nodes = globalStore.db.data
@@ -83,19 +63,20 @@ const plugin: Plugin<*, *> = {
         }
       })
       globalStore.actions.updateMany(ids, updates)
-      saveFiles(files)
+      storage.saveFiles(files)
       return {files, addFile: addFile.bind(null, files)}
     }
 
     const {documentId} = globalStore.globalState
     if (documentId && files[documentId]) {
-      files[documentId].lastOpened = Date.now()
+      storage.updateFile(files, documentId, {
+        lastOpened: Date.now(),
+        size: Object.keys(globalStore.db.data).length - 1,
+      })
       // 1 for the settings node
-      files[documentId].size = Object.keys(globalStore.db.data).length - 1
       if (files[documentId].title !== globalStore.db.data.root.content) {
         globalStore.actions.set('root', 'content', files[documentId].title)
       }
-      saveFiles(files)
     }
 
     /*
@@ -112,6 +93,7 @@ const plugin: Plugin<*, *> = {
     */
 
     return {files, addFile: addFile.bind(null, files)}
+    })
   },
 
   actions: {
@@ -133,6 +115,7 @@ const plugin: Plugin<*, *> = {
       title: 'File',
       newSiblingsShouldCarryType: false,
       // TODO hook this up
+      /*
       warnOnTypeChange: (store: Store, node: any) => {
         return getDatabaseNames().then(names => {
           if (names.indexOf(`_pouch_doc_${node._id}`) !== -1) {
@@ -140,6 +123,7 @@ const plugin: Plugin<*, *> = {
           }
         })
       },
+      */
       // TODO hook this up
       onTypeChange: (store: Store, node: any) => {
         window.indexedDB.deleteDatabase(`_pouch_doc_${node._id}`)

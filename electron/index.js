@@ -4,6 +4,9 @@ const electron = require('electron');
 const {ipcMain} = electron;
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
+const fs = require('fs')
+const path = require('path')
+const PouchDB = require('pouchdb')
 
 let mainWindow = null;
 
@@ -36,8 +39,6 @@ const makeWindow = () => {
   });
 }
 
-const PouchDB = require('pouchdb')
-const path = require('path')
 
 // docid -> uid -> sender
 const mplex = {}
@@ -91,8 +92,28 @@ ipcMain.on('sync', (evt, uid, docid) => {
 
 })
 
-ipcMain.on('hello', (evt, arg) => {
-  console.log('hello', evt, typeof arg)
+
+const FILES = path.join(__dirname, 'documents', 'meta.json')
+let files = JSON.parse(fs.readFileSync(FILES, 'utf8'))
+const saveFiles = () => fs.writeFileSync(FILES, JSON.stringify(files, null, 2), 'utf8')
+
+const ext = (a, b) => {
+  const c = {}
+  for (let n in a) c[n] = a[n]
+  for (let n in b) c[n] = b[n]
+  return c
+}
+
+ipcMain.on('files:load', evt => {
+  evt.sender.send('files', files)
+})
+ipcMain.on('files:saveall', (evt, newfiles) => {
+  files = newfiles
+  saveFiles()
+})
+ipcMain.on('files:update', (evt, id, update) => {
+  files[id] = ext(files[id], update)
+  saveFiles()
 })
 
 app.on('ready', function() {
