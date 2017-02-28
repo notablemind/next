@@ -32,6 +32,7 @@ const plugins = [
 ]
 
 const optionalPlugins = ['scriptures', 'browser']
+const defaultPlugins = plugins.map(pl => pl.id).filter(id => optionalPlugins.indexOf(id) === -1)
 // const defaultPlugins = ['minimap', 'themes', 'todos', 'image', 'date', 'tags']
 // const alwaysPlugins = ['files', 'themes', 'todos', 'image']
 
@@ -232,7 +233,8 @@ class Document extends Component {
       this.props.id,
       loadSharedViewData(this.props.id),
       title,
-      plugins.map(pl => pl.id).filter(id => optionalPlugins.indexOf(id) === -1),
+      defaultPlugins,
+      // plugins.map(pl => pl.id).filter(id => optionalPlugins.indexOf(id) === -1),
       // (this.state.sharedViewData || {})
     )
     this._unsubs.push(treed.on(['node:root'], () => {
@@ -296,7 +298,7 @@ class Document extends Component {
     if (!treed) return
     const plugins = treed.config.plugins
     const settings = treed.db.data.settings
-    const pluginSettings = ids.reduce((obj, pid) => (
+    const pluginSettings = defaultPlugins.concat(ids).reduce((obj, pid) => (
       obj[pid] = settings.plugins[pid] || plugins[pid].defaultGlobalConfig || {}, obj
     ), {})
     treed.db.save({
@@ -423,6 +425,7 @@ class Document extends Component {
             store={this.state.store}
             onClose={() => this.setState({showingSettings: false})}
             onSetPlugins={this.onSetPlugins}
+            optionalPlugins={optionalPlugins}
           />}
       </div>
     </div>

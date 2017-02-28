@@ -16,7 +16,6 @@ type State = {
   loading: bool,
   online: bool,
   remoteSession: any,
-  // userDb: any, // TODO type this
   title: string,
   settings: ?any,
   loginError: ?string,
@@ -33,40 +32,9 @@ export default class Wrapper extends Component {
       loading: !!user,
       loginError: null,
       online: true,
-      remoteSession: null,
-      // userDb: null,
       title: 'Notablemind',
       settings: null, // do I need the settings?
     }
-    console.log('wrapper construct', props.params)
-
-    /*
-    userApi.getSession((err, remoteSession) => {
-      if (err === 'network') {
-        this.setState({ loading: false, online: false, })
-      } else if (err === 'invalid') {
-        this.setState({ user: null, remoteSession: null, loading: false, })
-      } else if (remoteSession) {
-        this.setState({ loading: false, remoteSession, user: remoteSession.user })
-      } else {
-        this.setState({ user: null, remoteSession: null, loading: false, })
-      }
-    })
-    */
-  }
-
-  componentDidMount() {
-    // getFileDb(null).then(db => this.setState({userDb: db}))
-  }
-
-  componentDidUpdate(_: {}, prevState: State) {
-    /*
-    if (this.state.userDb && this.state.remoteSession &&
-        !(prevState.userDb && prevState.remoteSession)) {
-      console.log('starting sync')
-      this.state.remoteSession.sync(this.state.userDb)
-    }
-    */
   }
 
   onLogin = () => {
@@ -101,39 +69,7 @@ export default class Wrapper extends Component {
     this.setState({title})
   }
 
-  // this is used by `Document` to update last-opened. would be good to not
-  // expose this and just handle it here.
-  /*
-  updateFile = (id: string, path: Array<string>, value: any) => {
-    if (!this.state.userDb) {
-      return console.error('No user db - unable to update file')
-    }
-
-    return this.state.userDb.get(id).then(node => {
-      const last = path.pop()
-      const parent = path.reduce((obj, a) => obj[a] ? obj[a] : (obj[a] = {}), node)
-      if (parent[last] !== value) {
-        parent[last] = value
-        console.log(`saving doc ${id}: ${path.join('|')}`)
-        return this.state.userDb.upsert(id, node => {
-          const parent = path.reduce((obj, a) => obj[a] ? obj[a] : (obj[a] = {}), node)
-          if (parent[last] !== value) {
-            parent[last] = value
-            return node
-          } else {
-            return false
-          }
-        }).then(() => node)
-      } else {
-        return node
-      }
-    })
-  }
-  */
-
   render() {
-    // if (!this.state.userDb) return <div>Loading</div>
-    console.log('wrapper render')
     return <div className={css(styles.container)}>
       <Header
         user={this.state.user}
@@ -148,7 +84,6 @@ export default class Wrapper extends Component {
       {React.cloneElement(this.props.children, {
         userSession: this.state.remoteSession,
         remoteUser: this.state.user,
-        // userDb: this.state.userDb,
         updateFile: this.updateFile,
         setTitle: this.setTitle,
       })}

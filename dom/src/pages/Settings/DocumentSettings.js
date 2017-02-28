@@ -11,13 +11,18 @@ import PluginsPane from './PluginsPane'
 
 export default class DocumentSettings extends Component {
   render() {
-    const {onClose, treed, store, onSetPlugins} = this.props
+    const {onClose, treed, store, onSetPlugins, optionalPlugins} = this.props
     return <Modal onClose={onClose} className={css(styles.container)}>
       <SideTabbed
         className={css(styles.tabContainer)}
         tabs={{
           // want sync interval, etc.
-          Plugins: () => <PluginsPane treed={treed} onSetPlugins={onSetPlugins} onClose={onClose} />,
+          Plugins: () => <PluginsPane
+            treed={treed}
+            onSetPlugins={onSetPlugins}
+            optionalPlugins={optionalPlugins}
+            onClose={onClose}
+          />,
           Sync: () => <div>TODO need to work out how I store file metadata</div>,
           ['Import']: () => <Importer store={store} />,
           ['Export']: () => <Exporter store={store} />,

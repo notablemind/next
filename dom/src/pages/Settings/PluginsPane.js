@@ -3,21 +3,14 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
-const makeBoolMap = ids => ids.reduce((o, i) => (o[i] = true, o), {})
+const makeBoolMap = (ids, obj) => ids.reduce((o, i) => (o[i] = !!obj[i], o), {})
 
 export default class PluginsPane extends Component {
   state: *
-  constructor({treed}: any) {
+  constructor({treed, optionalPlugins}: any) {
     super()
-    /*
-    store.setupStateListener(
-      this,
-      store => [store.settingsChanged()],
-      store => ({settings: store.db.data.settings}),
-    )
-    */
     this.state = {
-      enabledPlugins: makeBoolMap(Object.keys(treed.db.data.settings.plugins)),
+      enabledPlugins: makeBoolMap(optionalPlugins, treed.db.data.settings.plugins),
     }
   }
 
@@ -36,14 +29,14 @@ export default class PluginsPane extends Component {
   }
 
   render() {
-    const {treed} = this.props
+    const {optionalPlugins, treed} = this.props
     return <div>
       <div
         className={css(styles.title)}
       >
         Enabled plugins
       </div>
-      {Object.keys(treed.config.plugins).map(id => (
+      {optionalPlugins.map(id => (
         <label
           key={id}
           className={css(styles.plugin, this.state.enabledPlugins[id] && styles.pluginSelected)}
