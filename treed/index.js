@@ -112,7 +112,15 @@ export default class Treed {
   globalStore: GlobalStore
   viewTypes: ViewTypes
 
-  constructor(db: Db, pluginsArray: Array<Plugin<any, any>>, viewTypes: ViewTypes, documentId: string, sharedViewData: any, defaultRootContents: string = '', defaultPlugins: ?Array<string> = null) {
+  constructor(
+    db: Db,
+    pluginsArray: Array<Plugin<any, any>>,
+    viewTypes: ViewTypes,
+    documentId: string,
+    sharedViewData: any,
+    defaultRootContents: string = '',
+    defaultPlugins: ?Array<string> = null,
+  ) {
     this.emitter = new FlushingEmitter()
     this.intentEmitter = new Emitter()
     this.viewTypes = viewTypes
@@ -166,6 +174,23 @@ export default class Treed {
       } else if (!this.db.data.settings.version ||
                  this.db.data.settings.version < migrations.version) {
         return migrations.migrate(this.db)
+      }
+      const newPluginSettings = {}
+      let addedPlugins = false
+      defaultPlugins.forEach(id => {
+        if (!this.db.data.settings.plugins[id]) {
+          addedPlugins = true
+          newPluginSettings[id] = plugins[id].defaultGlobalConfig || {}
+        }
+      })
+      if (newPluginSettings) {
+        return this.db.save({
+          ...this.db.data.settings,
+          plugins: {
+            ...this.db.data.settings.plugins,
+            ...newPluginSettings,
+          }
+        })
       }
     }).then(() => {
       const settings = this.db.data.settings

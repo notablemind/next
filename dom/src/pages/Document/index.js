@@ -31,6 +31,8 @@ const plugins = [
   require('../../../../plugins/browser').default,
 ]
 
+const pluginMap = plugins.reduce((obj, pl) => (obj[pl.id] = pl, obj), {})
+
 const optionalPlugins = ['scriptures', 'browser']
 const defaultPlugins = plugins.map(pl => pl.id).filter(id => optionalPlugins.indexOf(id) === -1)
 // const defaultPlugins = ['minimap', 'themes', 'todos', 'image', 'date', 'tags']
@@ -147,19 +149,6 @@ class Document extends Component {
     window.addEventListener('dragover', this.onDrag)
     window.addEventListener('paste', this.onPaste)
     window.addEventListener('drop', this.onDrop)
-    /*
-    this.props.updateFile(this.props.id, ['types', 'file', 'lastOpened'], Date.now()).then(node => {
-      const shouldSync = node.types.file.synced
-      this.setState({shouldSync})
-
-      if (shouldSync && this.props.userSession) {
-        this._unsubs.push(this.props.userSession.syncDoc(this.state.db, this.props.id, syncState => {
-          this.setState({syncState})
-        }))
-      }
-      this.makeTreed(node.content)
-    })
-    */
   }
 
   goBack = () => {
@@ -263,25 +252,8 @@ class Document extends Component {
       this._unsubs.push(store.on([store.events.sharedViewData()], () => {
         saveSharedViewData(this.props.id, store.sharedViewData)
       }))
-      this._unsubs.push(store.onIntent('filter-by-tag', (viewId, tagid) => {
-        if (viewId !== store.id) return
-        this.setState({
-          overlayState: {
-            type: 'search',
-            tagIds: [tagid],
-            query: '',
-          },
-        })
-      }))
-      this._unsubs.push(store.onIntent('navigate-to-file', (viewId, nodeid) => {
-        console.log('navigaet by node', nodeid)
-        if (viewId !== store.id) return
-        const {types: {file: {fileid}}} = store.getters.node(nodeid)
-        if (fileid) {
-          console.log('going to doc', fileid)
-          hashHistory.push('/doc/' + fileid)
-        }
-      }))
+      this._unsubs.push(store.onIntent('filter-by-tag', this.onTagFilter))
+      this._unsubs.push(store.onIntent('navigate-to-file', this.onNavigate))
       this._unsubs.push(store.on([store.events.viewType()], () => {
         this.setState({})
       }))
@@ -291,6 +263,22 @@ class Document extends Component {
         tick: this.state.tick + 1,
       })
     })
+  }
+
+  onTagFilter = (viewId: string, tagid: string) => {
+    if (viewId !== store.id) return
+    this.setState({
+      overlayState: {
+        type: 'search',
+        tagIds: [tagid],
+        query: '',
+      },
+    })
+  }
+
+  onNavigate = (viewId: string, fileid: string) => {
+    if (viewId !== this.state.store.id) return
+    hashHistory.push('/doc/' + fileid)
   }
 
   onSetPlugins = (ids: string[]) => {

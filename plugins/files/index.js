@@ -4,6 +4,8 @@ import React from 'react'
 import type {Store, Plugin, GlobalStore} from 'treed/types'
 import {css, StyleSheet} from 'aphrodite'
 
+import uuid from 'treed/uuid'
+
 import Icon from 'treed/views/utils/Icon'
 
 const PLUGIN_ID = 'files'
@@ -26,6 +28,22 @@ const getDatabaseNames = () => {
   })
 }
 
+const onOpenFile = (files, fileid) => {
+  files[documentId].lastOpened = Date.now()
+}
+
+const addFile = (files, id, title) => {
+  files[id] = {
+    id,
+    title,
+    lastOpened: Date.now(),
+    lastModified: Date.now(),
+    size: 0,
+    sync: null,
+  }
+  saveFiles(files)
+}
+
 // Need to set "default node type" to "file"
 // And "default node contents" to "Untitled"
 const plugin: Plugin<*, *> = {
@@ -35,45 +53,79 @@ const plugin: Plugin<*, *> = {
     let files = loadFiles()
     if (files === null) {
       let files = {}
-      // return getDatabaseNames().then(names => {
-        const nodes = globalStore.db.data
-        const ids = []
-        const updates = []
-        Object.keys(nodes).forEach(id => {
-          if (nodes[id].type === 'file') {
-            // if (names.indexOf(`_pouch_doc_${id}`) !== -1) {
-              files[id] = {
-                id,
-                title: nodes[id].content,
-                lastOpened: Date.now(),
-                lastModified: Date.now(),
-                size: 0,
-                sync: null,
-                /*
-                {
-                  owner: 'xxuseridxx',
-                  latestVersion: 2,
-                  lastUploaded: Date.now(),
-                }
-                */
-              }
-              updates.push({types: {
-                ...nodes[id].types,
-                file: {
-                  fileid: id,
-                }
-              }})
-              ids.push(id)
-            // }
+      const nodes = globalStore.db.data
+      const ids = []
+      const updates = []
+      Object.keys(nodes).forEach(id => {
+        if (nodes[id].type === 'file') {
+          files[id] = {
+            id,
+            title: nodes[id].content,
+            lastOpened: Date.now(),
+            lastModified: Date.now(),
+            size: 0,
+            sync: null,
+            /*
+            {
+              owner: 'xxuseridxx',
+              latestVersion: 2,
+              lastUploaded: Date.now(),
+            }
+            */
           }
-        })
-        debugger
-        globalStore.actions.updateMany(ids, updates)
-        saveFiles(files)
-        return {files}
-      // })
+          updates.push({types: {
+            ...nodes[id].types,
+            file: {
+              fileid: id,
+            }
+          }})
+          ids.push(id)
+        }
+      })
+      globalStore.actions.updateMany(ids, updates)
+      saveFiles(files)
+      return {files, addFile: addFile.bind(null, files)}
     }
-    return {files}
+
+    const {documentId} = globalStore.globalState
+    if (documentId && files[documentId]) {
+      files[documentId].lastOpened = Date.now()
+      // 1 for the settings node
+      files[documentId].size = Object.keys(globalStore.db.data).length - 1
+      if (files[documentId].title !== globalStore.db.data.root.content) {
+        globalStore.actions.set('root', 'content', files[documentId].title)
+      }
+      saveFiles(files)
+    }
+
+    /*
+    const subs = []
+    globalStore.onIntent('navigate-to-file', (viewId, nodeId) => {
+      const node = globalStore.db.data[nodeId]
+      if (node.type === 'file') {
+        const {fileid} = node.types.file || {}
+        if (fileid) {
+          onOpenFile(files, fileid)
+        }
+      }
+    })
+    */
+
+    return {files, addFile: addFile.bind(null, files)}
+  },
+
+  actions: {
+    navigateToFile(store, id=store.state.active) {
+      const node = store.getters.node(id)
+      if (node.types.file.fileid) {
+        store.emitIntent('navigate-to-file', node.types.file.fileid)
+      } else {
+        const fileid = uuid()
+        store.actions.setNested(id, ['types', 'file', 'fileid'], fileid)
+        store.globalState.plugins[PLUGIN_ID].addFile(fileid, node.content)
+        store.emitIntent('navigate-to-file', fileid)
+      }
+    },
   },
 
   nodeTypes: {
@@ -143,9 +195,8 @@ const plugin: Plugin<*, *> = {
           },
           description: 'Navigate to file',
           action(store) {
-            const node = store.getters.activeNode()
-            store.emitIntent('navigate-to-file', node._id)
-          },
+            store.actions.navigateToFile()
+          }
         },
       },
 
@@ -158,7 +209,7 @@ const plugin: Plugin<*, *> = {
           if (e.button !== 0) return
           e.stopPropagation()
           e.preventDefault()
-          store.emitIntent('navigate-to-file', node._id)
+          store.actions.navigateToFile(node._id)
         }
         return file
           ? <div
