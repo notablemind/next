@@ -30,7 +30,7 @@ const plugin: Plugin<*, *> = {
 
   init(globalConfig: any, globalStore: GlobalStore) {
     return storage.loadFiles().then(files => {
-    // let files = loadFiles()
+    /*
     if (files === null) {
       let files = {}
       const nodes = globalStore.db.data
@@ -45,13 +45,13 @@ const plugin: Plugin<*, *> = {
             lastModified: Date.now(),
             size: 0,
             sync: null,
-            /*
+            / *
             {
               owner: 'xxuseridxx',
               latestVersion: 2,
               lastUploaded: Date.now(),
             }
-            */
+            * /
           }
           updates.push({types: {
             ...nodes[id].types,
@@ -65,7 +65,7 @@ const plugin: Plugin<*, *> = {
       globalStore.actions.updateMany(ids, updates)
       storage.saveFiles(files)
       return {files, addFile: addFile.bind(null, files)}
-    }
+    }*/
 
     const {documentId} = globalStore.globalState
     if (documentId && files[documentId]) {
@@ -78,6 +78,19 @@ const plugin: Plugin<*, *> = {
         globalStore.actions.set('root', 'content', files[documentId].title)
       }
     }
+
+    storage.onChange(
+      (id, update) => {
+        files[id] = {...files[id], ...update}
+        globalStore.emit('file:' + id)
+      },
+      newFiles => {
+        for (let id in newFiles) {
+          files[id] = newFiles[id]
+          globalStore.emit('file:' + id)
+        }
+      }
+    )
 
     /*
     const subs = []

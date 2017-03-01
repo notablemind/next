@@ -51,7 +51,7 @@ ipcMain.on('sync', (evt, uid, docid) => {
     include_docs: true,
     attachments: true,
   }).then(response => {
-    console.log('sending the stuff', dbid, response.rows.length)
+    // console.log('sending the stuff', dbid, response.rows.length)
     if (!evt.sender.isDestroyed()) {
       evt.sender.send(uid, response.rows.map(row => row.doc))
 
@@ -67,7 +67,7 @@ ipcMain.on('sync', (evt, uid, docid) => {
             console.error('failed to flush', err)
           })
         } else if (change === null) {
-          console.log('removing listener', uid)
+          // console.log('removing listener', uid)
           ipcMain.removeListener(uid, listener)
           delete mplex[docid][uid]
           db.close()
@@ -91,7 +91,6 @@ ipcMain.on('sync', (evt, uid, docid) => {
   }, err => {
     console.log('failed to get all docs', uid, docid, err)
   })
-
 })
 
 app.on('ready', function() {
