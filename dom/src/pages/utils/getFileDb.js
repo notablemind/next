@@ -15,7 +15,7 @@ if (ELECTRON) {
     return new Promise((res, rej) => {
       const db = new PouchDB(id ? `doc_${id}` : 'home', {adapter: 'memory'})
       const uid = Math.random().toString(16).slice(2)
-      console.log('getFileDb', id, uid)
+      // console.log('getFileDb', id, uid)
       const {ipcRenderer} = require('electron')
 
       const gotChanges = {}
@@ -36,8 +36,8 @@ if (ELECTRON) {
             }
             res(db)
             ipcRenderer.on(uid, listener)
-            console.log('got', docs.length, 'from back', id, uid)
-            db.changes({
+            // console.log('got', docs.length, 'from back', id, uid)
+            db._changeStream = db.changes({
               live: true,
               since: 'now',
               include_docs: true,
@@ -52,7 +52,7 @@ if (ELECTRON) {
                 delete gotChanges[change.doc._rev]
               }
             }).on('complete', info => {
-              console.warn("closing", id, uid)
+              // console.warn("closing", id, uid)
               ipcRenderer.send(uid, null) // closing this one
               ipcRenderer.removeListener(uid, listener)
             }).on('error', err => {
@@ -68,7 +68,7 @@ if (ELECTRON) {
       let first = true
       const listener = (evt, doc) => {
         gotChanges[doc._rev] = true
-        console.log('listen folks', doc)
+        console.log('got a change from the server', doc)
         db.bulkDocs({docs: [doc], new_edits: false}).catch(
           err => console.log('failed to update in response to server', err)
         )
@@ -76,7 +76,6 @@ if (ELECTRON) {
 
       ipcRenderer.send('sync', uid, id)
     })
-
   }
 } else {
   getFileDb = id => {

@@ -67,6 +67,7 @@ ipcMain.on('sync', (evt, uid, docid) => {
             console.error('failed to flush', err)
           })
         } else if (change === null) {
+          console.log('removing listener', uid)
           ipcMain.removeListener(uid, listener)
           delete mplex[docid][uid]
           db.close()
@@ -75,6 +76,7 @@ ipcMain.on('sync', (evt, uid, docid) => {
             if (mid !== uid) {
               const sender = mplex[docid][mid]
               if (!sender.isDestroyed()) {
+                console.log('sending stuff up', mid, docid)
                 sender.send(mid, change.doc)
               }
             }
@@ -92,32 +94,25 @@ ipcMain.on('sync', (evt, uid, docid) => {
 
 })
 
-
-const FILES = path.join(__dirname, 'documents', 'meta.json')
-let files = JSON.parse(fs.readFileSync(FILES, 'utf8'))
-const saveFiles = () => fs.writeFileSync(FILES, JSON.stringify(files, null, 2), 'utf8')
-
-const ext = (a, b) => {
-  const c = {}
-  for (let n in a) c[n] = a[n]
-  for (let n in b) c[n] = b[n]
-  return c
-}
-
-ipcMain.on('files:load', evt => {
-  evt.sender.send('files', files)
-})
-ipcMain.on('files:saveall', (evt, newfiles) => {
-  files = newfiles
-  saveFiles()
-})
-ipcMain.on('files:update', (evt, id, update) => {
-  files[id] = ext(files[id], update)
-  saveFiles()
-})
-
 app.on('ready', function() {
+  const plugins = [
+    require('../plugins/files/electron'),
+    require('../plugins/quick-add/electron'),
+  ]
+
+  const state = {
+    documentsDir: path.join(__dirname, 'documents'),
+    baseDir: __dirname,
+    ipcMain,
+    plugins: {},
+  }
+
+  plugins.forEach(plugin => {
+    state.plugins[plugin.id] = plugin.init(state)
+  })
+
   makeWindow()
   // makeWindow()
+
 });
 

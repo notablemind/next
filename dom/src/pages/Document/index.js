@@ -333,7 +333,12 @@ class Document extends Component {
       this.state.treed.destroy()
     }
     this._unsubs.forEach(f => f())
-    this.state.db.close()
+    if (this.state.db) {
+      // this.state.db.close()
+      if (this.state.db._changeStream) {
+        this.state.db._changeStream.cancel()
+      }
+    }
   }
 
   getActionButtons() {

@@ -2,7 +2,6 @@
 export default db => ({
   _db: db,
   sync: (onDump, onChange, onError) => {
-    console.log('tracking changes you know')
     db.changes({
       live: true,
       include_docs: true,

@@ -202,7 +202,7 @@ const plugin: Plugin<*, *> = {
             >
               <Icon className={css(styles.icon)} name="document-text" />
               {file.title}
-              <Strut size={10} />
+              <div style={{flex: 1}}/>
               <div className={css(styles.date)}>
               {readableDate(file.lastOpened)}
               </div>
@@ -289,6 +289,11 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
   },
 
+  rowDisabled: {
+    fontStyle: 'italic',
+    color: '#aaa',
+  },
+
   date: {
     fontSize: '70%',
   },
@@ -296,6 +301,7 @@ const styles = StyleSheet.create({
   icon: {
     fontSize: 24,
     marginLeft: 5,
+    marginRight: 10,
     color: '#6f63ff',
   },
 })
