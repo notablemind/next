@@ -43,6 +43,7 @@ const viewTypes = {
   list: require('treed/views/list').default,
   whiteboard: require('treed/views/whiteboard').default,
   search: require('treed/views/search').default,
+  trash: require('treed/views/trash').default,
 }
 
 const activeButtons = [] // ['date:newEntry']

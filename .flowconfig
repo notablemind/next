@@ -4,6 +4,7 @@
 [include]
 
 [libs]
+flow/
 
 [options]
 module.name_mapper.extension='less' -> '<PROJECT_ROOT>/less.js.flow'
