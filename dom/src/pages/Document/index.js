@@ -404,7 +404,9 @@ class Document extends Component {
             name="ios-arrow-left"
             className={css(styles.homeArrow)}
           />
+          <div className={css(styles.homeText)}>
           Home
+          </div>
         </div>
       : null
 
@@ -543,6 +545,7 @@ const styles = StyleSheet.create({
 
   homeArrow: {
     marginRight: 5,
+    height: 13,
   },
 
   main: {

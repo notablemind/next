@@ -9,13 +9,13 @@ div {
 }
 
 body {
-    font-family: sans-serif;
+    font-family: OpenSans, sans-serif;
     font-weight: 200;
 }
 
 textarea,
 input {
-    font-family: sans-serif;
+    font-family: OpenSans, sans-serif;
     font-weight: 200;
     box-sizing: border-box;
 }
@@ -46,4 +46,39 @@ p code {
     font-style:normal;
     font-weight:normal;
     src:url("./fonts/ionicons.woff") format("woff");
+}
+
+@font-face {
+    font-family:OpenSans;
+    font-style:normal;
+    font-weight:200;
+    src:url("./fonts/options/Open_Sans/OpenSans-Light.ttf");
+}
+
+@font-face {
+    font-family:OpenSans;
+    font-style:normal;
+    font-weight:normal;
+    src:url("./fonts/options/Open_Sans/OpenSans-Regular.ttf");
+}
+
+@font-face {
+    font-family:OpenSans;
+    font-style:normal;
+    font-weight:600;
+    src:url("./fonts/options/Open_Sans/OpenSans-Semibold.ttf");
+}
+
+@font-face {
+    font-family:OpenSans;
+    font-style:normal;
+    font-weight:700;
+    src:url("./fonts/options/Open_Sans/OpenSans-Bold.ttf");
+}
+
+@font-face {
+    font-family:OpenSans;
+    font-style:normal;
+    font-weight:800;
+    src:url("./fonts/options/Open_Sans/OpenSans-ExtraBold.ttf");
 }
