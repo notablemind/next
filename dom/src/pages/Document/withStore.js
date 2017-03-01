@@ -4,23 +4,26 @@ import React, {Component} from 'react';
 import type {Store} from 'treed/types'
 
 const withStore = <Props, State>(
-  {render, events, state, shouldRefresh}: {
+  {render, events, state, shouldRefresh, displayName}: {
     render: any,
-    events: (store: Store, props?: Props) => Array<string>,
-    state: (store: Store, props?: Props) => State,
+    events: (store: Store, props: Props) => Array<string>,
+    state: (store: Store, props: Props) => State,
     shouldRefresh?: (store: Store, state: State, props?: Props) => boolean,
+    displayName: string,
   }
 ) => class Wrapper extends Component<void, any, any> {
+  static displayName = displayName
   _sub: any
-  constructor({store}: any) {
+  constructor(props: any) {
     super()
+    const {store} = props
     // flow :(
     const check = shouldRefresh
     this._sub = store.setupStateListener(
       this,
-      store => events(store, this.props),
-      store => state(store, this.props),
-      check ? (store => check(store, this.state, this.props)) : null,
+      store => events(store, props),
+      store => state(store, props),
+      check ? (store => check(store, this.state, props)) : null,
     )
   }
 

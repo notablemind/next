@@ -120,7 +120,7 @@ app.on('ready', function() {
   })
 
   makeWindow()
-  // makeWindow()
+  makeWindow()
 
 });
 

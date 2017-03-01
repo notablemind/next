@@ -5,6 +5,7 @@ import {css, StyleSheet} from 'aphrodite'
 import withStore from './withStore'
 
 const ViewHeader = withStore({
+  displayName: 'ViewHeader',
   events: store => [store.events.root(), store.events.viewType(), store.events.defaultView(store.getters.root())],
   state: store => ({
     root: store.getters.root(),

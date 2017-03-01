@@ -86,6 +86,7 @@ type ViewState = {
 }
 
 const ViewWrapper = withStore({
+  displayName: 'ViewWrapper',
   events: store => [store.events.viewType()],
   state: store => ({
     viewType: store.getters.viewType(),
@@ -266,7 +267,7 @@ class Document extends Component {
   }
 
   onTagFilter = (viewId: string, tagid: string) => {
-    if (viewId !== store.id) return
+    // if (viewId !== store.id) return
     this.setState({
       overlayState: {
         type: 'search',

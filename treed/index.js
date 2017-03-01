@@ -119,7 +119,7 @@ export default class Treed {
     documentId: string,
     sharedViewData: any,
     defaultRootContents: string = '',
-    defaultPlugins: ?Array<string> = null,
+    defaultPlugins: Array<string> = [],
   ) {
     this.emitter = new FlushingEmitter()
     this.intentEmitter = new Emitter()

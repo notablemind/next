@@ -15,7 +15,7 @@ type State = {
   user: ?User,
   loading: bool,
   online: bool,
-  remoteSession: any,
+  // remoteSession: any,
   title: string,
   settings: ?any,
   loginError: ?string,
@@ -24,7 +24,7 @@ type State = {
 export default class Wrapper extends Component {
   state: State
 
-  constructor(props) {
+  constructor() {
     super()
     const user = userApi.loadUser()
     this.state = {
@@ -41,6 +41,7 @@ export default class Wrapper extends Component {
     userApi.login()
   }
 
+  /*
   onCouchLogin = (email: string, pwd: string) => {
     userApi.login(email, pwd).then(
       remoteSession => this.setState({remoteSession, user: remoteSession.user}),
@@ -64,6 +65,7 @@ export default class Wrapper extends Component {
       remoteSession: null,
     })
   }
+  */
 
   setTitle = (title: string) => {
     this.setState({title})
@@ -76,15 +78,15 @@ export default class Wrapper extends Component {
         title={this.state.title}
         loading={this.state.loading}
         online={this.state.online}
-        onLogin={this.onLogin}
-        onLogout={this.onLogout}
-        onSignUp={this.onSignUp}
+        // onLogin={this.onLogin}
+        // onLogout={this.onLogout}
+        // onSignUp={this.onSignUp}
         loginError={this.state.loginError}
       />
       {React.cloneElement(this.props.children, {
-        userSession: this.state.remoteSession,
+        // userSession: this.state.remoteSession,
         remoteUser: this.state.user,
-        updateFile: this.updateFile,
+        // updateFile: this.updateFile,
         setTitle: this.setTitle,
       })}
     </div>
