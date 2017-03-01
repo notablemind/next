@@ -34,13 +34,15 @@ export default class Sidebar extends Component {
   render() {
     if (!this.state.store) return <div className={css(styles.container)}>Loading...</div>
     const side = this.props.side === 'right' ? 'rightSidePane' : 'leftSidePane'
+    const items = this.props.plugins.map(plugin => {
+      const Component = plugin[side]
+      if (Component) {
+        return <Component store={this.state.store} key={plugin.id} />
+      }
+    }).filter(x => !!x)
+    if (!items.length) return null
     return <div className={css(styles.container)}>
-      {this.props.plugins.map(plugin => {
-        const Component = plugin[side]
-        if (Component) {
-          return <Component store={this.state.store} key={plugin.id} />
-        }
-      })}
+      {items}
     </div>
   }
 }

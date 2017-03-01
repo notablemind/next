@@ -398,14 +398,14 @@ class Document extends Component {
     const backButton = this.props.id
       // TODO if the last doc wasn't home, indicate that
       ? <div className={css(styles.homeButton)}
-        onClick={() => window.history.back()}
-      >
-      <Icon
-        name="ios-arrow-left"
-        className={css(styles.homeArrow)}
-      />
-        Home
-      </div>
+          onClick={() => window.history.back()}
+        >
+          <Icon
+            name="ios-arrow-left"
+            className={css(styles.homeArrow)}
+          />
+          Home
+        </div>
       : null
 
     return <div className={css(styles.top)}>
@@ -415,9 +415,11 @@ class Document extends Component {
         name="ios-trash-outline"
         className={css(styles.trashcan)}
       />
-      <div style={{flex: 1}} />
+      <div className={css(styles.title)}>
+        {this.state.store.db.data.root.content}
+      </div>
       <Icon
-        name="ios-gear"
+        name="ios-settings"
         onClick={() => this.setState({showingSettings: true})}
         className={css(styles.settings)}
       />
@@ -486,12 +488,18 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignSelf: 'stretch',
     height: 76 / 2,
+    backgroundColor: '#fafafa',
+  },
+
+  title: {
+    flex: 1,
+    alignItems: 'center',
   },
 
   trashcan: {
     WebkitAppRegion: 'no-drag',
     cursor: 'pointer',
-    fontSize: 24,
+    fontSize: 20,
     // height: 27,
     padding: '0 4px',
     borderRadius: 4,
@@ -509,6 +517,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     padding: '0 4px',
     borderRadius: 4,
+    marginRight: 5,
     ':hover': {
       color: 'black',
       backgroundColor: '#eee',
@@ -517,7 +526,9 @@ const styles = StyleSheet.create({
 
   homeButton: {
     WebkitAppRegion: 'no-drag',
-    height: 27,
+    fontSize: 14,
+    height: 22,
+    fontWeight: 100,
     flexDirection: 'row',
     alignItems: 'center',
     padding: '0 4px',
