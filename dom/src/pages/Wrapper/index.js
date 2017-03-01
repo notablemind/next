@@ -73,7 +73,7 @@ export default class Wrapper extends Component {
 
   render() {
     return <div className={css(styles.container)}>
-      <Header
+      {/*<Header
         user={this.state.user}
         title={this.state.title}
         loading={this.state.loading}
@@ -82,12 +82,12 @@ export default class Wrapper extends Component {
         // onLogout={this.onLogout}
         // onSignUp={this.onSignUp}
         loginError={this.state.loginError}
-      />
+      />*/}
       {React.cloneElement(this.props.children, {
         // userSession: this.state.remoteSession,
-        remoteUser: this.state.user,
+        // remoteUser: this.state.user,
         // updateFile: this.updateFile,
-        setTitle: this.setTitle,
+        // setTitle: this.setTitle,
       })}
     </div>
   }

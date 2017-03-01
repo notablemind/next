@@ -238,10 +238,6 @@ class Document extends Component {
     }, 'global', userShortcuts)
     treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
     treed.ready.then(() => {
-      this.props.setTitle(<ViewTypeSwitcher
-        globalStore={treed.globalStore}
-      />)
-
       this.onTitleChange(treed.db.data.root.content)
       const viewState = loadLastViewState(this.props.id)
       if (!viewState.viewType) viewState.viewType = 'list'
@@ -310,7 +306,6 @@ class Document extends Component {
 
   onTitleChange(title: string) {
     document.title = title
-    // this.props.setTitle(title)
     const id = this.props.id
     // this.props.updateFile(id, ['content'], title)
   }
