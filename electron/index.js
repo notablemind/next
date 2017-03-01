@@ -24,6 +24,8 @@ const makeWindow = () => {
     // skipTaskBar: true,
     // alwaysOnTop: true,
     // frame: false,
+    titleBarStyle: 'hidden-inset',
+    fullscreenable: false,
     title: 'NotableMind',
     height: 800,
   });

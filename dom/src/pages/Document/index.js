@@ -17,6 +17,8 @@ import ViewHeader from './ViewHeader'
 import withStore from './withStore'
 import Settings from '../Settings/DocumentSettings'
 
+import Icon from 'treed/views/utils/Icon'
+
 import type {Store} from 'treed/types'
 
 const plugins = [
@@ -274,7 +276,6 @@ class Document extends Component {
   }
 
   onNavigate = (viewId: string, fileid: string) => {
-    if (viewId !== this.state.store.id) return
     hashHistory.push('/doc/' + fileid)
   }
 
@@ -350,27 +351,88 @@ class Document extends Component {
     return activeButtons.map(key => allButtons[key])
   }
 
+  renderActionButtons() {
+    const {treed} = this.state
+    const actionButtons = this.getActionButtons()
+    if (!actionButtons.length || !treed) return null
+    return <div className={css(styles.actionButtons)}>
+      {actionButtons.map(button => (
+        <div
+          key={button.id}
+          onClick={() => button.action(treed.activeView())}
+          className={css(styles.actionButton)}
+        >
+          {button.title}
+        </div>
+      ))}
+    </div>
+  }
+
+  renderHeader() {
+    let traffic = null
+    // TODO support windows-style windows buttons too
+    if (ELECTRON) {
+      /*
+      const {remote} = require('electron')
+      // const win = remote.getCurrentWindow()
+      traffic = <div className={css(styles.traffic)}>
+        <div
+          onClick={() => remote.getCurrentWindow().close()}
+          className={css(styles.trafficLight, styles.trafficClose)}
+        />
+        <div
+          onClick={() => remote.getCurrentWindow().minimize()}
+          className={css(styles.trafficLight, styles.trafficMinimize)}
+        />
+        <div
+          onClick={() => remote.getCurrentWindow().setFullScreen(
+            !remote.getCurrentWindow().isFullScreen()
+          )}
+          className={css(styles.trafficLight, styles.trafficFullScreen)}
+        />
+      </div>
+      */
+     traffic = <div style={{flexBasis: 80}} />
+    }
+
+    const backButton = this.props.id
+      // TODO if the last doc wasn't home, indicate that
+      ? <div className={css(styles.homeButton)}
+        onClick={() => window.history.back()}
+      >
+      <Icon
+        name="ios-arrow-left"
+        className={css(styles.homeArrow)}
+      />
+        Home
+      </div>
+      : null
+
+    return <div className={css(styles.top)}>
+      {traffic}
+      {backButton}
+      <Icon
+        name="ios-trash-outline"
+        className={css(styles.trashcan)}
+      />
+      <div style={{flex: 1}} />
+      <Icon
+        name="ios-gear"
+        onClick={() => this.setState({showingSettings: true})}
+        className={css(styles.settings)}
+      />
+    </div>
+  }
+
   render() {
     const {treed} = this.state
     if (!treed) {
       return <div className={css(styles.container, styles.loading)}>Loading...</div>
     }
 
-    const actionButtons = this.getActionButtons()
-
     return <div className={css(styles.container)}>
-      <div
-        className={css(styles.top)}
-      >
-        <button
-          onClick={() => this.setState({showingSettings: true})}
-        >
-          Settings
-        </button>
-      </div>
-      <div
-        className={css(styles.main)}
-      >
+      {this.renderHeader()}
+      <div className={css(styles.main)}>
         <Sidebar
           side="left"
           globalStore={treed.globalStore}
@@ -383,18 +445,7 @@ class Document extends Component {
             store={this.state.store}
           />
 
-          {actionButtons.length > 0 &&
-            <div className={css(styles.actionButtons)}>
-              {actionButtons.map(button => (
-                <div
-                  key={button.id}
-                  onClick={() => button.action(treed.activeView())}
-                  className={css(styles.actionButton)}
-                >
-                  {button.title}
-                </div>
-              ))}
-            </div>}
+          {this.renderActionButtons()}
         </div>
         <Sidebar
           side="right"
@@ -429,10 +480,58 @@ const styles = StyleSheet.create({
   },
 
   top: {
+    WebkitAppRegion: 'drag',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
     alignSelf: 'stretch',
+    height: 76 / 2,
+  },
+
+  trashcan: {
+    WebkitAppRegion: 'no-drag',
+    cursor: 'pointer',
+    fontSize: 24,
+    // height: 27,
+    padding: '0 4px',
+    borderRadius: 4,
+    color: '#aaa',
+    ':hover': {
+      color: 'black',
+      backgroundColor: '#eee',
+    },
+  },
+
+  settings: {
+    color: '#aaa',
+    WebkitAppRegion: 'no-drag',
+    cursor: 'pointer',
+    fontSize: 24,
+    padding: '0 4px',
+    borderRadius: 4,
+    ':hover': {
+      color: 'black',
+      backgroundColor: '#eee',
+    },
+  },
+
+  homeButton: {
+    WebkitAppRegion: 'no-drag',
+    height: 27,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: '0 4px',
+    marginRight: 4,
+    borderRadius: 4,
+    color: '#aaa',
+    ':hover': {
+      color: 'black',
+      backgroundColor: '#eee',
+    },
+  },
+
+  homeArrow: {
+    marginRight: 5,
   },
 
   main: {
@@ -471,5 +570,34 @@ const styles = StyleSheet.create({
   treedContainer: {
     flex: 1,
     //  position: 'relative',
+  },
+
+  traffic: {
+    flexDirection: 'row',
+    margin: '4px 4px',
+  },
+
+  trafficLight: {
+    width: 12,
+    height: 12,
+    border: '1px solid #aaa',
+    borderRadius: '50%',
+    margin: '0 4px',
+    cursor: 'pointer',
+  },
+
+  trafficClose: {
+    backgroundColor: '#fc605c',
+    borderColor: '#df423f',
+  },
+
+  trafficMinimize: {
+    backgroundColor: '#fdbc40',
+    borderColor: '#dea442',
+  },
+
+  trafficFullScreen: {
+    backgroundColor: '#34c84a',
+    borderColor: '#1fa72d',
   },
 })
