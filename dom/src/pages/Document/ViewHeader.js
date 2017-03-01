@@ -30,6 +30,7 @@ const ViewHeader = withStore({
         ))}
         {viewType !== defaultViewType &&
           <button
+            className={css(styles.setDefaultButton)}
             onClick={() => store.actions.setDefaultView({viewType, ...rest})}
           >
             Set default
@@ -42,11 +43,24 @@ const ViewHeader = withStore({
 
 export default ViewHeader
 
+const button = {
+  cursor: 'pointer',
+  backgroundColor: 'white',
+  border: 'none',
+  margin: '0 4px',
+  borderRadius: 4,
+  color: '#999',
+  ':hover': {
+    backgroundColor: '#eee',
+  },
+}
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 5,
   },
 
   buttons: {
@@ -56,11 +70,11 @@ const styles = StyleSheet.create({
   },
 
   typeButton: {
-    cursor: 'pointer',
-    backgroundColor: 'white',
-    border: '1px solid #ccc',
-    margin: '0 4px',
-    borderRadius: 4,
+    ...button,
+  },
+
+  setDefaultButton: {
+    ...button,
   },
 
   typeButtonSelected: {
