@@ -52,3 +52,40 @@ const plugin = {
 }
 
 module.exports = plugin
+
+    /*
+    if (files === null) {
+      let files = {}
+      const nodes = globalStore.db.data
+      const ids = []
+      const updates = []
+      Object.keys(nodes).forEach(id => {
+        if (nodes[id].type === 'file') {
+          files[id] = {
+            id,
+            title: nodes[id].content,
+            lastOpened: Date.now(),
+            lastModified: Date.now(),
+            size: 0,
+            sync: null,
+            / *
+            {
+              owner: 'xxuseridxx',
+              latestVersion: 2,
+              lastUploaded: Date.now(),
+            }
+            * /
+          }
+          updates.push({types: {
+            ...nodes[id].types,
+            file: {
+              fileid: id,
+            }
+          }})
+          ids.push(id)
+        }
+      })
+      globalStore.actions.updateMany(ids, updates)
+      storage.saveFiles(files)
+      return {files, addFile: addFile.bind(null, files)}
+    }*/

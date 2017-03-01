@@ -67,11 +67,15 @@ ipcMain.on('sync', (evt, uid, docid) => {
             console.error('failed to flush', err)
           })
         } else if (change === null) {
-          // console.log('removing listener', uid)
+          // console.log('done with', uid, dbid)
           ipcMain.removeListener(uid, listener)
           delete mplex[docid][uid]
           db.close()
         } else {
+          console.log('got change', change.doc)
+          db.bulkDocs({docs: [change.doc], new_edits: false}).catch(err => {
+            console.log('failures', err, uid, docid)
+          })
           Object.keys(mplex[docid]).forEach(mid => {
             if (mid !== uid) {
               const sender = mplex[docid][mid]
@@ -81,11 +85,16 @@ ipcMain.on('sync', (evt, uid, docid) => {
               }
             }
           })
-          db.bulkDocs({docs: [change.doc], new_edits: false}).catch(err => {
-            console.log('failures', err, uid, docid)
-          })
         }
       }
+      evt.sender.on('devtools-reload-page', () => {
+        // ipcMain.removeListener(uid, listener)
+        delete mplex[docid][uid]
+      })
+      evt.sender.on('destroyed', () => {
+        // ipcMain.removeListener(uid, listener)
+        delete mplex[docid][uid]
+      })
       ipcMain.on(uid, listener)
     }
   }, err => {

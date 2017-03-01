@@ -30,42 +30,6 @@ const plugin: Plugin<*, *> = {
 
   init(globalConfig: any, globalStore: GlobalStore) {
     return storage.loadFiles().then(files => {
-    /*
-    if (files === null) {
-      let files = {}
-      const nodes = globalStore.db.data
-      const ids = []
-      const updates = []
-      Object.keys(nodes).forEach(id => {
-        if (nodes[id].type === 'file') {
-          files[id] = {
-            id,
-            title: nodes[id].content,
-            lastOpened: Date.now(),
-            lastModified: Date.now(),
-            size: 0,
-            sync: null,
-            / *
-            {
-              owner: 'xxuseridxx',
-              latestVersion: 2,
-              lastUploaded: Date.now(),
-            }
-            * /
-          }
-          updates.push({types: {
-            ...nodes[id].types,
-            file: {
-              fileid: id,
-            }
-          }})
-          ids.push(id)
-        }
-      })
-      globalStore.actions.updateMany(ids, updates)
-      storage.saveFiles(files)
-      return {files, addFile: addFile.bind(null, files)}
-    }*/
 
     const {documentId} = globalStore.globalState
     if (documentId && files[documentId]) {
@@ -200,8 +164,7 @@ const plugin: Plugin<*, *> = {
       render: ({store, node}) => {
         const {files} = store.getters.pluginState(PLUGIN_ID)
         const file = files[(node.types.file || {}).fileid]
-        /*
-         */
+        console.log(node.types.file.fileid, !!files[node.types.file.fileid])
         const onNav = (e) => {
           if (e.button !== 0) return
           e.stopPropagation()
@@ -258,7 +221,7 @@ const readableDate = date => {
     let h = d.getHours()
     let pm = false
     let m = d.getMinutes()
-    if (h === 12) pm = true
+    if (h >= 12) pm = true
     if (h > 12) {
       h -= 12
     }
