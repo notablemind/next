@@ -18,8 +18,14 @@ export default class Body extends Component {
     e.preventDefault()
     e.stopPropagation()
     if (e.metaKey) {
-      this.props.actions.setActive(this.props.node._id)
-      this.props.actions.rebase(this.props.node._id)
+      if (this.props.onMetaClick) {
+        this.props.onMetaClick()
+      } else {
+        this.props.actions.setActive(this.props.node._id)
+        this.props.actions.rebase(this.props.node._id)
+      }
+    } else if (this.props.onClick) {
+      this.props.onClick()
     } else {
       this.props.actions.edit(this.props.node._id)
     }

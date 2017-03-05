@@ -1120,7 +1120,7 @@ const actions = {
       // Or "activeNodeAfterRemoval", and each view would have
       // to define it.
       store.execute({
-        type: 'untrash',
+        type: 'unTrash',
         args: {id},
       }, id, id)
       // store.actions.setActive(id, true)
