@@ -94,13 +94,13 @@ const keys: ViewActionConfig = {
     alias: 'normalMode',
   },
 
-  remove: {
+  trash: {
     shortcuts: {
       normal: 'd d',
       visual: 'd',
     },
-    description: 'Remove the current node',
-    alias: 'remove',
+    description: 'Trash the current node',
+    alias: 'trash',
   },
 
   copy: {

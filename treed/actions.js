@@ -1088,6 +1088,44 @@ const actions = {
       }, id, nid)
     },
 
+    trash(store: Store, id: string=store.state.active, goUp: boolean=false) {
+      if (id === store.state.root) return
+      const nid = nextActiveAfterRemoval(id, store.db.data, goUp)
+      store.actions.setActive(nid, true)
+      const node = store.getters.node(id)
+      // if it's been around for under 5 seconds, or it's been around for
+      // under 10 seconds and has no content
+      const now = Date.now()
+      if (now - node.created < 5 * 1000 ||
+         (now - node.created < 10 * 1000 && node.content === '')) {
+        store.actions.copyNode(id, false)
+        store.execute({
+          type: 'remove',
+          args: {id},
+        }, id, nid)
+      } else {
+        // TODO handle copying of trashed things better, so that
+        // the first paste just untrashes it.
+        store.actions.copyNode(id, false)
+        store.execute({
+          type: 'trash',
+          args: {id},
+        }, id, nid)
+      }
+    },
+
+    unTrash(store: Store, id: string=store.state.active) {
+      // TODO find the next available node? And make it active
+      // Need an action that's like "next available node"
+      // Or "activeNodeAfterRemoval", and each view would have
+      // to define it.
+      store.execute({
+        type: 'untrash',
+        args: {id},
+      }, id, id)
+      // store.actions.setActive(id, true)
+    },
+
     _fixChildren(store: Store, id: string=store.state.active) {
       const children = fixedChildren(id, store.db.data)
       store.actions.set(id, 'children', children)

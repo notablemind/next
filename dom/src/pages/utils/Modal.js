@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
   modal: {
     boxShadow: '0 0 5px #555',
     padding: 10,
+    borderRadius: 3,
     backgroundColor: 'white',
   },
 })

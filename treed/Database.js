@@ -29,6 +29,7 @@ export type Node = {
   content: string,
   modified: number,
   created: number,
+  trashed: ?number,
   types: {[type: string]: {}},
   views: {[type: string]: {}},
   plugins: {[type: string]: {}},

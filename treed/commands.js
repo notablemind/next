@@ -162,8 +162,68 @@ const commands: {[key: string]: Command<any>} = {
     */
   },
 
+  trash: {
+    apply({id}, db, events) {
+      const now = Date.now()
+      if (!id || !db.data[id]) return null
+      const node = db.data[id]
+      if (!node.parent) return null
+      const children = db.data[node.parent].children.slice()
+      const idx = children.indexOf(id)
+      children.splice(idx, 1)
+      return {
+        old: {node, idx},
+        prom: db.saveMany([{
+          ...db.data[node.parent],
+          children,
+        }, {
+          ...node,
+          trashed: Date.now(),
+        }]),
+      }
+    },
+
+    undo({idx, node}, db, events) {
+      const children = db.data[node.parent].children.slice()
+      children.splice(idx, 0, node._id)
+      return {prom: db.saveMany([{
+        ...db.data[node.parent],
+        children,
+      }, {
+        ...node,
+        trashed: null,
+      }])}
+    },
+  },
+
+  unTrash: {
+    apply({id}, db, events) {
+      const node = db.data[id]
+      const children = db.data[node.parent].children.slice()
+      children.push(node._id)
+      return {old: {id, trashed: node.trashed}, prom: db.saveMany([{
+        ...db.data[node.parent],
+        children,
+      }, {
+        ...node,
+        trashed: null,
+      }])}
+    },
+
+    undo({id, trashed}, db, events) {
+      const node = db.data[id]
+      const children = db.data[node.parent].children.filter(cid => cid !== id)
+      return {prom: db.saveMany([{
+        ...db.data[node.parent],
+        children,
+      }, {
+        ...node,
+        trashed,
+      }])}
+    },
+  },
+
   remove: {
-    // TODO this should be a "deep removal", with all children etc.
     apply({id}, db, events) {
       const now = Date.now()
       if (!id || !db.data[id]) return null
