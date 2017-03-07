@@ -16,6 +16,9 @@ import ViewHeader from './ViewHeader'
 import withStore from './withStore'
 import Settings from '../Settings/DocumentSettings'
 
+import SyncStatus from './Sync/Status'
+import SyncSettings from './Sync/Settings'
+
 import Icon from 'treed/views/utils/Icon'
 
 import type {Store} from 'treed/types'
@@ -112,6 +115,7 @@ class Document extends Component {
     syncState: string,
     shouldSync: boolean,
     showingSettings: boolean,
+    showingSyncSettings: boolean,
     tick: number,
     overlayState: ?({
       type: 'search',
@@ -136,6 +140,7 @@ class Document extends Component {
       syncState: 'unsynced',
       shouldSync: false,
       showingSettings: false,
+      showingSyncSettings: false,
       tick: 0,
       overlayState: null,
       // panesSetup,
@@ -420,6 +425,9 @@ class Document extends Component {
       <div className={css(styles.title)}>
         {this.state.store.db.data.root.content}
       </div>
+      <SyncStatus
+        onClick={() => this.setState({showingSyncSettings: true})}
+      />
       <Icon
         name="ios-settings"
         onClick={() => this.setState({showingSettings: true})}
@@ -464,6 +472,11 @@ class Document extends Component {
           <Searcher
             treed={treed}
             onClose={() => this.setState({searching: false})}
+          />}
+        {this.state.showingSyncSettings &&
+          <SyncSettings
+            treed={treed}
+            onClose={() => this.setState({showingSyncSettings: false})}
           />}
         {this.state.showingSettings &&
           <Settings
