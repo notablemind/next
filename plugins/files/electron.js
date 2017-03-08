@@ -1,4 +1,7 @@
 
+const path = require('path')
+const fs = require('fs')
+
 const ext = (a, b) => {
   const c = {}
   for (let n in a) c[n] = a[n]
@@ -15,8 +18,6 @@ const plugin = {
 
   init: ({baseDir, documentsDir, ipcMain}) => {
     console.log('files electron')
-    const path = require('path')
-    const fs = require('fs')
     const listeners = {}
 
     const META = path.join(documentsDir, 'meta.json')

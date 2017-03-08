@@ -10,6 +10,39 @@ import FileNode from './FileNode'
 
 import * as storage from './storage'
 
+type File = RemoteFile | LocalFile
+
+type RemoteFile = {
+  id: string,
+  title: string,
+  remoteId: string,
+  owner: {
+    profilePhoto: string,
+    name: string,
+    email: string,
+    me: boolean,
+  },
+}
+
+type LocalFile = {
+  id: string,
+  title: string,
+  lastOpened: number,
+  lastModified: number,
+  size: number,
+  sync: ?{
+    owner: {
+      profilePhoto: string,
+      name: string,
+      email: string,
+      me: boolean,
+    },
+    remoteId: string,
+    lastSyncTime: number,
+    lastSyncVersion: number,
+  },
+}
+
 const PLUGIN_ID = 'files'
 
 const addFile = (files, id, title) => {

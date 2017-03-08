@@ -1,5 +1,7 @@
 
 const google = require('./google')
+const fs = require('fs')
+const path = require('path')
 
 const PLUGIN_ID = 'sync'
 
@@ -38,8 +40,60 @@ const plugin = {
     })
 
     ipcMain.on('sync:files', evt => {
-      // TODO google get files n stuff
+      userProm
+        .then(user => google.listFiles(user.token))
+        .then(files => {
+          const meta = JSON.parse(fs.readFileSync(path.join(documentsDir, 'meta.json'), 'utf8'))
+          const nmIds = {}
+          files.forEach(file => nmIds[file.appProperties.nmId] = file)
+          // const localIds = {}
+          // meta.forEach(file => localIds[file.id] = true)
+          const locals = Object.keys(meta).map(id => ext(meta[id], {local: true, sync: syncObj(nmIds[id])}))
+          const remotes = files
+            .filter(file => !meta[file.appProperties.nmId])
+            .map(remoteFile)
+          return locals.concat(remotes)
+        })
     })
+  }
+}
+
+const ext = (a, b) => {
+  const c = {}
+  for (let n in a) c[n] = a[n]
+  for (let n in b) c[n] = b[n]
+  return c
+}
+
+const remoteFile = file => {
+  const owner = file.owners[0]
+  return {
+    id: file.appProperties.nmId,
+    title: file.name,
+    remoteId: file.id,
+    local: false,
+    owner: {
+      name: owner.displayName,
+      me: owner.me,
+      email: owner.emailAddress,
+      profilePhoto: owner.photoLink,
+    },
+  }
+}
+
+const syncObj = file => {
+  if (!file) return null
+  const owner = file.owners[0]
+  return {
+    owner: {
+      name: owner.displayName,
+      me: owner.me,
+      email: owner.emailAddress,
+      profilePhoto: owner.photoLink,
+    },
+    remoteId: file.id,
+    lastSyncTime: Date.now(),
+    lastSyncVersion: file.version,
   }
 }
 

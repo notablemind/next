@@ -28,9 +28,27 @@ export default class SyncStatus extends Component {
   }
 
   render() {
-    return <div onClick={this.props.onClick}>
+    return <div
+      className={css(styles.container)}
+      onClick={this.props.onClick}
+    >
       {this.state.user ? this.state.user.name : 'Login'}
     </div>
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    fontSize: 12,
+    padding: '5px',
+    cursor: 'pointer',
+    marginRight: 5,
+
+    ':hover': {
+      backgroundColor: '#eee',
+      borderRadius: 3,
+    },
+  },
+})
+
 

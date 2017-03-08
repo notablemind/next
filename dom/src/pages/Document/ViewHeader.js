@@ -18,6 +18,14 @@ const ViewHeader = withStore({
     <div className={css(styles.container)}>
 
       <div className={css(styles.buttons)}>
+        {viewType !== defaultViewType &&
+          <button
+            className={css(styles.setDefaultButton)}
+            onClick={() => store.actions.setDefaultView({viewType, ...rest})}
+          >
+            Set default
+          </button>
+        }
         {Object.keys(viewTypes).map(key => (
           <button
             className={css(styles.typeButton, key === viewType && styles.typeButtonSelected)}
@@ -28,14 +36,6 @@ const ViewHeader = withStore({
             {viewTypes[key].title}
           </button>
         ))}
-        {viewType !== defaultViewType &&
-          <button
-            className={css(styles.setDefaultButton)}
-            onClick={() => store.actions.setDefaultView({viewType, ...rest})}
-          >
-            Set default
-          </button>
-        }
       </div>
     </div>
   )
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     marginTop: 5,
   },
 

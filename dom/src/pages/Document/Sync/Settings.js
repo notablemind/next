@@ -11,11 +11,18 @@ import type {User} from './sync'
 type File = {
   id: string,
   title: string,
-  remote: ?{
-    owner: string,
-    lastSynced: number,
-  },
+  lastOpened: number,
+  lastModified: number,
   local: boolean,
+  size: number,
+  sync: ?{
+    owner: {
+      name: string,
+      id: string, // google user id
+    },
+    lastSyncTime: number,
+    lastSyncVersion: number,
+  },
 }
 
 export default class SyncSettings extends Component {
@@ -30,17 +37,14 @@ export default class SyncSettings extends Component {
       user: null,
       files: null,
     }
-    this.state.user = {
-      name: 'Jared Forsyth',
-      email: 'jabapyth@gmail.com',
-    }
     this.state.files = []
-    this._unsub = sync.onUser(user => this.setState({user}))
+    this._unsub = sync.onUser(user => {
+      this.setState({user})
+      if (user) {
+        sync.getFiles().then(files => this.setState({files}))
+      }
+    })
     sync.getUser()
-  }
-
-  componentDidMount() {
-    sync.getFiles().then(files => this.setState({files}))
   }
 
   componentWillUnmount() {
@@ -63,9 +67,11 @@ export default class SyncSettings extends Component {
 
   renderLoggedIn(user: User) {
     return <div className={css(styles.loggedIn)}>
-      <div className={css(styles.username)}>
-        <img src={user.profile} style={{width: 50, height: 50, borderRadius: 25}} />
-        {user.name} ({user.email})
+      <div className={css(styles.top)}>
+        <img src={user.profile} className={css(styles.profile)} />
+        <div className={css(styles.username)}>
+          {user.name} ({user.email})
+        </div>
       </div>
       {this.state.files
         ? this.renderFiles(this.state.files)
@@ -112,6 +118,22 @@ const styles = StyleSheet.create({
 
   loginDetails: {
     maxWidth: 300,
+  },
+
+  profile: {
+    width: 30,
+    height: 30,
+    borderRadius: '50%',
+    marginRight: 10,
+  },
+
+  username: {
+    fontWeight: 400,
+  },
+
+  top: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
 })

@@ -32,9 +32,38 @@ const getSavedData = (documentsDir) => {
   })
 }
 
-const restoreUser = token => {
+const restoreUser = (token, documentsDir) => {
   console.log('restoring', token)
-  return getProfile(token)
+  if (token.expires_at > Date.now()) {
+    return getProfile(token)
+  } else {
+    return googleLogin.refresh(token)
+      .then(token => {if (!token) {throw new Error('unable to refresh')} return token})
+      .then(addExpiresAt)
+      .then(token => (saveData(documentsDir, token), token))
+      .then(getProfile)
+  }
+}
+
+const kwds = obj => Object.keys(obj).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`).join('&')
+
+const listFiles = token => {
+  const query = kwds({
+    pageSize: 1000,
+    fields: 'files(id, name, appProperties, version, size, trashed)',
+    q: `appProperties has { key='nmType' and value='doc' }`,
+  })
+  return fetch(`https://www.googleapis.com/drive/v3/files?${query}`, {
+    headers: {
+      'Authorization': 'Bearer ' + token.access_token,
+    },
+  }).then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        throw new Error('Error getting files: ' + JSON.stringify(data.error))
+      }
+      return data.files
+    })
 }
 
 const getProfile = token => {
@@ -45,7 +74,7 @@ const getProfile = token => {
   }).then(res => res.json())
     .then(data => {
       if (data.error) {
-        console.error('failed to get user', data)
+        console.error('failed to get user', data, googleApiKey, token)
         throw new Error('Unable to login w/ google')
       }
       return {
@@ -59,18 +88,22 @@ const getProfile = token => {
 
 const getUser = (documentsDir) => {
   return getSavedData(documentsDir)
-    .then(saved => saved ? restoreUser(saved) : null)
+    .then(saved => saved ? restoreUser(saved, documentsDir) : null)
 }
+
+const addExpiresAt = token => (token.expires_at = Date.now() + token.expires_in * 1000, token)
 
 const signIn = (documentsDir) => {
   return googleLogin.authorize()
+    .then(token => (console.log('SIGN IN TOKEN', token), token))
+    .then(addExpiresAt)
     .then(token => (saveData(documentsDir, token), token))
     .then(getProfile)
-    // .then(user => { })
 }
 
 module.exports = {
   signIn,
   getUser,
+  listFiles,
 }
 
