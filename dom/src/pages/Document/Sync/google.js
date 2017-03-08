@@ -33,7 +33,7 @@ const getSavedData = (documentsDir) => {
 }
 
 const restoreUser = (token, documentsDir) => {
-  console.log('restoring', token)
+  // console.log('restoring', token)
   if (token.expires_at > Date.now()) {
     return getProfile(token)
   } else {
@@ -95,7 +95,7 @@ const addExpiresAt = token => (token.expires_at = Date.now() + token.expires_in 
 
 const signIn = (documentsDir) => {
   return googleLogin.authorize()
-    .then(token => (console.log('SIGN IN TOKEN', token), token))
+    // .then(token => (console.log('SIGN IN TOKEN', token), token))
     .then(addExpiresAt)
     .then(token => (saveData(documentsDir, token), token))
     .then(getProfile)

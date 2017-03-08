@@ -8,22 +8,39 @@ import * as sync from './sync'
 
 import type {User} from './sync'
 
-type File = {
+type File = RemoteFile | LocalFile
+
+type RemoteFile = {
+  id: string,
+  title: string,
+  remoteId: string,
+  owner: {
+    profilePhoto: string,
+    name: string,
+    email: string,
+    me: boolean,
+  },
+}
+
+type LocalFile = {
   id: string,
   title: string,
   lastOpened: number,
   lastModified: number,
-  local: boolean,
   size: number,
   sync: ?{
     owner: {
+      profilePhoto: string,
       name: string,
-      id: string, // google user id
+      email: string,
+      me: boolean,
     },
+    remoteId: string,
     lastSyncTime: number,
     lastSyncVersion: number,
   },
 }
+
 
 export default class SyncSettings extends Component {
   state: {
@@ -37,7 +54,6 @@ export default class SyncSettings extends Component {
       user: null,
       files: null,
     }
-    this.state.files = []
     this._unsub = sync.onUser(user => {
       this.setState({user})
       if (user) {
@@ -80,7 +96,14 @@ export default class SyncSettings extends Component {
   }
 
   renderFiles(files: File[]) {
-    return 'Files right here ' + files.length
+    return <div>
+      {files.map(file => (
+        <div key={file.id}
+        >
+          {file.title} {file.size}
+        </div>
+      ))}
+    </div>
   }
 
   render() {

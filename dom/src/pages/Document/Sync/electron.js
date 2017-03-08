@@ -48,12 +48,15 @@ const plugin = {
           files.forEach(file => nmIds[file.appProperties.nmId] = file)
           // const localIds = {}
           // meta.forEach(file => localIds[file.id] = true)
-          const locals = Object.keys(meta).map(id => ext(meta[id], {local: true, sync: syncObj(nmIds[id])}))
+          const locals = Object.keys(meta)
+            // TODO update the meta w/ sync info if the sync info wasn't there?
+            .map(id => ext(meta[id], {local: true, sync: syncObj(nmIds[id])}))
           const remotes = files
             .filter(file => !meta[file.appProperties.nmId])
             .map(remoteFile)
           return locals.concat(remotes)
         })
+        .then(files => evt.sender.send('sync:files', files))
     })
   }
 }
@@ -92,8 +95,8 @@ const syncObj = file => {
       profilePhoto: owner.photoLink,
     },
     remoteId: file.id,
-    lastSyncTime: Date.now(),
-    lastSyncVersion: file.version,
+    lastSyncTime: null, // Date.now(),
+    lastSyncVersion: null, // file.version,
   }
 }
 

@@ -47,7 +47,7 @@ const getAuthCode = () => {
     prompt: 'consent',
     scope: scopes.join(' '),
   })
-  console.log('get auth code', authUrl)
+  // console.log('get auth code', authUrl)
   return new Promise((res, rej) => {
     const win = new BrowserWindow(windowParams)
 
@@ -59,7 +59,7 @@ const getAuthCode = () => {
     }
 
     const nav = url => {
-      console.log('navving', url)
+      // console.log('navving', url)
       const {query: {code, error}} = urlParse(url, true)
 
       if (error) {
@@ -73,7 +73,7 @@ const getAuthCode = () => {
 
     win.webContents.on('will-navigate', (_, url) => nav(url))
     win.webContents.on('did-get-redirect-request', (_, old, url) => nav(url))
-    console.log('gets go')
+    // console.log('gets go')
 
     win.loadURL(authUrl)
     win.show()
@@ -87,7 +87,7 @@ const getToken = data => {
     redirect_uri: config.redirectUri,
   }, data)
 
-  console.log('getting token', query)
+  // console.log('getting token', query)
   return fetch(config.tokenUrl, {
     headers: {
       Accept: 'application/json',
@@ -97,7 +97,7 @@ const getToken = data => {
     body: qs.stringify(query),
   }).then(res => res.json())
   .then(data => {
-    console.log('got token DATA >>> ', data)
+    // console.log('got token DATA >>> ', data)
     return data
   })
 }
