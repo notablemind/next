@@ -4,6 +4,8 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import Modal from '../../utils/Modal'
+import FilesTable from './FilesTable'
+
 import * as sync from './sync'
 
 import type {User} from './sync'
@@ -89,6 +91,7 @@ export default class SyncSettings extends Component {
           {user.name} ({user.email})
         </div>
       </div>
+      <div style={{flexBasis: 10}}/>
       {this.state.files
         ? this.renderFiles(this.state.files)
         : 'Fetching files list...'}
@@ -96,14 +99,7 @@ export default class SyncSettings extends Component {
   }
 
   renderFiles(files: File[]) {
-    return <div>
-      {files.map(file => (
-        <div key={file.id}
-        >
-          {file.title} {file.size}
-        </div>
-      ))}
-    </div>
+    return <FilesTable files={files} />
   }
 
   render() {
@@ -126,6 +122,10 @@ const styles = StyleSheet.create({
   loggedOut: {
     alignItems: 'center',
     justifyContent: 'center',
+    flex: 1,
+  },
+
+  loggedIn: {
     flex: 1,
   },
 

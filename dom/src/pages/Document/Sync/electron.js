@@ -36,11 +36,25 @@ const plugin = {
         console.log('umm failed to sign in')
         console.error(err)
       })
-      // TODO google login!
+    })
+
+    ipcMain.on('sync:files:delete', (_, ids) => {
+      const metaPath = path.join(documentsDir, 'meta.json')
+      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'))
+      ids.forEach(id => {
+        delete meta[id]
+      })
+      fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2))
+      ids.forEach(id => {
+        const cmd = `rm -rf ${documentsDir}/${id}`
+        console.log('want to', cmd)
+        // child_process.execSync(cmd)
+      })
     })
 
     ipcMain.on('sync:files', evt => {
       userProm
+        // TODO ignore trashed files
         .then(user => google.listFiles(user.token))
         .then(files => {
           const meta = JSON.parse(fs.readFileSync(path.join(documentsDir, 'meta.json'), 'utf8'))
