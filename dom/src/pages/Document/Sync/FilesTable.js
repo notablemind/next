@@ -28,6 +28,11 @@ export default class FilesTable extends Component {
     })
   }
 
+  deleteFiles = () => {
+    const files = this.props.files.filter(f => this.state.selected[f.id])
+    this.props.deleteFiles(files)
+  }
+
   renderActions() {
     const selecteds = this.props.files.filter(f => this.state.selected[f.id])
     if (!selecteds.length) return
@@ -45,7 +50,7 @@ export default class FilesTable extends Component {
     return <div>
       <DeleteButton
         label={"Delete " + name}
-        onClick={() => this.deleteFiles}
+        onClick={this.deleteFiles}
       />
     </div>
   }

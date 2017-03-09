@@ -33,4 +33,4 @@ if (ELECTRON) {
 
 }
 
-export {onUser, getUser, signIn, getFiles}
+export {onUser, getUser, signIn, getFiles, deleteFiles}

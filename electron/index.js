@@ -14,6 +14,7 @@ const state = {
   baseDir: __dirname,
   ipcMain,
   plugins: {},
+  actions: {},
 }
 
 ipcMain.on('sync', (evt, uid, docid) => {
@@ -25,6 +26,8 @@ app.on('window-all-closed', function() {
 });
 
 app.on('ready', function() {
+  require('./src/meta')(state);
+
   const plugins = [
     require('../plugins/files/electron'),
     require('../plugins/quick-add/electron'),

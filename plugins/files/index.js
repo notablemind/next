@@ -124,6 +124,7 @@ const plugin: Plugin<*, *> = {
   nodeTypes: {
     file: {
       title: 'File',
+      disableSwitch: true,
       newSiblingsShouldCarryType: false,
       // TODO hook this up
       /*

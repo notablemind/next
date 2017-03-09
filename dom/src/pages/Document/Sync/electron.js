@@ -1,14 +1,12 @@
 
 const google = require('./google')
-const fs = require('fs')
-const path = require('path')
 
 const PLUGIN_ID = 'sync'
 
 const plugin = {
   id: PLUGIN_ID,
 
-  init({baseDir, documentsDir, ipcMain}) {
+  init({baseDir, documentsDir, ipcMain, actions}) {
 
     let clients = []
     let userProm = google.getUser(documentsDir)
@@ -38,30 +36,14 @@ const plugin = {
       })
     })
 
-    ipcMain.on('sync:files:delete', (_, ids) => {
-      const metaPath = path.join(documentsDir, 'meta.json')
-      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'))
-      ids.forEach(id => {
-        delete meta[id]
-      })
-      fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2))
-      ids.forEach(id => {
-        const cmd = `rm -rf ${documentsDir}/${id}`
-        console.log('want to', cmd)
-        // child_process.execSync(cmd)
-      })
-    })
-
-    ipcMain.on('sync:files', evt => {
-      userProm
+    const getFiles = () => {
+      return userProm
         // TODO ignore trashed files
         .then(user => google.listFiles(user.token))
         .then(files => {
-          const meta = JSON.parse(fs.readFileSync(path.join(documentsDir, 'meta.json'), 'utf8'))
+          const meta = actions.getMeta()
           const nmIds = {}
           files.forEach(file => nmIds[file.appProperties.nmId] = file)
-          // const localIds = {}
-          // meta.forEach(file => localIds[file.id] = true)
           const locals = Object.keys(meta)
             // TODO update the meta w/ sync info if the sync info wasn't there?
             .map(id => ext(meta[id], {local: true, sync: syncObj(nmIds[id])}))
@@ -70,6 +52,16 @@ const plugin = {
             .map(remoteFile)
           return locals.concat(remotes)
         })
+    }
+
+    ipcMain.on('sync:files:delete', (evt, ids) => {
+      actions.deleteFiles(ids)
+      getFiles()
+        .then(files => evt.sender.send('sync:files', files))
+    })
+
+    ipcMain.on('sync:files', evt => {
+      getFiles()
         .then(files => evt.sender.send('sync:files', files))
     })
   }

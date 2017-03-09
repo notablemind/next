@@ -99,7 +99,12 @@ export default class SyncSettings extends Component {
   }
 
   renderFiles(files: File[]) {
-    return <FilesTable files={files} />
+    return <FilesTable
+      files={files}
+      deleteFiles={files => {
+        sync.deleteFiles(files.map(f => f.id))
+      }}
+    />
   }
 
   render() {

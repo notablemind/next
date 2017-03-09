@@ -15,7 +15,11 @@ const getPluginThing = (plugins: Array<Plugin<*, *>>, sub: string, thing: string
   ))
 
 const typesContextMenu = (node, store) => {
-  const children = Object.keys(store.plugins.nodeTypes).map(key => {
+  const currentType = store.plugins.nodeTypes[node.type]
+  if (currentType && currentType.disableSwitch) {
+    return null
+  }
+  const children = Object.keys(store.plugins.nodeTypes).filter(key => !store.plugins.nodeTypes[key].disableSwitch).map(key => {
     const ntype = store.plugins.nodeTypes[key]
     return {
       text: ntype.title || key,
@@ -24,7 +28,6 @@ const typesContextMenu = (node, store) => {
       action: () => store.actions.setNodeType(node._id, key),
     }
   })
-  const currentType = store.plugins.nodeTypes[node.type]
   const currentTitle = currentType && currentType.title || node.type
   return {
     text: 'Node type: ' + currentTitle,
