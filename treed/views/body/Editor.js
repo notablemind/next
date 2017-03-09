@@ -29,6 +29,7 @@ export default class Editor extends Component {
     super()
     this.state = {
       tmpText: props.node.content,
+      cancelledChange: false,
     }
     this._unmounted = false
   }
@@ -70,6 +71,13 @@ export default class Editor extends Component {
     case 13: // enter
       if (e.shiftKey) return
       if (!e.ctrlKey && e.target.value.indexOf('\n') !== -1) return
+      if (this.isChanging()) {
+        console.log('TODO change the type')
+        // TODO change the type
+        e.preventDefault()
+        e.stopPropagation()
+        return
+      }
       if (!this.props.keyActions.onEnter) {
         e.preventDefault()
         e.stopPropagation()
@@ -83,8 +91,12 @@ export default class Editor extends Component {
       this.props.keyActions.onEnter(next)
       break
     case 27: // escape
-      this.props.keyActions.setContent(this.state.tmpText)
-      this.props.actions.normalMode()
+      if (this.isChanging()) {
+        this.setState({cancelledChange: true})
+      } else {
+        this.props.keyActions.setContent(this.state.tmpText)
+        this.props.actions.normalMode()
+      }
       break
 
     case 38: // up
@@ -143,21 +155,106 @@ export default class Editor extends Component {
     }
   }
 
+  onChange = (e: any) => {
+    this.setState({tmpText: e.target.value})
+  }
+
+  isChanging() {
+    if (this.props.node.type !== 'normal' || this.state.cancelledChange) return false
+    const types = ['todo', 'text', 'list', 'ordered list', 'file']
+    const {tmpText} = this.state
+    if (tmpText.match(/^\/f(i(le?)?)? /)) {
+      return true
+    }
+    const changing = tmpText === '/' || (tmpText.match(/^\/[a-z]/)
+      && types.some(t => t.length >= tmpText.length - 1
+                    ? ('/' + t).indexOf(tmpText) === 0
+                    : t === 'file'
+                    ? tmpText.indexOf('/' + t + ' ') === 0
+                    : false))
+    return changing
+  }
+
+  getChangeOptions() {
+    const types = ['todo', 'normal', 'list', 'ordered list', 'file'].filter(t => t !== this.props.node.type)
+    const {tmpText} = this.state
+    if (tmpText === '/file') {
+      return {help: 'Type file name', options: []}
+    }
+    // TODO this should be handled in the plugins. How can I get custom change
+    // handlers like this?
+    const fstop = tmpText.match(/^\/f(i(le?)?)? /)
+    if (fstop) {
+      return {
+        help: 'Type file name',
+        options: ['Create "' + tmpText.slice(fstop[0].length) + '"']
+      }
+    }
+    if (tmpText === '/') return {options: types, help: 'Switch to type:'}
+    return {help: 'Switch to type:', options: types.filter(t => ('/' + t).indexOf(tmpText) === 0)}
+  }
+
+  renderChangeList() {
+    const {help, options} = this.getChangeOptions()
+    return <div
+      style={{
+        position: 'absolute',
+        zIndex: 100,
+        top: '100%',
+        backgroundColor: 'white',
+        boxShadow: '0 1px 3px #555',
+        borderRadius: 3,
+        left: 0,
+      }}
+    >
+    {help && <div
+        style={{
+          padding: '3px 10px',
+          fontSize: 12,
+          color: '#777',
+          // fontStyle: 'italic',
+          // fontWeight: 400,
+        }}
+      >
+        {help}
+      </div>}
+      {options.map(t => (
+        <div
+          style={{
+            padding: '2px 10px',
+          }}
+          key={t}
+        >
+          {t}
+        </div>
+      ))}
+    </div>
+  }
+
   render() {
-    return <GrowingTextarea
-      ref={node => this.input = node}
-      value={this.state.tmpText}
-      className={css(styles.input) + ' Node_input ' + (this.props.className || '')}
-      onChange={e => this.setState({tmpText: e.target.value})}
-      onHeightChange={this.props.onHeightChange}
-      onKeyDown={this.onKeyDown}
-      onBlur={this.onBlur}
-      style={this.props.style}
-    />
+    return <div
+      className={css(styles.container)}
+    >
+      <GrowingTextarea
+        ref={node => this.input = node}
+        value={this.state.tmpText}
+        className={css(styles.input) + ' Node_input ' + (this.props.className || '')}
+        onChange={this.onChange}
+        onHeightChange={this.props.onHeightChange}
+        onKeyDown={this.onKeyDown}
+        onBlur={this.onBlur}
+        style={this.props.style}
+      />
+      {this.isChanging() && this.renderChangeList()}
+    </div>
   }
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+  },
   input: textStyle,
 })
 css(styles.input)
