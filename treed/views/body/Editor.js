@@ -71,18 +71,8 @@ export default class Editor extends Component {
     case 13: // enter
       if (e.shiftKey) return
       if (!e.ctrlKey && e.target.value.indexOf('\n') !== -1) return
-      if (this.isChanging()) {
-        console.log('TODO change the type')
-        // TODO change the type
-        e.preventDefault()
-        e.stopPropagation()
-        return
-      }
-      if (!this.props.keyActions.onEnter) {
-        e.preventDefault()
-        e.stopPropagation()
-        return
-      }
+      if (this.isChanging() && this.changeType()) break
+      if (!this.props.keyActions.onEnter) break
       const prev = e.target.value.slice(0, e.target.selectionStart)
       const next = e.target.value.slice(e.target.selectionStart)
       this.setState({tmpText: prev})
@@ -161,13 +151,15 @@ export default class Editor extends Component {
 
   isChanging() {
     if (this.props.node.type !== 'normal' || this.state.cancelledChange) return false
-    const types = ['todo', 'text', 'list', 'ordered list', 'file']
+    const {nodeTypes} = this.props.store.plugins
+    const {node, store} = this.props
+    const typeNames = Object.keys(nodeTypes)
     const {tmpText} = this.state
     if (tmpText.match(/^\/f(i(le?)?)? /)) {
       return true
     }
     const changing = tmpText === '/' || (tmpText.match(/^\/[a-z]/)
-      && types.some(t => t.length >= tmpText.length - 1
+      && typeNames.some(t => t.length >= tmpText.length - 1
                     ? ('/' + t).indexOf(tmpText) === 0
                     : t === 'file'
                     ? tmpText.indexOf('/' + t + ' ') === 0
@@ -175,23 +167,49 @@ export default class Editor extends Component {
     return changing
   }
 
+  changeType() {
+    const {help, options} = this.getChangeOptions()
+    if (!options.length) return false
+    this.setState({tmpText: ''})
+    options[0].action()
+    return true
+  }
+
   getChangeOptions() {
-    const types = ['todo', 'normal', 'list', 'ordered list', 'file'].filter(t => t !== this.props.node.type)
     const {tmpText} = this.state
     if (tmpText === '/file') {
       return {help: 'Type file name', options: []}
     }
+
     // TODO this should be handled in the plugins. How can I get custom change
     // handlers like this?
     const fstop = tmpText.match(/^\/f(i(le?)?)? /)
     if (fstop) {
+      const name = tmpText.slice(fstop[0].length)
       return {
         help: 'Type file name',
-        options: ['Create "' + tmpText.slice(fstop[0].length) + '"']
+        options: [{
+          label: 'Create "' + name + '"',
+          action: () => console.log('TODO create file', name),
+        }]
       }
     }
-    if (tmpText === '/') return {options: types, help: 'Switch to type:'}
-    return {help: 'Switch to type:', options: types.filter(t => ('/' + t).indexOf(tmpText) === 0)}
+
+    const {nodeTypes} = this.props.store.plugins
+    const {node, store} = this.props
+    const typeOptions = Object.keys(nodeTypes).sort().filter(k => k !== node.type).map(key => ({
+      action: () => store.actions.setNodeType(node._id, key),
+      label: key,
+      // label: nodeTypes[key].title,
+      type: key,
+    }))
+    const selectedTypes = tmpText === '/'
+      ? typeOptions
+      : typeOptions.filter(option => ('/' + option.type).indexOf(tmpText) === 0)
+    return {
+      options: selectedTypes,
+      help: 'Switch to type:'
+    }
   }
 
   renderChangeList() {
@@ -218,14 +236,15 @@ export default class Editor extends Component {
       >
         {help}
       </div>}
-      {options.map(t => (
+      {options.map(option => (
         <div
           style={{
             padding: '2px 10px',
           }}
-          key={t}
+          key={option.label}
+          onMouseDown={option.action}
         >
-          {t}
+          {option.label}
         </div>
       ))}
     </div>
