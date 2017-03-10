@@ -60,6 +60,13 @@ const plugin = {
         .then(files => evt.sender.send('sync:files', files))
     })
 
+    ipcMain.on('sync:files:sync', (evt, ids) => {
+      actions
+        .syncFiles(ids)
+        .then(getFiles)
+        .then(files => evt.sender.send('sync:files', files))
+    })
+
     ipcMain.on('sync:files', evt => {
       getFiles()
         .then(files => evt.sender.send('sync:files', files))

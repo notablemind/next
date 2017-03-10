@@ -33,6 +33,11 @@ export default class FilesTable extends Component {
     this.props.deleteFiles(files)
   }
 
+  syncFiles = () => {
+    const files = this.props.files.filter(f => this.state.selected[f.id])
+    this.props.syncFiles(files)
+  }
+
   renderActions() {
     const selecteds = this.props.files.filter(f => this.state.selected[f.id])
     if (!selecteds.length) return
@@ -47,11 +52,16 @@ export default class FilesTable extends Component {
     }
 
     const name = selecteds.length === 1 ? 'file' : (selecteds.length + ' files')
-    return <div>
+    return <div style={{flexDirection: 'row'}}>
       <DeleteButton
         label={"Delete " + name}
         onClick={this.deleteFiles}
       />
+      {status === 'local' &&
+        <Button
+          label={"Enable syncing for " + name}
+          onClick={this.syncFiles}
+        />}
     </div>
   }
 
@@ -117,29 +127,34 @@ class DeleteButton extends Component {
     if (!this.state.doublecheck) {
       return <Button
         label={label}
+        color="red"
+        textColor="white"
         onClick={() => this.setState({doublecheck: true})}
       />
     }
 
     return <div style={{flexDirection: 'row'}}>
       <Button
-        label="Really delete?"
-        onClick={onClick}
+        label="Just kidding"
+        onClick={() => this.setState({doublecheck: false})}
       />
       <div style={{flexBasis: 4}} />
       <Button
-        label="Just kidding"
-        onClick={() => this.setState({doublecheck: false})}
+        label="Really delete"
+        color="red"
+        textColor="white"
+        onClick={onClick}
       />
     </div>
   }
 }
 
-const Button = ({label, onClick, color='white'}) => (
+const Button = ({label, onClick, color='white', textColor='#555'}) => (
   <button
     className={css(styles.button)}
     style={{
       backgroundColor: color,
+      color: textColor,
     }}
     onClick={onClick}
   >
@@ -156,7 +171,11 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 4,
     border: 'none',
-    boxShadow: '0 1px 2px #ccc',
+    boxShadow: '0 1px 4px #555',
+    margin: 4,
+    padding: '5px 10px',
+    textWrap: 'nowrap',
+    whiteSpace: 'nowrap',
     // backgroundColor: 'white',
   },
 

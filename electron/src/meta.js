@@ -10,16 +10,20 @@ module.exports = ({documentsDir, actions}) => {
 
   Object.assign(actions, {
     deleteFiles(ids) {
-      const metaPath = path.join(documentsDir, 'meta.json')
       ids.forEach(id => {
         delete meta[id]
       })
       saveFiles()
       ids.forEach(id => {
         const cmd = `rm -rf ${documentsDir}/${id}`
-        console.log('want to', cmd)
+        console.log('deleting file', cmd)
         child_process.execSync(cmd)
       })
+    },
+
+    syncFiles(ids) {
+      // TODO figure out what to do here.
+      return Promise.resolve()
     },
 
     getMeta() {

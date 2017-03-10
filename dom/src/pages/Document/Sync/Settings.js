@@ -104,6 +104,9 @@ export default class SyncSettings extends Component {
       deleteFiles={files => {
         sync.deleteFiles(files.map(f => f.id))
       }}
+      syncFiles={files => {
+        sync.syncFiles(files.map(f => f.id))
+      }}
     />
   }
 

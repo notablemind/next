@@ -9,6 +9,7 @@ let getUser
 let signIn
 let getFiles
 let deleteFiles
+let syncFiles
 
 if (ELECTRON) {
   const {ipcRenderer} = require('electron')
@@ -25,6 +26,7 @@ if (ELECTRON) {
     ipcRenderer.send('sync:files')
   })
   deleteFiles = ids => ipcRenderer.send('sync:files:delete', ids)
+  syncFiles = ids => ipcRenderer.send('sync:files:sync', ids)
 
 } else {
 
@@ -33,4 +35,4 @@ if (ELECTRON) {
 
 }
 
-export {onUser, getUser, signIn, getFiles, deleteFiles}
+export {onUser, getUser, signIn, getFiles, deleteFiles, syncFiles}
