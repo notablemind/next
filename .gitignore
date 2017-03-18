@@ -11,3 +11,4 @@ plugins/scriptures/server/files
 plugins/scriptures/server/html
 plugins/scriptures/server/json
 electron/documents
+electron/doc_backups

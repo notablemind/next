@@ -86,6 +86,7 @@ export default class ScripturePane extends Component {
   }
 
   onSelectUri = (uri: string) => {
+    localStorage[uri] = Date.now()
     this.savePath({
       path: 'item',
       uri,
@@ -280,9 +281,15 @@ export default class ScripturePane extends Component {
         <div
           key={item._id}
           className={css(styles.item)}
-          dangerouslySetInnerHTML={{__html: item.title_html}}
           onClick={() => this.onSelectUri(item.uri)}
-        />
+        >
+          <div
+            dangerouslySetInnerHTML={{__html: item.title_html}}
+          />
+          {localStorage[item.uri]
+            ? new Date(localStorage[item.uri]).toLocaleString()
+            : null}
+        </div>
       ))}
       </div>
     </div>

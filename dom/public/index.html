@@ -6,4 +6,8 @@
 <link rel="stylesheet" href="./styles.css">
 <body>
     <div id="root"></div>
-    <script src="./bundle.js"></script>
+    <script>
+window.connectionFail = () => document.getElementById('root').innerHTML =
+'Failed to load the javascript'
+    </script>
+    <script src="./bundle.js" onerror="connectionFail()"></script>
