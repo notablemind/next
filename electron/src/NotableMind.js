@@ -3,16 +3,14 @@
 const {BrowserWindow, WebContents, ipcMain} = require('electron')
 const PouchDB = require('pouchdb')
 const path = require('path')
+const fs = require('fs')
 
 const ipcPromise = require('./ipcPromise')
 const google = require('./google')
 
-const loadMeta = (): {[docid: string]: FileMeta} => {
-  return {} // TODO
-}
-
-const saveMeta = (meta) => {
-  // TODO
+const loadMeta = (documentsDir): Meta => {
+  const metaPath = path.join(documentsDir, 'meta.json')
+  return JSON.parse(fs.readFileSync(metaPath, 'utf8'))
 }
 
 type SyncData = {
@@ -32,6 +30,7 @@ type FileMeta = {
 }
 
 type User = any
+type Meta = {[docid: string]: FileMeta}
 
 module.exports = class Notablemind {
   documentsDir: string
@@ -55,30 +54,15 @@ module.exports = class Notablemind {
     this.contents = {}
     this.dbs = {}
     this.docConnections = {}
-    this.meta = loadMeta()
+    this.meta = loadMeta(this.documentsDir)
 
     this.user = null
     this.userProm = null
   }
 
   saveMeta() {
-    saveMeta(this.meta)
-  }
-
-  login() {
-    if (this.userProm) return this.userProm
-    this.userProm = google.login().then(
-      user => {
-        if (!this.userProm) throw new Error('login cancelled')
-        this.user = user
-        return user
-      },
-      err => {
-        this.userProm = null
-        throw err
-      }
-    )
-    return this.userProm
+    const metaPath = path.join(this.documentsDir, 'meta.json')
+    fs.writeFileSync(metaPath, JSON.stringify(this.meta, null, 2), 'utf8')
   }
 
   broadcast(name: string, ...args: any[]) {
@@ -170,6 +154,22 @@ module.exports = class Notablemind {
     }))
   }
 
+  login() {
+    if (this.userProm) return this.userProm
+    this.userProm = google.login().then(
+      user => {
+        if (!this.userProm) throw new Error('login cancelled')
+        this.user = user
+        return user
+      },
+      err => {
+        this.userProm = null
+        throw err
+      }
+    )
+    return this.userProm
+  }
+
   setupDocConnection(sender: WebContents, docid: string, chanid: string) {
     const cleanup = () => {
       ipcMain.removeListener(chanid, onChange)
@@ -204,7 +204,7 @@ module.exports = class Notablemind {
     }
     this.docConnections[docid][chanid] = sender
 
-    this.ensureDocDb(docid).allDocs().then(({rows}) => {
+    this.ensureDocDb(docid).allDocs({include_docs: true}).then(({rows}) => {
       sender.send(chanid + ':all', rows.map(r => r.doc))
     }, err => {
       console.error('failed to get docs')
@@ -229,7 +229,7 @@ module.exports = class Notablemind {
   setupSyncForFiles(ids: string[]) {
     if (!this.userProm) throw new Error('not logged in')
     return Promise.all(ids.map(id => {
-      return this.ensureDocDb(id).allDocs().then(({rows}) => {
+      return this.ensureDocDb(id).allDocs({include_docs: true}).then(({rows}) => {
         return google.createFile({ // TODO impl
           id,
           data: rows,

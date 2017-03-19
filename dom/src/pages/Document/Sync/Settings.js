@@ -45,6 +45,7 @@ type LocalFile = {
 
 
 export default class SyncSettings extends Component {
+  _unsub: any
   state: {
     user: ?User,
     files: ?File[],

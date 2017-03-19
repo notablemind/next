@@ -86,7 +86,7 @@ export default class ScripturePane extends Component {
   }
 
   onSelectUri = (uri: string) => {
-    localStorage[uri] = Date.now()
+    localStorage[uri] = Date.now().toString()
     this.savePath({
       path: 'item',
       uri,

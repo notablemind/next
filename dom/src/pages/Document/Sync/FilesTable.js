@@ -6,6 +6,7 @@ import {css, StyleSheet} from 'aphrodite'
 import Icon from 'treed/views/utils/Icon'
 
 export default class FilesTable extends Component {
+  state: {selected: {[key: string]: boolean}}
   constructor() {
     super()
     this.state = {
@@ -13,13 +14,13 @@ export default class FilesTable extends Component {
     }
   }
 
-  toggleAll = (allSelected) => {
+  toggleAll = (allSelected: boolean) => {
     const selected = {}
     this.props.files.forEach(f => selected[f.id] = !allSelected)
     this.setState({selected})
   }
 
-  toggle = id => {
+  toggle = (id: string) => {
     this.setState({
       selected: {
         ...this.state.selected,
@@ -117,6 +118,7 @@ const Check = ({checked, onClick}) => (
 
 
 class DeleteButton extends Component {
+  state: {doublecheck: boolean}
   constructor() {
     super()
     this.state = {doublecheck: false}

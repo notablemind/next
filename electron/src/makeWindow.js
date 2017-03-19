@@ -2,6 +2,7 @@
 
 const {BrowserWindow} = require('electron')
 const open = require('open')
+const path = require('path')
 
 const windows = []
 
@@ -15,6 +16,7 @@ const makeWindow = (state) => {
     fullscreenable: false,
     title: 'NotableMind',
     height: 800,
+    icon: path.join(__dirname, '../icon256.png'),
   });
   win.on('closed', function() {
     windows.splice(windows.indexOf(win), 1)

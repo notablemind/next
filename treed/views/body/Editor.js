@@ -21,6 +21,7 @@ export default class Editor extends Component {
   }
   state: {
     tmpText: string,
+    cancelledChange: boolean,
   }
   _unmounted: bool
   input: any
@@ -205,6 +206,7 @@ export default class Editor extends Component {
     }))
     const selectedTypes = tmpText === '/'
       ? typeOptions
+      // $FlowFixMe not working?
       : typeOptions.filter(option => ('/' + option.type).indexOf(tmpText) === 0)
     return {
       options: selectedTypes,

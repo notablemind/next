@@ -56,6 +56,7 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
   // TODO I want a "plugin store" or sth, not "treed"
   init(globalPluginConfig, globalStore) {
     const styleNode = document.createElement('style')
+    // $FlowFixMe document.head is a thing
     document.head.appendChild(styleNode)
     styleNode.textContent = themeToCss(globalPluginConfig)
 
