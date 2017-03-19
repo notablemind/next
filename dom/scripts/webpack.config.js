@@ -6,6 +6,7 @@ const sourceDirectories = [
   path.join(__dirname, '..', '..', 'shared'),
   path.join(__dirname, '..', '..', 'treed'),
   path.join(__dirname, '..', '..', 'plugins'),
+  path.join(__dirname, '..', '..', 'electron'),
   path.join(__dirname, '..', '..', 'node_modules', 'treed'),
 ]
 

@@ -21,7 +21,8 @@ type State = {
   loginError: ?string,
 }
 
-export default class Wrapper extends Component {
+// NOTE unused
+export default class Wrapper_unused extends Component {
   state: State
 
   constructor() {

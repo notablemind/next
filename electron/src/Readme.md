@@ -54,3 +54,34 @@ w (closes): e should cleanup
 
 
 
+----------
+First pass
+----------
+
+- list my files n stuff
+- propagate file name changes
+
+-----------
+Second pass
+-----------
+
+- login
+- list remote files
+- restore user
+- refresh token n stuff
+
+----------
+Third pass
+----------
+
+- start syncing this file w/ remote
+- for documents that are syncing, do a throttled push to google drive w/
+  updates n stuff
+
+-----------
+Fourth pass
+-----------
+
+- maybe trashes?
+- idk. might care more about realtime by that point? probably not tho
+

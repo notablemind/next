@@ -7,6 +7,7 @@ const {ipcMain, app} = electron
 
 const startSync = require('./src/sync')
 const makeWindow = require('./src/makeWindow')
+const NotableMind = require('./src/NotableMind')
 
 const state = {
   documentsDir: path.join(__dirname, 'documents'),
@@ -37,6 +38,9 @@ app.on('ready', function() {
   plugins.forEach(plugin => {
     state.plugins[plugin.id] = plugin.init(state)
   })
+
+  const nm = new NotableMind([], state.documentsDir)
+  nm.init()
 
   // makeWindow(state)
   makeWindow(state)

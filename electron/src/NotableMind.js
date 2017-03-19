@@ -8,11 +8,12 @@ const fs = require('fs')
 const ipcPromise = require('./ipcPromise')
 const google = require('./google')
 
-const loadMeta = (documentsDir): Meta => {
+const loadMeta = (documentsDir)/*: Meta*/ => {
   const metaPath = path.join(documentsDir, 'meta.json')
   return JSON.parse(fs.readFileSync(metaPath, 'utf8'))
 }
 
+/*
 type SyncData = {
     owner: any,
     remoteId: string,
@@ -31,8 +32,13 @@ type FileMeta = {
 
 type User = any
 type Meta = {[docid: string]: FileMeta}
+*/
+
+const LOGGED_OUT = 'logged-out'
+const LOADING = 'loading'
 
 module.exports = class Notablemind {
+  /*
   documentsDir: string
   plugins: any[]
   pluginState: {[id: string]: {}}
@@ -44,8 +50,9 @@ module.exports = class Notablemind {
 
   userProm: ?Promise<User>
   user: User
+  */
 
-  constructor(plugins: Plugin[], documentsDir: string) {
+  constructor(plugins/*: Plugin[]*/, documentsDir/*: string*/) {
     this.documentsDir = documentsDir
     this.plugins = plugins
     this.pluginState = {}
@@ -57,7 +64,15 @@ module.exports = class Notablemind {
     this.meta = loadMeta(this.documentsDir)
 
     this.user = null
-    this.userProm = null
+    this.userProm = google.restoreUser(this.documentsDir).then(user => {
+      if (user) {
+        this.user = user
+        this.broadcast('user:status', user)
+      } else {
+        this.userProm = null
+        this.broadcast('user:status', LOGGED_OUT)
+      }
+    })
   }
 
   saveMeta() {
@@ -65,13 +80,13 @@ module.exports = class Notablemind {
     fs.writeFileSync(metaPath, JSON.stringify(this.meta, null, 2), 'utf8')
   }
 
-  broadcast(name: string, ...args: any[]) {
+  broadcast(name/*: string*/, ...args/*: any[]*/) {
     for (let id in this.contents) {
       this.contents[id].send(id, ...args)
     }
   }
 
-  broadrest(oid: string, name: string, ...args: any[]) {
+  broadrest(oid/*: string*/, name/*: string*/, ...args/*: any[]*/) {
     for (let id in this.contents) {
       if (id === oid) continue
       this.contents[id].send(id, ...args)
@@ -85,15 +100,17 @@ module.exports = class Notablemind {
 
     // TODO what other data does the window need?
     ipcMain.on('hello', evt => {
+      console.log('got hello')
       evt.sender.send('hello', {
-        user: this.user || (this.userProm ? 'loading' : 'logged-out'),
+        user: this.user || (this.userProm ? LOADING : LOGGED_OUT),
         meta: this.meta,
       })
+      console.log('responded with hello')
     })
 
     // User stuff
     ipcMain.on('user:login', (evt) => {
-      this.broadcast('user:status', 'loading')
+      this.broadcast('user:status', LOADING)
       this.login().then(
         user => this.broadcast('user:status', user),
         error => {
@@ -156,7 +173,7 @@ module.exports = class Notablemind {
 
   login() {
     if (this.userProm) return this.userProm
-    this.userProm = google.login().then(
+    this.userProm = google.login(this.documentsDir).then(
       user => {
         if (!this.userProm) throw new Error('login cancelled')
         this.user = user
@@ -170,7 +187,7 @@ module.exports = class Notablemind {
     return this.userProm
   }
 
-  setupDocConnection(sender: WebContents, docid: string, chanid: string) {
+  setupDocConnection(sender/*: WebContents*/, docid/*: string*/, chanid/*: string*/) {
     const cleanup = () => {
       ipcMain.removeListener(chanid, onChange)
       delete this.docConnections[docid][chanid]
@@ -212,7 +229,7 @@ module.exports = class Notablemind {
     })
   }
 
-  ensureDocDb(docid: string) {
+  ensureDocDb(docid/*: string*/) {
     if (!this.dbs[docid]) {
       const docPath = path.join(this.documentsDir, docid)
       this.dbs[docid] = new PouchDB(docPath)
@@ -226,14 +243,13 @@ module.exports = class Notablemind {
       .then(user => google.listFiles(user.token))
   }
 
-  setupSyncForFiles(ids: string[]) {
+  setupSyncForFiles(ids/*: string[]*/) {
     if (!this.userProm) throw new Error('not logged in')
     return Promise.all(ids.map(id => {
       return this.ensureDocDb(id).allDocs({include_docs: true}).then(({rows}) => {
-        return google.createFile({ // TODO impl
+        return google.createFile(this.user.token, {
           id,
           data: rows,
-          user: this.user,
         })
       }).then(file => {
         const sync = {
@@ -252,11 +268,11 @@ module.exports = class Notablemind {
     }))
   }
 
-  setupSyncForRemoteFiles(files: any[]) { // TODO type file
+  setupSyncForRemoteFiles(files/*: any[]*/) { // TODO type file
     if (!this.userProm) throw new Error('not logged in')
     return Promise.all(files.map(file => {
       const nmId = file.appProperties.nmId // TODO check
-      return google.contentsForFile(file.id).then(data => { // TODO impl
+      return google.contentsForFile(this.user.token, file.id).then(data => { // TODO impl
         return this.ensureDocDb(nmId).bulkDocs({
           docs: data,
           new_edits: false,
@@ -278,21 +294,21 @@ module.exports = class Notablemind {
     }))
   }
 
-  trashFiles(files: any[]) {
+  trashFiles(files/*: any[]*/) {
     // TODO will get to later
   }
 
-  makeCopies(ids: string[]) {
+  makeCopies(ids/*: string[]*/) {
     // TODO will also get to later
     // will probably return a list of the newly created files?
     // And I'll want to select & scroll to them in the UI somehow
   }
 
-  reallyDelete(files: any[]) {
+  reallyDelete(files/*: any[]*/) {
     // TODO also do later
   }
 
-  attachWindow(browserWindow: BrowserWindow) {
+  attachWindow(browserWindow/*: BrowserWindow*/) {
     this.windows[browserWindow.id] = browserWindow
     browserWindow.on('closed', () => {
       delete this.windows[browserWindow.id]

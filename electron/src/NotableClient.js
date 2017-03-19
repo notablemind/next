@@ -1,5 +1,5 @@
 
-import PouchDB from 'pouchdb'
+import PouchDB from '../../node_modules/pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
 PouchDB.plugin(require('pouchdb-adapter-memory'))
 PouchDB.plugin(require('pouchdb-upsert'))
@@ -7,20 +7,26 @@ PouchDB.plugin(require('pouchdb-upsert'))
 import setupDbConnection from './setupDbConnection'
 
 export default class NotableClient {
-  constructor(remote, showToast) {
-    this.remote = remote
+  constructor(showToast) {
+    this.remote = require('electron').ipcRenderer
     this.metaListeners = []
     this.userListeners = []
     this.meta = null
     this.user = null
+    this.showToast = showToast
+  }
+
+  init() {
     this.ready = new Promise((res, rej) => {
       this._onReady = res
       this._onFail = rej
     })
 
-    remote.on('toast', (evt, data) => showToast(data))
+    setTimeout(() => this._onFail(new Error('Timeout waiting for electron')), 5 * 1000)
 
-    remote.once('hello', (evt, {user, meta}) => {
+    this.remote.on('toast', (evt, data) => this.showToast(data))
+
+    this.remote.once('hello', (evt, {user, meta}) => {
       this.meta = meta
       this.user = user
       this.notifyMeta()
@@ -28,17 +34,21 @@ export default class NotableClient {
       this._onReady()
     })
 
-    remote.on('user:status', (evt, user) => {
+    this.remote.on('user:status', (evt, user) => {
       this.user = user
       this.notifyUser()
     })
-    remote.on('meta:update', (evt, id, update) => {
+    this.remote.on('meta:update', (evt, id, update) => {
       this.meta[id] = {
         ...this.meta[id],
         ...update
       }
       this.notifyMeta()
     })
+
+    this.remote.send('hello')
+
+    return this.ready
   }
 
   notifyMeta() {
