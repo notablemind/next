@@ -8,6 +8,7 @@ const {ipcMain, app} = electron
 const startSync = require('./src/sync')
 const makeWindow = require('./src/makeWindow')
 const NotableMind = require('./src/NotableMind')
+const setupMenu = require('./src/menu')
 
 const state = {
   documentsDir: path.join(__dirname, 'documents'),
@@ -41,6 +42,10 @@ app.on('ready', function() {
 
   const nm = new NotableMind([], state.documentsDir)
   nm.init()
+
+  setupMenu({
+    createNewWindow: () => makeWindow(state),
+  })
 
   // makeWindow(state)
   makeWindow(state)

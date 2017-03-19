@@ -1,4 +1,5 @@
 
+/*
 import PouchDB from 'pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
 if (ELECTRON) {
@@ -86,4 +87,5 @@ if (ELECTRON) {
 }
 
 export default getFileDb
+*/
 

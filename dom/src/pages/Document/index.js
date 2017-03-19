@@ -7,7 +7,6 @@ import {hashHistory} from 'react-router'
 import Treed from 'treed'
 import treedPouch from 'treed/pouch'
 import makeKeyLayer from 'treed/keys/makeKeyLayer'
-import getFileDb from '../utils/getFileDb'
 
 import Sidebar from './Sidebar'
 import Searcher from './Searcher'
@@ -132,7 +131,7 @@ class Document extends Component {
     super()
     console.log('Document constructor', id)
     this.state = {
-      db: null, // getFileDb(id),
+      db: null,
       searching: false,
       treed: null,
       store: null,
@@ -150,7 +149,7 @@ class Document extends Component {
   }
 
   componentDidMount() {
-    getFileDb(this.props.id).then(db => {
+    this.props.nm.getFileDb(this.props.id).then(db => {
       this.setState({db}, () => this.makeTreed('a root you know'))
     })
     window.addEventListener('keydown', this.onKeyDown)

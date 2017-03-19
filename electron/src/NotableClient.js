@@ -71,8 +71,8 @@ export default class NotableClient {
 
   // TODO I should probably make sure only one thing's connected at a time?
   getFileDb(docid) {
-    const db = new PouchDB(id || 'home', {adapter: 'memory'})
-    return setupDbConnection(docid, ipcRemote, db)
+    const db = new PouchDB(docid || 'home', {adapter: 'memory'})
+    return setupDbConnection(docid, this.remote, db)
   }
 }
 
