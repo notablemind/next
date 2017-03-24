@@ -44,10 +44,12 @@ app.on('ready', function() {
   nm.init()
 
   setupMenu({
-    createNewWindow: () => makeWindow(state),
+    createNewWindow: () => {
+      nm.attachWindow(makeWindow(state))
+    },
   })
 
   // makeWindow(state)
-  makeWindow(state)
+  nm.attachWindow(makeWindow(state))
 });
 

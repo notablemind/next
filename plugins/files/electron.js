@@ -14,6 +14,7 @@ const plugin = {
   id: PLUGIN_ID,
 
   init: ({baseDir, documentsDir, ipcMain, actions}) => {
+    /*
     console.log('files electron')
     const listeners = {}
 
@@ -38,6 +39,7 @@ const plugin = {
       })
     })
     return {listeners}
+    */
   },
 }
 

@@ -8,7 +8,7 @@ import type {Store, Plugin, GlobalStore} from 'treed/types'
 
 import FileNode from './FileNode'
 
-import * as storage from './storage'
+// import * as storage from './storage'
 
 type File = RemoteFile | LocalFile
 
@@ -45,6 +45,7 @@ type LocalFile = {
 
 const PLUGIN_ID = 'files'
 
+/*
 const addFile = (files, id, title) => {
   // files[id] =
   storage.updateFile(files, id, {
@@ -56,55 +57,25 @@ const addFile = (files, id, title) => {
     sync: null,
   })
 }
+*/
 
 // Need to set "default node type" to "file"
 // And "default node contents" to "Untitled"
-const plugin: Plugin<*, *> = {
+const plugin = ({nm}): Plugin<*, *> => ({
   id: PLUGIN_ID,
 
   init(globalConfig: any, globalStore: GlobalStore) {
-    return storage.loadFiles().then(files => {
-
     const {documentId} = globalStore.globalState
-    if (documentId && files[documentId]) {
-      storage.updateFile(files, documentId, {
+    if (documentId && nm.meta[documentId]) {
+      nm.updateMeta(documentId, {
         lastOpened: Date.now(),
         size: Object.keys(globalStore.db.data).length - 1,
+        // 1 for the settings node
       })
-      // 1 for the settings node
-      if (files[documentId].title !== globalStore.db.data.root.content) {
-        globalStore.actions.set('root', 'content', files[documentId].title)
+      if (nm.meta[documentId].title !== globalStore.db.data.root.content) {
+        globalStore.actions.set('root', 'content', nm.meta[documentId].title)
       }
     }
-
-    storage.onChange(
-      (id, update) => {
-        files[id] = {...files[id], ...update}
-        globalStore.emit('file:' + id)
-      },
-      newFiles => {
-        for (let id in newFiles) {
-          files[id] = newFiles[id]
-          globalStore.emit('file:' + id)
-        }
-      }
-    )
-
-    /*
-    const subs = []
-    globalStore.onIntent('navigate-to-file', (viewId, nodeId) => {
-      const node = globalStore.db.data[nodeId]
-      if (node.type === 'file') {
-        const {fileid} = node.types.file || {}
-        if (fileid) {
-          onOpenFile(files, fileid)
-        }
-      }
-    })
-    */
-
-    return {files, addFile: addFile.bind(null, files)}
-    })
   },
 
   actions: {
@@ -113,10 +84,13 @@ const plugin: Plugin<*, *> = {
       if (node.types.file.fileid) {
         store.emitIntent('navigate-to-file', node.types.file.fileid)
       } else {
+        /*
+        // TODO kill this once the dialog is working
         const fileid = uuid()
         store.actions.setNested(id, ['types', 'file', 'fileid'], fileid)
         store.globalState.plugins[PLUGIN_ID].addFile(fileid, node.content)
         store.emitIntent('navigate-to-file', fileid)
+        */
       }
     },
   },
@@ -124,27 +98,9 @@ const plugin: Plugin<*, *> = {
   nodeTypes: {
     file: {
       title: 'File',
+      // TODO hook this up too
       disableSwitch: true,
       newSiblingsShouldCarryType: false,
-      // TODO hook this up
-      /*
-      warnOnTypeChange: (store: Store, node: any) => {
-        return getDatabaseNames().then(names => {
-          if (names.indexOf(`_pouch_doc_${node._id}`) !== -1) {
-            return `Changing this type away from "file" will delete the associated contents.`
-          }
-        })
-      },
-      */
-      // TODO hook this up
-      onTypeChange: (store: Store, node: any) => {
-        window.indexedDB.deleteDatabase(`_pouch_doc_${node._id}`)
-      },
-      // TODO hook this up
-      onDelete: (store: Store, node: any) => {
-        window.indexedDB.deleteDatabase(`_pouch_doc_${node._id}`)
-        // TODO maybe delete the synced one?
-      },
       shortcut: 'f',
       attributeColumns: {
         lastOpened: {
@@ -156,25 +112,6 @@ const plugin: Plugin<*, *> = {
           title: 'Size',
         },
       },
-
-      /*
-      contextMenu: (typeData, node, store) => {
-        return {
-          text: 'Synced',
-          checked: !!typeData.synced,
-          action: () => {
-            store.actions.setNested(node._id, ['types', 'file', 'synced'], !typeData.synced)
-            if (!typeData.synced) {
-              // Am I just organizing this wrong? There should be a better way
-              // to indicate to outside ppl what's going on.
-              store.actions.setActive(node._id)
-              store.emit('file:setup sync')
-            }
-            // TODO
-          },
-        }
-      },
-      */
 
       defaultNodeConfig() {
         return {
@@ -197,10 +134,11 @@ const plugin: Plugin<*, *> = {
       },
 
       render: ({store, node}) => {
-        return <FileNode store={store} node={node} />
+        return <FileNode nm={nm} store={store} node={node} />
       }
     },
   },
-}
-export default plugin
+})
+plugin.id = PLUGIN_ID
 
+export default plugin

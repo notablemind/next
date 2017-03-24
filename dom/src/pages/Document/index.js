@@ -34,7 +34,7 @@ const plugins = [
   require('../../../../plugins/browser').default,
 ]
 
-const pluginMap = plugins.reduce((obj, pl) => (obj[pl.id] = pl, obj), {})
+// const pluginMap = plugins.reduce((obj, pl) => (obj[pl.id] = pl, obj), {})
 
 const optionalPlugins = ['scriptures', 'browser']
 const defaultPlugins = plugins.map(pl => pl.id).filter(id => optionalPlugins.indexOf(id) === -1)
@@ -222,9 +222,18 @@ class Document extends Component {
     }
     // TODO maybe let other docs have nested docs. could be cool
 
+    const db = treedPouch(this.state.db)
+
+    const treedPlugins = plugins.map(plugin => {
+      if (typeof plugin === 'function') {
+        return plugin({nm: this.props.nm, db, id: this.props.id, title})
+      }
+      return plugin
+    })
+
     const treed = window._treed = new Treed(
-      treedPouch(this.state.db),
-      plugins,
+      db,
+      treedPlugins,
       viewTypes,
       this.props.id,
       loadSharedViewData(this.props.id),

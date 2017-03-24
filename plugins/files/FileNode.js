@@ -11,25 +11,36 @@ import {css, StyleSheet} from 'aphrodite'
 
 const PLUGIN_ID = 'files'
 
-export default withStore({
-  displayName: 'FileNode',
-  events: (store, {node}) => ['file:' + node.types.file.fileid],
-  state: (store, {node}) => ({
-    file: store.getters.pluginState(PLUGIN_ID).files[node.types.file.fileid],
-    navigateToFile: () => store.actions.navigateToFile(node._id),
-  }),
-  render({node, file, navigateToFile}) {
-    const onNav = (e) => {
-      if (e.button !== 0) return
-      e.stopPropagation()
-      e.preventDefault()
-      navigateToFile()
+export default class FileNode extends Component {
+  constructor({nm, node}) {
+    super()
+    this.state = {
+      file: nm.meta[node.types.file.fileid],
     }
+  }
 
+  componentWillMount() {
+    this._unsub = this.props.nm.onMetaById(this.props.node.types.file.fileid, file => this.setState({file}))
+  }
+
+  componentWillUnmount() {
+    this._unsub()
+  }
+
+  onNav = e => {
+    if (e.button !== 0) return
+    e.stopPropagation()
+    e.preventDefault()
+    this.props.store.actions.navigateToFile(this.props.node._id)
+  }
+
+  render() {
+    const {node} = this.props
+    const {file} = this.state
     return file
       ? <div
           className={css(styles.row)}
-          onMouseDownCapture={onNav}
+          onMouseDownCapture={this.onNav}
         >
           <Icon className={css(styles.icon)} name="document-text" />
           {file.title}
@@ -45,13 +56,26 @@ export default withStore({
         </div>
       : <div
           className={css(styles.row, styles.rowDisabled)}
-          onMouseDownCapture={onNav}
+          onMouseDownCapture={this.onNav}
         >
           <Icon className={css(styles.icon)} name="document-text" />
           {node.content}
         </div>
   }
+}
+
+/*
+export default withStore({
+  displayName: 'FileNode',
+  events: (store, {node}) => ['file:' + node.types.file.fileid],
+  state: (store, {node}) => ({
+    file: store.getters.pluginState(PLUGIN_ID).files[node.types.file.fileid],
+    navigateToFile: () => store.actions.navigateToFile(node._id),
+  }),
+  render({node, file, navigateToFile}) {
+  }
 })
+*/
 
 const styles = StyleSheet.create({
   row: {

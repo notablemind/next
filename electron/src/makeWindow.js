@@ -32,6 +32,7 @@ const makeWindow = (state) => {
   })
   win.webContents.on('did-fail-load', (event, code, description, url) => {
     console.error('failed to load', url)
+    win.webContents.executeJavaScript(`document.body.innerHTML = "<div style='text-align:center;padding:100px'>Failed to load - you need to start the server</div>"`)
   })
 
   const localURL = 'http://localhost:4151'
@@ -42,6 +43,7 @@ const makeWindow = (state) => {
     win.loadURL(localFile);
   }
   windows.push(win)
+  return win
 }
 
 module.exports = makeWindow

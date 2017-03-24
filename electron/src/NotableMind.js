@@ -89,7 +89,7 @@ module.exports = class Notablemind {
   broadrest(oid/*: string*/, name/*: string*/, ...args/*: any[]*/) {
     for (let id in this.contents) {
       if (id === oid) continue
-      this.contents[id].send(id, ...args)
+      this.contents[id].send(name, ...args)
     }
   }
 
@@ -130,11 +130,15 @@ module.exports = class Notablemind {
 
     // Files metadata stuff
     ipcMain.on('meta:update', (evt, id, update) => {
+      console.log('got update', id, update)
+      console.log('current thing', this.meta[id])
       this.broadrest(evt.sender.id, 'meta:update', id, update)
-      Object.assign(this.meta[id], update)
+      if (!this.meta[id]) this.meta[id] = update
+      else Object.assign(this.meta[id], update)
       this.saveMeta()
     })
 
+    /*
     // Sync settings page ops
     ipc.on('sync:list-remote', () => this.listRemoteFiles())
     ipc.on('sync:upload', (evt, ids) => {
@@ -159,6 +163,7 @@ module.exports = class Notablemind {
     ipc.on('sync:delete', (evt, files) => {
       return this.reallyDelete(files)
     })
+    */
 
     // Current doc stuff
     ipcMain.on('doc:hello', (evt, docid, chanid) => {
@@ -309,9 +314,10 @@ module.exports = class Notablemind {
   }
 
   attachWindow(browserWindow/*: BrowserWindow*/) {
+    const id = browserWindow.id
     this.windows[browserWindow.id] = browserWindow
     browserWindow.on('closed', () => {
-      delete this.windows[browserWindow.id]
+      delete this.windows[id]
     })
     const contents = browserWindow.webContents
     this.contents[contents.id] = contents
