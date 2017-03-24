@@ -14,9 +14,7 @@ import Document from './pages/Document'
 
 const NotableMind = ELECTRON
   ? require('../../electron/src/NotableClient.js').default
-  : class NotableMind {
-    // ummm
-  }
+  : require('../../electron/src/NotableLocal.js').default
 
 export default class App extends Component {
   nm: any
@@ -36,8 +34,6 @@ export default class App extends Component {
 
   componentWillMount() {
     this.nm.init().then(() => this.setState({loading: false}))
-    // TODO get this going again
-    // googleApi.checkForReturn()
   }
 
   render() {

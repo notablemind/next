@@ -8,8 +8,6 @@ import type {Store, Plugin, GlobalStore} from 'treed/types'
 
 import FileNode from './FileNode'
 
-// import * as storage from './storage'
-
 type File = RemoteFile | LocalFile
 
 type RemoteFile = {

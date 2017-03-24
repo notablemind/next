@@ -1,4 +1,5 @@
 
+// NOTE replaced by `electron/src/NotableClient and NotableLocal`
 /*
 import PouchDB from 'pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))

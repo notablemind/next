@@ -5,15 +5,12 @@ PouchDB.plugin(require('pouchdb-adapter-memory'))
 PouchDB.plugin(require('pouchdb-upsert'))
 
 import setupDbConnection from './setupDbConnection'
+import NotableBase from './NotableBase'
 
-export default class NotableClient {
+export default class NotableClient extends NotableBase {
   constructor(showToast) {
+    super()
     this.remote = require('electron').ipcRenderer
-    this.metaById = {}
-    this.metaListeners = []
-    this.userListeners = []
-    this.meta = null
-    this.user = null
     this.showToast = showToast
   }
 
@@ -54,51 +51,14 @@ export default class NotableClient {
     return this.ready
   }
 
-  notifyMeta() {
-    this.metaListeners.forEach(fn => fn(this.meta))
-  }
-
-  notifyMetaById(id: string) {
-    if (!this.metaById[id]) return
-    this.metaById[id].forEach(fn => fn(this.meta[id]))
-  }
-
-  notifyUser() {
-    this.userListeners.forEach(fn => fn(this.user))
-  }
-
-  onMeta(fn) {
-    this.metaListeners.push(fn)
-    return () => this.metaListeners.splice(this.metaListeners.indexOf(fn), 1)
-  }
-
-  onMetaById(id, fn) {
-    if (!this.metaById[id]) this.metaById[id] = []
-    this.metaById[id].push(fn)
-    return () => this.metaById[id].splice(this.metaById[id].indexOf(fn), 1)
-  }
-
-  onUser(fn) {
-    this.userListeners.push(fn)
-    return () => this.userListeners.splice(this.userListeners.indexOf(fn), 1)
-  }
-
   // TODO I should probably make sure only one thing's connected at a time?
   getFileDb(docid) {
     const db = new PouchDB(docid || 'home', {adapter: 'memory'})
     return setupDbConnection(docid, this.remote, db)
   }
 
-  updateMeta(id, update) {
-    this.meta[id] = {
-      ...this.meta[id],
-      ...update
-    }
-    this.notifyMeta()
-    this.notifyMetaById(id)
+  _updateMeta(id, update) {
     this.remote.send('meta:update', id, update)
   }
-
-
 }
 
