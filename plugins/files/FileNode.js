@@ -64,19 +64,6 @@ export default class FileNode extends Component {
   }
 }
 
-/*
-export default withStore({
-  displayName: 'FileNode',
-  events: (store, {node}) => ['file:' + node.types.file.fileid],
-  state: (store, {node}) => ({
-    file: store.getters.pluginState(PLUGIN_ID).files[node.types.file.fileid],
-    navigateToFile: () => store.actions.navigateToFile(node._id),
-  }),
-  render({node, file, navigateToFile}) {
-  }
-})
-*/
-
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',

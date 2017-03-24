@@ -6,9 +6,11 @@ import {css, StyleSheet} from 'aphrodite'
 import Modal from '../../utils/Modal'
 import FilesTable from './FilesTable'
 
-import * as sync from './sync'
-
-import type {User} from './sync'
+type User = 'logged-out' | 'loading' | {
+  email: string,
+  name: string,
+  profile: string,
+}
 
 type File = RemoteFile | LocalFile
 
@@ -24,7 +26,7 @@ type RemoteFile = {
   },
 }
 
-type LocalFile = {
+type FileMeta = {
   id: string,
   title: string,
   lastOpened: number,
@@ -43,27 +45,40 @@ type LocalFile = {
   },
 }
 
-
 export default class SyncSettings extends Component {
-  _unsub: any
+  _unsubs: Array<() => void>
   state: {
     user: ?User,
-    files: ?File[],
+    remote: ?RemoteFile[],
+    meta: {[key: string]: FileMeta},
   }
 
-  constructor() {
+  constructor({nm}) {
     super()
     this.state = {
-      user: null,
-      files: null,
+      user: nm.user,
+      meta: nm.meta,
+      remote: null,
     }
-    this._unsub = sync.onUser(user => {
-      this.setState({user})
-      if (user) {
-        sync.getFiles().then(files => this.setState({files}))
-      }
-    })
-    sync.getUser()
+  }
+
+  componentWillMount() {
+    if (this.state.user) {
+      this.fetchRemote()
+    }
+    this._unsubs = [
+      this.props.nm.onUser(user => {
+        if (user && !this.state.user) {
+          this.fetchRemote()
+        }
+        this.setState({user})
+      }),
+      this.props.nm.onMeta(meta => this.setState({meta})),
+    ]
+  }
+
+  fetchRemote() {
+    this.props.nm.listRemoteFiles().then(remote => this.setState({remote}))
   }
 
   componentWillUnmount() {
@@ -73,7 +88,7 @@ export default class SyncSettings extends Component {
   renderLoggedOut() {
     return <div className={css(styles.loggedOut)}>
       <button
-        onClick={() => sync.signIn()}
+        onClick={() => this.props.nm.signIn()}
         className={css(styles.loginButton)}
       >
         Login with Google Drive
@@ -103,10 +118,11 @@ export default class SyncSettings extends Component {
     return <FilesTable
       files={files}
       deleteFiles={files => {
-        sync.deleteFiles(files.map(f => f.id))
+        // TODO ????
+        return this.props.nm.deleteFiles(files.map(f => f.id))
       }}
       syncFiles={files => {
-        sync.syncFiles(files.map(f => f.id))
+        return this.props.nm.syncFiles(files.map(f => f.id))
       }}
     />
   }

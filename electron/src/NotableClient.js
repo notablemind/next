@@ -7,10 +7,13 @@ PouchDB.plugin(require('pouchdb-upsert'))
 import setupDbConnection from './setupDbConnection'
 import NotableBase from './NotableBase'
 
+import ipcPromise from './ipcPromise'
+
 export default class NotableClient extends NotableBase {
   constructor(showToast) {
     super()
     this.remote = require('electron').ipcRenderer
+    this.prom = ipcPromise(this.remote)
     this.showToast = showToast
   }
 
@@ -59,6 +62,23 @@ export default class NotableClient extends NotableBase {
 
   _updateMeta(id, update) {
     this.remote.send('meta:update', id, update)
+  }
+
+  signIn() {
+    this.remote.send('user:login')
+  }
+
+  deleteFiles(files) {
+    // TODO
+    return Promise.reject()
+  }
+
+  listRemoteFiles() {
+    return this.prom.send('sync:list-remote')
+  }
+
+  syncFiles(ids: string[]) {
+    return this.prom.send('sync:upload', ids)
   }
 }
 

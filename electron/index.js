@@ -31,7 +31,6 @@ app.on('ready', function() {
   require('./src/meta')(state);
 
   const plugins = [
-    require('../plugins/files/electron'),
     require('../plugins/quick-add/electron'),
     require('../dom/src/pages/Document/Sync/electron'),
   ]

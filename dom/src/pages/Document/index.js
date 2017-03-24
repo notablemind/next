@@ -434,6 +434,7 @@ class Document extends Component {
         {this.state.store.db.data.root.content}
       </div>
       <SyncStatus
+        nm={this.props.nm}
         onClick={() => this.setState({showingSyncSettings: true})}
       />
       <Icon

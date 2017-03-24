@@ -38,6 +38,8 @@ const LOGGED_OUT = 'logged-out'
 const LOADING = 'loading'
 
 module.exports = class Notablemind {
+  LOGGED_OUT = LOGGED_OUT
+  LOADING = LOADING
   /*
   documentsDir: string
   plugins: any[]
@@ -138,8 +140,6 @@ module.exports = class Notablemind {
       this.saveMeta()
     })
 
-    /*
-    // Sync settings page ops
     ipc.on('sync:list-remote', () => this.listRemoteFiles())
     ipc.on('sync:upload', (evt, ids) => {
       // TODO it would be nice to report upload status
@@ -148,6 +148,9 @@ module.exports = class Notablemind {
       // So an observable
       return this.setupSyncForFiles(ids)
     })
+
+    /*
+    // Sync settings page ops
     ipc.on('sync:download', (evt, files) => {
       return this.setupSyncForRemoteFiles(files)
     })

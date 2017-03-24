@@ -4,7 +4,6 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import Modal from '../../utils/Modal'
-import * as sync from './sync'
 
 import type {User} from './sync'
 
@@ -14,13 +13,13 @@ export default class SyncStatus extends Component {
     user: ?User,
   }
 
-  constructor() {
+  constructor({nm}) {
     super()
-    this.state = {
-      user: null,
-    }
-    this._unsub = sync.onUser(user => this.setState({user}))
-    sync.getUser()
+    this.state = { user: nm.user }
+  }
+
+  componentWillMount() {
+    this._unsub = this.props.nm.onUser(user => this.setState({user}))
   }
 
   componentWillUnmount() {
@@ -28,11 +27,23 @@ export default class SyncStatus extends Component {
   }
 
   render() {
+    let contents
+    const {LOGGED_OUT, LOADING} = this.props.nm
+    switch (this.state.user) {
+      case LOGGED_OUT:
+        contents = 'Login'
+        break
+      case LOADING:
+        contents = 'Loading...'
+        break
+      default:
+        contents = this.state.user.name
+    }
     return <div
       className={css(styles.container)}
       onClick={this.props.onClick}
     >
-      {this.state.user ? this.state.user.name : 'Login'}
+      {contents}
     </div>
   }
 }
