@@ -20,9 +20,12 @@ module.exports = main => {
       return new Promise((res, rej) => {
         const id = genid()
         main.once(id, (evt, status, value) => {
-          status === 'success'
-            ? res(value)
-            : rej(value)
+          if (status === 'success') {
+            res(value)
+          } else {
+            console.error(name, args, value)
+            rej(value)
+          }
         })
         main.send(name, id, ...args)
       })

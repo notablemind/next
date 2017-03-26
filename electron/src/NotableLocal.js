@@ -21,7 +21,7 @@ const updateFile = (files, id, update) => {
   saveFiles(files)
 }
 
-export default class NotableClient {
+export default class NotableLocal extends NotableBase {
   constructor(showToast) {
     super()
     this.showToast = showToast

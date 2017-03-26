@@ -9,7 +9,7 @@ import {Router, Route, IndexRoute, hashHistory} from 'react-router'
 
 // import Login from './pages/Login'
 // import Wrapper from './pages/Wrapper'
-import Browse from './pages/Browse'
+// import Browse from './pages/Browse'
 import Document from './pages/Document'
 
 const NotableMind = ELECTRON

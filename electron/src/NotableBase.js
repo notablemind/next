@@ -22,6 +22,7 @@ export default class NotableBase {
   }
 
   notifyUser() {
+    console.log('notifying user', this.userListeners, this.user)
     this.userListeners.forEach(fn => fn(this.user))
   }
 

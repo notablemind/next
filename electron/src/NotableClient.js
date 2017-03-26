@@ -68,6 +68,10 @@ export default class NotableClient extends NotableBase {
     this.remote.send('user:login')
   }
 
+  signOut() {
+    this.remote.send('user:logout')
+  }
+
   deleteFiles(files) {
     // TODO
     return Promise.reject()

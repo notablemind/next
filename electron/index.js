@@ -32,7 +32,7 @@ app.on('ready', function() {
 
   const plugins = [
     require('../plugins/quick-add/electron'),
-    require('../dom/src/pages/Document/Sync/electron'),
+    // require('../dom/src/pages/Document/Sync/electron'),
   ]
 
   plugins.forEach(plugin => {

@@ -15,8 +15,7 @@ import ViewHeader from './ViewHeader'
 import withStore from './withStore'
 import Settings from '../Settings/DocumentSettings'
 
-import SyncStatus from './Sync/Status'
-import SyncSettings from './Sync/Settings'
+import SyncStatus from '../Settings/Sync/Status'
 
 import Icon from 'treed/views/utils/Icon'
 
@@ -435,7 +434,7 @@ class Document extends Component {
       </div>
       <SyncStatus
         nm={this.props.nm}
-        onClick={() => this.setState({showingSyncSettings: true})}
+        onClick={() => this.setState({showingSettings: 'sync'})}
       />
       <Icon
         name="ios-settings"
@@ -482,15 +481,12 @@ class Document extends Component {
             treed={treed}
             onClose={() => this.setState({searching: false})}
           />}
-        {this.state.showingSyncSettings &&
-          <SyncSettings
-            treed={treed}
-            onClose={() => this.setState({showingSyncSettings: false})}
-          />}
         {this.state.showingSettings &&
           <Settings
             treed={treed}
+            nm={this.props.nm}
             store={this.state.store}
+            initialTab={this.state.showingSettings === 'sync' ? 'Files & Sync' : null}
             onClose={() => this.setState({showingSettings: false})}
             onSetPlugins={this.onSetPlugins}
             optionalPlugins={optionalPlugins}

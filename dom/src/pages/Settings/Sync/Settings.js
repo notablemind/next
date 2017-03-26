@@ -63,12 +63,13 @@ export default class SyncSettings extends Component {
   }
 
   componentWillMount() {
-    if (this.state.user) {
+    if (typeof this.state.user === 'object') {
       this.fetchRemote()
     }
     this._unsubs = [
       this.props.nm.onUser(user => {
-        if (user && !this.state.user) {
+        console.log('user changed', user)
+        if (typeof user === 'object' && typeof this.state.user === 'string') {
           this.fetchRemote()
         }
         this.setState({user})
@@ -82,7 +83,7 @@ export default class SyncSettings extends Component {
   }
 
   componentWillUnmount() {
-    this._unsub()
+    this._unsubs.forEach(fn => fn())
   }
 
   renderLoggedOut() {
@@ -106,14 +107,16 @@ export default class SyncSettings extends Component {
         <div className={css(styles.username)}>
           {user.name} ({user.email})
         </div>
+        <button
+          onClick={() => this.props.nm.signOut()}
+        >
+          Logout
+        </button>
       </div>
-      <div style={{flexBasis: 10}}/>
-      {this.state.files
-        ? this.renderFiles(this.state.files)
-        : 'Fetching files list...'}
     </div>
   }
 
+  /*
   renderFiles(files: File[]) {
     return <FilesTable
       files={files}
@@ -126,28 +129,34 @@ export default class SyncSettings extends Component {
       }}
     />
   }
+  */
 
   render() {
-    return <Modal onClose={this.props.onClose}>
-      <div className={css(styles.container)}>
-        {this.state.user
-          ? this.renderLoggedIn(this.state.user)
-          : this.renderLoggedOut()}
+    return <div className={css(styles.container)}>
+      {typeof this.state.user === 'object'
+        ? this.renderLoggedIn(this.state.user)
+        : this.renderLoggedOut()}
+      <div style={{flexBasis: 10}}/>
+      <div style={{flex: 1}}>
+      {this.state.files
+        ? this.renderFiles(this.state.files)
+        : 'Fetching files list...'}
       </div>
-    </Modal>
+    </div>
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: 600,
-    height: 400,
+    flex: 1,
+    // width: 600,
+    // height: 400,
   },
 
   loggedOut: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
+    // flex: 1,
   },
 
   loggedIn: {
@@ -165,7 +174,8 @@ const styles = StyleSheet.create({
   },
 
   loginDetails: {
-    maxWidth: 300,
+    fontSize: '80%',
+    // maxWidth: 300,
   },
 
   profile: {

@@ -38,8 +38,6 @@ const LOGGED_OUT = 'logged-out'
 const LOADING = 'loading'
 
 module.exports = class Notablemind {
-  LOGGED_OUT = LOGGED_OUT
-  LOADING = LOADING
   /*
   documentsDir: string
   plugins: any[]
@@ -83,8 +81,9 @@ module.exports = class Notablemind {
   }
 
   broadcast(name/*: string*/, ...args/*: any[]*/) {
+    // console.log('>>>> Broadcasting', name, args, Object.keys(this.contents))
     for (let id in this.contents) {
-      this.contents[id].send(id, ...args)
+      this.contents[id].send(name, ...args)
     }
   }
 
@@ -125,9 +124,9 @@ module.exports = class Notablemind {
     })
 
     ipcMain.on('user:logout', () => {
-      this.broadcast('user:status', 'logged-out')
       this.userProm = null
       this.user = null
+      this.broadcast('user:status', 'logged-out')
     })
 
     // Files metadata stuff
@@ -334,4 +333,6 @@ module.exports = class Notablemind {
 
   // syncing w/ connected peers through webRTC
 }
+module.exports.LOGGED_OUT = LOGGED_OUT
+module.exports.LOADING = LOADING
 
