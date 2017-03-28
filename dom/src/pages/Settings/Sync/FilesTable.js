@@ -44,7 +44,7 @@ export default class FilesTable extends Component {
     if (!selecteds.length) return
     let status = null
     selecteds.forEach(f => {
-      const st = !f.local ? 'remote' : f.sync ? 'synced' : 'local'
+      const st = f.sync ? 'synced' : 'local'
       if (status && status !== st) status = 'mixed'
       if (!status) status = st
     })

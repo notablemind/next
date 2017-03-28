@@ -2,7 +2,9 @@
 const BOUNDARY = '-------314159265358979323846';
 
 const toBase64 = text => {
-  return btoa(unescape(encodeURIComponent(text)))
+  // We can do this in electron
+  return new Buffer(text).toString('base64')
+  // return btoa(unescape(encodeURIComponent(text)))
 }
 
 const makeBody = (boundary, metadata, contentType, contents) => {

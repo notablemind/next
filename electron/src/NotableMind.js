@@ -37,6 +37,24 @@ type Meta = {[docid: string]: FileMeta}
 const LOGGED_OUT = 'logged-out'
 const LOADING = 'loading'
 
+const debounce = (fn, {min, max}) => {
+  let last = Date.now()
+  let wait
+  return () => {
+    let diff = Date.now() - last
+    if (diff > max) {
+      clearTimeout(wait)
+      last = Date.now()
+      fn()
+    } else {
+      wait = setTimeout(() => {
+        last = Date.now()
+        fn()
+      }, Math.min(min, max - diff))
+    }
+  }
+}
+
 module.exports = class Notablemind {
   /*
   documentsDir: string
@@ -57,6 +75,7 @@ module.exports = class Notablemind {
     this.plugins = plugins
     this.pluginState = {}
 
+    this.online = true // TODO change this ever
     this.windows = {}
     this.contents = {}
     this.dbs = {}
@@ -146,6 +165,7 @@ module.exports = class Notablemind {
       // so to have an observable-like thing
       // really I want a state machine observable.
       // So an observable
+      console.log('uploading probably', ids)
       return this.setupSyncForFiles(ids)
     })
 
@@ -195,6 +215,67 @@ module.exports = class Notablemind {
     return this.userProm
   }
 
+  bouncyUpdate(docid) {
+    if (!this.updaters[docid]) {
+      this.updaters[docid] = debounce(() => this.doSync(docid), {
+        min: 10 * 1000,
+        max: 30 * 1000,
+      })
+    }
+    this.updaters[docid]()
+  }
+
+  doSync(id) {
+    if (!this.online || !this.user || this.working[id]) return
+    const {sync} = this.meta[id]
+    const {token} = this.user
+    const start = Date.now() // TODO analyze how long it takes to sync, and better do things
+    google.metaForFile(token, id).then(file => {
+      if (file.modifiedTime !== sync.lastSyncTime || file.version !== sync.lastSyncVersion) {
+        console.log('Different! downloading first', sync, file.modifiedTime, file.version)
+        return google.contentsForFile(token, id).then(contents => {
+          // TODO check version probably
+          if (contents.version !== '2.0' || contents.type !== 'notablemind') { // LOL don't hard code
+            throw new Error('unexpected contents: ' + contents.type + ' ' + contents.version)
+          }
+          if (contents.attachmentMode !== 'inline') {
+            throw new Error("dunno how I'm gonna deal with this tbh. lazy-load from the web? probably not, probably gonna download everything at once. But I want to know if I have them first probably")
+          }
+          return this.ensureDocDb(id)
+            .then(db => db.bulkDocs({docs: contents.data, new_edits: false}))
+        }).then(() => this.dbs[id].allDocs({include_docs: true, attachments: true}).then(({rows}) => {
+          return google.updateContentsForFile(token, sync.contentsId, rows.map(row => row.doc))
+        }))
+      }
+    }).catch(err => {
+      console.error('failed during sync!!!')
+      console.error(err)
+    })
+  }
+
+  processDocChange(docid, change, chanid) {
+    this.dbs[docid].bulkDocs({
+      docs: [change.doc],
+      new_edits: false,
+    }).catch(err => {
+      console.error('failed to process change', err)
+      sender.send('toast', {
+        type: 'error',
+        message: 'Failed to process change',
+      })
+    })
+
+    if (this.meta[docid].sync && this.user && this.online) {
+      this.bouncyUpdate(docid)
+    }
+
+    for (let cid in this.docConnections[docid]) {
+      if (cid !== chanid) {
+        this.docConnections[docid][cid].send(cid, change.doc)
+      }
+    }
+  }
+
   setupDocConnection(sender/*: WebContents*/, docid/*: string*/, chanid/*: string*/) {
     const cleanup = () => {
       ipcMain.removeListener(chanid, onChange)
@@ -203,22 +284,7 @@ module.exports = class Notablemind {
 
     const onChange = (evt, change) => {
       if (!change) cleanup()
-      this.dbs[docid].bulkDocs({
-        docs: [change.doc],
-        new_edits: false,
-      }).catch(err => {
-        console.error('failed to process change', err)
-        sender.send('toast', {
-          type: 'error',
-          message: 'Failed to process change',
-        })
-      })
-
-      for (let cid in this.docConnections[docid]) {
-        if (cid !== chanid) {
-          this.docConnections[docid][cid].send(cid, change.doc)
-        }
-      }
+      this.processDocChange(docid, change, chanid)
     }
 
     sender.on('destroyed', cleanup)
@@ -249,6 +315,8 @@ module.exports = class Notablemind {
     if (!this.userProm) throw new Error('not logged in')
     return this.userProm
       // TODO update meta's w/ sync information
+  // TODO TODO TODO WORK HERE NEXT BC I DELETED A BUNCH OF THINGS AND THEY
+  // NEED TO UPDATE NOW
       .then(user => google.listFiles(user.token))
   }
 
@@ -256,12 +324,23 @@ module.exports = class Notablemind {
     if (!this.userProm) throw new Error('not logged in')
     return Promise.all(ids.map(id => {
       return this.ensureDocDb(id).allDocs({include_docs: true, attachments: true}).then(({rows}) => {
+        console.log('lookin for', id)
+        console.log('gettin root')
         // TODO maybe cache
         return google.getRootDirectory(this.user.token)
+          .catch(err => {
+            console.error('no root tho')
+            console.error(err)
+            throw err
+          })
           .then(rootDirectory => google.createFile(this.user.token, rootDirectory.id, {
             id,
-            data: rows,
+            data: rows.map(row => row.doc),
             title: this.meta[id].title,
+          }).catch(err => {
+            console.error('cannot create tile tho', rootDirectory.id, id, this.meta[id].title)
+            console.error(err)
+            throw err
           }))
       }).then(({folder, meta, contents}) => {
         const sync = {
@@ -278,6 +357,8 @@ module.exports = class Notablemind {
         this.meta[id].sync = sync
         this.saveMeta()
         this.broadcast('meta:update', id, {sync})
+      }, err => {
+        console.log('failing to do the things for', id, err)
       })
     }))
   }

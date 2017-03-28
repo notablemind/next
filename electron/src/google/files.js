@@ -13,9 +13,13 @@ const queryFiles = (token, query) => {
   }).then(res => res.json())
     .then(data => {
       if (data.error) {
+        console.log('Failing query w/ error!!', query, data.error)
         throw new Error('Error getting files: ' + JSON.stringify(data.error))
       }
       return data.files
+    }, err => {
+      console.log('Failing query!!', query)
+      throw err
     })
 }
 
@@ -51,7 +55,7 @@ const getRootDirectory = (token) => {
   return queryFiles(token, {
     pageSize: 1,
     fields: 'files(id, name, appProperties, version, size, trashed)',
-    q: `name == '${ROOT_NAME}' and appProperties has { key='nmType' and value='root' } and trashed = false`,
+    q: `name = '${ROOT_NAME}' and appProperties has { key='nmType' and value='root' } and trashed = false`,
   }).then(files => {
     if (!files.length) {
       return createRootDirectory(token)
@@ -116,6 +120,7 @@ const createContents = (token, folder, id, data) => {
 
 const createFile = (token/*: {access_token: string}*/, root/*: string*/, {id, data, title}/*: {id: string, title: string, data: Array<{}>}*/) => {
   return findDoc(token, id).then(doc => {
+    // TODO don't throw here tho - I should be able to just roll with it.
     if (doc) throw new Error(`Trying to create ${id} but it already exists`)
     return createDocFolder(token, root, id, title).then(folder => {
       return Promise.all([
