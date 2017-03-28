@@ -10,8 +10,10 @@ module.exports = main => {
             evt.sender.send(id, 'success', value)
           },
           err => {
-            // TODO maybe need to serialize?
-            evt.sender.send(id, 'error', err)
+            evt.sender.send(id, 'error', {
+              message: err.message,
+              stack: err.stack,
+            })
           }
         )
       })

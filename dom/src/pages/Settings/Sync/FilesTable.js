@@ -16,7 +16,7 @@ export default class FilesTable extends Component {
 
   toggleAll = (allSelected: boolean) => {
     const selected = {}
-    this.props.files.forEach(f => selected[f.id] = !allSelected)
+    this.props.localFiles.forEach(f => selected[f.id] = !allSelected)
     this.setState({selected})
   }
 
@@ -30,17 +30,17 @@ export default class FilesTable extends Component {
   }
 
   deleteFiles = () => {
-    const files = this.props.files.filter(f => this.state.selected[f.id])
+    const files = this.props.localFiles.filter(f => this.state.selected[f.id])
     this.props.deleteFiles(files)
   }
 
   syncFiles = () => {
-    const files = this.props.files.filter(f => this.state.selected[f.id])
+    const files = this.props.localFiles.filter(f => this.state.selected[f.id])
     this.props.syncFiles(files)
   }
 
   renderActions() {
-    const selecteds = this.props.files.filter(f => this.state.selected[f.id])
+    const selecteds = this.props.localFiles.filter(f => this.state.selected[f.id])
     if (!selecteds.length) return
     let status = null
     selecteds.forEach(f => {
@@ -67,9 +67,10 @@ export default class FilesTable extends Component {
   }
 
   render() {
-    const {files} = this.props
+    const {localFiles, remoteOnly, remoteById} = this.props
     const {selected} = this.state
-    const allSelected = !files.some(f => !selected[f.id])
+    // TODO render remoteOnly files too
+    const allSelected = !localFiles.some(f => !selected[f.id])
     return <div className={css(styles.container)}>
       <div className={css(styles.header)}>
         <Check
@@ -78,7 +79,7 @@ export default class FilesTable extends Component {
         />
       </div>
       <div className={css(styles.scroll)}>
-      {files.map(file => (
+      {localFiles.map(file => (
         <div
           key={file.id}
           className={css(styles.file)}
@@ -91,11 +92,7 @@ export default class FilesTable extends Component {
           {file.size}
           <div style={{flexBasis: 10}} />
           <div className={css(styles.status)}>
-            {!file.local
-              ? 'remote'
-              : file.sync
-              ? 'synced'
-              : 'local'}
+            {file.sync ? 'synced' : 'local'}
           </div>
         </div>
       ))}

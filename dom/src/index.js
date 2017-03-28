@@ -1,6 +1,6 @@
 // @flow
 
-// import "react-devtools"
+import "react-devtools"
 import { AppContainer } from 'react-hot-loader';
 import React from 'react';
 import ReactDOM from 'react-dom';

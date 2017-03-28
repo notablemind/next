@@ -58,7 +58,7 @@ export default class SyncSettings extends Component {
     this.state = {
       user: nm.user,
       meta: nm.meta,
-      remote: null,
+      remote: [],
     }
   }
 
@@ -68,7 +68,6 @@ export default class SyncSettings extends Component {
     }
     this._unsubs = [
       this.props.nm.onUser(user => {
-        console.log('user changed', user)
         if (typeof user === 'object' && typeof this.state.user === 'string') {
           this.fetchRemote()
         }
@@ -79,7 +78,8 @@ export default class SyncSettings extends Component {
   }
 
   fetchRemote() {
-    this.props.nm.listRemoteFiles().then(remote => this.setState({remote}))
+    this.props.nm.listRemoteFiles()
+      .then(remote => this.setState({remote}))
   }
 
   componentWillUnmount() {
@@ -107,6 +107,7 @@ export default class SyncSettings extends Component {
         <div className={css(styles.username)}>
           {user.name} ({user.email})
         </div>
+        <div style={{flex: 1}} />
         <button
           onClick={() => this.props.nm.signOut()}
         >
@@ -116,8 +117,27 @@ export default class SyncSettings extends Component {
     </div>
   }
 
-  /*
-  renderFiles(files: File[]) {
+  renderFiles() {
+    const {remote, meta} = this.state
+    const remoteOnly = remote.filter(file => !this.state.meta[file.appProperties.nmId])
+    const remoteById = {}
+    remote.forEach(file => remoteById[file.appProperties.nmId] = file)
+
+    return <FilesTable
+      localFiles={Object.keys(meta).map(id => meta[id])}
+      remoteById={remoteById}
+      remoteOnly={remoteOnly}
+      deleteFiles={files => {
+        // TODO ????
+        return this.props.nm.deleteFiles(files.map(f => f.id))
+      }}
+      syncFiles={files => {
+        return this.props.nm.syncFiles(files.map(f => f.id))
+      }}
+    />
+  }
+
+  renderFiles_() {
     return <FilesTable
       files={files}
       deleteFiles={files => {
@@ -129,7 +149,6 @@ export default class SyncSettings extends Component {
       }}
     />
   }
-  */
 
   render() {
     return <div className={css(styles.container)}>
@@ -137,11 +156,7 @@ export default class SyncSettings extends Component {
         ? this.renderLoggedIn(this.state.user)
         : this.renderLoggedOut()}
       <div style={{flexBasis: 10}}/>
-      <div style={{flex: 1}}>
-      {this.state.files
-        ? this.renderFiles(this.state.files)
-        : 'Fetching files list...'}
-      </div>
+      {this.renderFiles(this.state.files)}
     </div>
   }
 }
@@ -160,7 +175,7 @@ const styles = StyleSheet.create({
   },
 
   loggedIn: {
-    flex: 1,
+    // flex: 1,
   },
 
   loginButton: {

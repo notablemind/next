@@ -68,6 +68,7 @@ module.exports = class Notablemind {
       if (user) {
         this.user = user
         this.broadcast('user:status', user)
+        return user
       } else {
         this.userProm = null
         this.broadcast('user:status', LOGGED_OUT)
@@ -247,13 +248,14 @@ module.exports = class Notablemind {
   listRemoteFiles() {
     if (!this.userProm) throw new Error('not logged in')
     return this.userProm
+      // TODO update meta's w/ sync information
       .then(user => google.listFiles(user.token))
   }
 
   setupSyncForFiles(ids/*: string[]*/) {
     if (!this.userProm) throw new Error('not logged in')
     return Promise.all(ids.map(id => {
-      return this.ensureDocDb(id).allDocs({include_docs: true}).then(({rows}) => {
+      return this.ensureDocDb(id).allDocs({include_docs: true, attachments: true}).then(({rows}) => {
         return google.createFile(this.user.token, {
           id,
           data: rows,
