@@ -6,13 +6,13 @@ const fs = require('fs')
 
 const {googleApiKey} = require('../../../shared/secret.json')
 const googleLogin = require('./login')
-const {listFiles, createFile, contentsForFile} = require('./files')
+const files = require('./files')
 
 /*
 type User = {
   name: string,
   email: string,
-  profilePic: string,
+  profile: string,
   token: {
     access_token: string,
     refresh_token: string,
@@ -92,11 +92,8 @@ const getOrRefreshUser = (token/*: {expires_at: number, access_token: string, re
   }
 }
 
-module.exports = {
+module.exports = Object.assign({
   restoreUser,
   login,
-  listFiles,
-  createFile,
-  contentsForFile,
-}
+}, files)
 

@@ -31,6 +31,7 @@ const updateFile = ({
   mimeType,
 }) => {
 
+  /*
   var request = gapi.client.request({
     'path': '/upload/drive/v3/files/' + id,
     'method': 'PATCH',
@@ -38,6 +39,7 @@ const updateFile = ({
     'headers': { 'Content-Type': mimeType, },
     'body': contents,
   });
+  */
 
   return new Promise((res, rej) => {
     request.execute(response => {
@@ -46,13 +48,25 @@ const updateFile = ({
   })
 }
 
-const insertFile = ({
+const insertFile = (token, config/*: {mimeType: string}*/, data) => {
+  return fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
+    headers: {
+      'Authorization': 'Bearer ' + token.access_token,
+      'Content-Type': 'multipart/mixed; boundary="' + BOUNDARY + '"'
+    },
+    method: 'POST',
+    body: makeBody(BOUNDARY, config, config.mimeType, data)
+  }).then(res => res.json())
+}
+
+const _insertFile = ({
   name,
   mimeType,
   parents,
   contents,
 }) => {
 
+  /*
   var request = gapi.client.request({
     'path': '/upload/drive/v3/files',
     'method': 'POST',
@@ -73,6 +87,7 @@ const insertFile = ({
       res(response)
     });
   })
+ */
 }
 
 module.exports = insertFile

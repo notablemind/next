@@ -256,18 +256,23 @@ module.exports = class Notablemind {
     if (!this.userProm) throw new Error('not logged in')
     return Promise.all(ids.map(id => {
       return this.ensureDocDb(id).allDocs({include_docs: true, attachments: true}).then(({rows}) => {
-        return google.createFile(this.user.token, {
-          id,
-          data: rows,
-        })
-      }).then(file => {
+        // TODO maybe cache
+        return google.getRootDirectory(this.user.token)
+          .then(rootDirectory => google.createFile(this.user.token, rootDirectory.id, {
+            id,
+            data: rows,
+            title: this.meta[id].title,
+          }))
+      }).then(({folder, meta, contents}) => {
         const sync = {
-          remoteId: file.id,
-          lastSyncTime: file.lastModified, // TODO check attr name
-          lastSyncVersion: file.version,
+          folderId: folder.id,
+          contentsId: contents.id,
+          lastSyncTime: contents.modifiedTime, // TODO check attr name
+          lastSyncVersion: contents.version,
           owner: {
             me: true,
-            // TODO fill in
+            email: this.user.email,
+            profile: this.user.profile,
           },
         }
         this.meta[id].sync = sync
