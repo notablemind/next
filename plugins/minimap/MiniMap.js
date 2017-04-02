@@ -16,6 +16,7 @@ const shortened = txt => {
 }
 
 const brief = (node, store) => {
+  if (!node) return 'missing'
   const nodeType = store.plugins.nodeTypes[node.type]
   if (nodeType && nodeType.brief) {
     return nodeType.brief(node).slice(0, 50)

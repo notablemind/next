@@ -269,9 +269,15 @@ module.exports = class Notablemind {
       this.bouncyUpdate(docid)
     }
 
+    this.sendDocChange(docid, change.doc, chanid)
+  }
+
+  sendDocChange(docid, doc, chanid) {
+    console.log('sending doc change', docid)
     for (let cid in this.docConnections[docid]) {
       if (cid !== chanid) {
-        this.docConnections[docid][cid].send(cid, change.doc)
+        console.log('sending up', docid, cid)
+        this.docConnections[docid][cid].send(cid, doc)
       }
     }
   }

@@ -1,5 +1,7 @@
 
 const {BrowserWindow, ipcMain} = require('electron')
+const uuid = require('../../treed/uuid')
+const newNode = require('../../treed/newNode')
 
 const PLUGIN_ID = 'quick_add'
 
@@ -28,6 +30,23 @@ const openWindow = (nm) => {
   })
 }
 
+const addItem = (nm, docid, text) => {
+  const db = nm.ensureDocDb(docid)
+  const start = Date.now()
+  const id = uuid()
+  return db.get('root').then(root => {
+    return db.bulkDocs([
+      Object.assign({}, root, {children: root.children.concat([id])}),
+      newNode(id, 'root', start, text),
+    ])
+  }).then(() => Promise.all([db.get('root'), db.get(id)]))
+  .then(([root, nnode]) => {
+    console.log('sending doc change', root, nnode)
+    nm.sendDocChange(docid, nnode, null)
+    nm.sendDocChange(docid, root, null)
+  })
+}
+
 const plugin = {
   id: PLUGIN_ID,
 
@@ -39,6 +58,9 @@ const plugin = {
     })
     ipcMain.on('quick-add', (event, {text, doc}) => {
       console.log('quicking adding', text, doc)
+      // hmmm so I feel like I need some indirection here anyways
+
+      addItem(nm, doc, text)
       // TODO maybe this will be complicated actually tho
     })
   },
