@@ -6,11 +6,12 @@ import {css, StyleSheet} from 'aphrodite'
 import Icon from 'treed/views/utils/Icon'
 
 export default class FilesTable extends Component {
-  state: {selected: {[key: string]: boolean}}
+  state: {selected: {[key: string]: boolean}, loading: boolean}
   constructor() {
     super()
     this.state = {
-      selected: {}
+      selected: {},
+      loading: false,
     }
   }
 
@@ -36,7 +37,9 @@ export default class FilesTable extends Component {
 
   syncFiles = () => {
     const files = this.props.localFiles.filter(f => this.state.selected[f.id])
+    this.setState({loading: true})
     this.props.syncFiles(files)
+      .then(() => this.setState({loading: false, selected: {}}))
   }
 
   renderActions() {
@@ -68,7 +71,7 @@ export default class FilesTable extends Component {
 
   render() {
     const {localFiles, remoteOnly, remoteById} = this.props
-    const {selected} = this.state
+    const {selected, loading} = this.state
     // TODO render remoteOnly files too
     const allSelected = !localFiles.some(f => !selected[f.id])
     return <div className={css(styles.container)}>
@@ -98,6 +101,7 @@ export default class FilesTable extends Component {
       ))}
       </div>
       {this.renderActions()}
+      {loading && <div className={css(styles.overlay)}>Loading</div>}
     </div>
   }
 }
@@ -165,6 +169,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     overflow: 'hidden',
+    position: 'relative',
   },
 
   button: {
@@ -181,6 +186,21 @@ const styles = StyleSheet.create({
   scroll: {
     flex: 1,
     overflow: 'auto',
+  },
+
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#aaa',
+    cursor: 'normal',
+    opacity: 0.3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
 
   header: {

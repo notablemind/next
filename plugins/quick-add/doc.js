@@ -1,5 +1,5 @@
 
-const {remote} = require('electron')
+const {remote, ipcRenderer} = require('electron')
 const win = remote.getCurrentWindow()
 
 const closeWindow = () => {
@@ -9,13 +9,13 @@ const closeWindow = () => {
   }, 500)
 }
 
-const makeDestNodes = destinations => {
-  const container = document.getElementById('destinations')
+const makeDocNodes = docs => {
+  const container = document.getElementById('docs')
   container.innerHTML = ''
-  return destinations.map((dest, i) => {
+  return docs.map((doc, i) => {
     const node = document.createElement('div')
-    node.className = 'destination'
-    node.innerText = dest.docTitle
+    node.className = 'doc'
+    node.innerText = doc.title
     node.onmousedown = e => {
       e.preventDefault()
       setSelected(i)
@@ -61,17 +61,17 @@ const onKeyDown = e => {
 }
 
 let selected = 0
-let destinations = [{
-  doc: 'home',
-  docTitle: 'Home',
-  id: 'root',
-  idTitle: null,
-}]
+let docs = []
 let destNodes = makeDestNodes(destinations)
 
 const input = document.getElementById('input')
 input.onkeydown = onKeyDown
-input.onblur = closeWindow
+// input.onblur = closeWindow
 input.focus()
 
+ipcRenderer.on('meta', (event, meta) => {
+  Object.keys(meta).forEach(id => {
+
+  })
+})
 

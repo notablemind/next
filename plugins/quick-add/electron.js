@@ -3,7 +3,7 @@ const PLUGIN_ID = 'quick_add'
 
 let quickAdd = null
 
-const openWindow = () => {
+const openWindow = (nm) => {
   const {BrowserWindow} = require('electron')
   quickAdd = new BrowserWindow({
     width: 500,
@@ -22,16 +22,19 @@ const openWindow = () => {
   quickAdd.on('close', () => {
     quickAdd = null
   })
+  quickAdd.webContents.on('load', () => {
+    quickAdd.webContents.send('meta', nm.meta)
+  })
 }
 
 const plugin = {
   id: PLUGIN_ID,
 
-  init() {
+  init(state, nm) {
     const {globalShortcut} = require('electron')
     const success = globalShortcut.register('Super+Ctrl+m', () => {
       console.log('global shortcut triggered!')
-      openWindow()
+      openWindow(nm)
     })
   },
 }

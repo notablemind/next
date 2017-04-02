@@ -315,9 +315,33 @@ module.exports = class Notablemind {
     if (!this.userProm) throw new Error('not logged in')
     return this.userProm
       // TODO update meta's w/ sync information
-  // TODO TODO TODO WORK HERE NEXT BC I DELETED A BUNCH OF THINGS AND THEY
-  // NEED TO UPDATE NOW
+      // TODO TODO TODO WORK HERE NEXT BC I DELETED A BUNCH OF THINGS AND THEY
+      // NEED TO UPDATE NOW
       .then(user => google.listFiles(user.token))
+      .then(remoteFiles => (this.processRemoteFiles(remoteFiles), remoteFiles))
+  }
+
+  processRemoteFiles(remoteFiles) {
+    let changed = false
+    const remotesById = {}
+    remoteFiles.forEach(file => remotesById[file.appProperties.nmId] = file)
+    Object.keys(this.meta).forEach(id => {
+      const meta = this.meta[id]
+      if (meta.sync && !remotesById[id]) {
+        // the file was remotely deleted
+        changed = true
+        meta.sync = null
+        this.broadcast('meta:update', id, {sync: null})
+        // this.notifyMetaById(id)
+      } else if (!meta.sync && remotesById[id]) {
+        console.error('found a file I was not expecting')
+        // TODO process this well, populate sync n stuff
+        fail
+      }
+    })
+    if (changed) {
+      this.saveMeta()
+    }
   }
 
   setupSyncForFiles(ids/*: string[]*/) {

@@ -35,12 +35,12 @@ app.on('ready', function() {
     // require('../dom/src/pages/Document/Sync/electron'),
   ]
 
-  plugins.forEach(plugin => {
-    state.plugins[plugin.id] = plugin.init(state)
-  })
-
   const nm = new NotableMind([], state.documentsDir)
   nm.init()
+
+  plugins.forEach(plugin => {
+    state.plugins[plugin.id] = plugin.init(state, nm)
+  })
 
   setupMenu({
     createNewWindow: () => {

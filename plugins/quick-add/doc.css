@@ -1,24 +1,34 @@
+html {
+    margin: 0;
+    padding: 0;
+}
+
 body {
+    margin: 0;
+    padding: 0;
     postion: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    height: auto;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    border-radius: 20px;
+    border-radius: 10px;
     background-color: white;
+    border: 1px solid #aaa;
     /* width: 500px; */
 }
 
 #input {
     padding: 10px 10px;
     border: none;
+    border-radius: 10px;
     outline: none;
 }
 
-.destination {
+.doc {
     padding: 10px 20px;
     text-align: center;
     flex: 1;
@@ -27,8 +37,12 @@ body {
 .selected {
     background-color: #eee;
 }
-#destinations {
+
+#docs {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
 }
 
