@@ -1,10 +1,11 @@
 
+const {BrowserWindow, ipcMain} = require('electron')
+
 const PLUGIN_ID = 'quick_add'
 
 let quickAdd = null
 
 const openWindow = (nm) => {
-  const {BrowserWindow} = require('electron')
   quickAdd = new BrowserWindow({
     width: 500,
     height: 500,
@@ -22,7 +23,7 @@ const openWindow = (nm) => {
   quickAdd.on('close', () => {
     quickAdd = null
   })
-  quickAdd.webContents.on('load', () => {
+  quickAdd.webContents.on('dom-ready', () => {
     quickAdd.webContents.send('meta', nm.meta)
   })
 }
@@ -35,6 +36,10 @@ const plugin = {
     const success = globalShortcut.register('Super+Ctrl+m', () => {
       console.log('global shortcut triggered!')
       openWindow(nm)
+    })
+    ipcMain.on('quick-add', (event, {text, doc}) => {
+      console.log('quicking adding', text, doc)
+      // TODO maybe this will be complicated actually tho
     })
   },
 }

@@ -15,6 +15,9 @@ const makeDocNodes = docs => {
   return docs.map((doc, i) => {
     const node = document.createElement('div')
     node.className = 'doc'
+    if (i === 0) {
+      node.classList.add('selected')
+    }
     node.innerText = doc.title
     node.onmousedown = e => {
       e.preventDefault()
@@ -26,7 +29,7 @@ const makeDocNodes = docs => {
 }
 
 const setSelected = index => {
-  destNodes.forEach(
+  docNodes.forEach(
     (node, i) => node.classList.toggle('selected', i === index)
   )
   selected = index
@@ -41,6 +44,7 @@ const onKeyDown = e => {
     e.preventDefault()
     sendBack()
     closeWindow()
+    return
   }
   if (e.keyCode === 9) { // Tab
     e.preventDefault()
@@ -48,10 +52,10 @@ const onKeyDown = e => {
       if (selected > 0) {
         setSelected(selected - 1)
       } else {
-        setSelected(destinations.length - 1)
+        setSelected(docs.length - 1)
       }
     } else {
-      if (selected < destinations.length - 1) {
+      if (selected < docs.length - 1) {
         setSelected(selected + 1)
       } else {
         setSelected(0)
@@ -60,18 +64,25 @@ const onKeyDown = e => {
   }
 }
 
+const sendBack = () => {
+  ipcRenderer.send('quick-add', {text: input.value, doc: docs[selected].id})
+}
+
 let selected = 0
 let docs = []
-let destNodes = makeDestNodes(destinations)
+let docNodes
 
 const input = document.getElementById('input')
 input.onkeydown = onKeyDown
 // input.onblur = closeWindow
 input.focus()
 
-ipcRenderer.on('meta', (event, meta) => {
-  Object.keys(meta).forEach(id => {
+document.getElementById('close').onclick = closeWindow
 
-  })
+ipcRenderer.on('meta', (event, meta) => {
+  docs = Object.keys(meta).map(id => meta[id])
+    .sort((a, b) => b.lastOpened - a.lastOpened)
+  console.log('got meta', meta)
+  docNodes = makeDocNodes(docs)
 })
 
