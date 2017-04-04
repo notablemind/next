@@ -193,6 +193,11 @@ module.exports = class Notablemind {
       this.setupDocConnection(evt.sender, docid, chanid)
     })
 
+    ipc.on('doc:import', (evt, data) => {
+      // TODO something reasonable here
+      // and resolve the promise
+    })
+
     return Promise.all(this.plugins.map(plugin => {
       if (!plugin.init) return
       return Promise.resolve(plugin.init(this))

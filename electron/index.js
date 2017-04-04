@@ -5,7 +5,6 @@ const PouchDB = require('pouchdb')
 const electron = require('electron')
 const {ipcMain, app} = electron
 
-const startSync = require('./src/sync')
 const makeWindow = require('./src/makeWindow')
 const NotableMind = require('./src/NotableMind')
 const setupMenu = require('./src/menu')
@@ -18,13 +17,6 @@ const state = {
   plugins: {},
   actions: {},
 }
-
-//  TODO TODO TODO this needs to be owned by notablemind probably
-/*
-ipcMain.on('sync', (evt, uid, docid) => {
-  startSync(state, evt.sender, uid, docid)
-})
-*/
 
 app.on('window-all-closed', function() {
   app.quit();

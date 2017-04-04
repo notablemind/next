@@ -54,6 +54,11 @@ export default class NotableClient extends NotableBase {
     return this.ready
   }
 
+  // TODO better figure out what to do here
+  importDoc(data: {id: string, title: string, data: any[]}) {
+    return this.prom.send('doc:import', data)
+  }
+
   // TODO I should probably make sure only one thing's connected at a time?
   getFileDb(docid) {
     docid = docid || 'home'
