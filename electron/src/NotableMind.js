@@ -275,34 +275,12 @@ module.exports = class Notablemind {
     })
   }
 
-  processDocChange(docid, change, chanid) {
-    this.dbs[docid].bulkDocs({
-      docs: [change.doc],
-      new_edits: false,
-    }).catch(err => {
-      console.error('failed to process change', err)
-      sender.send('toast', {
-        type: 'error',
-        message: 'Failed to process change',
-      })
-    })
-
-    if (this.meta[docid].sync && this.user && this.online) {
-      this.bouncyUpdate(docid)
+  ensureDocDb(docid/*: string*/) {
+    if (!this.dbs[docid]) {
+      const docPath = path.join(this.documentsDir, docid)
+      this.dbs[docid] = new PouchDB(docPath)
     }
-
-    this.sendDocChange(docid, change.doc, chanid)
-  }
-
-  sendDocChange(docid, doc, chanid) {
-    console.log('sending doc change', docid)
-    for (let cid in this.docConnections[docid]) {
-      const sender = this.docConnections[docid][cid]
-      if (cid !== chanid && !sender.isDestroyed()) {
-        console.log('sending up', docid, cid)
-        sender.send(cid, doc)
-      }
-    }
+    return this.dbs[docid]
   }
 
   setupDocConnection(sender, docid, chanid) {
@@ -328,48 +306,6 @@ module.exports = class Notablemind {
       rows.forEach(({doc}) => data[doc._id] = doc)
       return data
     })
-  }
-
-  setupDocConnection_(sender/*: WebContents*/, docid/*: string*/, chanid/*: string*/) {
-    const cleanup = () => {
-      ipcMain.removeListener(chanid, onChange)
-      delete this.docConnections[docid][chanid]
-      // TODO remove db if no more connections?
-    }
-
-    const onChange = (evt, change) => {
-      if (!change) return cleanup()
-      this.processDocChange(docid, change, chanid)
-    }
-
-    this.ensureDocDb(docid).allDocs({include_docs: true}).then(({rows}) => {
-      if (sender.isDestroyed()) return
-      sender.send(chanid + ':all', rows.map(r => r.doc))
-
-      if (!this.docConnections[docid]) {
-        this.docConnections[docid] = {}
-      }
-      this.docConnections[docid][chanid] = sender
-
-      sender.on('destroyed', cleanup)
-      sender.on('devtools-reload-page', cleanup)
-      ipcMain.on(chanid, onChange)
-
-    }, err => {
-      sender.send('toast', {
-        type: 'error',
-        message: 'Failed to get document, might need to restart',
-      })
-      console.error('failed to get docs', err)
-    })
-  }
-
-  ensureDocDb(docid/*: string*/) {
-    if (!this.dbs[docid]) {
-      const docPath = path.join(this.documentsDir, docid)
-      this.dbs[docid] = new PouchDB(docPath)
-    }
-    return this.dbs[docid]
   }
 
   listRemoteFiles() {
