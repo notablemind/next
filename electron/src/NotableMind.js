@@ -2,6 +2,7 @@
 
 const {BrowserWindow, WebContents, ipcMain} = require('electron')
 const PouchDB = require('pouchdb')
+PouchDB.plugin(require('pouchdb-upsert'))
 const path = require('path')
 const fs = require('fs')
 
@@ -188,10 +189,20 @@ module.exports = class Notablemind {
     })
     */
 
+   ipc.on('doc:hello', (evt, docid, chanid) => {
+      return this.setupDocConnection(evt.sender, docid, chanid)
+   })
+
+   ipc.on('doc:action', (evt, action, docid, data) => {
+      return this.processDocAction(action, docid, data)
+   })
+
+    /*
     // Current doc stuff
     ipcMain.on('doc:hello', (evt, docid, chanid) => {
       this.setupDocConnection(evt.sender, docid, chanid)
     })
+    */
 
     ipc.on('doc:import', (evt, data) => {
       // TODO something reasonable here
@@ -202,6 +213,12 @@ module.exports = class Notablemind {
       if (!plugin.init) return
       return Promise.resolve(plugin.init(this))
     }))
+  }
+
+  processDocAction(action, docid, data) {
+    const db = this.ensureDocDb(docid)
+    // console.log('processing doc action', action, docid, data)
+    return docActions[action](db, data)
   }
 
   login() {
@@ -288,7 +305,32 @@ module.exports = class Notablemind {
     }
   }
 
-  setupDocConnection(sender/*: WebContents*/, docid/*: string*/, chanid/*: string*/) {
+  setupDocConnection(sender, docid, chanid) {
+    const db = this.ensureDocDb(docid)
+
+    const changes = db.changes({
+      live: true,
+      since: 'now',
+      include_docs: true,
+      attachments: true,
+    }).on('change', change => {
+      const id = change.doc._id
+      const doc = change.doc._deleted ? null : change.doc
+      sender.send(chanid, id, doc)
+    }).on('complete', () => {
+      console.log('done w/ changes I guess', docid, chanid)
+    }).on('error', err => {
+      console.error('failed to sync', err)
+    })
+
+    return db.allDocs({include_docs: true, attachments: true}).then(({rows}) => {
+      const data = {}
+      rows.forEach(({doc}) => data[doc._id] = doc)
+      return data
+    })
+  }
+
+  setupDocConnection_(sender/*: WebContents*/, docid/*: string*/, chanid/*: string*/) {
     const cleanup = () => {
       ipcMain.removeListener(chanid, onChange)
       delete this.docConnections[docid][chanid]
@@ -466,4 +508,24 @@ module.exports = class Notablemind {
 }
 module.exports.LOGGED_OUT = LOGGED_OUT
 module.exports.LOADING = LOADING
+
+const docActions = {
+  set: (db, {id, attr, value, modified}) => {
+    return db.upsert(id, doc => Object.assign({}, doc, {[attr]: value, modified}))
+  },
+  setNested: (db, {id, attrs, last, value, modified}) => {
+    return db.upsert(id, doc => {
+      doc = Object.assign({}, doc, {modified})
+      const lparent = attrs.reduce((o, a) => o[a] = Object.assign({}, o[a]), doc)
+      lparent[last] = value
+      return doc
+    })
+  },
+  update: (db, {id, update, modified}) => {
+    return db.upsert(id, doc => Object.assign({}, doc, update, {modified}))
+  },
+  save: (db, {doc}) => db.put(doc), // .then(r => (console.log('save', r), r)),
+  saveMany: (db, {docs}) => db.bulkDocs(docs), // .then(r => (console.log('savemany', r), r)),
+  delete: (db, {doc}) => db.remove(doc),
+}
 

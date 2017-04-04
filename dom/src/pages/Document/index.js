@@ -148,7 +148,7 @@ class Document extends Component {
   }
 
   componentDidMount() {
-    this.props.nm.getFileDb(this.props.id).then(db => {
+    this.props.nm.getFileDb(this.props.id || 'home').then(db => {
       this.setState({db}, () => this.makeTreed('a root you know'))
     })
     window.addEventListener('keydown', this.onKeyDown)
@@ -221,7 +221,7 @@ class Document extends Component {
     }
     // TODO maybe let other docs have nested docs. could be cool
 
-    const db = treedPouch(this.state.db)
+    const db = this.state.db // treedPouch(this.state.db)
 
     const treedPlugins = plugins.map(plugin => {
       if (typeof plugin === 'function') {

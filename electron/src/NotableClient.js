@@ -58,33 +58,34 @@ export default class NotableClient extends NotableBase {
     return this.prom.send('doc:import', data)
   }
 
-  getFileDb_(docid) {
+  getFileDb(docid) {
     const connectionId = Math.random().toString(16).slice(2)
+    const {remote, prom} = this
     let cleanup = () => {}
-    return {
+    return Promise.resolve({
       sync(onDump, onChange, onError) {
-        this.remote.on(connectionId, onChange)
+        remote.on(connectionId, onChange)
         cleanup = () => this.remote.removeEventListener(connectionId, onChange)
-        this.prom.send('doc:hello', docid, connectionId)
+        prom.send('doc:hello', docid, connectionId)
           .then(onDump, onError)
       },
       set(id, attr, value, modified) {
-        return this.prom.send('doc:action', 'set', docid, {id, attr, value, modified})
+        return prom.send('doc:action', 'set', docid, {id, attr, value, modified})
       },
       setNested(id, attrs, last, value, modified) {
-        return this.prom.send('doc:action', 'setNested', docid, {id, attrs, last, value, modified})
+        return prom.send('doc:action', 'setNested', docid, {id, attrs, last, value, modified})
       },
       update(id, update, modified) {
-        return this.prom.send('doc:action', 'update', docid, {id, update, modified})
+        return prom.send('doc:action', 'update', docid, {id, update, modified})
       },
       save(doc) {
-        return this.prom.send('doc:action', 'save', docid, {doc})
+        return prom.send('doc:action', 'save', docid, {doc})
       },
       saveMany(docs) {
-        return this.prom.send('doc:action', 'saveMany', docid, {docs})
+        return prom.send('doc:action', 'saveMany', docid, {docs})
       },
       delete(doc) {
-        return this.prom.send('doc:action', 'delete', docid, {doc})
+        return prom.send('doc:action', 'delete', docid, {doc})
       },
       getAttachment(id, attachmentId) {
         return Promise.reject(new Error('not impl'))
@@ -95,18 +96,18 @@ export default class NotableClient extends NotableBase {
       destroy() {
         cleanup()
       },
-    }
+    })
   }
 
   // TODO I should probably make sure only one thing's connected at a time?
-  getFileDb(docid) {
+  getFileDb_(docid) {
     docid = docid || 'home'
     const db = new PouchDB(docid, {adapter: 'memory'})
     const connectionId = Math.random().toString(16).slice(2)
     const gotChanges = {}
 
     const startSyncing = () => {
-      this.remote.on(connectionId, onChange)
+      this.remote.on(connectionId, (evt, id, doc) => onChange(id, doc))
       db._changeStream = db.changes({
         live: true,
         since: 'now',
