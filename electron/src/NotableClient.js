@@ -70,6 +70,8 @@ export default class NotableClient extends NotableBase {
         prom.send('doc:hello', docid, connectionId)
           .then(onDump, onError)
       },
+      // TODO I could probably just ditch this and go straight to
+      // `processAction` or something
       set(id, attr, value, modified) {
         return prom.send('doc:action', 'set', docid, {id, attr, value, modified})
       },

@@ -247,6 +247,7 @@ module.exports = class Notablemind {
     this.updaters[docid]()
   }
 
+  // Okok now I'm gonna get serious about this syncing thing
   doSync(id) {
     if (!this.online || !this.user || this.working[id]) return
     const {sync} = this.meta[id]
