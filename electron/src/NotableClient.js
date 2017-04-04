@@ -56,8 +56,52 @@ export default class NotableClient extends NotableBase {
 
   // TODO I should probably make sure only one thing's connected at a time?
   getFileDb(docid) {
-    const db = new PouchDB(docid || 'home', {adapter: 'memory'})
-    return setupDbConnection(docid, this.remote, db)
+    docid = docid || 'home'
+    const db = new PouchDB(docid, {adapter: 'memory'})
+    const connectionId = Math.random().toString(16).slice(2)
+    const gotChanges = {}
+
+    const startSyncing = () => {
+      this.remote.on(connectionId, onChange)
+      db._changeStream = db.changes({
+        live: true,
+        since: 'now',
+        include_docs: true,
+        attachments: true,
+      }).on('change', change => {
+        if (!gotChanges[change.doc._rev]) {
+          this.remote.send(connectionId, change)
+        } else {
+          delete gotChanges[change.doc._rev]
+        }
+      }).on('complete', info => {
+        this.remote.send(connectionId, null)
+        this.remote.removeListener(connectionId, onChange)
+      }).on('error', err => {
+        console.error('sync error', docid, connectionId, err)
+        this.showToast({type: 'error', message: 'failed syncing document'})
+      })
+    }
+
+    const onChange = (evt, doc) => {
+      gotChanges[doc._rev] = true
+      console.log('got a change from the server') // TODO rm
+      db.bulkDocs({docs: [doc], new_edits: false}).catch(err => {
+        console.error('failed', err)
+        this.showToast({type: 'error', message: 'failed to update from sync'})
+      })
+    }
+
+    return new Promise((res, rej) => {
+      this.remote.send('doc:hello', docid, connectionId)
+      this.remote.once(connectionId + ':all', (evt, docs) => {
+        db.bulkDocs({docs, new_edits: false}).then(() => {
+          startSyncing()
+          res(db)
+        })
+      })
+    })
+    // return setupDbConnection(docid, this.remote, db)
   }
 
   _updateMeta(id, update) {

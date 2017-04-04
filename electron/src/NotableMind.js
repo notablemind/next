@@ -275,9 +275,10 @@ module.exports = class Notablemind {
   sendDocChange(docid, doc, chanid) {
     console.log('sending doc change', docid)
     for (let cid in this.docConnections[docid]) {
-      if (cid !== chanid) {
+      const sender = this.docConnections[docid][cid]
+      if (cid !== chanid && !sender.isDestroyed()) {
         console.log('sending up', docid, cid)
-        this.docConnections[docid][cid].send(cid, doc)
+        sender.send(cid, doc)
       }
     }
   }
@@ -286,26 +287,33 @@ module.exports = class Notablemind {
     const cleanup = () => {
       ipcMain.removeListener(chanid, onChange)
       delete this.docConnections[docid][chanid]
+      // TODO remove db if no more connections?
     }
 
     const onChange = (evt, change) => {
-      if (!change) cleanup()
+      if (!change) return cleanup()
       this.processDocChange(docid, change, chanid)
     }
 
-    sender.on('destroyed', cleanup)
-
-    ipcMain.on(chanid, onChange)
-    if (!this.docConnections[docid]) {
-      this.docConnections[docid] = {}
-    }
-    this.docConnections[docid][chanid] = sender
-
     this.ensureDocDb(docid).allDocs({include_docs: true}).then(({rows}) => {
+      if (sender.isDestroyed()) return
       sender.send(chanid + ':all', rows.map(r => r.doc))
+
+      if (!this.docConnections[docid]) {
+        this.docConnections[docid] = {}
+      }
+      this.docConnections[docid][chanid] = sender
+
+      sender.on('destroyed', cleanup)
+      sender.on('devtools-reload-page', cleanup)
+      ipcMain.on(chanid, onChange)
+
     }, err => {
-      console.error('failed to get docs')
-      // TODO error
+      sender.send('toast', {
+        type: 'error',
+        message: 'Failed to get document, might need to restart',
+      })
+      console.error('failed to get docs', err)
     })
   }
 
