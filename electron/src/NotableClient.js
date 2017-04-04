@@ -4,7 +4,6 @@ PouchDB.plugin(require('pouchdb-authentication'))
 PouchDB.plugin(require('pouchdb-adapter-memory'))
 PouchDB.plugin(require('pouchdb-upsert'))
 
-import setupDbConnection from './setupDbConnection'
 import NotableBase from './NotableBase'
 
 import ipcPromise from './ipcPromise'
@@ -59,6 +58,46 @@ export default class NotableClient extends NotableBase {
     return this.prom.send('doc:import', data)
   }
 
+  getFileDb_(docid) {
+    const connectionId = Math.random().toString(16).slice(2)
+    let cleanup = () => {}
+    return {
+      sync(onDump, onChange, onError) {
+        this.remote.on(connectionId, onChange)
+        cleanup = () => this.remote.removeEventListener(connectionId, onChange)
+        this.prom.send('doc:hello', docid, connectionId)
+          .then(onDump, onError)
+      },
+      set(id, attr, value, modified) {
+        return this.prom.send('doc:action', 'set', docid, {id, attr, value, modified})
+      },
+      setNested(id, attrs, last, value, modified) {
+        return this.prom.send('doc:action', 'setNested', docid, {id, attrs, last, value, modified})
+      },
+      update(id, update, modified) {
+        return this.prom.send('doc:action', 'update', docid, {id, update, modified})
+      },
+      save(doc) {
+        return this.prom.send('doc:action', 'save', docid, {doc})
+      },
+      saveMany(docs) {
+        return this.prom.send('doc:action', 'saveMany', docid, {docs})
+      },
+      delete(doc) {
+        return this.prom.send('doc:action', 'delete', docid, {doc})
+      },
+      getAttachment(id, attachmentId) {
+        return Promise.reject(new Error('not impl'))
+      },
+      getBase64Attachment(id, attachmentId) {
+        return Promise.reject(new Error('not impl'))
+      },
+      destroy() {
+        cleanup()
+      },
+    }
+  }
+
   // TODO I should probably make sure only one thing's connected at a time?
   getFileDb(docid) {
     docid = docid || 'home'
@@ -106,7 +145,6 @@ export default class NotableClient extends NotableBase {
         })
       })
     })
-    // return setupDbConnection(docid, this.remote, db)
   }
 
   _updateMeta(id, update) {

@@ -27,7 +27,21 @@ export default db => ({
       onDump(data)
     }, err => onError(err))
   },
-  upsert: (id, update) => db.upsert(id, update), // .then(r => (console.log('upsert', r))),
+  set: (id, attr, value, modified) => {
+    return db.upsert(id, doc => ({...doc, [attr]: value, modified}))
+  },
+  setNested: (id, attrs, last, value, modified) => {
+    return db.upsert(id, doc => {
+      doc = {...doc, modified}
+      const lparent = attrs.reduce((o, a) => o[a] = {...o[a]}, doc)
+      lparent[last] = value
+      return doc
+    })
+  },
+  update: (id, update, modified) => {
+    return db.upsert(id, doc => ({...doc, ...update, modified}))
+  },
+  // upsert: (id, update) => db.upsert(id, update), // .then(r => (console.log('upsert', r))),
   save: (doc) => db.put(doc), // .then(r => (console.log('save', r), r)),
   saveMany: docs => db.bulkDocs(docs), // .then(r => (console.log('savemany', r), r)),
   delete: doc => db.remove(doc),

@@ -343,10 +343,10 @@ class Document extends Component {
     }
     this._unsubs.forEach(f => f())
     if (this.state.db) {
-      if (this.state.db._changeStream) {
+      if (this.state.db.destroy) {
         // give it some time to flush things
         setTimeout(() => {
-          this.state.db._changeStream.cancel()
+          this.state.db.destroy()
         }, 500)
       }
     }

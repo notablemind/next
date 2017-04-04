@@ -138,9 +138,12 @@ export default class Database {
     const prom = this.queue = this.queue.then(() => {
       switch (action.type) {
         case 'set':
-          const a = action // flow :(
-          return this.db.upsert(a.id, doc => ({...doc, [a.attr]: a.value, modified: a.now}))
+          return this.db.set(action.id, action.attr, action.value, action.now)
+          // const a = action // flow :(
+          // return this.db.upsert(a.id, doc => ({...doc, [a.attr]: a.value, modified: a.now}))
         case 'setNested':
+          return this.db.setNested(action.id, action.attrs, action.last, action.value, action.now)
+          /*
           const b = action // flow :(
           return this.db.upsert(b.id, doc => {
             doc = {...doc, modified: b.now}
@@ -148,11 +151,11 @@ export default class Database {
             lparent[b.last] = b.value
             return doc
           })
+          */
         case 'update':
-          const c = action // flow :(
-          return this.db.upsert(c.id, doc => ({...doc, ...c.update, modified: c.now}))
-          //return this.db.save({
-            //...this.db.data[action.id],
+          return this.db.update(action.id, action.update, action.now)
+          // const c = action // flow :(
+          // return this.db.upsert(c.id, doc => ({...doc, ...c.update, modified: c.now}))
         case 'save':
           return this.db.save({
             ...action.doc,
@@ -173,7 +176,7 @@ export default class Database {
       }
     })
     // .then(() => new Promise(r => setTimeout(r, 1000)))
-    .then((r: any) => {
+    .then((r: {rev: string} | {rev:string}[]) => {
       if (window.DEBUG_CHANGES) {
         console.log('done', r, action)
       }
