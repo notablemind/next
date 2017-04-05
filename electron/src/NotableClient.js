@@ -4,6 +4,7 @@ PouchDB.plugin(require('pouchdb-authentication'))
 PouchDB.plugin(require('pouchdb-adapter-memory'))
 PouchDB.plugin(require('pouchdb-upsert'))
 
+import uuid from 'treed/uuid'
 import NotableBase from './NotableBase'
 
 import ipcPromise from './ipcPromise'
@@ -51,6 +52,12 @@ export default class NotableClient extends NotableBase {
     this.remote.send('hello')
 
     return this.ready
+  }
+
+  createDoc(title) {
+    const docid = uuid()
+    this.remote.send('doc:new', docid, title)
+    return docid
   }
 
   // TODO better figure out what to do here

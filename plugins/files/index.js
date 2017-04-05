@@ -77,6 +77,13 @@ const plugin = ({nm}): Plugin<*, *> => ({
   },
 
   actions: {
+    createFileForNode(store, id, title) {
+      const docid = nm.createDoc(title)
+      store.actions.setNodeType(id, 'file')
+      store.actions.setNested(id, ['types', 'file', 'fileid'], docid)
+      store.actions.normalMode()
+    },
+
     navigateToFile(store, id=store.state.active) {
       const node = store.getters.node(id)
       if (node.types.file.fileid) {

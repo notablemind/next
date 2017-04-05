@@ -265,6 +265,7 @@ class Document extends Component {
       }))
       this._unsubs.push(store.onIntent('filter-by-tag', this.onTagFilter))
       this._unsubs.push(store.onIntent('navigate-to-file', this.onNavigate))
+      this._unsubs.push(store.onIntent('create-file', this.onCreateFile))
       this._unsubs.push(store.on([store.events.viewType()], () => {
         this.setState({})
       }))
@@ -274,6 +275,11 @@ class Document extends Component {
         tick: this.state.tick + 1,
       })
     })
+  }
+
+  onCreateFile = (viewId: string, title: string) => {
+    const id = this.state.store.state.active
+    this.state.store.actions.createFileForNode(id, title)
   }
 
   onTagFilter = (viewId: string, tagid: string) => {

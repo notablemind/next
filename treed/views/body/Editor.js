@@ -151,7 +151,7 @@ export default class Editor extends Component {
   }
 
   isChanging() {
-    if (this.props.node.type !== 'normal' || this.state.cancelledChange) return false
+    if (this.state.cancelledChange) return false
     const {nodeTypes} = this.props.store.plugins
     const {node, store} = this.props
     const typeNames = Object.keys(nodeTypes)
@@ -191,7 +191,7 @@ export default class Editor extends Component {
         help: 'Type file name',
         options: [{
           label: 'Create "' + name + '"',
-          action: () => console.log('TODO create file', name),
+          action: () => this.props.store.emitIntent('create-file', name),
         }]
       }
     }
@@ -210,7 +210,7 @@ export default class Editor extends Component {
       : typeOptions.filter(option => ('/' + option.type).indexOf(tmpText) === 0)
     return {
       options: selectedTypes,
-      help: 'Switch to type:'
+      help: 'Set node type:'
     }
   }
 

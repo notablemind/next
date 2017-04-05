@@ -247,6 +247,19 @@ module.exports = class Notablemind {
     })
     */
 
+   ipcMain.on('doc:new', (evt, docid, title) => {
+     this.meta[docid] = {
+       id: docid,
+       title: title,
+       lastOpened: Date.now(),
+       lastModified: Date.now(),
+       size: 1,
+       sync: null, // TODO maybe auto-setup sync if that setting is set? Also once I get more confidant about it :P
+     }
+     this.saveMeta()
+     this.broadcast('meta:update', docid, this.meta[docid])
+   })
+
    ipc.on('doc:hello', (evt, docid, chanid) => {
       return this.setupDocConnection(evt.sender, docid, chanid)
    })
