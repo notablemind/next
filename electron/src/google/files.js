@@ -107,7 +107,7 @@ const createMeta = (token, folder, id) => {
     mimeType: 'application/json',
     parents: [folder],
     name: 'meta.json',
-  }, JSON.stringify({id}))
+  }, JSON.stringify({id}), fileFields)
 }
 
 const createContents = (token, folder, id, data) => {
@@ -116,7 +116,7 @@ const createContents = (token, folder, id, data) => {
     mimeType: 'application/json',
     parents: [folder],
     name: 'contents.json',
-  }, JSON.stringify(data))
+  }, JSON.stringify(data), fileFields)
 }
 
 const createFile = (token/*: {access_token: string}*/, root/*: string*/, {id, data, title}/*: {id: string, title: string, data: {}}*/) => {
@@ -140,12 +140,21 @@ const contentsForFile = (token/*: {access_token: string}*/, file/*: {id: string}
   throw new Error('not impl')
 }
 
+const fileFields = 'modifiedTime,id,sharingUser,version,appProperties,trashed,createdTime,owners,ownedByMe,size,md5Checksum,quotaBytesUsed,headRevisionId,capabilities'
+
 const metaForFile = (token, file/*: {id: string}*/) => {
-  return apiCall(token, 'files/' + file.id)
+  return apiCall(token, 'files/' + file.id, {
+    fields: fileFields,
+  })
 }
 
 const updateContents = (token, file, data) => {
-  return fetch(`https://www.googleapis.com/upload/drive/v3/files/${file.id}?uploadType=media`, {
+  const opts = {
+    uploadType: 'media',
+    fields: fileFields,
+  }
+
+  return fetch(`https://www.googleapis.com/upload/drive/v3/files/${file.id}?${kwds(opts)}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
     headers: {
@@ -154,17 +163,6 @@ const updateContents = (token, file, data) => {
     },
   }).then(r => r.json())
 }
-
-/*
-const createFile = (token, parent, data) => {
-  return upload(token, {
-    appProperties: {nmId: id, nmType: 'contents'},
-    mimeType: 'application/json',
-    parents: [folder],
-    name: 'contents.json',
-  }, JSON.stringify(data))
-}
-*/
 
 module.exports = {
   listFiles,

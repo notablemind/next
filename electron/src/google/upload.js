@@ -50,8 +50,8 @@ const updateFile = ({
   })
 }
 
-const insertFile = (token, config/*: {mimeType: string}*/, data) => {
-  return fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
+const insertFile = (token, config/*: {mimeType: string}*/, data, fields) => {
+  return fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=${fields}`, {
     headers: {
       'Authorization': 'Bearer ' + token.access_token,
       'Content-Type': 'multipart/mixed; boundary="' + BOUNDARY + '"'
@@ -59,37 +59,6 @@ const insertFile = (token, config/*: {mimeType: string}*/, data) => {
     method: 'POST',
     body: makeBody(BOUNDARY, config, config.mimeType, data)
   }).then(res => res.json())
-}
-
-const _insertFile = ({
-  name,
-  mimeType,
-  parents,
-  contents,
-}) => {
-
-  /*
-  var request = gapi.client.request({
-    'path': '/upload/drive/v3/files',
-    'method': 'POST',
-    'params': {'uploadType': 'multipart'},
-    'headers': {
-      'Content-Type': 'multipart/mixed; boundary="' + BOUNDARY + '"'
-    },
-    'body': makeBody(BOUNDARY, {
-      name,
-      mimeType,
-      parents,
-    }, mimeType, contents)
-  });
-
-  return new Promise((res, rej) => {
-    request.execute(response => {
-      console.log('got response from upload', response)
-      res(response)
-    });
-  })
- */
 }
 
 module.exports = insertFile

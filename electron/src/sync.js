@@ -38,17 +38,20 @@ const mergeDataIntoDatabase = (data/*: SerializedData*/, db) => {
   if (data.version !== VERSION) data = migrateData(data)
   return db.bullkDocs({docs: data.docs, new_edits: false})
     .then(db => resolveConflicts(db))
+    .then(() => true) // TODO calc whether I got any new info
 }
 
-module.exports = (auth, syncConfig, db, api/*: Api*/)/*: RemoteFile*/ => {
+module.exports = (auth, syncConfig, db, api/*: Api*/, dirty)/*: RemoteFile*/ => {
   return api.checkRemote(auth, syncConfig).then(needsRefresh => {
-    if (!needsRefresh) return
+    if (!needsRefresh) return dirty
     console.log('doc needs a refresh')
     return api.getContents(auth, syncConfig).then(
       (data/*: SerializedData*/) => mergeDataIntoDatabase(data, db)
     )
   })
-  .then(() => createFileData(db))
-  .then(data => api.updateContents(auth, syncConfig, data))
+  .then(needsPush => needsPush
+    ? createFileData(db)
+        .then(data => api.updateContents(auth, syncConfig, data))
+    : null)
 }
 
