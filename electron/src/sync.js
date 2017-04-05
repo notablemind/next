@@ -36,7 +36,7 @@ const resolveConflicts = db => {
 const mergeDataIntoDatabase = (data/*: SerializedData*/, db) => {
   if (data.type !== MIME) throw new Error('wrong notablemind type: ' + MIME)
   if (data.version !== VERSION) data = migrateData(data)
-  return db.bullkDocs({docs: data.docs, new_edits: false})
+  return db.bulkDocs({docs: data.docs, new_edits: false})
     .then(db => resolveConflicts(db))
     .then(() => true) // TODO calc whether I got any new info
 }

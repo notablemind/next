@@ -135,9 +135,10 @@ const createFile = (token/*: {access_token: string}*/, root/*: string*/, {id, da
 }
 
 const contentsForFile = (token/*: {access_token: string}*/, file/*: {id: string}*/) => {
-  // TODO implement
-  debugger
-  throw new Error('not impl')
+  return apiCall(token, 'files/' + file.id, {
+    fields: fileFields,
+    alt: 'media',
+  })
 }
 
 const fileFields = 'modifiedTime,id,sharingUser,version,appProperties,trashed,createdTime,owners,ownedByMe,size,md5Checksum,quotaBytesUsed,headRevisionId,capabilities'

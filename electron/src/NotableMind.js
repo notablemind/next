@@ -81,11 +81,9 @@ const noisy = message => err => {
 
 const googleSyncApi = {
   checkRemote: (auth/*: Auth*/, syncConfig/*: SyncConfig*/) => {
-    return google.metaForFile(auth, syncConfig.remoteFiles.contents).then(file => {
-      console.log('checking meta', file)
-      console.log('see if modifed more recently', syncConfig.remoteFiles.contents)
-      return file.headRevisionId !== syncConfig.remoteFiles.contents.headRevisionId
-    })
+    return google.metaForFile(auth, syncConfig.remoteFiles.contents).then(file =>
+      file.headRevisionId !== syncConfig.remoteFiles.contents.headRevisionId
+    )
     .catch(noisy('failed to get meta for file'))
   },
 
@@ -307,8 +305,15 @@ module.exports = class Notablemind {
     sync(token, this.meta[id].sync, db, googleSyncApi)
       .then(contents => {
         if (!contents) return // didn't need push
-        this.meta[id].sync.remoteFiles.contents = contents
-        this.meta[id].lastModified = contents.modifiedTime
+        const meta = this.meta[id]
+        meta.sync.remoteFiles.contents = contents
+        meta.sync.lastSynced = Date.now()
+        meta.lastModified = contents.modifiedTime
+        this.saveMeta()
+        this.broadcast('meta:update', meta.id, {
+          sync: meta.sync,
+          lastModified: meta.lastModified,
+        })
         this.working[id] = false
       }, err => {
         console.error('failed to sync', err)

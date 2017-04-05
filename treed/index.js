@@ -183,7 +183,7 @@ export default class Treed {
           newPluginSettings[id] = plugins[id].defaultGlobalConfig || {}
         }
       })
-      if (newPluginSettings) {
+      if (addedPlugins) {
         return this.db.save({
           ...this.db.data.settings,
           plugins: {
