@@ -140,6 +140,7 @@ module.exports = class Notablemind {
     this.docConnections = {}
     this.meta = loadMeta(this.documentsDir)
     this.updaters = {}
+    this.periods = {}
 
     this.user = null
     this.userProm = google.restoreUser(this.documentsDir).then(user => {
@@ -262,11 +263,16 @@ module.exports = class Notablemind {
    })
 
    ipc.on('doc:hello', (evt, docid, chanid) => {
+      this.syncPeriodically(docid)
       return this.setupDocConnection(evt.sender, docid, chanid)
    })
 
    ipc.on('doc:action', (evt, action, docid, data) => {
       return this.processDocAction(action, docid, data)
+   })
+
+   ipcMain.on('doc:sync-now', (evt, docid) => {
+     this.doSync(docid)
    })
 
     /*
@@ -292,6 +298,7 @@ module.exports = class Notablemind {
     // console.log('processing doc action', action, docid, data)
     return docActions[action](db, data)
       .then(res => {
+        this.meta[docid].sync.dirty = true
         this.bouncyUpdate(docid)
         return res
       })
@@ -323,19 +330,37 @@ module.exports = class Notablemind {
     this.updaters[docid]()
   }
 
+  syncPeriodically(docid) {
+    clearTimeout(this.periods[docid])
+    this.periods[docid] = setTimeout(() => {
+      this.doSync(docid)
+    }, 60 * 1000)
+  }
+
   doSync(id) {
     if (!this.online || !this.user || this.working[id]) return
     if (!this.meta[id].sync) return
+    clearTimeout(this.periods[id])
     const {token} = this.user
     const db = this.ensureDocDb(id)
     this.working[id] = true
-    sync(token, this.meta[id].sync, db, googleSyncApi, true) // TODO pass in real dirty flag
+    sync(token, this.meta[id].sync, db, googleSyncApi, this.meta[id].sync.dirty) // TODO pass in real dirty flag
       .then(contents => {
-        if (!contents) return console.log('no push') // didn't need push
+        if (!contents) {
+          const meta = this.meta[id]
+          meta.sync.lastSynced = Date.now()
+          meta.sync.dirty = false
+          this.saveMeta()
+          this.broadcast('meta:update', meta.id, {
+            sync: meta.sync,
+          })
+          return console.log('no push') // didn't need push
+        }
         console.log('updating n stuff')
         const meta = this.meta[id]
-        meta.sync.remoteFiles.contents = contents
         meta.sync.lastSynced = Date.now()
+        meta.sync.dirty = false
+        meta.sync.remoteFiles.contents = contents
         meta.lastModified = contents.modifiedTime
         this.saveMeta()
         this.broadcast('meta:update', meta.id, {
@@ -346,6 +371,9 @@ module.exports = class Notablemind {
       }, err => {
         console.error('failed to sync', err)
         this.working[id] = false
+      })
+      .then(() => {
+        this.syncPeriodically(id)
       })
   }
 

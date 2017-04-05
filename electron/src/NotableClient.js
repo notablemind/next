@@ -65,6 +65,10 @@ export default class NotableClient extends NotableBase {
     return this.prom.send('doc:import', data)
   }
 
+  syncNow(docid) {
+    this.remote.send('doc:sync-now', docid)
+  }
+
   getFileDb(docid) {
     const connectionId = Math.random().toString(16).slice(2)
     const {remote, prom} = this

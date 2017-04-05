@@ -37,14 +37,15 @@ export default class SyncStatus extends Component {
     const sync = this.state.meta.sync
     if (!sync || !sync.lastSynced) return
     const since = Date.now() - sync.lastSynced
+    let contents
     if (since < 60 * 60 * 1000) {
       const minutes = since / 60 / 1000 | 0
-      return <div className={css(styles.syncTime)}>
-        synced {minutes} minutes ago
-      </div>
+      contents = `synced ${minutes} minutes ago`
+    } else {
+      contents = `synced at ${new Date(sync.lastSynced).toLocaleString()}`
     }
-    return <div className={css(styles.syncTime)}>
-      synced at {new Date(sync.lastSynced).toLocaleString()}
+    return <div className={css(styles.syncTime)} onClick={() => this.props.nm.syncNow(this.props.docid)}>
+      {contents}
     </div>
   }
 
@@ -79,6 +80,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
+    WebkitAppRegion: 'no-drag',
     fontSize: 12,
     padding: '5px',
     cursor: 'pointer',
@@ -91,6 +93,7 @@ const styles = StyleSheet.create({
   },
 
   syncTime: {
+    WebkitAppRegion: 'no-drag',
     marginRight: 5,
     fontSize: 12,
     padding: '5px',
