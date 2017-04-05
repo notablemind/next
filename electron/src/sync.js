@@ -20,7 +20,7 @@ type Api = {
 }
 */
 
-module.exports = (auth, syncConfig, db, api/*: Api*/, dirty)/*: RemoteFile*/ => {
+module.exports = (auth, syncConfig, {db, api, dirty, pullOnly})/*: ?RemoteFile*/ => {
   return api.checkRemote(auth, syncConfig).then(needsRefresh => {
     if (!needsRefresh) return dirty
     console.log('doc needs a refresh')
@@ -28,7 +28,7 @@ module.exports = (auth, syncConfig, db, api/*: Api*/, dirty)/*: RemoteFile*/ => 
       (data/*: SerializedData*/) => mergeDataIntoDatabase(data, db)
     )
   })
-  .then(needsPush => needsPush
+  .then(needsPush => (console.log('needs', needsPush, dirty), ((needsPush || dirty) && !pullOnly))
     ? createFileData(db)
         .then(data => api.updateContents(auth, syncConfig, data))
     : null)

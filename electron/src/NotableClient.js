@@ -1,8 +1,10 @@
 
+/*
 import PouchDB from '../../node_modules/pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
 PouchDB.plugin(require('pouchdb-adapter-memory'))
 PouchDB.plugin(require('pouchdb-upsert'))
+*/
 
 import uuid from 'treed/uuid'
 import NotableBase from './NotableBase'

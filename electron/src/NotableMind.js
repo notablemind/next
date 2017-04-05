@@ -342,7 +342,12 @@ module.exports = class Notablemind {
     const db = this.ensureDocDb(id)
     this.working[id] = true
     console.log('> ok actually syncing')
-    sync(token, this.meta[id].sync, db, googleSyncApi, this.meta[id].sync.dirty) // TODO pass in real dirty flag
+    sync(token, this.meta[id].sync, {
+      db,
+      api: googleSyncApi,
+      dirty: this.meta[id].sync.dirty,
+      pullOnly: false,
+    })
       .then(contents => {
         console.log('> did the stuff')
         if (!contents) {
