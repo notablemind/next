@@ -6,6 +6,25 @@ import {css, StyleSheet} from 'aphrodite'
 import Icon from 'treed/views/utils/Icon'
 
 export default class FilesTable extends Component {
+  props: {
+    remoteOnly: Array<{
+      appProperties: {nmId: string, nmType: 'doc'},
+      id: string,
+      name: string,
+      trashed: boolean,
+      version: number,
+    }>,
+    localFiles: Array<{
+      id: string,
+      title: string,
+      lastModified: number,
+      lastOpened: number,
+      size: number,
+      sync: ?{
+      },
+    }>,
+  }
+
   state: {selected: {[key: string]: boolean}, loading: boolean}
   constructor() {
     super()
@@ -18,6 +37,7 @@ export default class FilesTable extends Component {
   toggleAll = (allSelected: boolean) => {
     const selected = {}
     this.props.localFiles.forEach(f => selected[f.id] = !allSelected)
+    this.props.remoteOnly.forEach(f => selected[f.appProperties.nmId] = !allSelected)
     this.setState({selected})
   }
 
@@ -42,15 +62,28 @@ export default class FilesTable extends Component {
       .then(() => this.setState({loading: false, selected: {}}))
   }
 
+  downloadFiles = () => {
+    const files = this.props.remoteOnly.filter(f => this.state.selected[f.appProperties.nmId])
+    this.setState({loading: true})
+    this.props.downloadFiles(files)
+      .then(() => this.setState({loading: false, selected: {}}))
+  }
+
   renderActions() {
     const selecteds = this.props.localFiles.filter(f => this.state.selected[f.id])
+      .concat(this.props.remoteOnly.filter(f => this.state.selected[f.appProperties.nmId]))
     if (!selecteds.length) return
     let status = null
     selecteds.forEach(f => {
-      const st = f.sync ? 'synced' : 'local'
+      const st = f.appProperties
+        ? 'remote'
+        : f.sync
+        ? 'synced'
+        : 'local'
       if (status && status !== st) status = 'mixed'
       if (!status) status = st
     })
+    // TODO not totally true, e.g. deleting
     if (status === 'mixed') {
       return 'To perform bulk operations, all files must have the same status'
     }
@@ -65,6 +98,11 @@ export default class FilesTable extends Component {
         <Button
           label={"Enable syncing for " + name}
           onClick={this.syncFiles}
+        />}
+      {status === 'remote' &&
+        <Button
+          label={"Download " + name}
+          onClick={this.downloadFiles}
         />}
     </div>
   }
@@ -96,6 +134,22 @@ export default class FilesTable extends Component {
           <div style={{flexBasis: 10}} />
           <div className={css(styles.status)}>
             {file.sync ? 'synced' : 'local'}
+          </div>
+        </div>
+      ))}
+      {remoteOnly.map(file => (
+        <div
+          key={file.appProperties.nmId}
+          className={css(styles.file)}
+          onClick={() => this.toggle(file.appProperties.nmId)}
+        >
+          <Check checked={selected[file.appProperties.nmId]} />
+          <div style={{flexBasis: 10}}/>
+          {file.name}
+          <div style={{flex: 1}} />
+          <div style={{flexBasis: 10}} />
+          <div className={css(styles.status)}>
+            remote
           </div>
         </div>
       ))}

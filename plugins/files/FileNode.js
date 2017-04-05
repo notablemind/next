@@ -59,7 +59,7 @@ export default class FileNode extends Component {
           onMouseDownCapture={this.onNav}
         >
           <Icon className={css(styles.icon)} name="document-text" />
-          {node.content}
+          Unknown file - may have been deleted
         </div>
   }
 }

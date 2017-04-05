@@ -10,6 +10,7 @@ const ipcPromise = require('./ipcPromise')
 const google = require('./google')
 const sync = require('./sync')
 const createFileData = require('./createFileData')
+const mergeDataIntoDatabase = require('./mergeDataIntoDatabase')
 
 const loadMeta = (documentsDir)/*: Meta*/ => {
   const metaPath = path.join(documentsDir, 'meta.json')
@@ -52,11 +53,11 @@ type RemoteFile = {
 type Auth = {access_token: string}
 
 type SyncConfig = {
-  owner: {
-    email: string,
-    profile: string,
-    me: boolean,
-  },
+  // owner: {
+    // email: string,
+    // profile: string,
+    // me: boolean,
+  // },
   remoteFiles: {
     meta: RemoteFile,
     contents: RemoteFile,
@@ -228,11 +229,11 @@ module.exports = class Notablemind {
       return Promise.all(ids.map(id => this.setupSyncForFile(id)))
     })
 
-    /*
     // Sync settings page ops
     ipc.on('sync:download', (evt, files) => {
-      return this.setupSyncForRemoteFiles(files)
+      return Promise.all(files.map(file => this.downloadRemoteFile(file)))
     })
+    /*
     // might be remote or local
     ipc.on('sync:trash', (evt, files) => {
       return this.trashFiles(files)
@@ -434,6 +435,29 @@ module.exports = class Notablemind {
       this.saveMeta()
       this.broadcast('meta:update', id, {sync})
     })
+  }
+
+  downloadRemoteFile(file/*: {id: string, name: string, appProperties: {nmId: string}}*/) {
+    return google.downloadRemoteFile(this.user.token, file)
+      .then(({sync, data, id}) => {
+        this.meta[id] = {
+          id,
+          title: file.name,
+          // TODO dirty check?
+          lastModified: 0,
+          lastOpened: Date.now(),
+          size: data.docs.length,
+          sync,
+        }
+        this.saveMeta()
+        const db = this.ensureDocDb(id)
+        return mergeDataIntoDatabase(data, db).then(() => {
+          this.broadcast('meta:update', id, this.meta[id])
+        }, err => {
+          console.error('failed to merge data into new database?')
+          throw err
+        })
+      })
   }
 
   setupSyncForRemoteFiles(files/*: any[]*/) { // TODO type file

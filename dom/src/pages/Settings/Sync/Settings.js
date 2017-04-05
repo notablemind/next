@@ -132,6 +132,9 @@ export default class SyncSettings extends Component {
       localFiles={Object.keys(meta).map(id => meta[id]).filter(m => m.id)}
       remoteById={remoteById}
       remoteOnly={remoteOnly}
+      downloadFiles={files => {
+        return this.props.nm.downloadFiles(files)
+      }}
       deleteFiles={files => {
         // TODO ????
         return this.props.nm.deleteFiles(files.map(f => f.id))

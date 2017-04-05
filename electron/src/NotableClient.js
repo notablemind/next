@@ -130,6 +130,10 @@ export default class NotableClient extends NotableBase {
     return this.prom.send('sync:list-remote')
   }
 
+  downloadFiles(files: any[]) {
+    return this.prom.send('sync:download', files)
+  }
+
   syncFiles(ids: string[]) {
     return this.prom.send('sync:upload', ids)
   }

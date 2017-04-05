@@ -48,6 +48,15 @@ const findDoc = (token, id) => {
 }
 
 
+const findFilesForId = (token, id) => {
+  return queryFiles(token, {
+    pageSize: 1000,
+    fields: `files(${fileFields})`,
+    q: `appProperties has { key='nmId' and value='${id}' }`,
+  })
+}
+
+
 // file setup:
 // My Fancy Document // a folder w/ nmType=doc, nmId=the doc id
 //   contents.json // nmType=contents, nmId=the doc id
@@ -119,6 +128,28 @@ const createContents = (token, folder, id, data) => {
   }, JSON.stringify(data), fileFields)
 }
 
+const downloadRemoteFile = (token, file) => {
+  const id = file.appProperties.nmId
+  return findFilesForId(token, id).then(files => {
+    const byType = {}
+    files.forEach(file => byType[file.appProperties.nmType] = file)
+    if (!byType.doc || !byType.contents || !byType.meta) {
+      console.log(byType)
+      console.log(files)
+      throw new Error('not enough files I think')
+    }
+    byType.folder = byType.doc // umm I should rename probably
+    delete byType.doc
+    return contentsForFile(token, byType.contents).then(data => ({
+      id,
+      sync: {
+        remoteFiles: byType,
+      },
+      data,
+    }))
+  })
+}
+
 const createFile = (token/*: {access_token: string}*/, root/*: string*/, {id, data, title}/*: {id: string, title: string, data: {}}*/) => {
   return findDoc(token, id).then(doc => {
     // TODO don't throw here tho - I should be able to just roll with it.
@@ -170,6 +201,7 @@ module.exports = {
   createFile,
   getRootDirectory,
 
+  downloadRemoteFile,
   metaForFile,
   contentsForFile,
   updateContents,
