@@ -263,7 +263,6 @@ module.exports = class Notablemind {
    })
 
    ipc.on('doc:hello', (evt, docid, chanid) => {
-      this.syncPeriodically(docid)
       return this.setupDocConnection(evt.sender, docid, chanid)
    })
 
@@ -274,13 +273,6 @@ module.exports = class Notablemind {
    ipcMain.on('doc:sync-now', (evt, docid) => {
      this.doSync(docid)
    })
-
-    /*
-    // Current doc stuff
-    ipcMain.on('doc:hello', (evt, docid, chanid) => {
-      this.setupDocConnection(evt.sender, docid, chanid)
-    })
-    */
 
     ipc.on('doc:import', (evt, data) => {
       // TODO something reasonable here
@@ -299,6 +291,10 @@ module.exports = class Notablemind {
     return docActions[action](db, data)
       .then(res => {
         this.meta[docid].sync.dirty = true
+        this.saveMeta()
+        this.broadcast('meta:update', docid, {
+          sync: this.meta[docid].sync,
+        })
         this.bouncyUpdate(docid)
         return res
       })
@@ -338,14 +334,17 @@ module.exports = class Notablemind {
   }
 
   doSync(id) {
-    if (!this.online || !this.user || this.working[id]) return
-    if (!this.meta[id].sync) return
+    console.log('want to do a sync', this.working[id], !!this.user)
+    if (!this.online || !this.user || this.working[id]) return console.log('but not ready')
+    if (!this.meta[id].sync) return console.log('but no meta.sync')
     clearTimeout(this.periods[id])
     const {token} = this.user
     const db = this.ensureDocDb(id)
     this.working[id] = true
+    console.log('> ok actually syncing')
     sync(token, this.meta[id].sync, db, googleSyncApi, this.meta[id].sync.dirty) // TODO pass in real dirty flag
       .then(contents => {
+        console.log('> did the stuff')
         if (!contents) {
           const meta = this.meta[id]
           meta.sync.lastSynced = Date.now()
@@ -354,6 +353,7 @@ module.exports = class Notablemind {
           this.broadcast('meta:update', meta.id, {
             sync: meta.sync,
           })
+          this.working[id] = false
           return console.log('no push') // didn't need push
         }
         console.log('updating n stuff')
@@ -369,7 +369,7 @@ module.exports = class Notablemind {
         })
         this.working[id] = false
       }, err => {
-        console.error('failed to sync', err)
+        console.error('> failed to sync', err)
         this.working[id] = false
       })
       .then(() => {
@@ -386,6 +386,13 @@ module.exports = class Notablemind {
   }
 
   setupDocConnection(sender, docid, chanid) {
+    this.syncPeriodically(docid)
+    if (!this.docConnections[docid]) {
+      this.docConnections[docid] = {}
+      // sync at the start if we're the first connection
+      this.doSync(docid);
+    }
+    this.docConnections[docid][chanid] = sender
     const db = this.ensureDocDb(docid)
 
     const changes = db.changes({
@@ -402,6 +409,17 @@ module.exports = class Notablemind {
     }).on('error', err => {
       console.error('failed to sync', err)
     })
+
+    const cleanup = () => {
+      delete this.docConnections[docid][chanid]
+      if (!Object.keys(this.docConnections[docid]).length) {
+        delete this.docConnections[docid]
+      }
+      changes.cancel()
+    }
+
+    sender.on('destroyed', cleanup)
+    sender.on('devtools-reload-page', cleanup)
 
     return db.allDocs({include_docs: true, attachments: true}).then(({rows}) => {
       const data = {}
