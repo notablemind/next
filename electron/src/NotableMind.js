@@ -74,20 +74,30 @@ const debounce = (fn, {min, max}) => {
   }
 }
 
+const noisy = message => err => {
+  console.log(message, err)
+  throw err
+}
+
 const googleSyncApi = {
   checkRemote: (auth/*: Auth*/, syncConfig/*: SyncConfig*/) => {
-    return google.metaForFile(auth, syncConfig.remoteFiles.contents).then(
-      file => file.modifiedTime !== syncConfig.remoteFiles.contents.modifiedTime
-        || file.version !== syncConfig.remoteFiles.contents.version
-    )
+    return google.metaForFile(auth, syncConfig.remoteFiles.contents).then(file => {
+      console.log('checking meta', file)
+      console.log('see if modifed more recently', syncConfig.remoteFiles.contents)
+      return file.modifiedTime !== syncConfig.remoteFiles.contents.modifiedTime
+      || file.version !== syncConfig.remoteFiles.contents.version
+    })
+    .catch(noisy('failed to get meta for file'))
   },
 
   updateContents(auth/*: Auth*/, syncConfig/*: SyncConfig*/, data/*: SerializedData*/) {
-    return google.updateContents(ayth, syncConfig.remoteFiles.contents, data)
+    return google.updateContents(auth, syncConfig.remoteFiles.contents, data)
+    .catch(noisy('failed to update contents'))
   },
 
   getContents(auth/*: Auth*/, syncConfig/*: SyncConfig*/) {
     return google.contentsForFile(auth, syncConfig.remoteFiles.contents)
+    .catch(noisy('failed to get contents'))
   },
 }
 
@@ -118,6 +128,7 @@ module.exports = class Notablemind {
     this.dbs = {}
     this.docConnections = {}
     this.meta = loadMeta(this.documentsDir)
+    this.updaters = {}
 
     this.user = null
     this.userProm = google.restoreUser(this.documentsDir).then(user => {
@@ -256,6 +267,10 @@ module.exports = class Notablemind {
     const db = this.ensureDocDb(docid)
     // console.log('processing doc action', action, docid, data)
     return docActions[action](db, data)
+      .then(res => {
+        this.bouncyUpdate(docid)
+        return res
+      })
   }
 
   login() {
@@ -286,14 +301,14 @@ module.exports = class Notablemind {
 
   doSync(id) {
     if (!this.online || !this.user || this.working[id]) return
-    const {sync} = this.meta[id]
-    if (!sync) return
+    if (!this.meta[id].sync) return
     const {token} = this.user
     const db = this.ensureDocDb(id)
     this.working[id] = true
-    sync(token, sync, db, googleSyncApi)
+    sync(token, this.meta[id].sync, db, googleSyncApi)
       .then(contents => {
         this.meta[id].sync.remoteFiles.contents = contents
+        this.meta[id].lastModified = contents.modifiedTime
         this.working[id] = false
       }, err => {
         console.error('failed to sync', err)
@@ -374,7 +389,7 @@ module.exports = class Notablemind {
     const {title} = this.meta[id]
     return createFileData(db).then(data => {
       return google.getRootDirectory(token)
-        .then(({id: rootId}) => google.creaetFile(token, rootId, {id, data, title}))
+        .then(({id: rootId}) => google.createFile(token, rootId, {id, data, title}))
     }).then(remoteFiles => {
       const sync = {
         remoteFiles,

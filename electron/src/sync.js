@@ -43,8 +43,9 @@ const mergeDataIntoDatabase = (data/*: SerializedData*/, db) => {
 module.exports = (auth, syncConfig, db, api/*: Api*/)/*: RemoteFile*/ => {
   return api.checkRemote(auth, syncConfig).then(needsRefresh => {
     if (!needsRefresh) return
+    console.log('doc needs a refresh')
     return api.getContents(auth, syncConfig).then(
-      (data: SerializedData) => mergeDataIntoDatabase(data, db)
+      (data/*: SerializedData*/) => mergeDataIntoDatabase(data, db)
     )
   })
   .then(() => createFileData(db))

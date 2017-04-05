@@ -146,7 +146,7 @@ const metaForFile = (token, file/*: {id: string}*/) => {
 
 const updateContents = (token, file, data) => {
   return fetch(`https://www.googleapis.com/upload/drive/v3/files/${file.id}?uploadType=media`, {
-    method: 'PATH',
+    method: 'PATCH',
     body: JSON.stringify(data),
     headers: {
       'Content-type': 'application/json',

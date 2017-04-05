@@ -51,6 +51,7 @@ export default class SyncSettings extends Component {
     user: ?User,
     remote: ?RemoteFile[],
     meta: {[key: string]: FileMeta},
+    loading: boolean,
   }
 
   constructor({nm}) {
@@ -59,6 +60,7 @@ export default class SyncSettings extends Component {
       user: nm.user,
       meta: nm.meta,
       remote: [],
+      loading: false,
     }
   }
 
@@ -78,8 +80,10 @@ export default class SyncSettings extends Component {
   }
 
   fetchRemote() {
+    this.setState({loading: true})
     this.props.nm.listRemoteFiles()
-      .then(remote => this.setState({remote}))
+      .then(remote => this.setState({remote, loading: false}))
+      .catch(err => this.setState({loading: false}))
   }
 
   componentWillUnmount() {
@@ -113,6 +117,7 @@ export default class SyncSettings extends Component {
         >
           Logout
         </button>
+        {this.state.loading && 'Loading...'}
       </div>
     </div>
   }
@@ -124,7 +129,7 @@ export default class SyncSettings extends Component {
     remote.forEach(file => remoteById[file.appProperties.nmId] = file)
 
     return <FilesTable
-      localFiles={Object.keys(meta).map(id => meta[id])}
+      localFiles={Object.keys(meta).map(id => meta[id]).filter(m => m.id)}
       remoteById={remoteById}
       remoteOnly={remoteOnly}
       deleteFiles={files => {

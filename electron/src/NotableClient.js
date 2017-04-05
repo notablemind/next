@@ -66,7 +66,7 @@ export default class NotableClient extends NotableBase {
       sync(onDump, onChange, onError) {
         const listener = (evt, id, doc) => onChange(id, doc)
         remote.on(connectionId, listener)
-        cleanup = () => this.remote.removeEventListener(connectionId, listener)
+        cleanup = () => remote.removeListener(connectionId, listener)
         prom.send('doc:hello', docid, connectionId)
           .then(onDump, onError)
       },

@@ -443,6 +443,7 @@ export default class Treed {
   }
 
   settingsChanged = () => {
+    if (!this.globalStore) return // hasn't been setup yet
     this.emitter.emit(this.globalStore.events.settingsChanged())
     console.log('TODO proces settings change')
   }
