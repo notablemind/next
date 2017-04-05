@@ -110,23 +110,16 @@ const createMeta = (token, folder, id) => {
   }, JSON.stringify({id}))
 }
 
-const VERSION = '2.0'
-
 const createContents = (token, folder, id, data) => {
   return upload(token, {
     appProperties: {nmId: id, nmType: 'contents'},
     mimeType: 'application/json',
     parents: [folder],
     name: 'contents.json',
-  }, JSON.stringify({
-    type: 'notablemind',
-    version: VERSION,
-    attachmentMode: 'inline', // or 'separate', in which case they're in files in the same dir
-    data,
-  }))
+  }, JSON.stringify(data))
 }
 
-const createFile = (token/*: {access_token: string}*/, root/*: string*/, {id, data, title}/*: {id: string, title: string, data: Array<{}>}*/) => {
+const createFile = (token/*: {access_token: string}*/, root/*: string*/, {id, data, title}/*: {id: string, title: string, data: {}}*/) => {
   return findDoc(token, id).then(doc => {
     // TODO don't throw here tho - I should be able to just roll with it.
     if (doc) throw new Error(`Trying to create ${id} but it already exists`)

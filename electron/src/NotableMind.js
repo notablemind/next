@@ -9,6 +9,7 @@ const fs = require('fs')
 const ipcPromise = require('./ipcPromise')
 const google = require('./google')
 const sync = require('./sync')
+const createFileData = require('./createFileData')
 
 const loadMeta = (documentsDir)/*: Meta*/ => {
   const metaPath = path.join(documentsDir, 'meta.json')
@@ -16,12 +17,6 @@ const loadMeta = (documentsDir)/*: Meta*/ => {
 }
 
 /*
-type SyncData = {
-    owner: any,
-    remoteId: string,
-    lastSyncTime: number,
-    lastSyncVersion: number,
-  }
 
 type FileMeta = {
   id: string,
@@ -44,8 +39,11 @@ type RemoteFile = {
 type Auth = {access_token: string}
 
 type SyncConfig = {
-  // lastSyncTime: number,
-  // lastSyncVersion: number,
+  owner: {
+    email: string,
+    profile: string,
+    me: boolean,
+  },
   remoteFiles: {
     meta: RemoteFile,
     contents: RemoteFile,
@@ -114,6 +112,7 @@ module.exports = class Notablemind {
     this.pluginState = {}
 
     this.online = true // TODO change this ever
+    this.working = {}
     this.windows = {}
     this.contents = {}
     this.dbs = {}
@@ -204,7 +203,8 @@ module.exports = class Notablemind {
       // really I want a state machine observable.
       // So an observable
       console.log('uploading probably', ids)
-      return this.setupSyncForFiles(ids)
+      if (!this.userProm) throw new Error('not logged in')
+      return Promise.all(ids.map(id => this.setupSyncForFile(id)))
     })
 
     /*
@@ -290,36 +290,15 @@ module.exports = class Notablemind {
     if (!sync) return
     const {token} = this.user
     const db = this.ensureDocDb(id)
+    this.working[id] = true
     sync(token, sync, db, googleSyncApi)
-  }
-
-  // Okok now I'm gonna get serious about this syncing thing
-  doSync_(id) {
-    if (!this.online || !this.user || this.working[id]) return
-    const {sync} = this.meta[id]
-    const {token} = this.user
-    const start = Date.now() // TODO analyze how long it takes to sync, and better do things
-    google.metaForFile(token, id).then(file => {
-      if (file.modifiedTime !== sync.lastSyncTime || file.version !== sync.lastSyncVersion) {
-        console.log('Different! downloading first', sync, file.modifiedTime, file.version)
-        return google.contentsForFile(token, id).then(contents => {
-          // TODO check version probably
-          if (contents.version !== '2.0' || contents.type !== 'notablemind') { // LOL don't hard code
-            throw new Error('unexpected contents: ' + contents.type + ' ' + contents.version)
-          }
-          if (contents.attachmentMode !== 'inline') {
-            throw new Error("dunno how I'm gonna deal with this tbh. lazy-load from the web? probably not, probably gonna download everything at once. But I want to know if I have them first probably")
-          }
-          return this.ensureDocDb(id)
-            .then(db => db.bulkDocs({docs: contents.data, new_edits: false}))
-        }).then(() => this.dbs[id].allDocs({include_docs: true, attachments: true}).then(({rows}) => {
-          return google.updateContentsForFile(token, sync.contentsId, rows.map(row => row.doc))
-        }))
-      }
-    }).catch(err => {
-      console.error('failed during sync!!!')
-      console.error(err)
-    })
+      .then(contents => {
+        this.meta[id].sync.remoteFiles.contents = contents
+        this.working[id] = false
+      }, err => {
+        console.error('failed to sync', err)
+        this.working[id] = false
+      })
   }
 
   ensureDocDb(docid/*: string*/) {
@@ -388,47 +367,27 @@ module.exports = class Notablemind {
     }
   }
 
-  setupSyncForFiles(ids/*: string[]*/) {
+  setupSyncForFile(id) {
     if (!this.userProm) throw new Error('not logged in')
-    return Promise.all(ids.map(id => {
-      return this.ensureDocDb(id).allDocs({include_docs: true, attachments: true}).then(({rows}) => {
-        console.log('lookin for', id)
-        console.log('gettin root')
-        // TODO maybe cache
-        return google.getRootDirectory(this.user.token)
-          .catch(err => {
-            console.error('no root tho')
-            console.error(err)
-            throw err
-          })
-          .then(rootDirectory => google.createFile(this.user.token, rootDirectory.id, {
-            id,
-            data: rows.map(row => row.doc),
-            title: this.meta[id].title,
-          }).catch(err => {
-            console.error('cannot create tile tho', rootDirectory.id, id, this.meta[id].title)
-            console.error(err)
-            throw err
-          }))
-      }).then(({folder, meta, contents}) => {
-        const sync = {
-          folderId: folder.id,
-          contentsId: contents.id,
-          lastSyncTime: contents.modifiedTime, // TODO check attr name
-          lastSyncVersion: contents.version,
-          owner: {
-            me: true,
-            email: this.user.email,
-            profile: this.user.profile,
-          },
-        }
-        this.meta[id].sync = sync
-        this.saveMeta()
-        this.broadcast('meta:update', id, {sync})
-      }, err => {
-        console.log('failing to do the things for', id, err)
-      })
-    }))
+    const db = this.ensureDocDb(id)
+    const {token} = this.user
+    const {title} = this.meta[id]
+    return createFileData(db).then(data => {
+      return google.getRootDirectory(token)
+        .then(({id: rootId}) => google.creaetFile(token, rootId, {id, data, title}))
+    }).then(remoteFiles => {
+      const sync = {
+        remoteFiles,
+        owner: {
+          me: true,
+          email: this.user.email,
+          profile: this.user.profile,
+        },
+      }
+      this.meta[id].sync = sync
+      this.saveMeta()
+      this.broadcast('meta:update', id, {sync})
+    })
   }
 
   setupSyncForRemoteFiles(files/*: any[]*/) { // TODO type file
