@@ -79,6 +79,10 @@ const plugin = ({nm}): Plugin<*, *> => ({
   actions: {
     createFileForNode(store, id, title) {
       const docid = nm.createDoc(title)
+      store.actions.makeNodeFile(id, docid)
+    },
+
+    makeNodeFile(store, id, docid) {
       store.actions.setNodeType(id, 'file')
       store.actions.setNested(id, ['types', 'file', 'fileid'], docid)
       store.actions.normalMode()
@@ -116,6 +120,26 @@ const plugin = ({nm}): Plugin<*, *> => ({
           editable: false,
           title: 'Size',
         },
+      },
+
+      slashHandler(id, tmpText, store) {
+        const fstop = tmpText.match(/^\/f(i(le?)?)? /)
+        if (!fstop) return
+        const name = tmpText.slice(fstop[0].length)
+        const needle = name.toLowerCase()
+        const available = name.trim()
+          ? Object.keys(nm.meta)
+          : Object.keys(nm.meta).filter(k => nm.meta[k].title.toLowerCase().indexOf(needle) !== -1)
+        return {
+          help: 'Type a file name',
+          options: [{
+            label: 'Create "' + name + '"',
+            action: () => store.actions.createFileForNode(id, name),
+          }].concat(available.map(docid => ({
+            label: nm.meta[docid].title,
+            action: () => store.actions.makeNodeFile(id, docid),
+          })))
+        }
       },
 
       defaultNodeConfig() {

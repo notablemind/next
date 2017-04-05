@@ -182,6 +182,7 @@ export default class Editor extends Component {
       return {help: 'Type file name', options: []}
     }
 
+    /*
     // TODO this should be handled in the plugins. How can I get custom change
     // handlers like this?
     const fstop = tmpText.match(/^\/f(i(le?)?)? /)
@@ -195,8 +196,16 @@ export default class Editor extends Component {
         }]
       }
     }
+    */
 
     const {nodeTypes} = this.props.store.plugins
+    const handlers = Object.keys(nodeTypes).map(k => nodeTypes[k].slashHandler).filter(Boolean)
+
+    for (let handler of handlers) {
+      const res = handler(this.props.node._id, tmpText, this.props.store)
+      if (res) return res
+    }
+
     const {node, store} = this.props
     const typeOptions = Object.keys(nodeTypes).sort().filter(k => k !== node.type).map(key => ({
       action: () => store.actions.setNodeType(node._id, key),
