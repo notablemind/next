@@ -8,6 +8,7 @@ const fs = require('fs')
 
 const ipcPromise = require('./ipcPromise')
 const google = require('./google')
+const sync = require('./sync')
 
 const loadMeta = (documentsDir)/*: Meta*/ => {
   const metaPath = path.join(documentsDir, 'meta.json')
@@ -33,6 +34,25 @@ type FileMeta = {
 
 type User = any
 type Meta = {[docid: string]: FileMeta}
+
+type RemoteFile = {
+  id: string,
+  modifiedTime: number,
+  version: number,
+}
+
+type Auth = {access_token: string}
+
+type SyncConfig = {
+  // lastSyncTime: number,
+  // lastSyncVersion: number,
+  remoteFiles: {
+    meta: RemoteFile,
+    contents: RemoteFile,
+    folder: RemoteFile,
+  },
+  // idk
+}
 */
 
 const LOGGED_OUT = 'logged-out'
@@ -54,6 +74,23 @@ const debounce = (fn, {min, max}) => {
       }, Math.min(min, max - diff))
     }
   }
+}
+
+const googleSyncApi = {
+  checkRemote: (auth/*: Auth*/, syncConfig/*: SyncConfig*/) => {
+    return google.metaForFile(auth, syncConfig.remoteFiles.contents).then(
+      file => file.modifiedTime !== syncConfig.remoteFiles.contents.modifiedTime
+        || file.version !== syncConfig.remoteFiles.contents.version
+    )
+  },
+
+  updateContents(auth/*: Auth*/, syncConfig/*: SyncConfig*/, data/*: SerializedData*/) {
+    return google.updateContents(ayth, syncConfig.remoteFiles.contents, data)
+  },
+
+  getContents(auth/*: Auth*/, syncConfig/*: SyncConfig*/) {
+    return google.contentsForFile(auth, syncConfig.remoteFiles.contents)
+  },
 }
 
 module.exports = class Notablemind {
@@ -247,8 +284,17 @@ module.exports = class Notablemind {
     this.updaters[docid]()
   }
 
-  // Okok now I'm gonna get serious about this syncing thing
   doSync(id) {
+    if (!this.online || !this.user || this.working[id]) return
+    const {sync} = this.meta[id]
+    if (!sync) return
+    const {token} = this.user
+    const db = this.ensureDocDb(id)
+    sync(token, sync, db, googleSyncApi)
+  }
+
+  // Okok now I'm gonna get serious about this syncing thing
+  doSync_(id) {
     if (!this.online || !this.user || this.working[id]) return
     const {sync} = this.meta[id]
     const {token} = this.user

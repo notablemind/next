@@ -3,7 +3,15 @@
 const fetch = require('isomorphic-fetch')
 const upload = require('./upload')
 
-const kwds = obj => Object.keys(obj).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(obj[k].toString())}`).join('&')
+const kwds = obj => obj ? Object.keys(obj).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(obj[k].toString())}`).join('&') : ''
+
+const apiCall = (token, api, query=null) => {
+  return fetch(`https://www.googleapis.com/drive/v3/${api}?${kwds(query)}`, {
+    headers: {
+      'Authorization': 'Bearer ' + token.access_token,
+    },
+  }).then(res => res.json())
+}
 
 const queryFiles = (token, query) => {
   return fetch(`https://www.googleapis.com/drive/v3/files?${kwds(query)}`, {
@@ -133,16 +141,45 @@ const createFile = (token/*: {access_token: string}*/, root/*: string*/, {id, da
   })
 }
 
-const contentsForFile = (token/*: {access_token: string}*/, id/*: string*/) => {
+const contentsForFile = (token/*: {access_token: string}*/, file/*: {id: string}*/) => {
   // TODO implement
   debugger
   throw new Error('not impl')
 }
 
+const metaForFile = (token, file/*: {id: string}*/) => {
+  return apiCall(token, 'files/' + file.id)
+}
+
+const updateContents = (token, file, data) => {
+  return fetch(`https://www.googleapis.com/upload/drive/v3/files/${file.id}?uploadType=media`, {
+    method: 'PATH',
+    body: JSON.stringify(data),
+    headers: {
+      'Content-type': 'application/json',
+      'Authorization': 'Bearer ' + token.access_token,
+    },
+  }).then(r => r.json())
+}
+
+/*
+const createFile = (token, parent, data) => {
+  return upload(token, {
+    appProperties: {nmId: id, nmType: 'contents'},
+    mimeType: 'application/json',
+    parents: [folder],
+    name: 'contents.json',
+  }, JSON.stringify(data))
+}
+*/
+
 module.exports = {
   listFiles,
   createFile,
   getRootDirectory,
+
+  metaForFile,
   contentsForFile,
+  updateContents,
 }
 
