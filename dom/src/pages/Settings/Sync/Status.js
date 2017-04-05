@@ -19,11 +19,33 @@ export default class SyncStatus extends Component {
   }
 
   componentWillMount() {
-    this._unsub = this.props.nm.onUser(user => this.setState({user}))
+    this._unsubs = [
+      this.props.nm.onUser(user => this.setState({user})),
+      this.props.nm.onMetaById(this.props.docid, meta => this.setState({meta})),
+    ]
   }
 
   componentWillUnmount() {
-    this._unsub()
+    this._unsubs.map(f => f())
+  }
+
+  renderSyncTime() {
+    if (this.state.offline) {
+      return 'offline'
+    }
+    if (!this.state.meta) return
+    const sync = this.state.meta.sync
+    if (!sync || !sync.lastSynced) return
+    const since = Date.now() - sync.lastSynced
+    if (since < 60 * 60 * 1000) {
+      const minutes = since / 60 / 1000 | 0
+      return <div className={css(styles.syncTime)}>
+        synced {minutes} minutes ago
+      </div>
+    }
+    return <div className={css(styles.syncTime)}>
+      synced at {new Date(sync.lastSynced).toLocaleString()}
+    </div>
   }
 
   render() {
@@ -39,17 +61,24 @@ export default class SyncStatus extends Component {
       default:
         contents = this.state.user.name
     }
-    return <div
-      className={css(styles.container)}
-      onClick={this.props.onClick}
-    >
-      {contents}
+    return <div className={css(styles.container)}>
+      {this.renderSyncTime()}
+      <div
+        className={css(styles.button)}
+        onClick={this.props.onClick}
+      >
+        {contents}
+      </div>
     </div>
   }
 }
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
+  },
+
+  button: {
     fontSize: 12,
     padding: '5px',
     cursor: 'pointer',
@@ -59,6 +88,12 @@ const styles = StyleSheet.create({
       backgroundColor: '#eee',
       borderRadius: 3,
     },
+  },
+
+  syncTime: {
+    marginRight: 5,
+    fontSize: 12,
+    padding: '5px',
   },
 })
 

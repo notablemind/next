@@ -329,9 +329,10 @@ module.exports = class Notablemind {
     const {token} = this.user
     const db = this.ensureDocDb(id)
     this.working[id] = true
-    sync(token, this.meta[id].sync, db, googleSyncApi)
+    sync(token, this.meta[id].sync, db, googleSyncApi, true) // TODO pass in real dirty flag
       .then(contents => {
-        if (!contents) return // didn't need push
+        if (!contents) return console.log('no push') // didn't need push
+        console.log('updating n stuff')
         const meta = this.meta[id]
         meta.sync.remoteFiles.contents = contents
         meta.sync.lastSynced = Date.now()

@@ -433,6 +433,7 @@ class Document extends Component {
         {this.state.store.db.data.root.content}
       </div>
       <SyncStatus
+        docid={this.props.id}
         nm={this.props.nm}
         onClick={() => this.setState({showingSettings: 'sync'})}
       />
