@@ -62,8 +62,6 @@ export default class PluginsPane extends Component {
 }
 
 const styles = StyleSheet.create({
-  container: {
-  },
 
   plugin: {
     padding: 5,

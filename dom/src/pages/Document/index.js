@@ -585,12 +585,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 
-  syncState: {
-    position: 'absolute',
-    // top: 100,
-    right: 10,
-    fontSize: 10,
-  },
 
   loading: {
     padding: 100,
@@ -605,32 +599,8 @@ const styles = StyleSheet.create({
     //  position: 'relative',
   },
 
-  traffic: {
-    flexDirection: 'row',
-    margin: '4px 4px',
-  },
 
-  trafficLight: {
-    width: 12,
-    height: 12,
-    border: '1px solid #aaa',
-    borderRadius: '50%',
-    margin: '0 4px',
-    cursor: 'pointer',
-  },
 
-  trafficClose: {
-    backgroundColor: '#fc605c',
-    borderColor: '#df423f',
-  },
 
-  trafficMinimize: {
-    backgroundColor: '#fdbc40',
-    borderColor: '#dea442',
-  },
 
-  trafficFullScreen: {
-    backgroundColor: '#34c84a',
-    borderColor: '#1fa72d',
-  },
 })

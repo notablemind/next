@@ -270,10 +270,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  statusIcon: {
-    fontSize: 14,
-    marginLeft: 5,
-  },
 
   icon: {
     fontSize: 24,

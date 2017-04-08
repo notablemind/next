@@ -290,12 +290,14 @@ module.exports = class Notablemind {
     // console.log('processing doc action', action, docid, data)
     return docActions[action](db, data)
       .then(res => {
-        this.meta[docid].sync.dirty = true
-        this.saveMeta()
-        this.broadcast('meta:update', docid, {
-          sync: this.meta[docid].sync,
-        })
-        this.bouncyUpdate(docid)
+        if (this.meta[docid].sync) {
+          this.meta[docid].sync.dirty = true
+          this.saveMeta()
+          this.broadcast('meta:update', docid, {
+            sync: this.meta[docid].sync,
+          })
+          this.bouncyUpdate(docid)
+        }
         return res
       })
   }

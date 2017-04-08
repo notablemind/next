@@ -10,7 +10,5 @@ export default class Themer extends Component {
 }
 
 const styles = StyleSheet.create({
-  container: {
-  },
 })
 
