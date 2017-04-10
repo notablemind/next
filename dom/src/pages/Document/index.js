@@ -32,6 +32,7 @@ const plugins = [
   require('../../../../plugins/tags').default,
   require('../../../../plugins/browser').default,
   require('../../../../plugins/export').default,
+  require('../../../../plugins/basics').default,
 ]
 
 // const pluginMap = plugins.reduce((obj, pl) => (obj[pl.id] = pl, obj), {})

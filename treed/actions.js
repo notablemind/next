@@ -1319,7 +1319,7 @@ const actions = {
         console.warn(`Trying to change ${id} to nonexistant type ${type}`)
         return false
       }
-      if (node.types[type] || !store.plugins.nodeTypes[type].defaultNodeConfig) { // if we already have data, don't fill w/ the default
+      if ((node.types && node.types[type]) || !store.plugins.nodeTypes[type].defaultNodeConfig) { // if we already have data, don't fill w/ the default
         // TODO maybe let a plugin update the data if we're changing back?
         // dunno when we'd want that.
         store.actions.set(id, 'type', type)

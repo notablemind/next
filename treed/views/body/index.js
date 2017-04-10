@@ -34,13 +34,13 @@ export default class Body extends Component {
   render() {
     const {store, depth, editState, contentClassName, textClassName, node, orientation} = this.props
     const {className, blocks} = store.plugins.node
-    const pluginCls = className ? className(node, store) : ''
-    const cls = `${contentClassName || ''} Node_body Node_body_level_${depth} ${pluginCls || ''}`
+    const nodeTypeConfig = node.type !== 'normal' &&
+      store.plugins.nodeTypes[node.type] || {}
+    const pluginCls = className ? className(node, store) || '' : ''
+    const typeCls = nodeTypeConfig.className ? nodeTypeConfig.className({id: node._id, node, depth}) : ''
+    const cls = `${contentClassName || ''} Node_body Node_body_level_${depth} ${pluginCls} ${typeCls}`
 
-    const Component = node.type !== 'normal' &&
-      store.plugins.nodeTypes[node.type] &&
-      store.plugins.nodeTypes[node.type].render ||
-      Content
+    const Component = nodeTypeConfig.render || Content
 
     const main = <Component
       node={node}

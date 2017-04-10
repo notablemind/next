@@ -55,7 +55,7 @@ ${text}
 const themeToCss = (settings: ThemeSettings): string => {
   return settings.headerStyles.map(
     style => style.enabled ?
-      styleToRules(`.Node_body_level_${style.level}`, style.style) :
+      styleToRules(`.Header-${style.level}`, style.style) :
       ''
   ).join('\n') +
   Object.keys(settings.individualStyles).map(
