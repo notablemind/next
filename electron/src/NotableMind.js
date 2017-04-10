@@ -170,7 +170,9 @@ module.exports = class Notablemind {
   broadrest(oid/*: string*/, name/*: string*/, ...args/*: any[]*/) {
     for (let id in this.contents) {
       if (id === oid) continue
-      this.contents[id].send(name, ...args)
+      if (!this.contents[id].isDestroyed()) {
+        this.contents[id].send(name, ...args)
+      }
     }
   }
 
