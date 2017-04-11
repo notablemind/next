@@ -6,12 +6,18 @@ import './themes.less'
 import makeKeyLayer from 'treed/keys/makeKeyLayer'
 import SidePane from './SidePane'
 
+import themes from './themes'
+
 import defaultGlobalConfig from './defaultGlobalConfig'
 import type {Style, ThemeSettings} from './defaultGlobalConfig'
 
 import themeToCss, {makeClassNames} from './themeToCss'
 
 import type {Plugin} from 'treed/types'
+
+const config = {
+  themes,
+}
 
 const PLUGIN_ID = 'themes'
 
@@ -50,7 +56,6 @@ type GlobalState = {
 const plugin: Plugin<ThemeSettings, GlobalState> = {
   id: PLUGIN_ID,
   defaultGlobalConfig,
-  // defaultNodeData: null,
 
   // (globalPluginConfig) -> globalPluginState
   // TODO I want a "plugin store" or sth, not "treed"
@@ -58,7 +63,7 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
     const styleNode = document.createElement('style')
     // $FlowFixMe document.head is a thing
     document.head.appendChild(styleNode)
-    styleNode.textContent = themeToCss(globalPluginConfig)
+    styleNode.textContent = themeToCss(globalPluginConfig, themes)
 
     const actions = makeActions(globalPluginConfig, globalStore)
     const keyLayer = makeKeyLayer(
@@ -70,12 +75,13 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
     return {
       styleNode,
       preview(config) {
-        styleNode.textContent = themeToCss(config)
+        styleNode.textContent = themeToCss(config, themes)
       },
       unsub: globalStore.on([globalStore.events.settingsChanged()], () => {
         // TODO first check if it changed?
         styleNode.textContent = themeToCss(
-          globalStore.db.data.settings.plugins[PLUGIN_ID]
+          globalStore.db.data.settings.plugins[PLUGIN_ID],
+          themes
         )
       }),
       removeKeyLayer: globalStore.addNormalKeyLayer(keyLayer),

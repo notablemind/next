@@ -2,73 +2,15 @@
 
 import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
-import type {ThemeSettings} from './defaultGlobalConfig'
+import type {GlobalConfig} from './defaultGlobalConfig'
 
+import IndividualStyles from './IndividualStyles'
+import themes from './themes'
 
 const PLUGIN_ID = 'themes'
 
-class IndividualStyles extends Component {
-  state: {
-    id: string,
-    data: any,
-  }
-  _sub: any
-
-  constructor({store}: any) {
-    super()
-
-    this._sub = store.setupStateListener(
-      this,
-      store => [
-        store.events.node(store.getters.active()),
-        store.events.activeNode(),
-      ],
-      store => ({
-        id: store.getters.active(),
-        data: store.getters.nodePluginData(store.getters.active(), PLUGIN_ID) || {},
-      }),
-      store => store.getters.active() !== this.state.id,
-    )
-  }
-
-  componentDidMount() {
-    this._sub.start()
-  }
-
-  componentWillUnmount() {
-    this._sub.stop()
-  }
-
-  toggle = key => {
-    this.props.store.actions.setPluginData(this.state.id, PLUGIN_ID, {
-      ...this.state.data,
-      [key]: !this.state.data[key],
-    })
-  }
-
-  render() {
-    return <div>
-      {Object.keys(this.props.styles).map(key => (
-        <label key={key}
-          className={css(styles.individualStyle)}
-        >
-          <input
-            type="checkbox"
-            checked={!!this.state.data[key]}
-            onChange={() => this.toggle(key)}
-          />
-          <div className={css(styles.shortcut)}>
-            {this.props.styles[key].shortcut}
-          </div>
-          {this.props.styles[key].name}
-        </label>
-      ))}
-    </div>
-  }
-}
-
 export default class SidePane extends Component {
-  state: ThemeSettings
+  state: GlobalConfig
   _sub: any
   constructor({store}: any) {
     super()
@@ -88,12 +30,13 @@ export default class SidePane extends Component {
     this._sub.stop()
   }
 
-  update(state: ThemeSettings) {
+  update(state: GlobalConfig) {
     this.props.store.actions.setGlobalPluginConfig(PLUGIN_ID, state)
     // this.props.store.getters.pluginState(PLUGIN_ID).preview(state)
     this.setState(state)
   }
 
+  /*
   toggleHeaderEnabled(hi: number) {
     this.update({
       ...this.state,
@@ -102,6 +45,7 @@ export default class SidePane extends Component {
       ),
     })
   }
+  */
 
   render() {
     const {headerStyles=[], individualStyles={}} = this.state
@@ -109,6 +53,20 @@ export default class SidePane extends Component {
       <div className={css(styles.title)}>
         Styling
       </div>
+      <div className={css(styles.theme)}>
+        Theme:
+        <select
+          value={this.state.theme || 'default'}
+          onChange={evt => this.update({...this.state, theme: evt.target.value})}
+        >
+          {Object.keys(themes).map(key => (
+            <option value={key} key={key}>
+              {key}
+            </option>
+          ))}
+        </select>
+      </div>
+      {/*
       <div className={css(styles.subTitle)}>
         Header styles
       </div>
@@ -133,6 +91,7 @@ export default class SidePane extends Component {
         store={this.props.store}
         styles={individualStyles}
       />
+      */}
     </div>
   }
 }

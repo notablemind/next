@@ -15,7 +15,7 @@ const plugin: Plugin<void, void> = {
       newSiblingsShouldCarryType: true,
       shortcut: 'h',
 
-      className: ({id, node, depth}) => `Header-${depth}`,
+      className: ({id, node, depth}) => `Header Header-${depth}`,
     },
 
     list: {
@@ -24,8 +24,11 @@ const plugin: Plugin<void, void> = {
       shortcut: 'l',
 
       childContainer: ({id, index, child}) => {
-        return <div className={css(styles.listItem)}>
-          <div className={css(styles.dot)} /> {child}
+        return <div key={id + '-' + index} className={css(styles.listItem)}>
+          <div className={css(styles.dot)} />
+          <div className={css(styles.rest)}>
+          {child}
+          </div>
         </div>
       },
     },
@@ -36,8 +39,11 @@ const plugin: Plugin<void, void> = {
       shortcut: 'o',
 
       childContainer: ({id, index, child}) => {
-        return <div className={css(styles.listItem)}>
-          <div className={css(styles.number)}>{index + 1}</div> {child}
+        return <div key={id + '-' + index} className={css(styles.listItem)}>
+          <div className={css(styles.number)}>{index + 1}</div>
+          <div className={css(styles.rest)}>
+          {child}
+          </div>
         </div>
       },
     },
@@ -74,10 +80,16 @@ const styles = StyleSheet.create({
   },
 
   dot: {
-    backgroundColor: 'black',
-    width: 10,
-    height: 10,
+    backgroundColor: 'currentColor',
+    marginTop: 12,
+    marginRight: 8,
+    width: 7,
+    height: 7,
     borderRadius: '50%',
+  },
+
+  rest: {
+    flex: 1,
   },
 })
 

@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   },
 
   thinWidth: {
-    width: 1000,
+    width: 700,
     maxWidth: '100%',
     alignSelf: 'center',
   },

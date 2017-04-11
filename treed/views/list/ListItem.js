@@ -153,17 +153,41 @@ export default class ListItem extends Component {
       </div>
 
       <div className={css(styles.children) + ' Node_children'}>
-        {(!collapsed || isRoot) && this.state.node.children.map(id => (
-          <ListItem
-            store={this.props.store}
-            depth={this.props.depth + 1}
-            nodeMap={this.props.nodeMap}
-            id={id}
-            key={id}
-          />
-        ))}
+        {(!collapsed || isRoot) && this.renderChildren()}
       </div>
     </div>
+  }
+
+  renderWrappedChildren(container) {
+    return this.state.node.children.map((id, index) => (
+      container({
+        id,
+        index,
+        child: <ListItem
+          store={this.props.store}
+          depth={this.props.depth + 1}
+          nodeMap={this.props.nodeMap}
+          id={id}
+        />
+      })
+    ))
+  }
+
+  renderChildren() {
+    const nodeTypeConfig = this.state.node.type !== 'normal' &&
+      this.props.store.plugins.nodeTypes[this.state.node.type] || {}
+    if (nodeTypeConfig.childContainer) {
+      return this.renderWrappedChildren(nodeTypeConfig.childContainer)
+    }
+    return this.state.node.children.map(id => (
+      <ListItem
+        store={this.props.store}
+        depth={this.props.depth + 1}
+        nodeMap={this.props.nodeMap}
+        id={id}
+        key={id}
+      />
+    ))
   }
 }
 

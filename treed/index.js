@@ -383,10 +383,20 @@ export default class Treed {
       store.actions[key] = viewTypeConfig.actions[key].bind(null, store)
     })
     this.enabledPlugins.forEach(plugin => {
-      const {actions} = plugin
+      const {actions, getters, events} = plugin
       if (actions) {
         Object.keys(actions).forEach(key => {
           store.actions[key] = actions[key].bind(null, store)
+        })
+      }
+      if (getters) {
+        Object.keys(getters).forEach(key => {
+          store.getters[key] = getters[key].bind(null, store)
+        })
+      }
+      if (events) {
+        Object.keys(events).forEach(key => {
+          store.events[key] = events[key].bind(null, store)
         })
       }
     })

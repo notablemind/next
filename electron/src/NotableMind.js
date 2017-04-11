@@ -419,7 +419,10 @@ module.exports = class Notablemind {
       console.error('failed to sync', err)
     })
 
+    let cleanedUp = false
     const cleanup = () => {
+      if (cleanedUp) return
+      cleanedUp = true
       delete this.docConnections[docid][chanid]
       if (!Object.keys(this.docConnections[docid]).length) {
         delete this.docConnections[docid]
