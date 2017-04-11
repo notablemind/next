@@ -124,7 +124,7 @@ export default class ListItem extends Component {
     const isMinimal = indentStyle === 'minimal'
 
     return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth}` + (isRoot ? ' Node_root' : '')}>
-      {isMinimal && this.state.node.children.length > 0 && <div
+      {!isRoot && isMinimal && this.state.node.children.length > 0 && <div
         className={css(styles.leftPad)}
         style={{width: Math.max(5, 40 - this.props.depth * 8)}}
         onClick={() => this.props.store.actions.toggleCollapse(this.props.id)}
