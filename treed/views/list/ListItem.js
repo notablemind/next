@@ -10,13 +10,19 @@ import Icon from '../utils/Icon'
 
 import './index.css'
 
+type Props = {
+  indentStyle: 'minimal' | 'lines' | 'dots',
+  [key: any]: any,
+}
+
 export default class ListItem extends Component {
   _sub: any
   _div: any
   state: any
   keyActions: any
+  props: Props
 
-  constructor({store, id}: any) {
+  constructor({store, id}: Props) {
     super()
 
     this._sub = store.setupStateListener(
@@ -60,7 +66,7 @@ export default class ListItem extends Component {
   }
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
-    return nextState !== this.state
+    return nextState !== this.state || nextProps.indentStyle !== this.props.indentStyle
   }
 
   componentDidMount() {
@@ -102,6 +108,7 @@ export default class ListItem extends Component {
       return <div>loading...</div>
     }
 
+    const {indentStyle} = this.props
     const collapsed = this.state.isCollapsed
     const isRoot = this.props.store.state.root === this.props.id
     const contentClassName = css(
@@ -113,7 +120,15 @@ export default class ListItem extends Component {
       this.state.editState && styles.editing,
     )
 
+    const childrenStyle = styles['children_' + indentStyle] || styles.children_lines
+    const isMinimal = indentStyle === 'minimal'
+
     return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth}` + (isRoot ? ' Node_root' : '')}>
+      {isMinimal && this.state.node.children.length > 0 && <div
+        className={css(styles.leftPad)}
+        style={{width: Math.max(5, 40 - this.props.depth * 8)}}
+        onClick={() => this.props.store.actions.toggleCollapse(this.props.id)}
+      />}
       <div
         className={css(
           styles.top,
@@ -127,7 +142,7 @@ export default class ListItem extends Component {
           this.props.nodeMap[this.props.id] = node
         }}
       >
-        {!isRoot && this.state.node.children.length > 0 &&
+        {!isMinimal && !isRoot && this.state.node.children.length > 0 &&
           <div
             className={css(styles.collapser,
                           collapsed && styles.collapsed) + ' Node_collapser'}
@@ -152,7 +167,7 @@ export default class ListItem extends Component {
         />
       </div>
 
-      <div className={css(styles.children) + ' Node_children'}>
+      <div className={css(childrenStyle) + ' Node_children'}>
         {(!collapsed || isRoot) && this.renderChildren()}
       </div>
     </div>
@@ -163,6 +178,7 @@ export default class ListItem extends Component {
       container({
         id,
         index,
+        indentStyle: this.props.indentStyle,
         child: <ListItem
           store={this.props.store}
           depth={this.props.depth + 1}
@@ -184,6 +200,7 @@ export default class ListItem extends Component {
         store={this.props.store}
         depth={this.props.depth + 1}
         nodeMap={this.props.nodeMap}
+        indentStyle={this.props.indentStyle}
         id={id}
         key={id}
       />
@@ -209,6 +226,16 @@ const styles = StyleSheet.create({
 
   container: {
     position: 'relative',
+  },
+
+  leftPad: {
+    position: 'absolute',
+    right: '100%',
+    top: 5,
+    bottom: 5,
+    marginRight: 20,
+    // width: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
 
   contentWrapper: {
@@ -270,6 +297,12 @@ const styles = StyleSheet.create({
   },
 
   children: {
+  },
+
+  children_minimal: {
+  },
+
+  children_lines: {
     paddingLeft: '.7em',
     borderLeft: '2px solid #eee',
     marginLeft: '.7em',

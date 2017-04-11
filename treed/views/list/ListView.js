@@ -23,7 +23,7 @@ type State = {
   },
   store: Store,
   viewTheme: {
-    indentType: 'minimal' | 'lines' | 'dots',
+    indentStyle: 'minimal' | 'lines' | 'dots',
     maxWidth: number,
   },
 }
@@ -180,7 +180,7 @@ export default class ListView extends Component {
   render() {
     const root = this.props.store.state.root
     const depth = findDepth(root, this.props.store.db.data)
-    const {viewTheme} = this.state
+    const {viewTheme={}} = this.state
     return <div
       className={css(styles.container)}
       onDragOver={this.onDrag}
@@ -201,6 +201,7 @@ export default class ListView extends Component {
             depth={depth}
             nodeMap={this._nodes}
             store={this.props.store}
+            indentStyle={viewTheme.indentStyle || 'lines'}
           />
         </div>
       </div>
