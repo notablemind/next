@@ -22,6 +22,10 @@ type State = {
     pos: {top: number, left: number},
   },
   store: Store,
+  viewTheme: {
+    indentType: 'minimal' | 'lines' | 'dots',
+    maxWidth: number,
+  },
 }
 type Props = {
   store: any,
@@ -45,12 +49,14 @@ export default class ListView extends Component {
         store.events.mode(),
         store.events.activeView(),
         store.events.contextMenu(),
+        store.events.viewTheme && store.events.viewTheme(),
       ],
       store => ({
         root: store.getters.root(),
         mode: store.getters.mode(),
         isActiveView: store.getters.isActiveView(),
         contextMenu: store.getters.contextMenu(),
+        viewTheme: store.getters.viewTheme && store.getters.viewTheme(),
       }),
     )
 
@@ -174,6 +180,7 @@ export default class ListView extends Component {
   render() {
     const root = this.props.store.state.root
     const depth = findDepth(root, this.props.store.db.data)
+    const {viewTheme} = this.state
     return <div
       className={css(styles.container)}
       onDragOver={this.onDrag}
@@ -184,6 +191,9 @@ export default class ListView extends Component {
       <div className={css(styles.scroller)}>
         <div
           className={css(styles.thinWidth)}
+          style={{
+            width: viewTheme.maxWidth || 1000,
+          }}
         >
           <ListItem
             id={root}
@@ -223,7 +233,7 @@ const styles = StyleSheet.create({
   },
 
   thinWidth: {
-    width: 700,
+    // width: 700,
     maxWidth: '100%',
     alignSelf: 'center',
   },

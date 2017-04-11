@@ -57,6 +57,21 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
   id: PLUGIN_ID,
   defaultGlobalConfig,
 
+  getters: {
+    viewTheme(store) {
+      const {theme='default', overrides={}} = store.db.data.settings.plugins[PLUGIN_ID] || {}
+      const viewTheme = {
+        ...(themes[theme] || themes.default).viewStyles[store.state.viewType],
+        ...(overrides.viewStyles || {})[store.state.viewType],
+      }
+      return viewTheme
+    },
+  },
+
+  events: {
+    viewTheme: () => 'view-theme',
+  },
+
   // (globalPluginConfig) -> globalPluginState
   // TODO I want a "plugin store" or sth, not "treed"
   init(globalPluginConfig, globalStore) {

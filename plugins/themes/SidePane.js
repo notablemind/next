@@ -31,7 +31,9 @@ export default class SidePane extends Component {
   }
 
   update(state: GlobalConfig) {
-    this.props.store.actions.setGlobalPluginConfig(PLUGIN_ID, state)
+    const {store} = this.props
+    store.actions.setGlobalPluginConfig(PLUGIN_ID, state)
+    store.emit(store.events.viewTheme())
     // this.props.store.getters.pluginState(PLUGIN_ID).preview(state)
     this.setState(state)
   }
