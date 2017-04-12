@@ -1,4 +1,5 @@
 
+const ipcPromise = require('./ipcPromise')
 const uuid = () => Math.random().toString(16).slice(2)
 
 class Session {
@@ -6,7 +7,7 @@ class Session {
     this.config = config
     const {ipcRenderer} = require('electron')
     this.remote = ipcRenderer
-    this.prom = new PromiseIpc(ipcRenderer)
+    this.prom = ipcPromise(ipcRenderer)
     this.ios = {}
     this.latestIo = null
     this.remote.on('code:io', (id, data) => {
@@ -43,7 +44,7 @@ class Connection {
   constructor() {
     const {ipcRenderer} = require('electron')
     this.remote = ipcRenderer
-    this.prom = new PromiseIpc(ipcRenderer)
+    this.prom = ipcPromise(ipcRenderer)
   }
 
   getKernelSpecs() {
@@ -56,6 +57,12 @@ class Connection {
 
   getSession(id) {
     return this.prom.send('code:get-session', id).then(config => {
+      return config ? new Session(config) : null
+    })
+  }
+
+  createSession(id) {
+    return this.prom.send('code:create-session', id).then(config => {
       return new Session(config)
     })
   }

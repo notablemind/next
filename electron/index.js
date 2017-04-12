@@ -29,6 +29,7 @@ app.on('ready', function() {
 
   const plugins = [
     require('../plugins/quick-add/electron'),
+    require('../plugins/code/sources/electron/back'),
     // require('../dom/src/pages/Document/Sync/electron'),
   ]
 

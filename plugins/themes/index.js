@@ -80,12 +80,15 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
     document.head.appendChild(styleNode)
     styleNode.textContent = themeToCss(globalPluginConfig, themes)
 
+    /*
+     * TODO fix this
     const actions = makeActions(globalPluginConfig, globalStore)
     const keyLayer = makeKeyLayer(
       actions,
       `plugins.${PLUGIN_ID}.setStyle`,
       {}, // TODO userSettings
     )
+    */
 
     return {
       styleNode,
@@ -99,7 +102,7 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
           themes
         )
       }),
-      removeKeyLayer: globalStore.addNormalKeyLayer(keyLayer),
+      // removeKeyLayer: globalStore.addNormalKeyLayer(keyLayer),
     }
   },
 
@@ -123,6 +126,7 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
       pluginData && makeClassNames(pluginData),
 
     contextMenu(pluginData, node, store) {
+      /*
       return {
         text: 'Styles',
         children: Object.keys(store.getters.pluginConfig(PLUGIN_ID).individualStyles).map(name => ({
@@ -134,6 +138,7 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
           }),
         }))
       }
+      */
     },
   },
 
