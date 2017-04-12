@@ -1,10 +1,13 @@
 
+type Output = any // TODO TODO
+
 type NodeConfig = {
   lastRun: ?{
     start: number,
     end: number,
+    status: 'ok' | 'err' | 'interrupted', // probably? maybe timeout, or sth
     sessionId: string,
-    // I want to be able to determine if we've "undone" since
+    // TODO I want to be able to determine if we've "undone" since
     // the most recent execution, which would make this execution somewhat
     // stale.
     executionNumber: number,

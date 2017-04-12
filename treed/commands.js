@@ -93,6 +93,28 @@ const commands: {[key: string]: Command<any>} = {
     },
   },
 
+  updateNested: {
+    apply({id, attrs, update}, db, events) {
+      const oldMap = attrs.reduce((o, a) => o ? o[a] : undefined, db.data[id])
+      const oldUpdate = oldMap
+        ? Object.keys(update).reduce((o, k) => (o[k] = oldMap[k], o), {})
+        : oldMap
+      const old = {
+        id,
+        attrs,
+        update: oldUpdate,
+      }
+      const prom = db.updateNested(id, attrs, value)
+      return {old, prom}
+    },
+    undo({id, attrs, update}, db, events) {
+      // TODO this undo is a little incomplete, b/c updateNested will construct
+      // intermediate objects if they don't exist. if any code is looking for
+      // the existance of these intermediate objects, this undo will be wrong.
+      return {prom: db.updateNested(id, attrs, update)}
+    },
+  },
+
   create: {
     apply({id, pid, ix, data}, db, events) {
       const now = Date.now()

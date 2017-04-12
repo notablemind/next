@@ -56,6 +56,7 @@ export type Db = {
   upsert: (id: string, fn: (doc: any) => any) => Promise<void>,
   set: (id: string, attr: string, value: any) => Promise<void>,
   setNested: (id: string, attrs: Array<string>, value: any) => Promise<void>,
+  updateNested: (id: string, attrs: Array<string>, update: any) => Promise<void>,
   delete: (doc: any) => Promise<void>,
   getAttachment: (id: string, attachmentId: string) => Promise<any>,
   cloneTree: (id: string) => DumpedNode,
@@ -74,6 +75,13 @@ type Action = {
   attrs: Array<string>,
   last: string,
   value: any
+} | {
+  type: 'updateNested',
+  now: number,
+  id: string,
+  attrs: Array<string>,
+  last: string,
+  update: any
 } | {
   type: 'update',
   now: number,
@@ -141,6 +149,8 @@ export default class Database {
           return this.db.set(action.id, action.attr, action.value, action.now)
           // const a = action // flow :(
           // return this.db.upsert(a.id, doc => ({...doc, [a.attr]: a.value, modified: a.now}))
+        case 'updateNested':
+          return this.db.updateNested(action.id, action.attrs, action.last, action.value, action.now)
         case 'setNested':
           return this.db.setNested(action.id, action.attrs, action.last, action.value, action.now)
           /*
@@ -244,6 +254,18 @@ export default class Database {
     this.data[id] = node
     this.onNodeChanged(id)
     return this._addAction({type: 'setNested', id, attrs, value, now, last})
+  }
+
+  updateNested = (id: string, attrs: Array<string>, update: any) => {
+    const now = Date.now()
+    const node = {...this.data[id], modified: now}
+    attrs = attrs.slice()
+    const last = attrs.pop()
+    const lparent = attrs.reduce((o, a) => o[a] = {...o[a]}, node)
+    lparent[last] = {...lparent[last], ...update}
+    this.data[id] = node
+    this.onNodeChanged(id)
+    return this._addAction({type: 'updateNested', id, attrs, update, now, last})
   }
 
   update = (id: string, update: any) => {

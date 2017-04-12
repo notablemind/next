@@ -134,6 +134,15 @@ const actions = {
       globalStore.execute({type: 'setNested', args: {id, attrs, value}})
     },
 
+    updateNested(globalStore: GlobalStore, id: string, attrs: Array<string>, update: any) {
+      const att: any = attrs
+      const current = att.reduce((o, a) => o ? o[a] : undefined, globalStore.db.data[id])
+      const diff = !current || Object.keys(update).some(key => update[key] !== current[key])
+      if (diff) {
+        globalStore.execute({type: 'updateNested', args: {id, attrs, update}})
+      }
+    },
+
     update(globalStore: GlobalStore, id: string, update: any) {
       globalStore.execute({type: 'update', args: {id, update}})
     },

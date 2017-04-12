@@ -13,6 +13,11 @@ const plugin: Plugin<*, *> = {
 
   defaultGlobalConfig: { sources: {}, kernels: {} },
 
+  init(globalPluginConfig, globalStore) {
+    const manager = new Manager(globalPluginConfig, globalStore)
+    return manager.init().then(() => manager)
+  },
+
   nodeTypes: {
     code: {
       title: 'Code',

@@ -91,6 +91,9 @@ export default class NotableClient extends NotableBase {
       setNested(id, attrs, last, value, modified) {
         return prom.send('doc:action', 'setNested', docid, {id, attrs, last, value, modified})
       },
+      updateNested(id, attrs, last, update, modified) {
+        return prom.send('doc:action', 'updateNested', docid, {id, attrs, last, update, modified})
+      },
       update(id, update, modified) {
         return prom.send('doc:action', 'update', docid, {id, update, modified})
       },

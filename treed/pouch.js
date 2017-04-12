@@ -38,6 +38,14 @@ export default db => ({
       return doc
     })
   },
+  updateNested: (id, attrs, last, update, modified) => {
+    return db.upsert(id, doc => {
+      doc = {...doc, modified}
+      const lparent = attrs.reduce((o, a) => o[a] = {...o[a]}, doc)
+      lparent[last] = {...lparent[last], ...update}
+      return doc
+    })
+  },
   update: (id, update, modified) => {
     return db.upsert(id, doc => ({...doc, ...update, modified}))
   },

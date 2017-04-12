@@ -2,101 +2,52 @@
 
 import React, {Component} from 'react'
 import {StyleSheet as BaseStyleSheet} from 'aphrodite'
-import CodeMirror from 'react-codemirror'
 
-require('codemirror/lib/codemirror.css')
-require('codemirror/mode/javascript/javascript')
-
-const descendantHandler = (selector, baseSelector, generateSubtreeStyles) => {
-  if (selector[0] !== '>') { return null; }
-  return generateSubtreeStyles( `${baseSelector} > .${selector.slice(1)}`);
-};
-
-const {StyleSheet, css} = BaseStyleSheet.extend([{selectorHandler: descendantHandler}]);
-
-const focusCm = (cm, at) => {
-  if (!cm.hasFocus()) {
-    cm.focus()
-  }
-  if (at === 'end' || !at) {
-    cm.setCursor(cm.lineCount(), 0)
-  } else if (at === 'change') {
-    cm.execCommand('selectAll')
-  } else if (at === 'start') {
-    cm.setCursor(0, 0)
-  } else if (at === 'default') {
-    // TODO if we've never been focused, then focus to the end.
-    // We let codemirror remember the last focus
-  } else {
-    console.warn('Selecting in the middle not supported')
-    cm.setCursor(cm.lineCount(), 0)
-  }
-}
+import CodeEditor from './CodeEditor'
 
 export default class CodeBlock extends Component {
   constructor(props: any) {
     super()
-    this.state = {
-      text: props.node.content,
-    }
-  }
-
-  focus(at) {
-    focusCm(this.cm, at)
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.editState && !this.props.editState) {
-      this.focus(nextProps.editState)
-    } else if (!nextProps.editState && this.props.editState) {
-      // dunno why I need this timeout
-      setTimeout(() => this.cm.getInputField().blur(), 10)
-    } else if (this.props.editState && this.props.node.content !== nextProps.node.content) {
-      this.setState({text: nextProps.node.content})
-    }
+    const {getOutputs} = this.props.store.getters.pluginState('code')
+    this.state = {outputs: getOutputs(props.node._id)}
   }
 
   componentDidMount() {
-    this.cm.on('blur', this.onBlur)
+    // TODO also listen to kernel status, b/c that will affect rendering
+    const {listen} = this.props.store.getters.pluginState('code')
+    this._unsub = listen(this.props.node._id, outputs => this.setState({outputs}))
   }
 
-  onBlur = () => {
-    setTimeout(() => {
-      if (this._unmounted || !this.props) return
-      if (!document.hasFocus()) return
-      this.props.keyActions.setContent(this.state.text)
-      this.props.actions.normalMode()
-    }, 10)
+  componentWillUnmount() {
+    this._unsub()
+  }
+
+  renderOutput(output) {
+    return <div>
+      {JSON.stringify(output, null, 2)}
+    </div>
   }
 
   render() {
-    const {node} = this.props
-    const {text} = this.state
+    const {node, keyActions, actions, editState} = this.props
+    const {outputs} = this.state
     return <div className={css(styles.container)}>
-      <CodeMirror
-        value={text}
-        className={css(styles.editor)}
-        onChange={text => this.setState({text})}
-        ref={node => node && (this.cm = node.getCodeMirror())}
-        style={{
-          height: 'auto',
-        }}
-        options={{
-          mode: 'javascript',
-          lineNumbers: text.split('\n').length >= 10,
-          viewportMargin: Infinity,
-        }}
+      <CodeEditor
+        node={node}
+        keyActions={keyActions}
+        actions={actions}
+        editState={editState}
       />
       <div className={css(styles.outputs)}>
+        {outputs && outputs.map(this.renderOutput)}
       </div>
     </div>
   }
 }
 
 const styles = StyleSheet.create({
-  editor: {
-    '>CodeMirror': {
-      height: 'auto',
-    },
+  container: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
   },
 })
