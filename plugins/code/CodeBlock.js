@@ -14,6 +14,25 @@ const descendantHandler = (selector, baseSelector, generateSubtreeStyles) => {
 
 const {StyleSheet, css} = BaseStyleSheet.extend([{selectorHandler: descendantHandler}]);
 
+const focusCm = (cm, at) => {
+  if (!cm.hasFocus()) {
+    cm.focus()
+  }
+  if (at === 'end' || !at) {
+    cm.setCursor(cm.lineCount(), 0)
+  } else if (at === 'change') {
+    cm.execCommand('selectAll')
+  } else if (at === 'start') {
+    cm.setCursor(0, 0)
+  } else if (at === 'default') {
+    // TODO if we've never been focused, then focus to the end.
+    // We let codemirror remember the last focus
+  } else {
+    console.warn('Selecting in the middle not supported')
+    cm.setCursor(cm.lineCount(), 0)
+  }
+}
+
 export default class CodeBlock extends Component {
   constructor(props: any) {
     super()
@@ -23,21 +42,7 @@ export default class CodeBlock extends Component {
   }
 
   focus(at) {
-    if (!this.cm.hasFocus()) {
-      this.cm.focus()
-    }
-    if (at === 'end' || !at) {
-      this.cm.setCursor(this.cm.lineCount(), 0)
-    } else if (at === 'change') {
-      this.cm.execCommand('selectAll')
-    } else if (at === 'start') {
-      this.cm.setCursor(0, 0)
-    } else if (at === 'default') {
-      // We let codemirror remember the last focus
-    } else {
-      console.warn('Selecting in the middle not supported')
-      this.cm.setCursor(this.cm.lineCount(), 0)
-    }
+    focusCm(this.cm, at)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -56,7 +61,6 @@ export default class CodeBlock extends Component {
   }
 
   onBlur = () => {
-    if (!this.props.editState) return
     setTimeout(() => {
       if (this._unmounted || !this.props) return
       if (!document.hasFocus()) return
@@ -68,25 +72,29 @@ export default class CodeBlock extends Component {
   render() {
     const {node} = this.props
     const {text} = this.state
-    return <CodeMirror
-      value={text}
-      className={css(styles.container)}
-      onChange={text => this.setState({text})}
-      ref={node => node && (this.cm = node.getCodeMirror())}
-      style={{
-        height: 'auto',
-      }}
-      options={{
-        mode: 'javascript',
-        lineNumbers: text.split('\n').length >= 10,
-        viewportMargin: Infinity,
-      }}
-    />
+    return <div className={css(styles.container)}>
+      <CodeMirror
+        value={text}
+        className={css(styles.editor)}
+        onChange={text => this.setState({text})}
+        ref={node => node && (this.cm = node.getCodeMirror())}
+        style={{
+          height: 'auto',
+        }}
+        options={{
+          mode: 'javascript',
+          lineNumbers: text.split('\n').length >= 10,
+          viewportMargin: Infinity,
+        }}
+      />
+      <div className={css(styles.outputs)}>
+      </div>
+    </div>
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
+  editor: {
     '>CodeMirror': {
       height: 'auto',
     },

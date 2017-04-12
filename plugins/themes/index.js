@@ -111,7 +111,8 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
     const {styleNode} = globalPluginState
     styleNode.parentNode.removeChild(styleNode)
     globalPluginState.unsub()
-    globalPluginState.removeKeyLayer()
+    // TODO reenable
+    // globalPluginState.removeKeyLayer()
   },
 
   leftSidePane: SidePane,
