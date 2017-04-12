@@ -6,6 +6,11 @@ import CodeMirror from 'react-codemirror'
 
 require('codemirror/lib/codemirror.css')
 require('codemirror/mode/javascript/javascript')
+require('codemirror/mode/python/python')
+require('codemirror/mode/swift/swift')
+require('codemirror/mode/clojure/clojure')
+
+const loadedModes = {}
 
 const descendantHandler = (selector, baseSelector, generateSubtreeStyles) => {
   if (selector[0] !== '>') { return null; }
@@ -75,6 +80,16 @@ export default class CodeEditor extends Component {
   render() {
     const {node} = this.props
     const {text} = this.state
+    /** TODO maybe revisit?
+    const lang = node.types.code.language.toLowerCase()
+    if (lang && !loadedModes[lang]) {
+      try {
+        window.require(`codemirror/mode/${lang}/${lang}`)
+      } catch (e) {
+        console.warn('cannot find codemirror mode for ' + lang)
+      }
+    }
+    */
     return <CodeMirror
       value={text}
       className={css(styles.editor)}

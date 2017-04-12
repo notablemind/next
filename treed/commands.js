@@ -104,7 +104,7 @@ const commands: {[key: string]: Command<any>} = {
         attrs,
         update: oldUpdate,
       }
-      const prom = db.updateNested(id, attrs, value)
+      const prom = db.updateNested(id, attrs, update)
       return {old, prom}
     },
     undo({id, attrs, update}, db, events) {

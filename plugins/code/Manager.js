@@ -23,6 +23,8 @@ export default class Manager {
     this.outputs = populateOutputs(store.db.data)
     this.listeners = {}
     this.sources = makeSources(sources, config.sources)
+    this.displayLanguages = ['javascript', 'python', 'swift'] // TODO maybe allow ppl to just enter their own?
+    // Probably want an autocomplete actually
   }
 
   init() {

@@ -1,14 +1,15 @@
 // @flow
 
 import React, {Component} from 'react'
-import {StyleSheet as BaseStyleSheet} from 'aphrodite'
+import {css, StyleSheet} from 'aphrodite'
 
 import CodeEditor from './CodeEditor'
+import KernelSelector from './KernelSelector'
 
 export default class CodeBlock extends Component {
   constructor(props: any) {
     super()
-    const {getOutputs} = this.props.store.getters.pluginState('code')
+    const {getOutputs} = props.store.getters.pluginState('code')
     this.state = {outputs: getOutputs(props.node._id)}
   }
 
@@ -32,6 +33,11 @@ export default class CodeBlock extends Component {
     const {node, keyActions, actions, editState} = this.props
     const {outputs} = this.state
     return <div className={css(styles.container)}>
+      <KernelSelector
+        plugin={this.props.store.getters.pluginState('code')}
+        current={node.types.code}
+        onChange={(kernelId, language) => this.props.store.actions.setNodeKernel(node._id, kernelId, language)}
+      />
       <CodeEditor
         node={node}
         keyActions={keyActions}
@@ -49,5 +55,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
     alignItems: 'stretch',
+    position: 'relative',
   },
 })

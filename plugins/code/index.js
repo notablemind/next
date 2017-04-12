@@ -1,6 +1,7 @@
 // @flow
 
 import CodeBlock from './CodeBlock'
+import Manager from './Manager'
 
 const sources = [
   require('./sources/browser').default,
@@ -14,8 +15,14 @@ const plugin: Plugin<*, *> = {
   defaultGlobalConfig: { sources: {}, kernels: {} },
 
   init(globalPluginConfig, globalStore) {
-    const manager = new Manager(globalPluginConfig, globalStore)
+    const manager = new Manager(globalPluginConfig, globalStore, sources)
     return manager.init().then(() => manager)
+  },
+
+  actions: {
+    setNodeKernel(store, id, kernelId, language) {
+      store.actions.updateNested(id, ['types', 'code'], {kernelId, language})
+    },
   },
 
   nodeTypes: {
