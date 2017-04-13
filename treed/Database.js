@@ -150,7 +150,7 @@ export default class Database {
           // const a = action // flow :(
           // return this.db.upsert(a.id, doc => ({...doc, [a.attr]: a.value, modified: a.now}))
         case 'updateNested':
-          return this.db.updateNested(action.id, action.attrs, action.last, action.value, action.now)
+          return this.db.updateNested(action.id, action.attrs, action.last, action.update, action.now)
         case 'setNested':
           return this.db.setNested(action.id, action.attrs, action.last, action.value, action.now)
           /*

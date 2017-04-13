@@ -593,6 +593,7 @@ const docActions = {
     })
   },
   updateNested: (db, {id, attrs, last, update, modified}) => {
+    console.log('updating nested', id, attrs, last, update, modified)
     return db.upsert(id, doc => {
       doc = Object.assign({}, doc, {modified})
       const lparent = attrs.reduce((o, a) => o[a] = Object.assign({}, o[a]), doc)

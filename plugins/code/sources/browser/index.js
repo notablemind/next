@@ -12,9 +12,23 @@ const makeConsole = onIo => {
 }
 
 class Session {
-  constructor() {
+  constructor(id) {
+    this.id = id
     this.frame = document.createElement('iframe')
+    Object.assign(this.frame.style, {
+      visibility: 'hidden',
+      width: 0,
+      height: 0,
+    })
     document.body.appendChild(this.frame)
+    Object.assign(this.frame.contentWindow, {
+      React: require('react'),
+      Jupyter: require('@jupyterlab/services'),
+    })
+  }
+
+  isConnected() {
+    return true
   }
 
   execute(code: string, onIo: (io: any) => void): Promise<any> {
@@ -54,6 +68,7 @@ class Session {
 class Connection {
   constructor() {
     this.sessions = {}
+    this.status = 'connected'
   }
 
   getKernelSpecs() {
@@ -68,8 +83,9 @@ class Connection {
     return Promise.resolve(this.sessions[id])
   }
 
-  createSession(id) {
-    this.sessions[id] = new Session()
+  createSession() {
+    const id = Math.random().toString(16).slice(2)
+    this.sessions[id] = new Session(id)
     return Promise.resolve(this.sessions[id])
   }
 }

@@ -4,8 +4,8 @@ type Output = any // TODO TODO
 type NodeConfig = {
   lastRun: ?{
     start: number,
-    end: number,
-    status: 'ok' | 'err' | 'interrupted', // probably? maybe timeout, or sth
+    end: ?number,
+    status: 'running' | 'ok' | 'err' | 'interrupted', // probably? maybe timeout, or sth
     sessionId: string,
     // TODO I want to be able to determine if we've "undone" since
     // the most recent execution, which would make this execution somewhat
@@ -45,6 +45,8 @@ type GlobalConfig = {
     [kernelId: string]: {
       id: string,
       sourceId: string,
+      title: 'string',
+      language: string,
       config: {}, // whatever, comes from the source's UI
     },
   },
@@ -55,7 +57,8 @@ type GlobalConfig = {
 type GlobalState = {
   sourceConnections: {
     [sourceId]: {
-      status: 'connected' | 'pending' | 'disconnected',
+      source: any, // TODO type
+      // status: 'connected' | 'pending' | 'disconnected',
       connection: SourceConnection, // anything?
       error: ?any, // show a connection error if needed
     },
@@ -65,14 +68,17 @@ type GlobalState = {
       kernelId: string,
       sessionId: string,
       started: number,
-      busy: false,
+      busy: boolean,
       session: Session,
+      /* TODO history? or we can just fetch this from jupyter whenever
+       * probably
       codeExecuted: Array<{
         nodeId: string,
         start: number,
         end: number,
         code: string,
       }>,
+      */
     },
   },
 }

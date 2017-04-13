@@ -13,12 +13,20 @@ import SyncSetting from './Sync/Settings'
 export default class DocumentSettings extends Component {
   render() {
     const {onClose, treed, store, onSetPlugins, optionalPlugins, nm, initialTab} = this.props
+    const pluginSettings = treed.enabledPlugins.filter(p => p.settingsPage).reduce((o, p) => (o[p.title || p.id] = () => p.settingsPage(
+          treed.db.data.settings.plugins[p.id] || p.defaultGlobalConfig,
+          treed.globalStore.globalState.plugins[p.id],
+          store,
+      ), o),
+      {}
+    );
+    console.log('pluginSettings', pluginSettings)
     return <Modal onClose={onClose} className={css(styles.container)}>
       <SideTabbed
         className={css(styles.tabContainer)}
         initialTab={initialTab}
         sections={{
-          'This document': ['Plugins'],
+          'This document': ['Plugins', ...Object.keys(pluginSettings)],
           'Global': ['Files & Sync', 'Keyboard Shortcuts'],
         }}
         tabs={{
@@ -29,6 +37,7 @@ export default class DocumentSettings extends Component {
             optionalPlugins={optionalPlugins}
             onClose={onClose}
           />,
+          ...pluginSettings,
           'Files & Sync': () => <SyncSetting nm={nm} />,
           'Keyboard Shortcuts': () => <div>TODODOD</div>,
           'Import': () => <Importer store={store} />,

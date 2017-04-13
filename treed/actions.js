@@ -721,7 +721,7 @@ const actions = {
       const type = nodeType.newSiblingsShouldCarryType ?
         oldType : 'normal'
       const types = nodeType.newSiblingsShouldCarryType && nodeType.defaultNodeConfig ?
-        {[oldType]: nodeType.defaultNodeConfig()} : {}
+        {[oldType]: nodeType.defaultNodeConfig(store.db.data[id])} : {}
       store.execute({
         type: 'create',
         args: {id: nid, pid, ix: idx, data: {type, types}},

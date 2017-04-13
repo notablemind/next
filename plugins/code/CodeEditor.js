@@ -5,6 +5,8 @@ import {StyleSheet as BaseStyleSheet} from 'aphrodite'
 import CodeMirror from 'react-codemirror'
 
 require('codemirror/lib/codemirror.css')
+// TODO maybe just load these as needed? Can probably do something fancy w/
+// just adding a script tag to the page for these
 require('codemirror/mode/javascript/javascript')
 require('codemirror/mode/python/python')
 require('codemirror/mode/swift/swift')
@@ -50,6 +52,28 @@ export default class CodeEditor extends Component {
     focusCm(this.cm, at)
   }
 
+  componentDidMount() {
+    this.cm.on('blur', this.onBlur)
+    this.cm.on('keydown', this.onKeyDown)
+    if (this.props.editState) {
+      this.focus(this.props.editState)
+    }
+  }
+
+  onKeyDown = (cm, evt) => {
+    evt.stopPropagation()
+    // console.log(evt.key)
+    if (evt.key === 'Escape') {
+      this.onBlur()
+    } else if (evt.key === 'Enter' && evt.metaKey) {
+      if (this.state.text !== this.props.node.content) {
+        // TODO set dirty. I probably need to support setMultipleNested
+        this.props.keyActions.setContent(this.state.text)
+      }
+      this.props.actions.executeNode(this.props.node._id)
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.editState && !this.props.editState) {
       this.focus(nextProps.editState)
@@ -59,10 +83,6 @@ export default class CodeEditor extends Component {
     } else if (this.props.editState && this.props.node.content !== nextProps.node.content) {
       this.setState({text: nextProps.node.content})
     }
-  }
-
-  componentDidMount() {
-    this.cm.on('blur', this.onBlur)
   }
 
   onBlur = () => {
@@ -80,16 +100,6 @@ export default class CodeEditor extends Component {
   render() {
     const {node} = this.props
     const {text} = this.state
-    /** TODO maybe revisit?
-    const lang = node.types.code.language.toLowerCase()
-    if (lang && !loadedModes[lang]) {
-      try {
-        window.require(`codemirror/mode/${lang}/${lang}`)
-      } catch (e) {
-        console.warn('cannot find codemirror mode for ' + lang)
-      }
-    }
-    */
     return <CodeMirror
       value={text}
       className={css(styles.editor)}

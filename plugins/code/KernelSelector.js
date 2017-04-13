@@ -6,24 +6,39 @@ import {css, StyleSheet} from 'aphrodite'
 import DropDown from './DropDown'
 
 const Head = ({current, plugin, toggleOpen}) => {
+  const hasKernel = current.kernelId && plugin.config.kernels[current.kernelId]
   return <div
     // TODO color by kernel?
-    className={css(styles.head)}
+    className={css(styles.head, hasKernel && styles.headKernel)}
     onMouseDown={e => (e.stopPropagation(), toggleOpen())}
   >
-    {current.language}
+    {hasKernel
+      ? plugin.config.kernels[current.kernelId].title
+      : current.language}
   </div>
 }
 
 export default ({plugin, current, onChange}) => <DropDown
   className={css(styles.container)}
   head={toggleOpen => <Head current={current} plugin={plugin} toggleOpen={toggleOpen} />}
-  body={() => <div className={css(styles.dropdown)}>
+  body={toggleOpen => <div className={css(styles.dropdown)}>
+    {Object.values(plugin.config.kernels).map(kernelConfig => (
+      <div
+        key={kernelConfig.id}
+        className={css(styles.item,
+                       kernelConfig.language === current.language
+                       && current.kernelId === kernelConfig.id
+                       && styles.itemSelected)}
+        onMouseDown={() => (toggleOpen(), onChange(kernelConfig.id, kernelConfig.language))}
+      >
+        {kernelConfig.title}
+      </div>
+    ))}
     {plugin.displayLanguages.map(lang => (
       <div
         key={lang}
         className={css(styles.item, lang === current.language && !current.kernelId && styles.itemSelected)}
-        onMouseDown={() => onChange(null, lang)}
+        onMouseDown={() => (toggleOpen(), onChange(null, lang))}
       >
         {lang}
       </div>
@@ -36,11 +51,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 3,
     right: 3,
-    zIndex: 1000,
   },
 
   item: {
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
     padding: '2px 4px',
 
     ':hover': {
@@ -49,21 +64,28 @@ const styles = StyleSheet.create({
   },
 
   head: {
+    zIndex: 1000,
     fontSize: '.8em',
     cursor: 'pointer',
     WebkitUserSelect: 'none',
-    backgroundColor: 'lightGreen',
     padding: '0px 4px',
     borderRadius: 3,
+    color: '#777',
+  },
+
+  headKernel: {
+    backgroundColor: 'lightGreen',
+    color: 'black',
   },
 
   dropdown: {
+    zIndex: 10001,
     position: 'absolute',
     top: '100%',
     marginTop: 5,
     right: 0,
-    minWidth: 100,
-    minHeight: 20,
+    // minWidth: 100,
+    // minHeight: 20,
     backgroundColor: 'white',
     borderRadius: 4,
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',

@@ -2,6 +2,75 @@
 # yarn lockfile v1
 
 
+"@jupyterlab/coreutils@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@jupyterlab/coreutils/-/coreutils-0.2.0.tgz#3b5fa0d05e4c4973a2e698a57ffa8198c02bfecc"
+  dependencies:
+    "@phosphor/algorithm" "^1.0.0"
+    "@phosphor/coreutils" "^1.0.0"
+    "@phosphor/disposable" "^1.0.0"
+    "@phosphor/messaging" "^1.0.0"
+    "@phosphor/signaling" "^1.0.0"
+    moment "^2.17.1"
+    path-posix "^1.0.0"
+    url-parse "^1.1.8"
+
+"@jupyterlab/services@^0.41.0":
+  version "0.41.0"
+  resolved "https://registry.yarnpkg.com/@jupyterlab/services/-/services-0.41.0.tgz#d327aa98ccf6fe66c3dffb6c515746b6a5ac4f67"
+  dependencies:
+    "@jupyterlab/coreutils" "^0.2.0"
+    "@phosphor/algorithm" "^1.0.0"
+    "@phosphor/coreutils" "^1.0.0"
+    "@phosphor/disposable" "^1.0.0"
+    "@phosphor/signaling" "^1.0.0"
+    "@types/minimist" "^1.2.0"
+    "@types/text-encoding" "0.0.30"
+    minimist "^1.2.0"
+    path-posix "^1.0.0"
+    url-parse "^1.1.8"
+
+"@phosphor/algorithm@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@phosphor/algorithm/-/algorithm-1.0.0.tgz#cc183855ff06b475bd041deacae05dc6b40afed4"
+
+"@phosphor/collections@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@phosphor/collections/-/collections-1.0.0.tgz#d6f38413428239e5f65ffded82f8d65789e2401e"
+  dependencies:
+    "@phosphor/algorithm" "^1.0.0"
+
+"@phosphor/coreutils@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@phosphor/coreutils/-/coreutils-1.0.0.tgz#356fd23b3fe962bd1ed777ca51e2837d2c65d6a0"
+
+"@phosphor/disposable@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@phosphor/disposable/-/disposable-1.0.0.tgz#4fd9187a0a2ab778752b1010f8f85a5225e4e739"
+  dependencies:
+    "@phosphor/algorithm" "^1.0.0"
+
+"@phosphor/messaging@^1.0.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@phosphor/messaging/-/messaging-1.1.0.tgz#79996ca8587fc2dfd0ba714a7bf3564429b600b6"
+  dependencies:
+    "@phosphor/algorithm" "^1.0.0"
+    "@phosphor/collections" "^1.0.0"
+
+"@phosphor/signaling@^1.0.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@phosphor/signaling/-/signaling-1.1.0.tgz#25cb3cafb84ad84f9f1a0a67c3bc5dc355d4dcbe"
+  dependencies:
+    "@phosphor/algorithm" "^1.0.0"
+
+"@types/minimist@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@types/minimist/-/minimist-1.2.0.tgz#69a23a3ad29caf0097f06eda59b361ee2f0639f6"
+
+"@types/text-encoding@0.0.30":
+  version "0.0.30"
+  resolved "https://registry.yarnpkg.com/@types/text-encoding/-/text-encoding-0.0.30.tgz#2ad7bc19287094c9d2754d238e0994dd2995781f"
+
 abbrev@1:
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.0.9.tgz#91b4792588a7738c25f35dd6f63752a2f8776135"
@@ -2926,6 +2995,10 @@ mkdirp@0.5.0:
   dependencies:
     minimist "0.0.8"
 
+moment@^2.17.1:
+  version "2.18.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.1.tgz#c36193dd3ce1c2eed2adb7c802dbbc77a81b1c0f"
+
 ms@0.7.1:
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/ms/-/ms-0.7.1.tgz#9cd13c03adbff25b65effde7ce864ee952017098"
@@ -3248,6 +3321,10 @@ path-exists@^2.0.0, path-exists@^2.1.0:
 path-is-absolute@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/path-is-absolute/-/path-is-absolute-1.0.1.tgz#174b9268735534ffbc7ace6bf53a5a9e1b5c5f5f"
+
+path-posix@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/path-posix/-/path-posix-1.0.0.tgz#06b26113f56beab042545a23bfa88003ccac260f"
 
 path-to-regexp@0.1.7:
   version "0.1.7"
@@ -4219,6 +4296,10 @@ querystring@0.2.0, querystring@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/querystring/-/querystring-0.2.0.tgz#b209849203bb25df820da756e747005878521620"
 
+querystringify@0.0.x:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-0.0.4.tgz#0cf7f84f9463ff0ae51c4c4b142d95be37724d9c"
+
 random-token@0.0.8:
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/random-token/-/random-token-0.0.8.tgz#1cf845af3fb31e57f7caa4b9a173478c46483b61"
@@ -4594,6 +4675,10 @@ request@^2.79.0:
     tough-cookie "~2.3.0"
     tunnel-agent "~0.4.1"
     uuid "^3.0.0"
+
+requires-port@1.0.x:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/requires-port/-/requires-port-1.0.0.tgz#925d2601d39ac485e091cf0da5c6e694dc3dcaff"
 
 right-align@^0.1.1:
   version "0.1.3"
@@ -5150,6 +5235,13 @@ unzip-response@^1.0.0:
 url-join@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/url-join/-/url-join-1.1.0.tgz#741c6c2f4596c4830d6718460920d0c92202dc78"
+
+url-parse@^1.1.8:
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.1.8.tgz#7a65b3a8d57a1e86af6b4e2276e34774167c0156"
+  dependencies:
+    querystringify "0.0.x"
+    requires-port "1.0.x"
 
 url-template@~2.0.6:
   version "2.0.8"

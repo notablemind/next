@@ -5,6 +5,7 @@ import {css, StyleSheet} from 'aphrodite'
 
 import CodeEditor from './CodeEditor'
 import KernelSelector from './KernelSelector'
+import show from './Output'
 
 export default class CodeBlock extends Component {
   constructor(props: any) {
@@ -23,9 +24,9 @@ export default class CodeBlock extends Component {
     this._unsub()
   }
 
-  renderOutput(output) {
-    return <div>
-      {JSON.stringify(output, null, 2)}
+  renderOutput(output, i) {
+    return <div key={i}>
+      {show(output)}
     </div>
   }
 
