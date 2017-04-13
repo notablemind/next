@@ -7,11 +7,72 @@ import CodeEditor from './CodeEditor'
 import KernelSelector from './KernelSelector'
 import show from './Output'
 
+const kernelComplete = (kernel, variant) => {
+  var func
+  if (kernel.cmComplete) {
+    func = function (cm, done) {
+      return kernel.cmComplete(cm)
+    }
+  } else if (kernel.complete) {
+    func = function (cm, done) {
+      const {cursor, code, pos} = getCodeAndPos(cm)
+      return kernel.complete(code, pos, cursor, variant, done)
+    }
+  } else {
+    return function (cm) {
+      return CodeMirror.hint.auto(cm)
+    }
+  }
+
+  if (kernel.asyncComplete) {
+    func.async = true
+  }
+
+  return func
+}
+
+const getCodeAndPos = cm => {
+  const cursor = cm.getCursor()
+  let code = ''
+  for (let i=0; i<cursor.line; i++) {
+    code += cm.getLine(i) + '\n'
+  }
+  const pos = code.length + cursor.ch
+  const nums = cm.lineCount()
+  for (let i=cursor.line; i<nums; i++) {
+    code += cm.getLine(i) + '\n'
+  }
+  return {
+    cursor,
+    code: code.slice(0, -1),
+    pos,
+  }
+}
+
+
 export default class CodeBlock extends Component {
   constructor(props: any) {
     super()
     const {getOutputs} = props.store.getters.pluginState('code')
     this.state = {outputs: getOutputs(props.node._id)}
+    this.onComplete = null
+    this.onHint = null // TODO
+    this.setupCompletion(props)
+  }
+
+  setupCompletion(props) {
+    const {node} = props
+    if (!node.types.code || !node.types.code.kernelId) return
+    const kernelId = node.types.code.kernelId
+    const manager = props.store.getters.pluginState('code')
+    if (!manager.kernelSessions[kernelId]) return
+    const session = manager.kernelSessions[kernelId].session
+    this.onComplete = (cm, done) => {
+      return session.getCompletion(getCodeAndPos(cm), done)
+    }
+    if (session.asyncCompletion) {
+      this.onComplete.async = true
+    }
   }
 
   componentDidMount() {
@@ -44,6 +105,8 @@ export default class CodeBlock extends Component {
         keyActions={keyActions}
         actions={actions}
         editState={editState}
+        onHint={this.onHint}
+        onComplete={this.onComplete}
       />
       <div className={css(styles.outputs)}>
         {outputs && outputs.map(this.renderOutput)}
