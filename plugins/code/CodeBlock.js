@@ -106,9 +106,9 @@ export default class CodeBlock extends Component {
         onHint={this.onHint}
         onComplete={this.onComplete}
       />
-      <div onMouseDown={e => e.stopPropagation()} className={css(styles.outputs)}>
-        {outputs && outputs.map(this.renderOutput)}
-      </div>
+      {outputs && <div onMouseDown={e => e.stopPropagation()} className={css(styles.outputs)}>
+        {outputs.map(this.renderOutput)}
+      </div>}
     </div>
   }
 }
@@ -123,9 +123,11 @@ const styles = StyleSheet.create({
   outputs: {
     maxHeight: 500,
     overflow: 'auto',
-    cursor: 'pointer',
+    // cursor: 'pointer',
     padding: 10,
     boxShadow: '0 1px 5px #aaa inset',
+    flexDirection: 'column',
+    alignItems: 'stretch',
     borderRadius: 3,
     // backgroundColor: '#eee',
   },

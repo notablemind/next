@@ -13,15 +13,46 @@ const commad = items => items.reduce((ar, item, i) => (
     ar)
 ), [])
 
+const isSmallArray = array => {
+  if (array.length > 10) return false
+  let width = 0
+  for (let item of array) {
+    if (!item) {
+      width += (item + '').length
+      continue
+    }
+    switch (typeof item) {
+      case 'number':
+        width += item.toString().length
+        break
+      case 'string':
+        width += item.length
+        break
+      default:
+        // TODO allow empty objects/arrays?
+        return false
+    }
+    if (width > 20) return false
+  }
+  return width < 20
+}
+
+const showSmallArray = value => `[${value.map(m => JSON.stringify(m)).join(', ')}]`
+
 const renderAbbreviated = value => {
   if (!value) return value + ''
   switch (typeof value) {
     case 'number': return value + ''
-    case 'string': return JSON.stringify(trunc(value, 20))
+    case 'string': return <div className={css(styles.container, styles.string)}>
+      {JSON.stringify(trunc(value, 20))}
+    </div>
     case 'function': return `function ${value.name}`
     case 'symbol': return value.toString()
     case 'object':
       if (Array.isArray(value)) {
+        if (isSmallArray(value)) {
+          return showSmallArray(value)
+        }
         return `Array[${value.length}]`
       }
       return value.constructor.name//  + '{}'
@@ -163,6 +194,11 @@ const Output = ({value}) => {
           {value ? value.toString() : value + ''}
         </div>
       }
+      if (Array.isArray(value) && isSmallArray(value)) {
+        return <div className={css(styles.container, styles.smallArray)}>
+          {showSmallArray(value)}
+        </div>
+      }
       return <ObjectReveal value={value} />
     default:
       console.log('unexpected type')
@@ -174,27 +210,12 @@ const Output = ({value}) => {
 
 export default Output
 
-/*
-const show = value => {
-  if (value instanceof Error) {
-    return `Error: ${value.message}`
-  }
-  if (typeof value === 'function') {
-    return <pre className={css(styles.small)}>{value + ''}</pre>
-  }
-  try {
-    return <pre className={css(styles.small)}>{JSON.stringify(value, null, 2)}</pre>
-  } catch (e) {
-    return 'non-jsonable'
-  }
-}
-*/
-
 const styles = StyleSheet.create({
   container: {
     fontFamily: 'monospace',
     fontSize: 10,
     whiteSpace: 'pre',
+    // backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
 
   small: {
@@ -202,7 +223,12 @@ const styles = StyleSheet.create({
   },
 
   openObject: {
-    alignItems: 'flex-start',
+    alignItems: 'stretch',
+    flex: 1,
+  },
+
+  string: {
+    color: 'red',
   },
 
   object: {
@@ -221,6 +247,7 @@ const styles = StyleSheet.create({
   objectName: {
     marginRight: 5,
     flexDirection: 'row',
+    cursor: 'pointer',
   },
 
   items: {
@@ -237,7 +264,9 @@ const styles = StyleSheet.create({
   },
 
   inline: {
+    cursor: 'pointer',
     flexDirection: 'row',
+    flex: 1,
   },
 })
 
