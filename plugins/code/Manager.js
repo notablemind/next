@@ -89,11 +89,11 @@ export default class Manager {
     })
     kernel.session.execute(code, io => {
       console.log('io', io)
-      this.outputs[id].push(io)
+      this.outputs[id].push(io) // TODO type this
       this.notify(id)
     }).then(val => {
       console.log('result', val)
-      this.outputs[id].push(val)
+      this.outputs[id].push({type: 'result', value: val})
       this.notify(id)
       this.store.actions.updateNested(id, ['types', 'code', 'lastRun'], {
         end: Date.now(),
@@ -102,7 +102,7 @@ export default class Manager {
       })
     }, err => {
       console.log('fail', err)
-      this.outputs[id].push(err)
+      this.outputs[id].push({type: 'error', error: err})
       this.notify(id)
       this.store.actions.updateNested(id, ['types', 'code', 'lastRun'], {
         end: Date.now(),

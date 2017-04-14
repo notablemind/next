@@ -86,22 +86,26 @@ class ObjectReveal extends Component {
         function {value.name}
       </div>
     }
+
     return <div onClick={() => this.setState({open: true})}
       className={css(styles.inline)}>
       <div className={css(styles.objectName)}>
-        {value.constructor.name}
+        {value.constructor ? value.constructor.name : 'Object'}
       </div>
       <div className={css(styles.brace)}>{'{'}</div>
-      {commad(names.slice(0, 3).map((name, i) => (
-        <div key={i} className={css(styles.item)}>
+      {commad(names.slice(0, 3).map((name, i) => {
+        const desc = Object.getOwnPropertyDescriptor(value, name)
+        return <div key={i} className={css(styles.item)}>
           <div className={css(styles.attrname)}>
             {name}:
           </div>
           <div className={css(styles.attrvalue)}>
-            {renderAbbreviated(value[name])}
+            {desc.get
+              ? 'getter'
+              : renderAbbreviated(desc.value)}
           </div>
         </div>
-      )))}
+      }))}
       {names.length > 3 && ', …'}
       <div className={css(styles.brace)}>{'}'}</div>
     </div>
@@ -118,16 +122,19 @@ class ObjectReveal extends Component {
         <div className={css(styles.brace)}>{'{'}</div>
       </div>
       <div className={css(styles.items)}>
-      {names.map(name => (
-        <div className={css(styles.item)}>
+      {names.map(name => {
+        const desc = Object.getOwnPropertyDescriptor(value, name)
+        return <div className={css(styles.item)}>
           <div className={css(styles.attrname)}>
             {name}:
           </div>
           <div className={css(styles.attrvalue)}>
-            <Output value={value[name]} />
+            {desc.get
+              ? 'getter'
+              : <Output value={desc.value} />}
           </div>
         </div>
-      ))}
+      })}
       </div>
       <div className={css(styles.brace)}>{'}'}</div>
     </div>

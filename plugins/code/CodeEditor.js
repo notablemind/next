@@ -27,6 +27,7 @@ require('codemirror/addon/edit/matchbrackets')
 
 require('codemirror/addon/hint/javascript-hint')
 require('codemirror/addon/hint/show-hint')
+require('codemirror/addon/hint/anyword-hint')
 require('codemirror/addon/hint/show-hint.css')
 
 

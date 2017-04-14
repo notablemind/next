@@ -74,8 +74,14 @@ export default class Session {
     while (obj && path.length) {
       obj = obj[path.shift()]
     }
-    if (!obj) return []
+    if (!obj || typeof obj !== 'object') return []
     const names = Object.getOwnPropertyNames(obj)
+    if (obj.constructor) names.unshift('constructor')
+    while (obj.constructor && obj.constructor.prototype) {
+      names.push(...Object.getOwnPropertyNames(obj.constructor.prototype))
+      if (obj.constructor === obj.constructor.prototype.constructor) break
+      obj = obj.constructor.prototype
+    }
     if (!last.length) return names
     return names.filter(n => n.startsWith(last))
   }

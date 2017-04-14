@@ -86,7 +86,17 @@ export default class CodeBlock extends Component {
   }
 
   renderOutput(output, i) {
-    return <Output key={i} value={output} />
+    if (!output) return
+    switch (output.type) {
+      case 'console':
+        return <Output key={i} value={output.args} />
+      case 'result':
+        return <Output key={i} value={output.value} />
+      case 'error':
+        return <Output key={i} value={output.error} />
+      default:
+        return 'Unexpected output type ' + output.type
+    }
   }
 
   render() {
