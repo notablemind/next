@@ -99,6 +99,7 @@ export default class Manager {
       this.outputs[id].push(io) // TODO type this
       this.notify(id)
     }, (stream, text) => {
+      // TODO TODO TODO TODO
       // this.streams[id][stream] += text // TODO maybe preprocess for terminal stuffs?
       // this.notify(id)
     }).then(() => {

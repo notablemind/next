@@ -53,7 +53,7 @@ const getCodeAndPos = cm => {
 export default class CodeBlock extends Component {
   constructor(props: any) {
     super()
-    const {getOutputs} = props.store.getters.pluginState('code')
+    const {manager: {getOutputs}} = props.store.getters.pluginState('code')
     this.state = {outputs: getOutputs(props.node._id)}
     this.onComplete = null
     this.onHint = null // TODO
@@ -64,7 +64,7 @@ export default class CodeBlock extends Component {
     const {node} = props
     if (!node.types.code || !node.types.code.kernelId) return
     const kernelId = node.types.code.kernelId
-    const manager = props.store.getters.pluginState('code')
+    const {manager} = props.store.getters.pluginState('code')
     if (!manager.kernelSessions[kernelId]) return
     const session = manager.kernelSessions[kernelId].session
     this.onComplete = (cm, done) => {
@@ -77,7 +77,7 @@ export default class CodeBlock extends Component {
 
   componentDidMount() {
     // TODO also listen to kernel status, b/c that will affect rendering
-    const {listen} = this.props.store.getters.pluginState('code')
+    const {manager: {listen}} = this.props.store.getters.pluginState('code')
     this._unsub = listen(this.props.node._id, outputs => this.setState({outputs}))
   }
 
@@ -87,8 +87,15 @@ export default class CodeBlock extends Component {
 
   renderData(data, i) {
     if (!data) return 'no data?'
-    const k = 'application/in-process-js'
+    const {renderers} = this.props.store.getters.pluginState('code')
     const keys = Object.keys(data)
+    const k = 'application/in-process-js'
+    for (let renderer of renderers) {
+      if (Object.keys(data).includes(renderer.mime)) {
+        return renderer.render(data[renderer.mime], i)
+      }
+    }
+    /*
     if (keys.includes(k)) {
       return <Output key={i} value={data[k]} />
     }
@@ -97,7 +104,8 @@ export default class CodeBlock extends Component {
         {data['text/plain']}
       </pre>
     }
-    return 'Something'
+    */
+    return 'Something unknown mime type here'
   }
 
   renderOutput = (output, i) => {
@@ -106,6 +114,8 @@ export default class CodeBlock extends Component {
       case 'console':
         // TODO show multiple args side by side tho
         return <Output key={i} value={output.args} />
+      case 'display':
+        return this.renderData(output.data, i)
       case 'result':
         return this.renderData(output.data, i)
         // return <Output key={i} value={output.value} />
@@ -121,7 +131,7 @@ export default class CodeBlock extends Component {
     const {outputs} = this.state
     return <div className={css(styles.container)}>
     {!editState && <KernelSelector
-        plugin={this.props.store.getters.pluginState('code')}
+        plugin={this.props.store.getters.pluginState('code').manager}
         current={node.types.code}
         onChange={(kernelId, language) => this.props.store.actions.setNodeKernel(node._id, kernelId, language)}
       />}
@@ -133,7 +143,7 @@ export default class CodeBlock extends Component {
         onHint={this.onHint}
         onComplete={this.onComplete}
       />
-      {outputs && <div onMouseDown={e => e.stopPropagation()} className={css(styles.outputs)}>
+      {outputs && outputs.length > 0 && <div onMouseDown={e => e.stopPropagation()} className={css(styles.outputs)}>
         {outputs.map(this.renderOutput)}
       </div>}
     </div>

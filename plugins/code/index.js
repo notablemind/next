@@ -4,6 +4,7 @@ import React from 'react';
 import CodeBlock from './CodeBlock'
 import Manager from './Manager'
 import Settings from './Settings'
+import setupRenderers from './renderers'
 
 const sources = [
   require('./sources/browser').default,
@@ -21,13 +22,16 @@ const plugin: Plugin<*, *> = {
   init(globalPluginConfig, globalStore) {
     const manager = new Manager(globalStore.globalState.documentId, globalPluginConfig, globalStore, sources)
     window.manager = manager
-    return manager.init().then(() => manager)
+    return manager.init().then(() => ({
+      manager: manager,
+      renderers: setupRenderers(globalStore.enabledPlugins),
+    }))
   },
 
   settingsPage(globalPluginConfig, pluginState, store) {
     return <Settings
       config={globalPluginConfig}
-      manager={pluginState}
+      manager={pluginState.manager}
       sources={sources}
       store={store}
     />
@@ -39,7 +43,7 @@ const plugin: Plugin<*, *> = {
     },
 
     executeNode(store, id) {
-      const manager = store.getters.pluginState('code')
+      const {manager} = store.getters.pluginState('code')
       manager.execute(id)
     },
   },
@@ -77,7 +81,7 @@ const plugin: Plugin<*, *> = {
           },
           description: 'Execute',
           action(store) {
-            const manager = store.getters.pluginState('code')
+            const {manager} = store.getters.pluginState('code')
             manager.execute(store.state.active)
             console.log('want to execute yall')
           },

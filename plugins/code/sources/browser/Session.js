@@ -38,7 +38,7 @@ export default class Session {
     ctx.console = makeConsole(onIo)
     ctx.display = (data, contentType = special) => {
       onIo({
-        type: 'display_data',
+        type: 'display',
         data: { [contentType]: data },
       })
     }
@@ -82,10 +82,10 @@ export default class Session {
     if (!obj || typeof obj !== 'object') return []
     const names = Object.getOwnPropertyNames(obj)
     if (obj.constructor) names.unshift('constructor')
-    while (obj.constructor && obj.constructor.prototype) {
-      names.push(...Object.getOwnPropertyNames(obj.constructor.prototype))
-      if (obj.constructor === obj.constructor.prototype.constructor) break
-      obj = obj.constructor.prototype
+    while (obj.__proto__) {
+      names.push(...Object.getOwnPropertyNames(obj.__proto__))
+      if (obj.__proto__.__proto__ === obj.__proto__) break
+      obj = obj.__proto__
     }
     if (!last.length) return names
     return names.filter(n => n.startsWith(last))

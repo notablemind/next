@@ -35,8 +35,13 @@ export default class Session {
             })
           case 'stream':
             return onStream(io.content.name, io.content.text)
+          default:
+            console.log('unexpected ui message', io)
         }
         // onIo(io) // TODO be more nuanced about this?
+      }
+      future.onReply = res => {
+        console.log('reply', res)
       }
       future.onStdin = ({content: {prompt, password}}) => {
         console.log('faking stdin, haha')

@@ -224,6 +224,7 @@ export default class Treed {
       emitMany: this.emitter.emitMany,
       emitIntent: this.intentEmitter.emit,
       plugins: organizePlugins(pluginSettings, this.config.plugins),
+      enabledPlugins: this.enabledPlugins,
       addKeyLayer: this.keyManager.addLayer,
       addNormalKeyLayer: this.addNormalKeyLayer,
       globalState: this.globalState,
