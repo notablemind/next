@@ -10,8 +10,8 @@ class Connection {
   getKernelSpecs() {
     return Promise.resolve([{
       language: 'javascript',
-      name: 'Browser JS in iframe',
-      id: 'browser-in-iframe',
+      display_name: 'Browser JS in iframe',
+      name: 'browser-in-iframe',
     }])
   }
 

@@ -12,6 +12,11 @@ type NodeConfig = {
     // stale.
     executionNumber: number,
     outputs: Array<Output>,
+    streams: {
+      // will want listeners for the streams as well
+      stdout: string,
+      stderr: string,
+    },
   },
   dirty: boolean,
   kernelId: ?string, // if this is null, then we pick the first one in the list

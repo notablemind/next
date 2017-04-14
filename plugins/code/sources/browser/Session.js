@@ -11,6 +11,8 @@ const makeConsole = onIo => {
   }
 }
 
+const special = 'application/in-process-js'
+
 export default class Session {
   constructor(id) {
     this.id = id
@@ -34,7 +36,7 @@ export default class Session {
   execute(code: string, onIo: (io: any) => void): Promise<any> {
     const ctx = this.frame.contentWindow
     ctx.console = makeConsole(onIo)
-    ctx.display = (data, contentType = 'application/in-process-js') => {
+    ctx.display = (data, contentType = special) => {
       onIo({
         type: 'display_data',
         data: { [contentType]: data },
@@ -46,7 +48,10 @@ export default class Session {
         ctx.___ = ctx.__
         ctx.__ = ctx._
         ctx._ = val
-        return val
+        onIo({
+          type: 'result',
+          data: {[special]: val},
+        })
       })
   }
 

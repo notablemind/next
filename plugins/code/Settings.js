@@ -72,8 +72,8 @@ export default class Settings extends Component {
         </div>
         {!specs.length && <span>No kernels available...</span>}
         {specs.map(spec => (
-          <div style={{flexDirection: 'row'}} className={css(styles.kernel)}>
-            {spec.name}
+          <div style={{flexDirection: 'row'}} key={spec.name} className={css(styles.kernel)}>
+            {spec.display_name}
             <div style={{flex: 1}}/>
             <div style={{fontSize: '.8em', padding: '0 10px'}}>
             {spec.language}

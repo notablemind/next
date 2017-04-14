@@ -7,6 +7,7 @@ import Settings from './Settings'
 
 const sources = [
   require('./sources/browser').default,
+  require('./sources/jupyter').default,
 ]
 
 const PLUGIN_ID = 'code'

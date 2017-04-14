@@ -85,13 +85,30 @@ export default class CodeBlock extends Component {
     this._unsub()
   }
 
-  renderOutput(output, i) {
+  renderData(data, i) {
+    if (!data) return 'no data?'
+    const k = 'application/in-process-js'
+    const keys = Object.keys(data)
+    if (keys.includes(k)) {
+      return <Output key={i} value={data[k]} />
+    }
+    if (keys.includes('text/plain')) {
+      return <pre key={i}>
+        {data['text/plain']}
+      </pre>
+    }
+    return 'Something'
+  }
+
+  renderOutput = (output, i) => {
     if (!output) return
     switch (output.type) {
       case 'console':
+        // TODO show multiple args side by side tho
         return <Output key={i} value={output.args} />
       case 'result':
-        return <Output key={i} value={output.value} />
+        return this.renderData(output.data, i)
+        // return <Output key={i} value={output.value} />
       case 'error':
         return <Output key={i} value={output.error} />
       default:
@@ -103,11 +120,11 @@ export default class CodeBlock extends Component {
     const {node, keyActions, actions, editState} = this.props
     const {outputs} = this.state
     return <div className={css(styles.container)}>
-      <KernelSelector
+    {!editState && <KernelSelector
         plugin={this.props.store.getters.pluginState('code')}
         current={node.types.code}
         onChange={(kernelId, language) => this.props.store.actions.setNodeKernel(node._id, kernelId, language)}
-      />
+      />}
       <CodeEditor
         node={node}
         keyActions={keyActions}

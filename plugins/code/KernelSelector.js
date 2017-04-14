@@ -9,7 +9,7 @@ const Head = ({current, plugin, toggleOpen}) => {
   const hasKernel = current.kernelId && plugin.config.kernels[current.kernelId]
   return <div
     // TODO color by kernel?
-    className={css(styles.head, hasKernel && styles.headKernel)}
+    className={css(styles.head, hasKernel && styles.headKernel) + ' _head'}
     onMouseDown={e => (e.stopPropagation(), toggleOpen())}
   >
     {hasKernel
@@ -51,6 +51,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 3,
     right: 3,
+
+    ':hover': {
+      '>_head': {
+        // opacity: 1,
+      },
+    },
   },
 
   item: {
@@ -71,6 +77,11 @@ const styles = StyleSheet.create({
     padding: '0px 4px',
     borderRadius: 3,
     color: '#777',
+    // opacity: 0.3,
+
+    ':hover': {
+      // opacity: 1,
+    },
   },
 
   headKernel: {

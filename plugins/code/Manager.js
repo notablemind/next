@@ -25,6 +25,10 @@ const latestSessionForKernel = (docid, kernelid) => {
   return localStorage[`latest-kernel:${docid}:${kernelid}`] || null
 }
 
+const setLatestSessionForKernel = (docid, kernelid, sessionId) => {
+  localStorage[`latest-kernel:${docid}:${kernelid}`] = sessionId
+}
+
 export default class Manager {
   constructor(docid, config, store, sources) {
     this.store = store
@@ -48,18 +52,21 @@ export default class Manager {
       const kern = this.config.kernels[id]
       const {connection} = this.sources[kern.sourceId]
       if (session) {
-        return connection.getSession(session).then(session => session || connection.createSession())
+        return connection.getSession(session).then(session => session || connection.createSession(kern.config))
       } else {
-        return connection.createSession()
+        return connection.createSession(kern.config)
       }
     })).then(sessions => {
       this.kernelSessions = {}
-      sessions.forEach((session, i) => this.kernelSessions[ids[i]] = {
-        kernelId: ids[i],
-        sessionId: session.id,
-        started: Date.now(), // TODO fix?
-        busy: false,
-        session,
+      sessions.forEach((session, i) => {
+        this.kernelSessions[ids[i]] = {
+          kernelId: ids[i],
+          sessionId: session.id,
+          started: Date.now(), // TODO fix?
+          busy: false,
+          session,
+        }
+        setLatestSessionForKernel(this.docid, ids[i], session.id)
       })
     })
   }
@@ -91,10 +98,13 @@ export default class Manager {
       console.log('io', io)
       this.outputs[id].push(io) // TODO type this
       this.notify(id)
-    }).then(val => {
-      console.log('result', val)
-      this.outputs[id].push({type: 'result', value: val})
-      this.notify(id)
+    }, (stream, text) => {
+      // this.streams[id][stream] += text // TODO maybe preprocess for terminal stuffs?
+      // this.notify(id)
+    }).then(() => {
+      // console.log('result', val)
+      // this.outputs[id].push({type: 'result', value: val})
+      // this.notify(id)
       this.store.actions.updateNested(id, ['types', 'code', 'lastRun'], {
         end: Date.now(),
         outputs: this.outputs[id].slice(),

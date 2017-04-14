@@ -42,7 +42,7 @@ const showSmallArray = value => `[${value.map(m => JSON.stringify(m)).join(', ')
 const renderAbbreviated = value => {
   if (!value) return value + ''
   switch (typeof value) {
-    case 'number': return value + ''
+    case 'number': return <div className={css(styles.container, styles.number)}>{value + ''}</div>
     case 'string': return <div className={css(styles.container, styles.string)}>
       {JSON.stringify(trunc(value, 20))}
     </div>
@@ -117,14 +117,14 @@ class ObjectReveal extends Component {
       <div
         onClick={() => this.setState({open: false})}
         className={css(styles.objectName)}>
-        {isFunction ? 'function ' + value.name : value.constructor.name}
+        {isFunction ? 'function ' + value.name : (value.constructor ? value.constructor.name : 'Object')}
         <div style={{flexBasis: 5}} />
         <div className={css(styles.brace)}>{'{'}</div>
       </div>
       <div className={css(styles.items)}>
       {names.map(name => {
         const desc = Object.getOwnPropertyDescriptor(value, name)
-        return <div className={css(styles.item)}>
+        return <div key={name} className={css(styles.item)}>
           <div className={css(styles.attrname)}>
             {name}:
           </div>
@@ -235,7 +235,15 @@ const styles = StyleSheet.create({
   },
 
   string: {
-    color: 'red',
+    color: '#bf0000',
+  },
+
+  number: {
+    color: 'blue',
+  },
+
+  brace: {
+    color: '#888',
   },
 
   object: {
@@ -267,7 +275,7 @@ const styles = StyleSheet.create({
 
   attrname: {
     marginRight: 5,
-    color: 'blue',
+    color: '#7d0060',
   },
 
   inline: {
