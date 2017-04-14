@@ -17,6 +17,9 @@ const makeWindow = (state) => {
     title: 'NotableMind',
     height: 800,
     icon: path.join(__dirname, '../icon256.png'),
+    webPreferences: {
+      webSecurity: false,
+    },
   });
   win.on('closed', function() {
     windows.splice(windows.indexOf(win), 1)

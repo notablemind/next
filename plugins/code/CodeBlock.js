@@ -5,7 +5,7 @@ import {css, StyleSheet} from 'aphrodite'
 
 import CodeEditor from './CodeEditor'
 import KernelSelector from './KernelSelector'
-import show from './Output'
+import Output from './Output'
 
 const kernelComplete = (kernel, variant) => {
   var func
@@ -86,9 +86,7 @@ export default class CodeBlock extends Component {
   }
 
   renderOutput(output, i) {
-    return <div key={i}>
-      {show(output)}
-    </div>
+    return <Output key={i} value={output} />
   }
 
   render() {
@@ -108,7 +106,7 @@ export default class CodeBlock extends Component {
         onHint={this.onHint}
         onComplete={this.onComplete}
       />
-      <div className={css(styles.outputs)}>
+      <div onMouseDown={e => e.stopPropagation()} className={css(styles.outputs)}>
         {outputs && outputs.map(this.renderOutput)}
       </div>
     </div>
@@ -120,5 +118,15 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'stretch',
     position: 'relative',
+  },
+
+  outputs: {
+    maxHeight: 500,
+    overflow: 'auto',
+    cursor: 'pointer',
+    padding: 10,
+    boxShadow: '0 1px 5px #aaa inset',
+    borderRadius: 3,
+    // backgroundColor: '#eee',
   },
 })

@@ -32,14 +32,22 @@ export default class Session {
   }
 
   execute(code: string, onIo: (io: any) => void): Promise<any> {
-    this.frame.contentWindow.console = makeConsole(onIo)
-    this.frame.contentWindow.display = (data, contentType = 'application/in-process-js') => {
+    const ctx = this.frame.contentWindow
+    ctx.console = makeConsole(onIo)
+    ctx.display = (data, contentType = 'application/in-process-js') => {
       onIo({
         type: 'display_data',
         data: { [contentType]: data },
       })
     }
-    return Promise.resolve().then(() => this.frame.contentWindow.eval(code))
+    return Promise.resolve()
+      .then(() => ctx.eval(code))
+      .then(val => {
+        ctx.___ = ctx.__
+        ctx.__ = ctx._
+        ctx._ = val
+        return val
+      })
   }
 
   restart() {
@@ -50,7 +58,7 @@ export default class Session {
 
   getCompletion({code, cursor, pos}) {
     const prev = code.slice(0, pos)
-    const text = prev.match(/[\w\.]*/)[0] // TODO maybe also get [] and ""?
+    const text = prev.match(/[\w\.]*$/)[0] // TODO maybe also get [] and ""?
     if (!text.length) return []
     const parts = text.split('.')
     return {
