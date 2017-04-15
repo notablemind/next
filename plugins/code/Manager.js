@@ -1,4 +1,6 @@
 
+import scopeWrapper from './scopeWrapper'
+
 const populateOutputs = data => {
   const outputs = {}
   Object.keys(data).forEach(key => {
@@ -88,14 +90,43 @@ export default class Manager {
     }
   }
 
+  getScopes(id, data) {
+    let node = data[id]
+    const baseKernel = node.types.code.kernelId
+    let scopes = []
+    while (node) {
+      // TODO also make sure it's the same kernel?
+      if (node.type === 'codeScope' && node.types.codeScope.kernelId === baseKernel) {
+        scopes.unshift(node.content)
+      }
+      node = data[node.parent]
+    }
+    console.log('scopes', scopes)
+    return scopes
+  }
+
+  getCode(id, session) {
+    const {data} = this.store.db
+    const node = data[id]
+    const scopes = this.getScopes(id, data)
+    if (scopes.length) {
+      const wrapper = scopeWrapper[node.types.code.language]
+      if (!wrapper) {
+        throw new Error('no scope wrapper for ' + node.types.code.language)
+      }
+      return wrapper(node.content, scopes, session.variables)
+    }
+    return node.content
+  }
+
   execute = id => {
     const node = this.store.db.data[id]
     const config = node.types.code
-    const code = node.content
     if (!config || !config.kernelId) return console.error('no kernel configured')
     const kernel = this.kernelSessions[config.kernelId]
     if (!kernel) return console.error('invalid kernel id')
     if (!kernel.session.isConnected()) return console.error('kernel not connected')
+    const code = this.getCode(id, kernel.session)
     this.outputs[id] = []
     this.streams[id] = {stdout: '', stderr: ''}
     this.store.actions.setNested(id, ['types', 'code', 'lastRun'], {

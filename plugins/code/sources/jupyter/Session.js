@@ -3,16 +3,18 @@ export default class Session {
   constructor(kernel) {
     this.kernel = kernel
     this.id = kernel.id
+    this.variables = {}
   }
 
   isConnected() {
     return true // TODO
   }
 
-  execute(code: string,
-          onIo: (io: any) => void,
-          onStream: (stream: string, text: string) => void): Promise<any> {
-            console.log('plz execute', code)
+  execute(
+    code: string,
+    onIo: (io: any) => void,
+    onStream: (stream: string, text: string) => void
+  ): Promise<any> {
     return new Promise((res, rej) => {
       const future = this.kernel.requestExecute({
         code,

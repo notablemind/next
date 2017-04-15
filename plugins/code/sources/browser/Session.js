@@ -16,6 +16,7 @@ const special = 'application/in-process-js'
 export default class Session {
   constructor(id) {
     this.id = id
+    this.variables = {}
     this.frame = document.createElement('iframe')
     Object.assign(this.frame.style, {
       visibility: 'hidden',

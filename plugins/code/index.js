@@ -2,6 +2,7 @@
 
 import React from 'react';
 import CodeBlock from './CodeBlock'
+import CodeScope from './CodeScope'
 import Manager from './Manager'
 import Settings from './Settings'
 import setupRenderers from './renderers'
@@ -39,16 +40,43 @@ const plugin: Plugin<*, *> = {
 
   actions: {
     setNodeKernel(store, id, kernelId, language) {
-      store.actions.updateNested(id, ['types', 'code'], {kernelId, language})
+      const type = store.db.data[id].type
+      if (type !== 'code' && type !== 'codeScope') return
+      store.actions.updateNested(id, ['types', type], {kernelId, language})
     },
 
     executeNode(store, id) {
+      if (store.getters.node(id).type !== 'code') return
       const {manager} = store.getters.pluginState('code')
       manager.execute(id)
     },
   },
 
   nodeTypes: {
+    codeScope: {
+      title: 'CodeScope',
+      newSiblingsShouldCarryType: false,
+      // shortcut: ''
+
+      render: CodeScope,
+
+      defaultNodeConfig(fromNode) {
+        if (fromNode) {
+          return {
+            ...fromNode.types.code,
+            lastRun: null,
+            dirty: false,
+          }
+        }
+        return {
+          lastRun: null,
+          dirty: false,
+          kernelId: null,
+          language: 'javascript', // TODO have a better way of defining that
+        }
+      },
+    },
+
     code: {
       title: 'Code',
       newSiblingsShouldCarryType: true,

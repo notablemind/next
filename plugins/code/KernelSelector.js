@@ -18,8 +18,8 @@ const Head = ({current, plugin, toggleOpen}) => {
   </div>
 }
 
-export default ({plugin, current, onChange}) => <DropDown
-  className={css(styles.container)}
+export default ({plugin, current, inline, onChange}) => <DropDown
+  className={css(styles.container, inline && styles.containerInline)}
   head={toggleOpen => <Head current={current} plugin={plugin} toggleOpen={toggleOpen} />}
   body={toggleOpen => <div className={css(styles.dropdown)}>
     {Object.values(plugin.config.kernels).map(kernelConfig => (
@@ -57,6 +57,12 @@ const styles = StyleSheet.create({
         // opacity: 1,
       },
     },
+  },
+
+  containerInline: {
+    position: 'static',
+    top: 0,
+    left: 0,
   },
 
   item: {
