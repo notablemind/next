@@ -53,8 +53,8 @@ const getCodeAndPos = cm => {
 export default class CodeBlock extends Component {
   constructor(props: any) {
     super()
-    const {manager: {getOutputs}} = props.store.getters.pluginState('code')
-    this.state = {outputs: getOutputs(props.node._id)}
+    const {manager: {getOutputs, getStreams}} = props.store.getters.pluginState('code')
+    this.state = {outputs: getOutputs(props.node._id), streams: getStreams(props.node._id)}
     this.onComplete = null
     this.onHint = null // TODO
     this.setupCompletion(props)
@@ -78,7 +78,7 @@ export default class CodeBlock extends Component {
   componentDidMount() {
     // TODO also listen to kernel status, b/c that will affect rendering
     const {manager: {listen}} = this.props.store.getters.pluginState('code')
-    this._unsub = listen(this.props.node._id, outputs => this.setState({outputs}))
+    this._unsub = listen(this.props.node._id, (outputs, streams) => this.setState({outputs, streams}))
   }
 
   componentWillUnmount() {
@@ -88,23 +88,12 @@ export default class CodeBlock extends Component {
   renderData(data, i) {
     if (!data) return 'no data?'
     const {renderers} = this.props.store.getters.pluginState('code')
-    const keys = Object.keys(data)
-    const k = 'application/in-process-js'
     for (let renderer of renderers) {
       if (Object.keys(data).includes(renderer.mime)) {
         return renderer.render(data[renderer.mime], i)
       }
     }
-    /*
-    if (keys.includes(k)) {
-      return <Output key={i} value={data[k]} />
-    }
-    if (keys.includes('text/plain')) {
-      return <pre key={i}>
-        {data['text/plain']}
-      </pre>
-    }
-    */
+    console.log(data)
     return 'Something unknown mime type here'
   }
 
@@ -120,15 +109,34 @@ export default class CodeBlock extends Component {
         return this.renderData(output.data, i)
         // return <Output key={i} value={output.value} />
       case 'error':
-        return <Output key={i} value={output.error} />
+        return <div className={css(styles.error)} key={i}>
+          {output.name}
+          <pre>
+          {output.message}
+          </pre>
+        </div>
+        // return <Output key={i} value={output.error} />
       default:
         return 'Unexpected output type ' + output.type
     }
   }
 
+  renderOutputs() {
+    const {outputs, streams} = this.state
+    if ((!outputs || !outputs.length) && (!streams || (!streams.stderr && !streams.stdout))) {
+      return
+    }
+    return <div className={css(styles.outputBlock)}>
+      {streams && streams.stdout && <div className={css(styles.stdout)}>{streams.stdout}</div>}
+      {streams && streams.stderr && <div className={css(styles.stderr)}>{streams.stderr}</div>}
+      {outputs && outputs.length > 0 && <div onMouseDown={e => e.stopPropagation()} className={css(styles.outputs)}>
+        {outputs.map(this.renderOutput)}
+      </div>}
+    </div>
+  }
+
   render() {
     const {node, keyActions, actions, editState} = this.props
-    const {outputs} = this.state
     return <div className={css(styles.container)}>
     {!editState && <KernelSelector
         plugin={this.props.store.getters.pluginState('code').manager}
@@ -143,14 +151,36 @@ export default class CodeBlock extends Component {
         onHint={this.onHint}
         onComplete={this.onComplete}
       />
-      {outputs && outputs.length > 0 && <div onMouseDown={e => e.stopPropagation()} className={css(styles.outputs)}>
-        {outputs.map(this.renderOutput)}
-      </div>}
+      {this.renderOutputs()}
     </div>
   }
 }
 
 const styles = StyleSheet.create({
+  stdout: {
+    whiteSpace: 'pre',
+    fontFamily: 'monospace',
+    overflowX: 'auto',
+  },
+
+  stderr: {
+    backgroundColor: '#ffe5e2',
+    whiteSpace: 'pre',
+    fontFamily: 'monospace',
+    overflowX: 'auto',
+  },
+
+  error: {
+    whiteSpace: 'pre',
+    fontFamily: 'monospace',
+    backgroundColor: '#ffe5e2',
+  },
+
+  outputBlock: {
+    padding: 10,
+    boxShadow: '0 1px 5px #aaa inset',
+  },
+
   container: {
     flexDirection: 'column',
     alignItems: 'stretch',
@@ -161,8 +191,6 @@ const styles = StyleSheet.create({
     maxHeight: 500,
     overflow: 'auto',
     // cursor: 'pointer',
-    padding: 10,
-    boxShadow: '0 1px 5px #aaa inset',
     flexDirection: 'column',
     alignItems: 'stretch',
     borderRadius: 3,

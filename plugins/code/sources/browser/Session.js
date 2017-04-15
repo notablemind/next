@@ -52,6 +52,12 @@ export default class Session {
           type: 'result',
           data: {[special]: val},
         })
+      }, err => {
+        onIo({
+          type: 'error',
+          name: err.constructor.name,
+          message: err.message,
+        })
       })
   }
 

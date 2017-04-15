@@ -16,7 +16,7 @@ export default class Session {
     return new Promise((res, rej) => {
       const future = this.kernel.requestExecute({
         code,
-        allow_stdin: false, // TODO
+        allow_stdin: true, // TODO
         // TODO user_expressions?
       })
       future.onDone = () => res()
@@ -33,8 +33,18 @@ export default class Session {
               type: 'display',
               data: io.content.data,
             })
+          case 'error':
+            return onIo({
+              type: 'error',
+              name: io.content.ename,
+              message: io.content.evalue,
+            })
           case 'stream':
             return onStream(io.content.name, io.content.text)
+          case 'execute_input':
+            break
+          case 'status':
+            break // TODO handle
           default:
             console.log('unexpected ui message', io)
         }

@@ -39,6 +39,10 @@ class Renderer extends Component {
     setTimeout(() => {
       const body = this.target
       this.iframe.style.height = body.offsetHeight + 'px'
+    }, 50)
+    setTimeout(() => {
+      const body = this.target
+      this.iframe.style.height = body.offsetHeight + 'px'
     }, 500)
   }
 

@@ -9,6 +9,16 @@ const populateOutputs = data => {
   return outputs
 }
 
+const populateStreams = data => {
+  const streams = {}
+  Object.keys(data).forEach(key => {
+    if (data[key].type === 'code' && data[key].types.code && data[key].types.code.lastRun) {
+      streams[key] = {...data[key].types.code.lastRun.streams}
+    }
+  })
+  return streams
+}
+
 const makeSources = (sources, config) => {
   const result = {}
   sources.forEach(source => {
@@ -35,6 +45,7 @@ export default class Manager {
     this.docid = docid
     this.config = config
     this.outputs = populateOutputs(store.db.data)
+    this.streams = populateStreams(store.db.data)
     this.listeners = {}
     this.sources = makeSources(sources, config.sources)
     this.kernelSessions = {}
@@ -73,7 +84,7 @@ export default class Manager {
 
   notify = id => {
     if (this.listeners[id]) {
-      this.listeners[id].forEach(f => f(this.outputs[id]))
+      this.listeners[id].forEach(f => f(this.outputs[id], this.streams[id]))
     }
   }
 
@@ -86,6 +97,7 @@ export default class Manager {
     if (!kernel) return console.error('invalid kernel id')
     if (!kernel.session.isConnected()) return console.error('kernel not connected')
     this.outputs[id] = []
+    this.streams[id] = {stdout: '', stderr: ''}
     this.store.actions.setNested(id, ['types', 'code', 'lastRun'], {
       start: Date.now(),
       end: null,
@@ -93,22 +105,21 @@ export default class Manager {
       sessionId: kernel.sessionId,
       executionNumber: 0, // TODO
       outputs: [],
+      streams: {},
     })
     kernel.session.execute(code, io => {
       console.log('io', io)
       this.outputs[id].push(io) // TODO type this
       this.notify(id)
     }, (stream, text) => {
-      // TODO TODO TODO TODO
-      // this.streams[id][stream] += text // TODO maybe preprocess for terminal stuffs?
-      // this.notify(id)
+      this.streams[id][stream] += text
+      // TODO maybe preprocess for terminal stuffs?
+      this.notify(id) // TODO debounce the notification probably
     }).then(() => {
-      // console.log('result', val)
-      // this.outputs[id].push({type: 'result', value: val})
-      // this.notify(id)
       this.store.actions.updateNested(id, ['types', 'code', 'lastRun'], {
         end: Date.now(),
         outputs: this.outputs[id].slice(),
+        streams: {...this.streams[id]},
         status: 'ok',
       })
     }, err => {
@@ -118,6 +129,7 @@ export default class Manager {
       this.store.actions.updateNested(id, ['types', 'code', 'lastRun'], {
         end: Date.now(),
         outputs: this.outputs[id].slice(),
+        streams: {...this.streams[id]},
         status: 'err',
         // TODO include err, // TODO serialize somehow
       })
@@ -136,6 +148,9 @@ export default class Manager {
 
   getOutputs = id => {
     return this.outputs[id]
+  }
+  getStreams = id => {
+    return this.streams[id]
   }
 }
 

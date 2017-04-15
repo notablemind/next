@@ -99,6 +99,7 @@ export default class CodeEditor extends Component {
         'Shift-Tab': betterShiftTab(props.onHint),
       },
       viewportMargin: Infinity,
+      lineWrapping: true,
     }
   }
 
@@ -108,6 +109,7 @@ export default class CodeEditor extends Component {
 
   componentDidMount() {
     this.cm.on('blur', this.onBlur)
+    this.cm.on('focus', this.onFocus)
     this.cm.on('keydown', this.onKeyDown)
     if (this.props.editState) {
       this.focus(this.props.editState)
@@ -127,6 +129,12 @@ export default class CodeEditor extends Component {
     }
   }
 
+  componentDidUpdate(prevProps) {
+    if (!this.props.editState && this.cm.hasFocus()) {
+      this.cm.getInputField().blur()
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.editState && !this.props.editState) {
       this.focus(nextProps.editState)
@@ -135,6 +143,15 @@ export default class CodeEditor extends Component {
       setTimeout(() => this.cm.getInputField().blur(), 10)
     } else if (this.props.editState && this.props.node.content !== nextProps.node.content) {
       this.setState({text: nextProps.node.content})
+    }
+    if (this.props.node.content !== nextProps.node.content) {
+      this.setState({text: nextProps.node.content})
+    }
+  }
+
+  onFocus = () => {
+    if (!this.props.editState) {
+      this.props.actions.edit(this.props.node._id)
     }
   }
 
