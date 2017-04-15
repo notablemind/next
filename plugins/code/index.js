@@ -14,6 +14,11 @@ const sources = [
 
 const PLUGIN_ID = 'code'
 
+const walk = (id, data, fn) => {
+  fn(data[id])
+  data[id].children.forEach(id => walk(id, data, fn))
+}
+
 const plugin: Plugin<*, *> = {
   id: PLUGIN_ID,
   title: 'Code',
@@ -50,13 +55,42 @@ const plugin: Plugin<*, *> = {
       const {manager} = store.getters.pluginState('code')
       manager.execute(id)
     },
+
+    clearAllOutputs(store, id) {
+      // grrrrrr I really want transactions!!!
+      const ids = []
+      const updates = []
+      const data = store.db.data
+      walk(id, data, node => {
+        if (node.type === 'code') {
+          ids.push(node._id)
+          updates.push({
+            types: {
+              ...node.types,
+              code: {
+                ...node.types.code,
+                lastRun: null,
+              },
+            },
+          })
+        }
+      })
+      store.actions.updateMany(ids, updates)
+    },
   },
+
+  quickActions: [{
+    id: 'clear_all_outputs',
+    title: 'Clear all outputs',
+    action: (store) => {
+      store.actions.clearAllOutputs(store.state.active)
+    },
+  }],
 
   nodeTypes: {
     codeScope: {
       title: 'CodeScope',
       newSiblingsShouldCarryType: false,
-      // shortcut: ''
 
       render: CodeScope,
 
@@ -65,12 +99,10 @@ const plugin: Plugin<*, *> = {
           return {
             ...(fromNode.types.code || fromNode.types.codeScope),
             lastRun: null,
-            dirty: false,
           }
         }
         return {
           lastRun: null,
-          dirty: false,
           kernelId: null,
           language: 'javascript', // TODO have a better way of defining that
         }
@@ -102,12 +134,10 @@ const plugin: Plugin<*, *> = {
           return {
             ...(fromNode.types.code || fromNode.types.codeScope),
             lastRun: null,
-            dirty: false,
           }
         }
         return {
           lastRun: null,
-          dirty: false,
           kernelId: null,
           language: 'javascript', // TODO have a better way of defining that
         }
