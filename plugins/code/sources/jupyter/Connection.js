@@ -21,6 +21,7 @@ export default class Connection {
 
   getSession(id) {
     return Kernel.connectTo(id, this.kernelOptions).then(kernel => new Session(kernel))
+      .catch(err => null)
   }
 
   createSession(spec) {

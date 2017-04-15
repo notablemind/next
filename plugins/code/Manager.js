@@ -116,6 +116,9 @@ export default class Manager {
       // TODO maybe preprocess for terminal stuffs?
       this.notify(id) // TODO debounce the notification probably
     }).then(() => {
+      if (!this.outputs[id].length) {
+        this.notify(id)
+      }
       this.store.actions.updateNested(id, ['types', 'code', 'lastRun'], {
         end: Date.now(),
         outputs: this.outputs[id].slice(),
