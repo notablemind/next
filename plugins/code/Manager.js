@@ -90,14 +90,19 @@ export default class Manager {
     }
   }
 
+  clearOutput = id => {
+    this.outputs[id] = []
+    this.streams[id] = {stdout: '', stderr: ''}
+    this.notify(id)
+  }
+
   getScopes(id, data) {
     let node = data[id]
     const baseKernel = node.types.code.kernelId
     let scopes = []
     while (node) {
-      // TODO also make sure it's the same kernel?
       if (node.type === 'codeScope' && node.types.codeScope.kernelId === baseKernel) {
-        scopes.unshift(node.content)
+        scopes.unshift('_scope_' + node._id)
       }
       node = data[node.parent]
     }

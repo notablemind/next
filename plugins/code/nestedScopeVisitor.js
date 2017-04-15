@@ -7,14 +7,15 @@ const makePrefix = (scopes, t) => {
   return base
 }
 
-module.exports = function ({types: t}, scopes, variables) {
-  const prefix = makePrefix(scopes, t)
-  const scopeVariables = [variables]
+module.exports = function ({types: t}, scopeBase, scopes, variables) {
+  const prefix = makePrefix([scopeBase].concat(scopes), t)
+  const scopeVariables = []
   const prefixes = []
-  scopes.slice(1).forEach((scope, i) => {
-    prefixes.unshift(makePrefix(scopes.slice(0, i + 2), t))
-    scopeVariables.unshift(scopeVariables[0][scope] || (scopeVariables[0][scope] = {}))
+  scopes.forEach(scope => {
+    prefixes.unshift(makePrefix([scopeBase, scope], t))
+    scopeVariables.unshift(variables[scope] || (variables[scope] = {}))
   })
+  console.log(scopeVariables)
   return {
     // visitor: {
     Identifier(path) {
@@ -27,7 +28,7 @@ module.exports = function ({types: t}, scopes, variables) {
       if (path.scope.getBinding(path.node.name)) {
         return
       }
-      for (let i=0; i<scopeVariables.length-1; i++) {
+      for (let i=0; i<scopeVariables.length; i++) {
         if (scopeVariables[i][path.node.name]) {
           path.replaceWith(t.memberExpression(prefixes[i], path.node))
           return

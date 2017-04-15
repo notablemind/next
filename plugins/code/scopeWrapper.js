@@ -7,29 +7,32 @@ import nestedScopeVisitor from './nestedScopeVisitor'
 
 const SCOPES = '_nm_scopes'
 
-// TODO maybe use defaultdicts? But then I'd have to import...
+// TODO there's a bug where `globals()` in a nested scope doesn't actually
+// persist global stuff, b/c its this fake globals
+// the way to fix it would be to have a proxy object that uses __setattr__ and
+// just bumps it up to globals every time, but then does __getattr__ with the
+// full group? probably
 const pythonPrefix = scopes => {
   const lines = [
-    `if '${SCOPES}' not in locals(): ${SCOPES} = {}\n`
+    `if '${SCOPES}' not in globals(): ${SCOPES} = {}\n`
   ]
-  let prev = ''
+  // let prev = ''
   for (let i=1; i<=scopes.length; i++) {
-    const items = scopes.slice(0, i)
+    // const items = scopes.slice(0, i)
     const last = scopes[i - 1]
-    const access = `['${items.join("']['")}']`
-    lines.push(`if '${last}' not in ${SCOPES}${prev}: ${SCOPES}${access} = {}`)
-    prev = access
+    // const access = `['${items.join("']['")}']`
+    lines.push(`if '${last}' not in ${SCOPES}: ${SCOPES}['${last}'] = {}`)
+    // prev = access
   }
   let globals = `globals()`
   if (scopes.length > 1) {
     const globalItems = ['globals()']
-    for (let i=1; i<scopes.length; i++) {
-      const items = scopes.slice(0, i)
-      globalItems.push(`${SCOPES}['${items.join("']['")}']`)
+    for (let i=0; i<scopes.length-1; i++) {
+      globalItems.push(`${SCOPES}['${scopes[i]}']`)
     }
     globals = `dict(${globalItems.map(g => g + '.items()').join(' + ')})`
   }
-  return {prefix: lines.join('\n'), globals, locals: `${SCOPES}${prev}`}
+  return {prefix: lines.join('\n'), globals, locals: `${SCOPES}['${scopes[scopes.length - 1]}']`}
 }
 
 const pythonBase = (scopes, text) => {
@@ -40,11 +43,10 @@ const pythonBase = (scopes, text) => {
 }
 
 const jsPrefix = scopes => {
-  const parts = []
-  for (let i=1; i<=scopes.length; i++) {
-    const pref = scopes.slice(0, i).join('.')
-    parts.push(`if (!window.${pref}) { window.${pref} = {} }`)
-  }
+  const parts = [`if (!window.${SCOPES}) { window.${SCOPES} = {} }`]
+  scopes.forEach(scope => {
+    parts.push(`if (!window.${SCOPES}.${scope}) { window.${SCOPES}.${scope} = {} }`)
+  })
   return parts.join('')
 }
 
@@ -53,9 +55,8 @@ const javascriptBase = (scopes, text, variables) => {
     sourceType: 'module',
     plugins: ['jsx', 'flow', 'objectRestSpread', 'classProperties'],
   })
-  const allScopes = [SCOPES].concat(scopes)
-  traverse(ast, nestedScopeVisitor({types}, allScopes, variables))
-  return jsPrefix(allScopes) + generate(ast, {}, text).code
+  traverse(ast, nestedScopeVisitor({types}, SCOPES, scopes, variables))
+  return jsPrefix(scopes) + generate(ast, {}, text).code
 }
 
 const wrappers = {

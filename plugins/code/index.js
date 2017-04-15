@@ -63,7 +63,7 @@ const plugin: Plugin<*, *> = {
       defaultNodeConfig(fromNode) {
         if (fromNode) {
           return {
-            ...fromNode.types.code,
+            ...(fromNode.types.code || fromNode.types.codeScope),
             lastRun: null,
             dirty: false,
           }
@@ -84,10 +84,23 @@ const plugin: Plugin<*, *> = {
 
       render: CodeBlock,
 
+      contextMenu(typeData, node, store) {
+        if (typeData.lastRun) {
+          return [{
+            text: 'Clear last run',
+            action: () => {
+              const {manager} = store.getters.pluginState('code')
+              store.actions.setNested(node._id, ['types', 'code', 'lastRun'], null)
+              manager.clearOutput(node._id)
+            }
+          }]
+        }
+      },
+
       defaultNodeConfig(fromNode) {
         if (fromNode) {
           return {
-            ...fromNode.types.code,
+            ...(fromNode.types.code || fromNode.types.codeScope),
             lastRun: null,
             dirty: false,
           }
