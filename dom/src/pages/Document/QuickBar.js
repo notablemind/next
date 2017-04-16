@@ -7,7 +7,7 @@ import fuzzysearch from 'fuzzysearch'
 
 type Tab = 'search' | 'command' | 'open'
 
-const collectCommands = (plugins, store) => {
+const collectCommands = (plugins, store, extraCommands) => {
   const node = store.getters.activeNode()
   const commands = []
   plugins.forEach(plugin => {
@@ -15,6 +15,7 @@ const collectCommands = (plugins, store) => {
       commands.push(...plugin.quickActions(store, node).map(a => ({...a, plugin: plugin.id, key: plugin.id + ':' + a.id})))
     }
   })
+  commands.push(...extraCommands.map(a => ({...a, key: 'doc:' + a.id})))
   return commands
 }
 
@@ -39,11 +40,9 @@ const searchNodes = (data, text) => {
   // TODO maybe do BFS instead of DFS
   walk('root', data, node => {
     if (!fuzzysearch(text, node.content.toLowerCase())) return
-    console.log('passed', node)
     nodes.push(node)
     return nodes.length > max
   })
-  console.log('nodes', nodes)
   return nodes.map(node => ({key: node._id, title: node.content, node}))
 }
 
@@ -57,6 +56,7 @@ export default class QuickBar extends Component {
     initial: Tab,
     nm: any,
     treed: any,
+    extraCommands: any[],
     onClose: () => void,
   }
   state: {
@@ -68,7 +68,7 @@ export default class QuickBar extends Component {
 
   constructor(props) {
     super()
-    const commands = collectCommands(props.treed.enabledPlugins, props.store)
+    const commands = collectCommands(props.treed.enabledPlugins, props.store, props.extraCommands)
     let results
     switch (props.initialTab) {
       case 'command':

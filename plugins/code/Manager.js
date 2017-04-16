@@ -1,4 +1,5 @@
 
+import fixDeclarations from './fixDeclarations'
 import scopeWrapper from './scopeWrapper'
 
 const populateOutputs = data => {
@@ -120,6 +121,9 @@ export default class Manager {
         throw new Error('no scope wrapper for ' + node.types.code.language)
       }
       return wrapper(node.content, scopes, session.variables)
+    }
+    if (node.types.code.language === 'javascript') {
+      return fixDeclarations(node.content)
     }
     return node.content
   }

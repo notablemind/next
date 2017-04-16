@@ -3,6 +3,7 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
+import CM from 'codemirror'
 import CodeEditor from './CodeEditor'
 import KernelSelector from './KernelSelector'
 import Output from './Output'
@@ -178,7 +179,8 @@ const styles = StyleSheet.create({
 
   outputBlock: {
     padding: 10,
-    boxShadow: '0 1px 5px #aaa inset',
+    boxShadow: '0 0 2px #aaa inset',
+    borderRadius: 4,
   },
 
   container: {

@@ -1,8 +1,9 @@
 // @flow
 
 import React, {Component} from 'react'
-import {StyleSheet as BaseStyleSheet} from 'aphrodite'
-import CodeMirror from 'react-codemirror'
+import {StyleSheet, css} from './DescendantStyleSheet'
+import CM from 'codemirror'
+// import CodeMirror from 'react-codemirror'
 
 require('codemirror/lib/codemirror.css')
 // TODO maybe just load these as needed? Can probably do something fancy w/
@@ -33,12 +34,6 @@ require('codemirror/addon/hint/show-hint.css')
 
 const loadedModes = {}
 
-const descendantHandler = (selector, baseSelector, generateSubtreeStyles) => {
-  if (selector[0] !== '>') { return null; }
-  return generateSubtreeStyles( `${baseSelector} > .${selector.slice(1)}`);
-};
-
-const {StyleSheet, css} = BaseStyleSheet.extend([{selectorHandler: descendantHandler}]);
 
 const focusCm = (cm, at) => {
   if (!cm.hasFocus()) {
@@ -108,13 +103,30 @@ export default class CodeEditor extends Component {
   }
 
   componentDidMount() {
+    const {node} = this.props
+    const {text} = this.state
+    this.cm = CM(this.node, {
+      value: text,
+      mode: node.types.code.language,
+      lineNumbers: text.split('\n').length >= 10,
+        // TODO update options as things change
+      ...this.options,
+    })
+
     this.cm.on('blur', this.onBlur)
     this.cm.on('focus', this.onFocus)
     this.cm.on('keydown', this.onKeyDown)
+		this.cm.on('change', this.codemirrorValueChanged);
     if (this.props.editState) {
       this.focus(this.props.editState)
     }
   }
+
+	codemirrorValueChanged = (doc, change) => {
+		if (change.origin !== 'setValue') {
+			this.setState({text: doc.getValue()})
+		}
+	}
 
   onKeyDown = (cm, evt) => {
     // TODO up & down navigation btw cells, n stuff
@@ -130,6 +142,9 @@ export default class CodeEditor extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (prevProps.node.types.code.language !== this.props.node.types.code.language) {
+      this.cm.setOption('mode', this.props.node.types.code.language)
+    }
     if (!this.props.editState && this.cm.hasFocus()) {
       this.cm.getInputField().blur()
     }
@@ -168,24 +183,18 @@ export default class CodeEditor extends Component {
   }
 
   render() {
-    const {node} = this.props
-    const {text} = this.state
-    return <CodeMirror
-      value={text}
+    return <div
+      ref={node => this.node = node}
       className={css(styles.editor)}
-      onChange={text => this.setState({text})}
-      ref={node => node && (this.cm = node.getCodeMirror())}
-      options={{
-        mode: node.types.code.language,
-        lineNumbers: text.split('\n').length >= 10,
-        ...this.options,
-      }}
     />
   }
 }
 
 const styles = StyleSheet.create({
   editor: {
+    display: 'flex',
+    backgroundColor: 'red',
+
     '>CodeMirror': {
       height: 'auto',
     },

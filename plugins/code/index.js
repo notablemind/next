@@ -56,6 +56,13 @@ const plugin: Plugin<*, *> = {
       manager.execute(id)
     },
 
+    clearOutput(store, id) {
+      if (store.getters.node(id).type !== 'code') return
+      const {manager} = store.getters.pluginState('code')
+      manager.clearOutput(id)
+      store.actions.setNested(id, ['types', 'code', 'lastRun'], null)
+    },
+
     clearAllOutputs(store, id) {
       console.log('clearing all outputs', id)
       // grrrrrr I really want transactions!!!
@@ -92,6 +99,15 @@ const plugin: Plugin<*, *> = {
         store.actions.clearAllOutputs(node._id)
       },
     }]
+    if (node.type === 'code') {
+      actions.unshift({
+        id: 'clear_output',
+        title: 'Clear output',
+        action: (store) => {
+          store.actions.clearOutput(node._id)
+        },
+      })
+    }
     if (node.type === 'code' || node.type === 'codeScope') {
       const {manager} = store.getters.pluginState('code')
       actions.push(...Object.values(manager.config.kernels).map(k => ({

@@ -112,11 +112,10 @@ class Document extends Component {
     db: any,
     treed: ?Treed,
     store: any,
-    searching: bool,
     // sharedViewData: any,
     syncState: string,
     shouldSync: boolean,
-    showingSettings: boolean,
+    showingSettings: ?string,
     showingSyncSettings: boolean,
     tick: number,
     overlayState: ?({
@@ -136,13 +135,12 @@ class Document extends Component {
     console.log('Document constructor', id)
     this.state = {
       db: null,
-      searching: false,
       treed: null,
       store: null,
       // sharedViewData: loadSharedViewData(props.id),
       syncState: 'unsynced',
       shouldSync: false,
-      showingSettings: false,
+      showingSettings: null,
       showingSyncSettings: false,
       tick: 0,
       overlayState: null,
@@ -170,6 +168,32 @@ class Document extends Component {
     hashHistory.push('/')
   }
 
+  quickCommands = [{
+    id: 'go_home',
+    title: 'Go home',
+    action: this.goBack,
+  }, {
+    id: 'undo',
+    title: 'Undo the last action',
+    action: () => this.state.treed && this.state.treed.activeView().undo(),
+  }, {
+    id: 'redo',
+    title: 'Redo the last action',
+    action: () => this.state.treed && this.state.treed.activeView().redo(),
+  }, {
+    id: 'settings_plugins',
+    title: 'Settings: plugins',
+    action: () => this.setState({showingSettings: 'Plugins'}),
+  }, {
+    id: 'settings_sync',
+    title: 'Settings: files & sync',
+    action: () => this.setState({showingSettings: 'Files & Sync'}),
+  }, {
+    id: 'settings_code',
+    title: 'Settings: code, kernels, connections',
+    action: () => this.setState({showingSettings: 'Code'}),
+  }]
+
   keyLayerConfig = {
     goHome: {
       shortcut: 'g q',
@@ -186,13 +210,6 @@ class Document extends Component {
       description: 'Redo the last action',
       action: () => this.state.treed && this.state.treed.activeView().redo(),
     },
-    /*
-    _search: {
-      shortcut: '/', // , cmd+f',
-      description: 'Search',
-      action: () => this.setState({searching: true}),
-    },
-    */
     search: {
       shortcut: '/, cmd+f',
       description: 'Search',
@@ -229,7 +246,6 @@ class Document extends Component {
   }
 
   onKeyDown = (e: any) => {
-    if (this.state.searching) return
     if (this.state.treed) {
       this.state.treed.handleKey(e)
     }
@@ -457,11 +473,11 @@ class Document extends Component {
       <SyncStatus
         docid={this.props.id}
         nm={this.props.nm}
-        onClick={() => this.setState({showingSettings: 'sync'})}
+        onClick={() => this.setState({showingSettings: 'Files & Sync'})}
       />
       <Icon
         name="ios-settings"
-        onClick={() => this.setState({showingSettings: true})}
+        onClick={() => this.setState({showingSettings: 'Plugins'})}
         className={css(styles.settings)}
       />
     </div>
@@ -499,16 +515,12 @@ class Document extends Component {
         <KeyCompleter
           treed={treed}
         />
-        {this.state.searching &&
-          <Searcher
-            treed={treed}
-            onClose={() => this.setState({searching: false})}
-          />}
         {this.state.quick &&
           <QuickBar
             treed={treed}
             store={this.state.store}
             nm={this.props.nm}
+            extraCommands={this.quickCommands}
             onOpen={file => this.onNavigate(file.id)}
             initialTab={this.state.quick}
             onClose={() => this.setState({quick: null})}
@@ -518,8 +530,8 @@ class Document extends Component {
             treed={treed}
             nm={this.props.nm}
             store={this.state.store}
-            initialTab={this.state.showingSettings === 'sync' ? 'Files & Sync' : null}
-            onClose={() => this.setState({showingSettings: false})}
+            initialTab={this.state.showingSettings}
+            onClose={() => this.setState({showingSettings: null})}
             onSetPlugins={this.onSetPlugins}
             optionalPlugins={optionalPlugins}
           />}
