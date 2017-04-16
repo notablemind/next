@@ -81,16 +81,36 @@ const plugin: Plugin<*, *> = {
     },
   },
 
-  quickActions: [{
-    // TODO maybe have modifiers like "deep", and then I'd just have an action
-    // that is "clear_output" and you could add "deep" to it.
-    // it would be like `flags: ['deep']` or something.
-    id: 'clear_all_outputs',
-    title: 'Clear all outputs',
-    action: (store) => {
-      store.actions.clearAllOutputs(store.state.active)
-    },
-  }],
+  quickActions(store, node) {
+    const actions = [{
+      // TODO maybe have modifiers like "deep", and then I'd just have an action
+      // that is "clear_output" and you could add "deep" to it.
+      // it would be like `flags: ['deep']` or something.
+      id: 'clear_all_outputs',
+      title: 'Clear all outputs',
+      action: (store) => {
+        store.actions.clearAllOutputs(node._id)
+      },
+    }]
+    if (node.type === 'code' || node.type === 'codeScope') {
+      const {manager} = store.getters.pluginState('code')
+      actions.push(...Object.values(manager.config.kernels).map(k => ({
+        id: 'set_kernel_' + k.id,
+        title: 'Set kernel: ' + k.title,
+        action() {
+          store.actions.setNodeKernel(node._id, k.id, k.language)
+        },
+      })))
+      actions.push(...manager.displayLanguages.map(lang => ({
+        id: 'set_kernel_lang_' + lang,
+        title: 'Set language: ' + lang,
+        action() {
+          store.actions.setNodeKernel(node._id, null, lang)
+        },
+      })))
+    }
+    return actions
+  },
 
   nodeTypes: {
     codeScope: {

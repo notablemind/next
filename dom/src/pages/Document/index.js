@@ -186,13 +186,15 @@ class Document extends Component {
       description: 'Redo the last action',
       action: () => this.state.treed && this.state.treed.activeView().redo(),
     },
+    /*
     _search: {
       shortcut: '/', // , cmd+f',
       description: 'Search',
       action: () => this.setState({searching: true}),
     },
+    */
     search: {
-      shortcut: 'cmd+f',
+      shortcut: '/, cmd+f',
       description: 'Search',
       action: () => this.setState({quick: 'search'}),
     },

@@ -7,11 +7,12 @@ import fuzzysearch from 'fuzzysearch'
 
 type Tab = 'search' | 'command' | 'open'
 
-const collectCommands = plugins => {
+const collectCommands = (plugins, store) => {
+  const node = store.getters.activeNode()
   const commands = []
   plugins.forEach(plugin => {
     if (plugin.quickActions) {
-      commands.push(...plugin.quickActions.map(a => ({...a, plugin: plugin.id, key: plugin.id + ':' + a.id})))
+      commands.push(...plugin.quickActions(store, node).map(a => ({...a, plugin: plugin.id, key: plugin.id + ':' + a.id})))
     }
   })
   return commands
@@ -67,14 +68,14 @@ export default class QuickBar extends Component {
 
   constructor(props) {
     super()
-    const commands = collectCommands(props.treed.enabledPlugins)
+    const commands = collectCommands(props.treed.enabledPlugins, props.store)
     let results
     switch (props.initialTab) {
       case 'command':
         results = searchCommands(commands, '')
         break
       case 'search':
-        results = []
+        results = searchNodes(props.treed.db.data, '')
         break
       case 'open':
         results = searchFiles(props.nm.meta, '')

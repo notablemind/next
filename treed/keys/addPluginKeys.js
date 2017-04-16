@@ -23,7 +23,7 @@ const addPluginKeys = (store, layers, plugins) => {
           store.actions.setNodeType(store.state.active, type)
         }
         const typeName = defn.title || type
-        if (!defn.disableSwitch) {
+        if (!defn.disableSwitch && defn.shortcut) {
           addKey(layers.normal, `t ${defn.shortcut}`, action, `Set type: ${typeName}`)
           addKey(layers.insert, `alt+t ${defn.shortcut}`, action, `Set type: ${typeName}`)
         }

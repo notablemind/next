@@ -60,14 +60,6 @@ const plugin: Plugin<void, void> = {
       render: null, // TODO make this
     },
 
-    code: {
-      title: 'Code block',
-      newSiblingsShouldCarryType: false,
-      shortcut: 'c',
-
-      render: null, // TODO make this
-    },
-
     note: {
       title: 'Note',
       newSiblingsShouldCarryType: false,
