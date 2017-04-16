@@ -57,6 +57,7 @@ const plugin: Plugin<*, *> = {
     },
 
     clearAllOutputs(store, id) {
+      console.log('clearing all outputs', id)
       // grrrrrr I really want transactions!!!
       const ids = []
       const updates = []
@@ -64,6 +65,7 @@ const plugin: Plugin<*, *> = {
       walk(id, data, node => {
         if (node.type === 'code') {
           ids.push(node._id)
+          manager.clearOutput(node._id)
           updates.push({
             types: {
               ...node.types,
@@ -80,6 +82,9 @@ const plugin: Plugin<*, *> = {
   },
 
   quickActions: [{
+    // TODO maybe have modifiers like "deep", and then I'd just have an action
+    // that is "clear_output" and you could add "deep" to it.
+    // it would be like `flags: ['deep']` or something.
     id: 'clear_all_outputs',
     title: 'Clear all outputs',
     action: (store) => {

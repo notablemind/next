@@ -33,6 +33,8 @@
     "extend": "^3.0.0",
     "fbjs": "^0.8.9",
     "fecha": "^2.3.0",
+    "fuzzy": "^0.1.3",
+    "fuzzysearch": "^1.0.3",
     "isomorphic-fetch": "^2.2.1",
     "json-loader": "^0.5.4",
     "jszip": "^3.1.3",

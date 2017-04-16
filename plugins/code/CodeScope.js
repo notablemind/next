@@ -59,6 +59,7 @@ class BlurInput extends Component {
   render() {
     return <input
       ref={node => this.node = node}
+      placeholder="Untitled scope"
       className={this.props.className}
       value={this.state.text}
       onChange={e => this.setText(e.target.value)}

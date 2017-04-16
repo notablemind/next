@@ -14,6 +14,7 @@ import KeyCompleter from './KeyCompleter'
 import ViewHeader from './ViewHeader'
 import withStore from './withStore'
 import Settings from '../Settings/DocumentSettings'
+import QuickBar from './QuickBar'
 
 import SyncStatus from '../Settings/Sync/Status'
 
@@ -126,6 +127,7 @@ class Document extends Component {
       type: 'list',
       root: string,
     }),
+    quick: ?('search' | 'open' | 'command'),
   }
   _unsubs: Array<() => void>
 
@@ -184,10 +186,25 @@ class Document extends Component {
       description: 'Redo the last action',
       action: () => this.state.treed && this.state.treed.activeView().redo(),
     },
-    search: {
-      shortcut: '/, cmd+f',
+    _search: {
+      shortcut: '/', // , cmd+f',
       description: 'Search',
       action: () => this.setState({searching: true}),
+    },
+    search: {
+      shortcut: 'cmd+f',
+      description: 'Search',
+      action: () => this.setState({quick: 'search'}),
+    },
+    open: {
+      shortcut: 'cmd+p',
+      description: 'Open file',
+      action: () => this.setState({quick: 'open'}),
+    },
+    command: {
+      shortcut: 'cmd+P',
+      description: 'Quick command',
+      action: () => this.setState({quick: 'command'}),
     },
   }
 
@@ -267,7 +284,7 @@ class Document extends Component {
         saveSharedViewData(this.props.id, store.sharedViewData)
       }))
       this._unsubs.push(store.onIntent('filter-by-tag', this.onTagFilter))
-      this._unsubs.push(store.onIntent('navigate-to-file', this.onNavigate))
+      this._unsubs.push(store.onIntent('navigate-to-file', (_, id) => this.onNavigate(id)))
       this._unsubs.push(store.on([store.events.viewType()], () => {
         this.setState({})
       }))
@@ -290,7 +307,7 @@ class Document extends Component {
     })
   }
 
-  onNavigate = (viewId: string, fileid: string) => {
+  onNavigate = (fileid: string) => {
     hashHistory.push('/doc/' + fileid)
   }
 
@@ -484,6 +501,15 @@ class Document extends Component {
           <Searcher
             treed={treed}
             onClose={() => this.setState({searching: false})}
+          />}
+        {this.state.quick &&
+          <QuickBar
+            treed={treed}
+            store={this.state.store}
+            nm={this.props.nm}
+            onOpen={file => this.onNavigate(file.id)}
+            initialTab={this.state.quick}
+            onClose={() => this.setState({quick: null})}
           />}
         {this.state.showingSettings &&
           <Settings
