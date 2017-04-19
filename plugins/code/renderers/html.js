@@ -1,6 +1,9 @@
 
+import rehype from 'rehype'
+import rehypeReact from 'rehype-react'
 import React, {Component} from 'react'
 
+/*
 class Renderer extends Component {
   componentDidMount() {
     const iframe = this.iframe = document.createElement('iframe')
@@ -50,8 +53,17 @@ class Renderer extends Component {
     return <div style={{alignItems: 'stretch'}} ref={node => this.node = node} />
   }
 }
+*/
 
+export default (text, key) => {
+  return <div key={key}>
+    {rehype().use(rehypeReact, {createElement: React.createElement}).processSync(text).contents}
+  </div>
+}
+
+/*
 export default (text, key) => { // TODO might need more args
   return <Renderer key={key} text={text} />
 }
+*/
 

@@ -19,7 +19,7 @@ const Head = ({current, plugin, toggleOpen}) => {
 }
 
 export default ({plugin, current, inline, onChange}) => <DropDown
-  className={css(styles.container, inline && styles.containerInline)}
+  className={css(styles.container, inline && styles.containerInline) + ' kernel_selector'}
   head={toggleOpen => <Head current={current} plugin={plugin} toggleOpen={toggleOpen} />}
   body={toggleOpen => <div className={css(styles.dropdown)}>
     {Object.values(plugin.config.kernels).map(kernelConfig => (

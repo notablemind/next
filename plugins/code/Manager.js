@@ -111,7 +111,7 @@ export default class Manager {
     return scopes
   }
 
-  getCode(id, session) {
+  getCode(id, session, raw) {
     const {data} = this.store.db
     const node = data[id]
     const scopes = this.getScopes(id, data)
@@ -120,12 +120,12 @@ export default class Manager {
       if (!wrapper) {
         throw new Error('no scope wrapper for ' + node.types.code.language)
       }
-      return wrapper(node.content, scopes, session.variables)
+      return wrapper(raw, scopes, session.variables)
     }
     if (node.types.code.language === 'javascript') {
-      return fixDeclarations(node.content)
+      return fixDeclarations(raw)
     }
-    return node.content
+    return raw
   }
 
   execute = id => {
@@ -135,12 +135,14 @@ export default class Manager {
     const kernel = this.kernelSessions[config.kernelId]
     if (!kernel) return console.error('invalid kernel id')
     if (!kernel.session.isConnected()) return console.error('kernel not connected')
-    const code = this.getCode(id, kernel.session)
+    const raw = node.content
+    const code = this.getCode(id, kernel.session, raw)
     this.outputs[id] = []
     this.streams[id] = {stdout: '', stderr: ''}
     this.store.actions.setNested(id, ['types', 'code', 'lastRun'], {
       start: Date.now(),
       end: null,
+      content: raw,
       status: 'running',
       sessionId: kernel.sessionId,
       executionNumber: 0, // TODO
@@ -161,6 +163,7 @@ export default class Manager {
       }
       this.store.actions.updateNested(id, ['types', 'code', 'lastRun'], {
         end: Date.now(),
+        content: raw,
         outputs: this.outputs[id].slice(),
         streams: {...this.streams[id]},
         status: 'ok',
@@ -171,6 +174,7 @@ export default class Manager {
       this.notify(id)
       this.store.actions.updateNested(id, ['types', 'code', 'lastRun'], {
         end: Date.now(),
+        content: raw,
         outputs: this.outputs[id].slice(),
         streams: {...this.streams[id]},
         status: 'err',

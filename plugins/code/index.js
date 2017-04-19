@@ -185,11 +185,28 @@ const plugin: Plugin<*, *> = {
       },
 
       actions: {
-        execute: {
+        executeAndCreateAfter: {
           shortcuts: {
             normal: 'cmd+enter',
             visual: 'cmd+enter',
             insert: 'cmd+enter',
+          },
+          description: 'Execute and create after',
+          action(store) {
+            const {manager} = store.getters.pluginState('code')
+            manager.execute(store.state.active)
+            // TODO split the block maybe? dunno
+            const nid = store.actions.createAfter(store.state.active)
+            setTimeout(() => {
+              store.actions.edit(nid)
+            }, 100)
+          },
+        },
+        execute: {
+          shortcuts: {
+            normal: 'shift+enter',
+            visual: 'shift+enter',
+            insert: 'shift+enter',
           },
           description: 'Execute',
           action(store) {

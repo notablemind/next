@@ -130,13 +130,17 @@ export default class CodeEditor extends Component {
 
   onKeyDown = (cm, evt) => {
     // TODO up & down navigation btw cells, n stuff
-    if (evt.key === 'Enter' && evt.metaKey) {
-      // TODO this should actually create a new node underneath
-      if (this.state.text !== this.props.node.content) {
-        // TODO set dirty. I probably need to support setMultipleNested
-        this.props.keyActions.setContent(this.state.text)
+    if (evt.key === 'Enter') {
+      if (evt.metaKey || evt.shiftKey) {
+        if (this.state.text !== this.props.node.content) {
+          this.props.keyActions.setContent(this.state.text)
+        }
+        evt.preventDefault()
       }
-    } else if (evt.key === 'Tab') {
+      // e.stopPropagation()
+      return
+    }
+    if (evt.key === 'Tab') {
       evt.stopPropagation()
     }
   }

@@ -4,12 +4,26 @@ import React, {Component} from 'react';
 import {css, StyleSheet} from 'aphrodite'
 
 import textStyle from './textStyle'
-import render from './render'
+// import render from './render'
+
+import remark from 'remark'
+import remarkReact from 'remark-react'
 
 type Props = {
   style?: any,
   content: string,
   className?: string,
+}
+
+window.rr = remark
+
+const text2react = content => {
+  return remark().use(remarkReact).processSync(content).contents
+  /*
+  return <div dangerouslySetInnerHTML={{
+    __html: render(content)
+  }}/>
+  */
 }
 
 const Renderer = ({style, content, className}: Props) => {
@@ -19,9 +33,7 @@ const Renderer = ({style, content, className}: Props) => {
     ) + ' Node_rendered ' + (className || '')
   }>
     {content.trim() ?
-      <div dangerouslySetInnerHTML={{
-        __html: render(content)
-      }}/> :
+      text2react(content) :
       <div className={css(styles.empty)} />
     }
   </div>

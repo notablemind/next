@@ -55,6 +55,10 @@
     "react-devtools": "^2.0.12",
     "react-dom": "^15.4.1",
     "react-router": "^3.0.0",
+    "rehype": "^4.0.0",
+    "rehype-react": "^3.0.0",
+    "remark": "^7.0.0",
+    "remark-react": "^4.0.0",
     "remarkable": "^1.7.1",
     "rxdb": "^1.4.5",
     "treed": "file:./treed"

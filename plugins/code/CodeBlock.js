@@ -1,7 +1,7 @@
 // @flow
 
 import React, {Component} from 'react'
-import {css, StyleSheet} from 'aphrodite'
+import {css, StyleSheet} from './DescendantStyleSheet'
 
 import CM from 'codemirror'
 import CodeEditor from './CodeEditor'
@@ -136,22 +136,39 @@ export default class CodeBlock extends Component {
     </div>
   }
 
+  getStatus() {
+    const {lastRun} = this.props.node.types.code
+    if (!lastRun) return 'pristine'
+    if (!lastRun.end) return 'running'
+    if (lastRun.content !== this.props.node.content) return 'dirty'
+    return 'finished'
+  }
+
   render() {
     const {node, keyActions, actions, editState} = this.props
+    const status = this.getStatus()
     return <div className={css(styles.container)}>
-    {!editState && <KernelSelector
-        plugin={this.props.store.getters.pluginState('code').manager}
-        current={node.types.code}
-        onChange={(kernelId, language) => this.props.store.actions.setNodeKernel(node._id, kernelId, language)}
-      />}
-      <CodeEditor
-        node={node}
-        keyActions={keyActions}
-        actions={actions}
-        editState={editState}
-        onHint={this.onHint}
-        onComplete={this.onComplete}
-      />
+      <div className={css(styles.top)}>
+        <div style={{flex: 1}}>
+        <CodeEditor
+          node={node}
+          keyActions={keyActions}
+          actions={actions}
+          editState={editState}
+          onHint={this.onHint}
+          onComplete={this.onComplete}
+        />
+        </div>
+        <div
+          className={css(styles.right, styles[status])}
+        >
+          {!editState && <KernelSelector
+              plugin={this.props.store.getters.pluginState('code').manager}
+              current={node.types.code}
+              onChange={(kernelId, language) => this.props.store.actions.setNodeKernel(node._id, kernelId, language)}
+            />}
+        </div>
+      </div>
       {this.renderOutputs()}
     </div>
   }
@@ -162,6 +179,40 @@ const styles = StyleSheet.create({
     whiteSpace: 'pre',
     fontFamily: 'monospace',
     overflowX: 'auto',
+  },
+
+  pristine: {
+    backgroundColor: 'white',
+  },
+
+  finished: {
+    backgroundColor: 'green',
+  },
+
+  running: {
+    backgroundColor: 'yellow',
+  },
+
+  dirty: {
+    backgroundColor: 'pink',
+  },
+
+  top: {
+    flexDirection: 'row',
+  },
+
+  right: {
+    flexBasis: 20,
+
+    '>kernel_selector': {
+      visibility: 'hidden',
+    },
+
+    ':hover': {
+      '>kernel_selector': {
+        visibility: 'visible',
+      },
+    },
   },
 
   stderr: {

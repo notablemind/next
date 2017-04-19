@@ -615,7 +615,9 @@ const actions = {
       if (!id || !node) return
       const {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
 
-      let fromNode = pid === node.parent ? node : (node.children[0] && store.db.data[node.children[0]])
+      let fromNode = pid === node.parent
+        ? node
+        : (node.children[0] && store.db.data[node.children[0]])
 
       return store.actions.create({
         fromNode,
@@ -624,31 +626,6 @@ const actions = {
         ix: idx,
         pid,
       })
-
-      /*
-      const nid = uuid()
-      let type = 'normal'
-      if (pid === node.parent) {
-        if (store.plugins.nodeTypes[node.type].newSiblingsShouldCarryType) {
-          type = node.type
-        }
-      } else {
-        const firstChild = node.children[0] && store.db.data[node.children[0]]
-        if (firstChild && store.plugins.nodeTypes[firstChild.type].newSiblingsShouldCarryType) {
-          type = firstChild.type
-        }
-      }
-      const nodeType = store.plugins.nodeTypes[type]
-      const types = nodeType.defaultNodeConfig ?
-        {[type]: nodeType.defaultNodeConfig()} : {}
-      const views = viewData ? {[store.state.viewType]: viewData} : {}
-      store.execute({
-        type: 'create',
-        args: {id: nid, pid, ix: idx, data: {content, type, types, views}},
-      }, id, nid)
-      store.actions.editStart(nid)
-      return nid
-      */
     },
 
     createChild(store: Store, id: string=store.state.active, content: string='') {
