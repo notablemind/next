@@ -213,8 +213,8 @@ module.exports = class Notablemind {
 
     // Files metadata stuff
     ipcMain.on('meta:update', (evt, id, update) => {
-      console.log('got update', id, update)
-      console.log('current thing', this.meta[id])
+      // console.log('got update', id, update)
+      // console.log('current thing', this.meta[id])
       this.broadrest(evt.sender.id, 'meta:update', id, update)
       if (!this.meta[id]) this.meta[id] = update
       else Object.assign(this.meta[id], update)
@@ -593,7 +593,7 @@ const docActions = {
     })
   },
   updateNested: (db, {id, attrs, last, update, modified}) => {
-    console.log('updating nested', id, attrs, last, update, modified)
+    // console.log('updating nested', id, attrs, last, update, modified)
     return db.upsert(id, doc => {
       doc = Object.assign({}, doc, {modified})
       const lparent = attrs.reduce((o, a) => o[a] = Object.assign({}, o[a]), doc)

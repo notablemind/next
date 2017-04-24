@@ -42,7 +42,7 @@ export default class NotableClient extends NotableBase {
       this.notifyUser()
     })
     this.remote.on('meta:update', (evt, id, update) => {
-      console.log('got remote update', id, update)
+      // console.log('got remote update', id, update)
       this.meta[id] = {
         ...this.meta[id],
         ...update
