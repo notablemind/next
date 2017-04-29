@@ -20,16 +20,15 @@ export default class Settings extends Component {
   }
 
   componentDidMount() {
-    Promise.all(Object.values(this.props.manager.sources).map(({source: {id}, connection}) => {
-      if (connection.status !== 'connected') {
-        return
-      }
+    Promise.all(this.props.manager.connectedSources().map(({source: {id}, connection}) => {
       this.setState(({loading}) => ({loading: {...loading, [id]: true}}))
       return connection.getKernelSpecs().then(specs => {
         this.setState(({kernelSpecs, loading}) => ({
           kernelSpecs: {...kernelSpecs, [id]: specs},
           loading: {...loading, [id]: false},
         }))
+      }, errorGettingSpecs => {
+        connection.status = 'disconnected'
       })
     })).then(() => {
       console.log('good done')

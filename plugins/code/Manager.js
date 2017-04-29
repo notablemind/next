@@ -60,8 +60,13 @@ export default class Manager {
 
   init() {
     const ids = Object.keys(this.config.kernels)
-    // TODO do a source init first
     return Promise.all(ids.map(id => {
+      const kern = this.config.kernels[id]
+      const {connection} = this.sources[kern.sourceId]
+      return connection.init().catch(err => {
+        connection.status = 'errored'
+      })
+    })).then(Promise.all(ids.map(id => {
       const session = latestSessionForKernel(this.docid, id)
       const kern = this.config.kernels[id]
       const {connection} = this.sources[kern.sourceId]
@@ -82,7 +87,7 @@ export default class Manager {
         }
         setLatestSessionForKernel(this.docid, ids[i], session.id)
       })
-    })
+    }))
   }
 
   notify = id => {
@@ -183,6 +188,10 @@ export default class Manager {
     }).catch(err => {
       console.log('faileduresfs', err)
     })
+  }
+
+  connectedSources() {
+    return Object.values(this.sources).filter(s => s.connection.status === 'connected')
   }
 
   listen = (id, fn) => {
