@@ -75,9 +75,13 @@ export default class Manager {
       } else {
         return connection.createSession(kern.config)
       }
-    })).then(sessions => {
+    }).map((prom, i) => prom.catch(err => {
+      console.log('failed to connect', err)
+      // TODO need a way to report errors
+    }))).then(sessions => {
       this.kernelSessions = {}
       sessions.forEach((session, i) => {
+        if (!session) return
         this.kernelSessions[ids[i]] = {
           kernelId: ids[i],
           sessionId: session.id,

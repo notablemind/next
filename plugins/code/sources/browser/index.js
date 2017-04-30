@@ -7,6 +7,10 @@ class Connection {
     this.status = 'connected'
   }
 
+  init() {
+    return Promise.resolve()
+  }
+
   getKernelSpecs() {
     return Promise.resolve([{
       language: 'javascript',

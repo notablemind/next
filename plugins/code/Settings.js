@@ -90,11 +90,18 @@ export default class Settings extends Component {
 
   renderKernels() {
     const kernels = Object.values(this.props.config.kernels)
+    const sessions = this.props.manager.kernelSessions
     return <div>
       {!kernels.length && 'No kernels yet'}
       {kernels.map(kernel => (
-        <div key={kernel.id}>
+        <div
+          className={css(styles.configuredKernel)}
+          key={kernel.id}
+        >
           {kernel.title}
+          <div style={{flex: 1}}/>
+          {sessions[kernel.id] && sessions[kernel.id].session.isConnected() ?
+            'connected' : 'disconnected'}
         </div>
       ))}
     </div>
@@ -110,7 +117,7 @@ export default class Settings extends Component {
       </div>
       <div className={css(styles.section)}>
         <div className={css(styles.sectionTitle)}>
-          Kernels
+          Configured Kernels
         </div>
         {this.renderKernels()}
       </div>
@@ -130,6 +137,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginBottom: 1,
     borderRadius: 3,
+  },
+
+  configuredKernel: {
+    padding: '5px 0px',
+    flexDirection: 'row',
   },
 
   section: {

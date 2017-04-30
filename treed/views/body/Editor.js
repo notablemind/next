@@ -51,10 +51,10 @@ export default class Editor extends Component {
   onKeyDown = (e: any) => {
     switch (e.keyCode) {
     case 8: // delete
-      if (!e.target.value.length) {
+      if (!e.target.value.length && this.props.node.children.length === 0) {
         this.props.actions.remove(this.props.node._id, true)
-      } else {
-        return
+      } else if (e.target.selectionEnd === 0) {
+        this.props.actions.joinToPrevious(this.props.node._id)
       }
       break
     case 9: // tab

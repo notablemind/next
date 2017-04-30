@@ -71,7 +71,13 @@ const afterPos = (store, id, nodes, root) => {
   return {pid, idx}
 }
 
-const nextActiveAfterRemoval = (id, nodes, goUp) => {
+const lastVisibleChild = (id, nodes, isCollapsed) => {
+  const children = nodes[id].children
+  if (!children.length || isCollapsed(id)) return id
+  return lastVisibleChild(children[children.length - 1], nodes, isCollapsed)
+}
+
+const nextActiveAfterRemoval = (id, nodes, isCollapsed, goUp) => {
   const sibs = nodes[nodes[id].parent].children
   let nid
   if (sibs.length > 1) {
@@ -80,11 +86,11 @@ const nextActiveAfterRemoval = (id, nodes, goUp) => {
       if (idx === 0) {
         nid = nodes[id].parent
       } else {
-        nid = sibs[idx - 1]
+        nid = lastVisibleChild(sibs[idx - 1], nodes, isCollapsed)
       }
     } else {
       if (idx === sibs.length - 1) {
-        nid = sibs[idx - 1]
+        nid = lastVisibleChild(sibs[idx - 1], nodes, isCollapsed)
       } else {
         nid = sibs[idx + 1]
       }
@@ -1063,20 +1069,27 @@ const actions = {
       store.emit(store.events.nodeView(id))
     },
 
+    joinToPrevious(store: store, id: string, text: string) {
+      const nid = store.actions.trash(id)
+      store.execute({
+      }, id, pid)
+    },
+
     remove(store: Store, id: string=store.state.active, goUp: boolean=false) {
       if (id === store.state.root) return
-      const nid = nextActiveAfterRemoval(id, store.db.data, goUp)
+      const nid = nextActiveAfterRemoval(id, store.db.data, store.getters.isCollapsed, goUp)
       store.actions.setActive(nid, true)
       store.actions.copyNode(id, false)
       store.execute({
         type: 'remove',
         args: {id},
       }, id, nid)
+      return nid
     },
 
     trash(store: Store, id: string=store.state.active, goUp: boolean=false) {
       if (id === store.state.root) return
-      const nid = nextActiveAfterRemoval(id, store.db.data, goUp)
+      const nid = nextActiveAfterRemoval(id, store.db.data, store.getters.isCollapsed, goUp)
       store.actions.setActive(nid, true)
       const node = store.getters.node(id)
       // if it's been around for under 5 seconds, or it's been around for
@@ -1098,6 +1111,7 @@ const actions = {
           args: {id},
         }, id, nid)
       }
+      return nid
     },
 
     unTrash(store: Store, id: string=store.state.active) {
