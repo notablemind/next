@@ -315,6 +315,14 @@ const keys: ViewActionConfig = {
     description: 'Jump to top of document',
   },
 
+  joinWithNext: {
+    shortcuts: {
+      normal: 'J',
+    },
+    alias: 'joinWithNext',
+    description: 'Join with next node',
+  },
+
   /*
   visualMode: {
     shortcuts: {

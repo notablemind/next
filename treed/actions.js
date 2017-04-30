@@ -1069,13 +1069,42 @@ const actions = {
       store.emit(store.events.nodeView(id))
     },
 
+    joinWithNext(store: store, id: string=store.state.active) {
+      let next
+      const nodes = store.db.data
+      const node = nodes[id]
+      if (node.children.length && !store.getters.isCollapsed(id)) {
+        next = node.children[0]
+      } else if (nodes[node.parent]) {
+        const sibs = nodes[node.parent].children
+        const idx = sibs.indexOf(id)
+        if (idx < sibs.length - 1) {
+          next = sibs[idx + 1]
+        } else {
+          return
+        }
+      }
+      let mergedText = store.db.data[id].content + store.db.data[next].content
+      if (store.db.data[id].type === 'code' || store.db.data[next].type === 'code') {
+        mergedText = store.db.data[id].content + '\n' + store.db.data[next].content
+      }
+      store.execute({
+        type: 'merge',
+        args: {nid: id, oid: next, content: mergedText}
+      }, id, id)
+    },
+
     joinToPrevious(store: store, id: string, text: string) {
       const nid = nextActiveAfterRemoval(id, store.db.data, store.getters.isCollapsed, true)
       store.actions.setActive(nid, true)
       store.actions.editAt(nid, store.db.data[nid].content.length)
+      let mergedText = store.db.data[nid].content + text
+      if (store.db.data[id].type === 'code' || store.db.data[nid].type === 'code') {
+        mergedText = store.db.data[nid].content + '\n' + text
+      }
       store.execute({
         type: 'merge',
-        args: {nid, oid: id, content: store.db.data[nid].content + text}
+        args: {nid, oid: id, content: mergedText}
       }, id, nid)
     },
 
