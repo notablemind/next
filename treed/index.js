@@ -117,9 +117,17 @@ export default class Treed {
     pluginsArray: Array<Plugin<any, any>>,
     viewTypes: ViewTypes,
     documentId: string,
-    sharedViewData: any,
-    defaultRootContents: string = '',
-    defaultPlugins: Array<string> = [],
+    {
+      sharedViewData,
+      defaultRootContents = '',
+      defaultPlugins = [],
+      initialClipboard = null
+    }: {
+      sharedViewData: any,
+      defaultRootContents: string,
+      defaultPlugins: Array<string>,
+      initialClipboard: ?{},
+    },
   ) {
     this.emitter = new FlushingEmitter()
     this.intentEmitter = new Emitter()
@@ -145,7 +153,7 @@ export default class Treed {
       cut: null,
       activeView: 1,
       plugins: {},
-      clipboard: null,
+      clipboard: initialClipboard,
       dropping: null,
       runtimeId: uuid(),
       documentId,

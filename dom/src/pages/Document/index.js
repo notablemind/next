@@ -275,11 +275,12 @@ class Document extends Component {
       treedPlugins,
       viewTypes,
       this.props.id,
-      loadSharedViewData(this.props.id),
-      title,
-      defaultPlugins,
-      // plugins.map(pl => pl.id).filter(id => optionalPlugins.indexOf(id) === -1),
-      // (this.state.sharedViewData || {})
+      {
+        sharedViewData: loadSharedViewData(this.props.id),
+        defaultRootContents: title,
+        defaultPlugins,
+        initialClipboard: window.sharedClipboard,
+      },
     )
     this._unsubs.push(treed.on(['node:root'], () => {
       this.onTitleChange(treed.db.data.root.content)
@@ -299,6 +300,9 @@ class Document extends Component {
       this._unsubs.push(store.on([store.events.serializableState()], () => {
         const state = treed.serializeViewState(store.id)
         saveLastViewState(this.props.id, state)
+      }))
+      this._unsubs.push(store.on([store.events.clipboardChanged()], () => {
+        window.sharedClipboard = treed.globalStore.globalState.clipboard
       }))
       this._unsubs.push(store.on([store.events.sharedViewData()], () => {
         saveSharedViewData(this.props.id, store.sharedViewData)

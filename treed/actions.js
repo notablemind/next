@@ -131,6 +131,7 @@ const actions = {
 
     setClipboard(globalStore: GlobalStore, contents: ClipboardContents) {
       globalStore.globalState.clipboard = contents
+      globalStore.emit(globalStore.events.clipboardChanged())
     },
 
     setNested(globalStore: GlobalStore, id: string, attrs: Array<string>, value: any) {
@@ -1040,7 +1041,7 @@ const actions = {
         store.emit(store.events.nodeView(store.globalState.cut))
         store.globalState.cut = null
       }
-      store.globalState.clipboard = store.db.cloneTree(id)
+      store.actions.setClipboard(store.db.cloneTree(id))
       if (copyToSystemClipboard) {
         copyToClipboard({
           'application/x-notablemind': JSON.stringify({
