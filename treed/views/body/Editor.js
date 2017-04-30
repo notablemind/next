@@ -55,6 +55,8 @@ export default class Editor extends Component {
         this.props.actions.remove(this.props.node._id, true)
       } else if (e.target.selectionEnd === 0) {
         this.props.actions.joinToPrevious(this.props.node._id)
+      } else {
+        return
       }
       break
     case 9: // tab

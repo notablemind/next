@@ -36,6 +36,7 @@ const plugins = [
   require('../../../../plugins/basics').default,
   require('../../../../plugins/code').default,
   require('../../../../plugins/text-actions').default,
+  require('../../../../plugins/debug').default,
 ]
 
 // const pluginMap = plugins.reduce((obj, pl) => (obj[pl.id] = pl, obj), {})

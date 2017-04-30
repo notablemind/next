@@ -50,12 +50,17 @@ export default class ImageBody extends Component {
       return this.setState({error: 'attachment not found'})
     }
     if (node._attachments[attachmentId] && node._attachments[attachmentId].data) {
-      //* TODO figure out why this isn't working???
-      const url = URL.createObjectURL(
-        node._attachments[attachmentId].data
-      )
+      let url
+      if (typeof node._attachments[attachmentId].data === 'string') {
+        url = 'data:image/png;base64,' + node._attachments[attachmentId].data
+      } else {
+        url = URL.createObjectURL(
+          node._attachments[attachmentId].data
+        )
+      }
       urlCache[key] = url
       this.setState({src: url})
+      //* TODO figure out why this isn't working???
       // */
       /*
       const f = new FileReader()

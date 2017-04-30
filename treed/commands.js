@@ -245,6 +245,37 @@ const commands: {[key: string]: Command<any>} = {
     },
   },
 
+  merge: {
+    // NOTE always assuming that the survivor is above
+    apply({oid, nid, content}, db, events) {
+      // ahhhhh fail need to remove from parent yall
+      const node = db.data[oid]
+      const surv = db.data[nid]
+      const nchildren = surv.children.concat(node.children)
+      return {
+        old: {node, surv},
+        prom: db.saveMany([{
+          ...db.data[nid],
+          content,
+          children: nchildren,
+        }, {
+          ...db.data[oid],
+          _deleted: true,
+        }].concat(node.children.map(cid => ({...db.data[cid], parent: nid}))))
+      }
+    },
+
+    undo({node, surv}, db, events) {
+      return {
+        prom: db.saveMany(
+          [node, surv].concat(node.children.map(
+            child => ({...db.data[child], parent: node._id})
+          ))
+        )
+      }
+    },
+  },
+
   remove: {
     apply({id}, db, events) {
       const now = Date.now()

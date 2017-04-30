@@ -1070,9 +1070,11 @@ const actions = {
     },
 
     joinToPrevious(store: store, id: string, text: string) {
-      const nid = store.actions.trash(id)
+      const nid = nextActiveAfterRemoval(id, store.db.data, store.getters.isCollapsed, true)
       store.execute({
-      }, id, pid)
+        type: 'merge',
+        args: {nid, oid: id, content: store.db.data[nid] + text}
+      })
     },
 
     remove(store: Store, id: string=store.state.active, goUp: boolean=false) {
