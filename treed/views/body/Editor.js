@@ -54,7 +54,7 @@ export default class Editor extends Component {
       if (!e.target.value.length && this.props.node.children.length === 0) {
         this.props.actions.remove(this.props.node._id, true)
       } else if (e.target.selectionEnd === 0) {
-        this.props.actions.joinToPrevious(this.props.node._id)
+        this.props.actions.joinToPrevious(this.props.node._id, e.target.value)
       } else {
         return
       }

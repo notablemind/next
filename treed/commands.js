@@ -252,9 +252,16 @@ const commands: {[key: string]: Command<any>} = {
       const node = db.data[oid]
       const surv = db.data[nid]
       const nchildren = surv.children.concat(node.children)
+      const idx = db.data[node.parent].children.indexOf(oid)
+      if (node.parent === nid) {
+        throw new Error('ummmmm TODO')
+      }
       return {
-        old: {node, surv},
+        old: {node, idx, nid, ochildren: surv.children, ocontent: surv.content},
         prom: db.saveMany([{
+          ...db.data[node.parent],
+          children: db.data[node.parent].children.filter(i => i !== oid),
+        }, {
           ...db.data[nid],
           content,
           children: nchildren,
@@ -265,10 +272,19 @@ const commands: {[key: string]: Command<any>} = {
       }
     },
 
-    undo({node, surv}, db, events) {
+    undo({node, nid, idx, ochildren, ocontent}, db, events) {
+      const sibs = db.data[node.parent].children.slice()
+      sibs.splice(idx, 0, node._id)
       return {
         prom: db.saveMany(
-          [node, surv].concat(node.children.map(
+          [node, {
+            ...db.data[nid],
+            children: ochildren,
+            content: ocontent,
+          }, {
+            ...db.data[node.parent],
+            children: sibs,
+          }].concat(node.children.map(
             child => ({...db.data[child], parent: node._id})
           ))
         )
