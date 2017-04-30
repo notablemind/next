@@ -248,46 +248,61 @@ const commands: {[key: string]: Command<any>} = {
   merge: {
     // NOTE always assuming that the survivor is above
     apply({oid, nid, content}, db, events) {
-      // ahhhhh fail need to remove from parent yall
       const node = db.data[oid]
       const surv = db.data[nid]
-      const nchildren = surv.children.concat(node.children)
       const idx = db.data[node.parent].children.indexOf(oid)
+      const updates = [{
+          ...db.data[oid],
+          _deleted: true,
+        }].concat(node.children.map(cid => ({...db.data[cid], parent: nid})))
       if (node.parent === nid) {
-        throw new Error('ummmmm TODO')
-      }
-      return {
-        old: {node, idx, nid, ochildren: surv.children, ocontent: surv.content},
-        prom: db.saveMany([{
+        const nchildren = node.children.concat(surv.children)
+        updates.push({
+          ...db.data[nid],
+          content,
+          children: nchildren.filter(i => i !== oid),
+        })
+      } else {
+        const nchildren = surv.children.concat(node.children)
+        updates.push({
           ...db.data[node.parent],
           children: db.data[node.parent].children.filter(i => i !== oid),
         }, {
           ...db.data[nid],
           content,
           children: nchildren,
-        }, {
-          ...db.data[oid],
-          _deleted: true,
-        }].concat(node.children.map(cid => ({...db.data[cid], parent: nid}))))
+        })
+      }
+      return {
+        old: {node, idx, nid, ochildren: surv.children, ocontent: surv.content},
+        prom: db.saveMany(updates)
       }
     },
 
     undo({node, nid, idx, ochildren, ocontent}, db, events) {
-      const sibs = db.data[node.parent].children.slice()
-      sibs.splice(idx, 0, node._id)
+      const updates = [node, ].concat(node.children.map(
+        child => ({...db.data[child], parent: node._id})
+      ))
+      if (nid === node.parent) {
+        updates.push({
+          ...db.data[nid],
+          children: ochildren,
+          content: ocontent,
+        })
+      } else {
+        const sibs = db.data[node.parent].children.slice()
+        sibs.splice(idx, 0, node._id)
+        updates.push({
+          ...db.data[nid],
+          children: ochildren,
+          content: ocontent,
+        }, {
+          ...db.data[node.parent],
+          children: sibs,
+        })
+      }
       return {
-        prom: db.saveMany(
-          [node, {
-            ...db.data[nid],
-            children: ochildren,
-            content: ocontent,
-          }, {
-            ...db.data[node.parent],
-            children: sibs,
-          }].concat(node.children.map(
-            child => ({...db.data[child], parent: node._id})
-          ))
-        )
+        prom: db.saveMany(updates)
       }
     },
   },
