@@ -22,6 +22,7 @@ export default class Settings extends Component {
   componentDidMount() {
     Promise.all(this.props.manager.connectedSources().map(({source: {id}, connection}) => {
       this.setState(({loading}) => ({loading: {...loading, [id]: true}}))
+      console.log('working with connection', connection)
       return connection.getKernelSpecs().then(specs => {
         this.setState(({kernelSpecs, loading}) => ({
           kernelSpecs: {...kernelSpecs, [id]: specs},

@@ -15,9 +15,12 @@ export default class Connection {
   }
 
   init() {
+    console.log("init jupyter")
     return timeout(Kernel.getSpecs(this.kernelOptions), 500).then(() => {
+      console.log('connected jup')
       this.status = 'connected'
     }, err => {
+      console.log('nope dub', err)
       this.status = 'disconnected'
     })
   }

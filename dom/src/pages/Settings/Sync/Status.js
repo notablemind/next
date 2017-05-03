@@ -26,7 +26,7 @@ class LiveSince extends Component {
       if (minutes === 0) contents = 'synced just now'
       else contents = `synced ${minutes} minutes ago`
     } else {
-      contents = `synced at ${new Date(sync.lastSynced).toLocaleString()}`
+      contents = `synced at ${new Date(this.props.time).toLocaleString()}`
     }
     return <span>{contents}</span>
   }

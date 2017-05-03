@@ -60,13 +60,11 @@ export default class Manager {
 
   init() {
     const ids = Object.keys(this.config.kernels)
-    return Promise.all(ids.map(id => {
-      const kern = this.config.kernels[id]
-      const {connection} = this.sources[kern.sourceId]
-      return connection.init().catch(err => {
-        connection.status = 'errored'
-      })
-    })).then(Promise.all(ids.map(id => {
+    return Promise.all(Object.values(this.sources).map(source => source.connection.init().catch(err => {
+      console.error('failed to connect to source', source)
+      console.error(err)
+      source.connection.status = 'errored'
+    }))).then(Promise.all(ids.map(id => {
       const session = latestSessionForKernel(this.docid, id)
       const kern = this.config.kernels[id]
       const {connection} = this.sources[kern.sourceId]
@@ -79,6 +77,7 @@ export default class Manager {
       console.log('failed to connect', err)
       // TODO need a way to report errors
     }))).then(sessions => {
+      debugger
       this.kernelSessions = {}
       sessions.forEach((session, i) => {
         if (!session) return
@@ -116,7 +115,6 @@ export default class Manager {
       }
       node = data[node.parent]
     }
-    console.log('scopes', scopes)
     return scopes
   }
 

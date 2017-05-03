@@ -51,7 +51,7 @@ export default class FileNode extends Component {
           <Strut size={10} />
           {file.size + ''}
           <Strut size={10} />
-          <SyncIcon synced={file.synced} />
+          <SyncIcon synced={file.sync} />
           <Strut size={5} />
         </div>
       : <div

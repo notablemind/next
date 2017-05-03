@@ -73,7 +73,10 @@ const mergeDocs = (myDoc, theirDoc) => {
 
 // TODO TODO TODO test this all up in here
 const mergeDataIntoDatabase = (data/*: SerializedData*/, db) => {
-  if (data.type !== MIME) throw new Error('wrong notablemind type: ' + MIME)
+  if (data.type !== MIME) {
+    console.log(data)
+    throw new Error('wrong notablemind type: ' + data.type)
+  }
   if (data.version !== VERSION) data = migrateData(data)
 
   const newDocsById = {}
