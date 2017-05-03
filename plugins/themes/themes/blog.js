@@ -23,6 +23,7 @@ const header4 = {
 }
 
 const theme: ThemeSettings = {
+  title: 'Blog',
   headerStyles: [
     header1,
     header2,

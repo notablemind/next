@@ -22,6 +22,8 @@ const header3 = {
 }
 
 const theme: Theme = {
+  title: 'Default',
+
   headerStyles: [
     header1,
     header2,

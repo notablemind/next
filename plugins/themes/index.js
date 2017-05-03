@@ -57,6 +57,24 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
   id: PLUGIN_ID,
   defaultGlobalConfig,
 
+  quickActions(store, node) {
+    const actions = []
+    const {theme='default', overrides={}} = store.db.data.settings.plugins[PLUGIN_ID] || {}
+    return Object.keys(themes).map(key => {
+      if (theme === key) return
+      return {
+        // TODO maybe have modifiers like "deep", and then I'd just have an action
+        // that is "clear_output" and you could add "deep" to it.
+        // it would be like `flags: ['deep']` or something.
+        id: 'set_theme_' + key,
+        title: 'Set theme: ' + themes[key].title,
+        action: (store) => {
+          store.actions.setNested('settings', ['plugins', PLUGIN_ID, 'theme'], key)
+        },
+      }
+    }).filter(x => x)
+  },
+
   getters: {
     viewTheme(store) {
       const {theme='default', overrides={}} = store.db.data.settings.plugins[PLUGIN_ID] || {}
@@ -142,19 +160,6 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
       */
     },
   },
-
-  view: {
-    // TODO this isn't hooked up yet
-    list: {
-      className(store) {
-        if (store.getters.pluginConfig(PLUGIN_ID).indentType === 'dots') {
-          return 'Themefeature_indent--bullets'
-        }
-        return ''
-      }
-    },
-  },
-
 }
 
 export default plugin
