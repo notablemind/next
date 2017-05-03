@@ -287,6 +287,19 @@ module.exports = class Notablemind {
     }))
   }
 
+  getToken() {
+    if (!this.userProm) return Promise.reject(new Error('not logged in'));
+    return this.userProm.then(({token}) => {
+      if (token.expires_at <= Date.now()) {
+        return google.refreshToken(token, this.documentsDir).then(user => {
+          this.user = user
+          return user.token
+        })
+      }
+      return Promise.resolve(token)
+    })
+  }
+
   processDocAction(action, docid, data) {
     const db = this.ensureDocDb(docid)
     // console.log('processing doc action', action, docid, data)
@@ -342,16 +355,15 @@ module.exports = class Notablemind {
     if (!this.online || !this.user || this.working[id]) return console.log('but not ready')
     if (!this.meta[id].sync) return console.log('but no meta.sync')
     clearTimeout(this.periods[id])
-    const {token} = this.user
     const db = this.ensureDocDb(id)
     this.working[id] = true
     console.log('> ok actually syncing')
-    sync(token, this.meta[id].sync, {
+    this.getToken().then(token => sync(token, this.meta[id].sync, {
       db,
       api: googleSyncApi,
       dirty: this.meta[id].sync.dirty,
       pullOnly: false,
-    })
+    }))
       .then(contents => {
         console.log('> did the stuff')
         if (!contents) {
@@ -441,12 +453,11 @@ module.exports = class Notablemind {
   }
 
   listRemoteFiles() {
-    if (!this.userProm) throw new Error('not logged in')
-    return this.userProm
+    return this.getToken()
       // TODO update meta's w/ sync information
       // TODO TODO TODO WORK HERE NEXT BC I DELETED A BUNCH OF THINGS AND THEY
       // NEED TO UPDATE NOW
-      .then(user => google.listFiles(user.token))
+      .then(token => google.listFiles(token))
       .then(remoteFiles => (this.processRemoteFiles(remoteFiles), remoteFiles))
   }
 
@@ -476,12 +487,11 @@ module.exports = class Notablemind {
   setupSyncForFile(id) {
     if (!this.userProm) throw new Error('not logged in')
     const db = this.ensureDocDb(id)
-    const {token} = this.user
     const {title} = this.meta[id]
-    return createFileData(db).then(data => {
+    return this.getToken().then(token => createFileData(db).then(data => {
       return google.getRootDirectory(token)
         .then(({id: rootId}) => google.createFile(token, rootId, {id, data, title}))
-    }).then(remoteFiles => {
+    })).then(remoteFiles => {
       const sync = {
         remoteFiles,
         owner: {
@@ -497,7 +507,7 @@ module.exports = class Notablemind {
   }
 
   downloadRemoteFile(file/*: {id: string, name: string, appProperties: {nmId: string}}*/) {
-    return google.downloadRemoteFile(this.user.token, file)
+    return this.getToken().then(token => google.downloadRemoteFile(token, file))
       .then(({sync, data, id}) => {
         this.meta[id] = {
           id,
@@ -521,9 +531,9 @@ module.exports = class Notablemind {
 
   setupSyncForRemoteFiles(files/*: any[]*/) { // TODO type file
     if (!this.userProm) throw new Error('not logged in')
-    return Promise.all(files.map(file => {
+    return this.getToken().then(token => Promise.all(files.map(file => {
       const nmId = file.appProperties.nmId // TODO check
-      return google.contentsForFile(this.user.token, file.id).then(data => { // TODO impl
+      return google.contentsForFile(token, file.id).then(data => { // TODO impl
         return this.ensureDocDb(nmId).bulkDocs({
           docs: data,
           new_edits: false,
@@ -542,7 +552,7 @@ module.exports = class Notablemind {
           this.broadcast('meta:update', nmId, this.meta[nmId])
         })
       })
-    }))
+    })))
   }
 
   trashFiles(files/*: any[]*/) {

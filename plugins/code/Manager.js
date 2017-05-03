@@ -77,7 +77,6 @@ export default class Manager {
       console.log('failed to connect', err)
       // TODO need a way to report errors
     }))).then(sessions => {
-      debugger
       this.kernelSessions = {}
       sessions.forEach((session, i) => {
         if (!session) return

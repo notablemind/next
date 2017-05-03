@@ -84,16 +84,21 @@ const getOrRefreshUser = (token/*: {expires_at: number, access_token: string, re
   if (token.expires_at > Date.now()) {
     return getProfile(token)
   } else {
-    return googleLogin.refresh(token)
-      .then(token => {if (!token) {throw new Error('unable to refresh')} return token})
-      .then(addExpiresAt)
-      .then(token => (saveData(documentsDir, token), token))
-      .then(getProfile)
+    return refreshToken(token, documentsDir)
   }
+}
+
+const refreshToken = (token, documentsDir) => {
+  return googleLogin.refresh(token)
+    .then(token => {if (!token) {throw new Error('unable to refresh')} return token})
+    .then(addExpiresAt)
+    .then(token => (saveData(documentsDir, token), token))
+    .then(getProfile)
 }
 
 module.exports = Object.assign({
   restoreUser,
+  refreshToken,
   login,
 }, files)
 
