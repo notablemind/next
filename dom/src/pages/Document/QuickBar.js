@@ -7,6 +7,21 @@ import fuzzysearch from 'fuzzysearch'
 
 type Tab = 'search' | 'command' | 'open'
 
+const makeTypeCommands = (store, node) => {
+  const commands = []
+  Object.keys(store.plugins.nodeTypes).forEach(type => {
+    if (type === node.type) return
+    const config = store.plugins.nodeTypes[type]
+    commands.push({
+      id: 'set_type_' + type,
+      key: 'set_type_' + type,
+      title: 'Set node type: ' + config.title,
+      action: () => store.actions.setNodeType(node._id, type),
+    })
+  })
+  return commands
+}
+
 const collectCommands = (plugins, store, extraCommands) => {
   const node = store.getters.activeNode()
   const commands = []
@@ -16,7 +31,7 @@ const collectCommands = (plugins, store, extraCommands) => {
     }
   })
   commands.push(...extraCommands.map(a => ({...a, key: 'doc:' + a.id})))
-  return commands
+  return commands.concat(makeTypeCommands(store, node))
 }
 
 const searchCommands = (commands, text) => {

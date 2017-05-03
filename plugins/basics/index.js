@@ -63,6 +63,7 @@ const plugin: Plugin<void, void> = {
     note: {
       title: 'Note',
       newSiblingsShouldCarryType: false,
+      containerClassName: node => css(styles.noteContainer),
       // shortcut: 'n',
 
       render: null, // TODO make this too
@@ -103,6 +104,10 @@ const styles = StyleSheet.create({
 
   rest: {
     flex: 1,
+  },
+
+  noteContainer: {
+    backgroundColor: 'gray',
   },
 })
 
