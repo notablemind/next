@@ -123,7 +123,13 @@ export default class ListItem extends Component {
     const childrenStyle = styles['children_' + indentStyle] || styles.children_lines
     const isMinimal = indentStyle === 'minimal'
 
-    return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth}` + (isRoot ? ' Node_root' : '')}>
+    const nodeTypeConfig = this.state.node.type !== 'normal' &&
+      this.props.store.plugins.nodeTypes[this.state.node.type] || {}
+    const containerCls = nodeTypeConfig.containerClassName
+      ? ' ' + nodeTypeConfig.containerClassName(this.state.node, this.props.store)
+      : ''
+
+    return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth} Node_container_${this.state.node.type}` + (isRoot ? ' Node_root' : '') + containerCls}>
       {!isRoot && isMinimal && this.state.node.children.length > 0 && <div
         className={css(styles.leftPad)}
         style={{width: Math.max(5, 40 - this.props.depth * 8)}}
@@ -168,7 +174,7 @@ export default class ListItem extends Component {
       </div>
 
       <div className={css(childrenStyle) + ' Node_children'}>
-        {(!collapsed || isRoot) && this.renderChildren()}
+        {(!collapsed || isRoot) && this.renderChildren(nodeTypeConfig)}
       </div>
     </div>
   }
@@ -189,9 +195,7 @@ export default class ListItem extends Component {
     ))
   }
 
-  renderChildren() {
-    const nodeTypeConfig = this.state.node.type !== 'normal' &&
-      this.props.store.plugins.nodeTypes[this.state.node.type] || {}
+  renderChildren(nodeTypeConfig) {
     if (nodeTypeConfig.childContainer) {
       return this.renderWrappedChildren(nodeTypeConfig.childContainer)
     }

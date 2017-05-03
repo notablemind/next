@@ -3,6 +3,8 @@
 import type {Plugin} from 'treed/types'
 import React from 'react'
 import {css, StyleSheet} from 'aphrodite'
+import Icon from 'treed/views/utils/Icon'
+import Content from 'treed/views/body/Content'
 
 const PLUGIN_ID = 'basics'
 
@@ -63,10 +65,15 @@ const plugin: Plugin<void, void> = {
     note: {
       title: 'Note',
       newSiblingsShouldCarryType: false,
-      containerClassName: node => css(styles.noteContainer),
-      // shortcut: 'n',
 
-      render: null, // TODO make this too
+      render: props => {
+        return <div className={css(styles.noteBody)}>
+          <Icon
+            name="ios-information-outline"
+            className={css(styles.noteIcon)} />
+          <Content {...props} style={{flex: 1}}/>
+        </div>
+      }, // TODO make this too
     },
   },
 }
@@ -106,8 +113,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  noteIcon: {
+    lineHeight: 1.5,
+    padding: '4px 5px',
+  },
+
+  noteBody: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+
   noteContainer: {
-    backgroundColor: 'gray',
+    backgroundColor: '#ddd',
+    borderLeft: '5px solid #aaa',
+    paddingLeft: 10,
   },
 })
 

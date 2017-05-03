@@ -108,13 +108,31 @@ const globalStylesToCss = (override={}, base={}) => {
   ].join('\n\n')
 }
 
+const typesStylesToCss = (override={}, base={}) => {
+  const joined = {...base, ...override}
+  return Object.keys(joined).map(type => {
+    let config = joined[type]
+    let res = []
+    if (config.container) {
+      const attrs = Object.keys(config.container).map(key => styleAttr(key, config.container[key])).join(';\n') + ';'
+      res.push(`.Node_container_${type} { ${attrs} }`)
+    }
+    if (config.body) {
+      const attrs = Object.keys(config.body).map(key => styleAttr(key, config.body[key])).join(';\n') + ';'
+      res.push(`.Node_body.Node_body_${type} .Node_rendered { ${attrs} }`)
+    }
+    return res.join('\n\n')
+  }).join('\n\n')
+}
+
 const themeToCss = ({theme, overrides={}}: GlobalConfig, themes: Themes): string => {
   const themeStyle = themes[theme || 'default']
   console.log('global', overrides.global, themeStyle.global)
   console.log('theme to css', themeStyle, overrides)
   return headerStylesToCss(overrides.headerStyles || themeStyle.headerStyles) +
   individualStylesToCss(overrides.individualStyles || {}, themeStyle.individualStyles) +
-  '\n\n' + globalStylesToCss(overrides.global || {}, themeStyle.global)
+  '\n\n' + globalStylesToCss(overrides.global || {}, themeStyle.global) +
+  '\n\n' + typesStylesToCss(overrides.types || {}, themeStyle.types)
 }
 
 export default themeToCss

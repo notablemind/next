@@ -65,6 +65,18 @@ const theme: ThemeSettings = {
     },
   },
 
+  types: {
+    note: {
+      container: {
+        backgroundColor: '#ddd',
+        borderLeft: '5px solid #aaa',
+        paddingLeft: '10px',
+      },
+      body: {
+        fontWeight: 'bold',
+      },
+    },
+  },
 
   individualStyles: defaultIndividualStyles({header1, header2, header3}),
 
