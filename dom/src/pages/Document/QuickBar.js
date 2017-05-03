@@ -35,9 +35,17 @@ const collectCommands = (plugins, store, extraCommands) => {
 }
 
 const searchCommands = (commands, text) => {
+  if (!text || !text.trim()) {
+    return commands.map(command => ({key: command.key, title: command.title, command}))
+  }
   return commands
   // TODO maybe precache the lowercase versions?
     .filter(command => fuzzysearch(text, command.title.toLowerCase()) || fuzzysearch(text, command.key.toLowerCase()))
+    .sort((a, b) => {
+      const aa = (a.title.toLowerCase().indexOf(text) !== -1 || a.key.toLowerCase().indexOf(text) !== -1) ? 1 : 0
+      const bb = (b.title.toLowerCase().indexOf(text) !== -1 || b.key.toLowerCase().indexOf(text) !== -1) ? 1 : 0
+      return bb - aa
+    })
     .map(command => ({key: command.key, title: command.title, command}))
 }
 
