@@ -62,9 +62,11 @@ export default class NotableClient extends NotableBase {
     return docid
   }
 
-  // TODO better figure out what to do here
-  importDoc(data: {id: string, title: string, data: any[]}) {
-    return this.prom.send('doc:import', data)
+  importDoc(data) {
+    const docid = uuid()
+    return this.prom.send('doc:import', docid, data).then(meta => {
+      this.meta[docid] = meta
+    })
   }
 
   syncNow(docid) {

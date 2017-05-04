@@ -7,6 +7,12 @@ import fuzzysearch from 'fuzzysearch'
 
 type Tab = 'search' | 'command' | 'open'
 
+type PluginQuickCommand = {
+  id: string,
+  title: string,
+  action: () => void,
+}
+
 const makeTypeCommands = (store, node) => {
   const commands = []
   Object.keys(store.plugins.nodeTypes).forEach(type => {

@@ -276,9 +276,11 @@ module.exports = class Notablemind {
      this.doSync(docid)
    })
 
-    ipc.on('doc:import', (evt, data) => {
-      // TODO something reasonable here
-      // and resolve the promise
+    ipc.on('doc:import', (evt, docid, filename, data) => {
+      const {meta, docs} = importData(docid, filename, data)
+      this.meta[docid] = meta
+      const db = this.ensureDocDb(docid)
+      return db.bulkDocs({docs}).then(() => meta)
     })
 
     return Promise.all(this.plugins.map(plugin => {

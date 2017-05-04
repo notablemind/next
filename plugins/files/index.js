@@ -7,6 +7,8 @@ import Icon from 'treed/views/utils/Icon'
 import type {Store, Plugin, GlobalStore} from 'treed/types'
 
 import FileNode from './FileNode'
+import ImportModal from './ImportModal'
+import showModal from './showModal'
 
 type File = RemoteFile | LocalFile
 
@@ -75,6 +77,15 @@ const plugin = ({nm}): Plugin<*, *> => ({
       }
     }
   },
+
+  quickActions: (store, node) => [{
+    id: 'something',
+    title: 'Import file',
+    action: () => {
+      // TODO maybe have the store manage modals?
+      showModal(onClose => <ImportModal onClose={onClose} />)
+    },
+  }],
 
   actions: {
     createFileForNode(store, id, title) {
