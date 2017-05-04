@@ -125,15 +125,15 @@ const ViewWrapper = withStore({
 })
 
 type OverlayState =
-      | {
-          type: 'search',
-          tagIds: string[],
-          query: string
-        }
-      | {
-          type: 'list',
-          root: string
-        }
+  | {
+      type: 'search',
+      tagIds: string[],
+      query: string
+    }
+  | {
+      type: 'list',
+      root: string
+    }
 
 class Document extends Component {
   state: {
