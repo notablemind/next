@@ -65,7 +65,8 @@ export default class ListItem extends Component {
   shouldComponentUpdate(nextProps: any, nextState: any) {
     return (
       nextState !== this.state ||
-      nextProps.indentStyle !== this.props.indentStyle
+      nextProps.indentStyle !== this.props.indentStyle ||
+      nextProps.hideCompleted !== this.props.hideCompleted
     )
   }
 
@@ -112,9 +113,14 @@ export default class ListItem extends Component {
       return <div>loading...</div>
     }
 
+    const isRoot = this.props.store.state.root === this.props.id
+
+    if (this.props.hideCompleted && !isRoot && this.state.node.completed) {
+      return <div />;
+    }
+
     const {indentStyle} = this.props
     const collapsed = this.state.isCollapsed
-    const isRoot = this.props.store.state.root === this.props.id
     const contentClassName = css(
       styles.contentWrapper,
       this.state.isActive && styles.active,
@@ -219,6 +225,8 @@ export default class ListItem extends Component {
             store={this.props.store}
             depth={this.props.depth + 1}
             nodeMap={this.props.nodeMap}
+            indentStyle={this.props.indentStyle}
+            hideCompleted={this.props.hideCompleted}
             id={id}
           />
         ),
@@ -236,6 +244,7 @@ export default class ListItem extends Component {
         depth={this.props.depth + 1}
         nodeMap={this.props.nodeMap}
         indentStyle={this.props.indentStyle}
+        hideCompleted={this.props.hideCompleted}
         id={id}
         key={id}
       />

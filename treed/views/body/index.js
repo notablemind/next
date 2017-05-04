@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
 
   completedBody: {
-    color: '#777',
+    color: '#bbb',
     fontStyle: 'italic',
   },
 

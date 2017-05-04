@@ -49,6 +49,7 @@ export default class ListView extends Component {
         store.events.mode(),
         store.events.activeView(),
         store.events.contextMenu(),
+        store.events.viewState(),
         store.events.viewTheme && store.events.viewTheme(),
       ],
       store => ({
@@ -56,6 +57,7 @@ export default class ListView extends Component {
         mode: store.getters.mode(),
         isActiveView: store.getters.isActiveView(),
         contextMenu: store.getters.contextMenu(),
+        view: store.getters.viewState(),
         viewTheme: store.getters.viewTheme && store.getters.viewTheme(),
       }),
     )
@@ -208,6 +210,7 @@ export default class ListView extends Component {
               depth={depth}
               nodeMap={this._nodes}
               store={this.props.store}
+              hideCompleted={this.state.view.hideCompleted}
               indentStyle={viewTheme.indentStyle || 'lines'}
             />
           </div>

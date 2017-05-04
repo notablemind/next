@@ -200,7 +200,7 @@ export default class TodoSummary extends Component {
       const node = this.props.store.db.data[child]
       if (node.type === 'todo') {
         total += 1
-        if (node.types.todo.done) {
+        if (node.completed) {
           done += 1
         }
       }

@@ -495,28 +495,8 @@ class Document extends Component {
 
   renderHeader() {
     let traffic = null
-    // TODO support windows-style windows buttons too
+    // TODO support windows-style windows buttons too?
     if (ELECTRON) {
-      /*
-      const {remote} = require('electron')
-      // const win = remote.getCurrentWindow()
-      traffic = <div className={css(styles.traffic)}>
-        <div
-          onClick={() => remote.getCurrentWindow().close()}
-          className={css(styles.trafficLight, styles.trafficClose)}
-        />
-        <div
-          onClick={() => remote.getCurrentWindow().minimize()}
-          className={css(styles.trafficLight, styles.trafficMinimize)}
-        />
-        <div
-          onClick={() => remote.getCurrentWindow().setFullScreen(
-            !remote.getCurrentWindow().isFullScreen()
-          )}
-          className={css(styles.trafficLight, styles.trafficFullScreen)}
-        />
-      </div>
-      */
       traffic = <div style={{flexBasis: 80}} />
     }
 
@@ -553,6 +533,14 @@ class Document extends Component {
         />
       </div>
     )
+  }
+
+  extraCommands() {
+    const config = viewTypes[this.state.store.state.viewType]
+    const viewActions = config.quickActions ? config.quickActions(this.state.store, this.state.store.getters.activeNode()) : []
+    return this.quickCommands
+      .concat(makeViewTypeQuickActions(viewTypes, this.setViewType))
+      .concat(viewActions)
   }
 
   render() {
@@ -593,7 +581,7 @@ class Document extends Component {
               treed={treed}
               store={this.state.store}
               nm={this.props.nm}
-              extraCommands={this.quickCommands.concat(makeViewTypeQuickActions(viewTypes, this.setViewType))}
+              extraCommands={this.extraCommands()}
               onOpen={file => this.onNavigate(file.id)}
               initialTab={this.state.quick}
               onClose={() => this.setState({quick: null})}

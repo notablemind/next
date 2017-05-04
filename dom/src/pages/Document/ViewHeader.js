@@ -22,7 +22,7 @@ const ViewHeader = withStore({
     root,
     viewType,
     viewTypes,
-    defaultView: {viewType: defaultViewType, ...rest} = {},
+    defaultView: {viewType: defaultViewType = 'list', ...rest} = {},
   }) => (
     <div className={css(styles.container)}>
 
