@@ -59,6 +59,15 @@ const activeButtons = [] // ['date:newEntry']
 
 type DbT = any
 
+const makeViewTypeQuickActions = (viewTypes, setViewType) => {
+  return Object.keys(viewTypes).map(key => ({
+    key: 'set_view_type_' + key,
+    id: 'set_view_type_' + key,
+    title: 'Set view type: ' + viewTypes[key].title,
+    action: () => setViewType(key),
+  }))
+}
+
 const makeViewTypeLayerConfig = (viewTypes, setViewType) => {
   const layer = {}
   Object.keys(viewTypes).forEach(key => {
@@ -584,7 +593,7 @@ class Document extends Component {
               treed={treed}
               store={this.state.store}
               nm={this.props.nm}
-              extraCommands={this.quickCommands}
+              extraCommands={this.quickCommands.concat(makeViewTypeQuickActions(viewTypes, this.setViewType))}
               onOpen={file => this.onNavigate(file.id)}
               initialTab={this.state.quick}
               onClose={() => this.setState({quick: null})}
