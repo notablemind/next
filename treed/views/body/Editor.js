@@ -229,22 +229,6 @@ export default class Editor extends Component {
       return {help: 'Type file name', options: []}
     }
 
-    /*
-    // TODO this should be handled in the plugins. How can I get custom change
-    // handlers like this?
-    const fstop = tmpText.match(/^\/f(i(le?)?)? /)
-    if (fstop) {
-      const name = tmpText.slice(fstop[0].length)
-      return {
-        help: 'Type file name',
-        options: [{
-          label: 'Create "' + name + '"',
-          action: () => this.props.store.emitIntent('create-file', name),
-        }]
-      }
-    }
-    */
-
     const {nodeTypes} = this.props.store.plugins
     const handlers = Object.keys(nodeTypes)
       .map(k => nodeTypes[k].slashHandler)

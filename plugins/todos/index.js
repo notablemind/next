@@ -48,31 +48,22 @@ const plugin: Plugin<void, void> =  {
         return {
           // hmm are there any other things associated w/ this that I should
           // add?
-          // done: false,
-          // didDate: null,
           dueDate: null,
+          // priority: ??
+          // colors?
         }
       },
 
       actions: {
         toggleDone: {
           shortcuts: {
-            normal: 'alt+enter',
-            visual: 'alt+enter',
-            insert: 'alt+enter',
+            normal: 'cmd+enter',
+            visual: 'cmd+enter',
+            insert: 'cmd+enter',
           },
           description: 'Toggle "done"',
           action(store) {
             store.actions.toggleDone(store.state.active)
-            /*
-            const node = store.getters.activeNode()
-            const config = node.types.todo || {}
-            store.actions.setNested(node._id, ['types', 'todo'], {
-              ...config,
-              done: !config.done,
-              didDate: config.done ? null : Date.now(),
-            })
-            */
           },
         },
       },

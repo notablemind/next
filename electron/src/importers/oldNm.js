@@ -13,7 +13,7 @@ const makeSettings = data => {
     modified: data.modified,
     plugins,
     views: {},
-    version: 1,
+    version: 2,
     defaultViews: {
       root: {
         viewType: 'list',
@@ -52,7 +52,7 @@ const makeDoc = node => {
     children: node.children,
     type: node.type === 'base' ? 'normal' : node.type, // TODO translate type
     content: node.content,
-    completed: node.done ? node.modified : null,
+    completed: (node.done || node.disabled) ? node.modified : null,
     // TODO import plugins?
     plugins: {},
     types: importTypes(node),

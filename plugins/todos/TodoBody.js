@@ -21,15 +21,7 @@ export default (props: Props) => {
       className={css(styles.checkbox)}
       onMouseDown={e => e.stopPropagation()}
       onChange={e => props.store.actions.toggleDone(props.node._id)}
-      /*
-      onChange={e => props.store.actions.setNested(props.node._id, ['types', 'todo'], {
-        // TODO dedup w/ the key handler
-        ...todo,
-        done: !todo.done,
-        didDate: todo.done ? null : Date.now(),
-      })}
-      */
-      checked={completed}
+      checked={!!completed}
     />
     <Content {...props} style={{flex: 1}}/>
   </div>

@@ -10,5 +10,7 @@ export default {
   lineHeight: '1.2em',
   backgroundColor: 'transparent',
   padding: '4px 5px',
+  fontStyle: 'inherit',
   cursor: 'inherit',
+  color: 'inherit',
 }

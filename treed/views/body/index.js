@@ -48,7 +48,10 @@ export default class Body extends Component {
     const typeCls = nodeTypeConfig.className
       ? nodeTypeConfig.className({id: node._id, node, depth})
       : ''
-    const cls = `${contentClassName || ''} Node_body Node_body_${node.type} Node_body_level_${depth} ${pluginCls} ${typeCls}`
+    let cls = `${contentClassName || ''} Node_body Node_body_${node.type} Node_body_level_${depth} ${pluginCls} ${typeCls}`
+    if (node.type === 'normal' && node.completed) {
+      cls += ' ' + css(styles.completedBody)
+    }
 
     const Component = nodeTypeConfig.render || Content
 
@@ -152,6 +155,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'stretch',
     flex: 1,
+  },
+
+  completedBody: {
+    color: '#777',
+    fontStyle: 'italic',
   },
 
   wrapper: {
