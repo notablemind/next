@@ -1,13 +1,13 @@
-
 const snapMargin = 10
 
 const snapPadding = 5
 
-const compare = (mine, anchor) => mine - snapMargin < anchor && mine + snapMargin > anchor
+const compare = (mine, anchor) =>
+  mine - snapMargin < anchor && mine + snapMargin > anchor
 
 const trySnapping = (x, y, width, height, {lefts, rights, tops, bottoms}) => {
   let xsnap = null
-  for (let i=0; i < lefts.length; i++) {
+  for (let i = 0; i < lefts.length; i++) {
     if (compare(x, lefts[i])) {
       x = lefts[i]
       xsnap = lefts[i] - snapPadding
@@ -22,7 +22,7 @@ const trySnapping = (x, y, width, height, {lefts, rights, tops, bottoms}) => {
   }
 
   if (xsnap === null) {
-    for (let i=0; i < rights.length; i++) {
+    for (let i = 0; i < rights.length; i++) {
       if (compare(x, rights[i] + snapPadding)) {
         x = rights[i] + snapPadding
         xsnap = rights[i]
@@ -38,7 +38,7 @@ const trySnapping = (x, y, width, height, {lefts, rights, tops, bottoms}) => {
   }
 
   let ysnap = null
-  for (let i=0; i < tops.length; i++) {
+  for (let i = 0; i < tops.length; i++) {
     if (compare(y, tops[i])) {
       y = tops[i]
       ysnap = tops[i] - snapPadding
@@ -53,7 +53,7 @@ const trySnapping = (x, y, width, height, {lefts, rights, tops, bottoms}) => {
   }
 
   if (ysnap === null) {
-    for (let i=0; i < bottoms.length; i++) {
+    for (let i = 0; i < bottoms.length; i++) {
       if (compare(y, bottoms[i] + snapPadding)) {
         y = bottoms[i] + snapPadding
         ysnap = bottoms[i]

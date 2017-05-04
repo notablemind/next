@@ -1,4 +1,3 @@
-
 const searchShallow = (data, root, viewType, searchText, max) => {
   let queue = [root]
   const results = []
@@ -34,4 +33,3 @@ export const shallowFromRoot = (store, searchText) => {
     10,
   )
 }
-

@@ -29,13 +29,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 100000,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)'
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
 
   modal: {
     boxShadow: '0 0 5px #555',
     padding: 10,
     borderRadius: 3,
-    backgroundColor: 'white'
-  }
+    backgroundColor: 'white',
+  },
 })

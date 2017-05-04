@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import Content from './Content'
@@ -32,36 +32,55 @@ export default class Body extends Component {
   }
 
   render() {
-    const {store, depth, editState, contentClassName, textClassName, node, orientation} = this.props
+    const {
+      store,
+      depth,
+      editState,
+      contentClassName,
+      textClassName,
+      node,
+      orientation,
+    } = this.props
     const {className, blocks} = store.plugins.node
-    const nodeTypeConfig = node.type !== 'normal' &&
-      store.plugins.nodeTypes[node.type] || {}
+    const nodeTypeConfig = (node.type !== 'normal' &&
+      store.plugins.nodeTypes[node.type]) || {}
     const pluginCls = className ? className(node, store) || '' : ''
-    const typeCls = nodeTypeConfig.className ? nodeTypeConfig.className({id: node._id, node, depth}) : ''
+    const typeCls = nodeTypeConfig.className
+      ? nodeTypeConfig.className({id: node._id, node, depth})
+      : ''
     const cls = `${contentClassName || ''} Node_body Node_body_${node.type} Node_body_level_${depth} ${pluginCls} ${typeCls}`
 
     const Component = nodeTypeConfig.render || Content
 
-    const main = <Component
-      node={node}
-      store={store}
-      actions={this.props.actions}
-      editState={editState}
-      keyActions={this.props.keyActions}
-      onHeightChange={this.props.onHeightChange}
-      Content={Content}
-      style={this.props.style}
-      className={textClassName}
-    />
+    const main = (
+      <Component
+        node={node}
+        store={store}
+        actions={this.props.actions}
+        editState={editState}
+        keyActions={this.props.keyActions}
+        onHeightChange={this.props.onHeightChange}
+        Content={Content}
+        style={this.props.style}
+        className={textClassName}
+      />
+    )
 
-    return <div
-      onMouseDown={editState ? null : this.onClick}
-      className={css(styles.container)}
-    >
-      <div className={cls}>
-        {surroundWithBlocks(main, organizeBlocks(blocks, orientation), node, store)}
+    return (
+      <div
+        onMouseDown={editState ? null : this.onClick}
+        className={css(styles.container)}
+      >
+        <div className={cls}>
+          {surroundWithBlocks(
+            main,
+            organizeBlocks(blocks, orientation),
+            node,
+            store,
+          )}
+        </div>
       </div>
-    </div>
+    )
   }
 }
 
@@ -92,18 +111,22 @@ const surroundWithBlocks = (main, blocks, node, store) => {
   let wrapped = false
   if (blocks.left || blocks.right) {
     wrapped = true
-    main = <div className={css(styles.vert)}>
-      {(blocks.left || []).map((item, i) => item(i, node, store))}
-      {<div className={css(styles.wrapper)}>{main}</div>}
-      {(blocks.right || []).map((item, i) => item(i, node, store))}
-    </div>
+    main = (
+      <div className={css(styles.vert)}>
+        {(blocks.left || []).map((item, i) => item(i, node, store))}
+        {<div className={css(styles.wrapper)}>{main}</div>}
+        {(blocks.right || []).map((item, i) => item(i, node, store))}
+      </div>
+    )
   }
   if (blocks.top || blocks.bottom) {
-    main = <div className={css(styles.horiz)}>
-      {(blocks.top || []).map((item, i) => item(i, node, store))}
-      {wrapped ? main : <div className={css(styles.wrapper)}>{main}</div>}
-      {(blocks.bottom || []).map((item, i) => item(i, node, store))}
-    </div>
+    main = (
+      <div className={css(styles.horiz)}>
+        {(blocks.top || []).map((item, i) => item(i, node, store))}
+        {wrapped ? main : <div className={css(styles.wrapper)}>{main}</div>}
+        {(blocks.bottom || []).map((item, i) => item(i, node, store))}
+      </div>
+    )
   }
   return main
 }
@@ -135,4 +158,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 })
-

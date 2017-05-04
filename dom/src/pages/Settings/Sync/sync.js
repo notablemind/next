@@ -1,6 +1,6 @@
 export type User = {
   name: string,
-  email: string
+  email: string,
 }
 
 let onUser

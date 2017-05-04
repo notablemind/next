@@ -12,7 +12,7 @@ const sync = require('./sync')
 const createFileData = require('./createFileData')
 const mergeDataIntoDatabase = require('./mergeDataIntoDatabase')
 
-const loadMeta = (documentsDir)/*: Meta*/ => {
+const loadMeta = (documentsDir /*: Meta*/) => {
   const metaPath = path.join(documentsDir, 'meta.json')
   try {
     return JSON.parse(fs.readFileSync(metaPath, 'utf8'))
@@ -94,21 +94,31 @@ const noisy = message => err => {
 }
 
 const googleSyncApi = {
-  checkRemote: (auth/*: Auth*/, syncConfig/*: SyncConfig*/) => {
-    return google.metaForFile(auth, syncConfig.remoteFiles.contents).then(file =>
-      file.headRevisionId !== syncConfig.remoteFiles.contents.headRevisionId
-    )
-    .catch(noisy('failed to get meta for file'))
+  checkRemote: (auth /*: Auth*/, syncConfig /*: SyncConfig*/) => {
+    return google
+      .metaForFile(auth, syncConfig.remoteFiles.contents)
+      .then(
+        file =>
+          file.headRevisionId !==
+          syncConfig.remoteFiles.contents.headRevisionId,
+      )
+      .catch(noisy('failed to get meta for file'))
   },
 
-  updateContents(auth/*: Auth*/, syncConfig/*: SyncConfig*/, data/*: SerializedData*/) {
-    return google.updateContents(auth, syncConfig.remoteFiles.contents, data)
-    .catch(noisy('failed to update contents'))
+  updateContents(
+    auth /*: Auth*/,
+    syncConfig /*: SyncConfig*/,
+    data /*: SerializedData*/,
+  ) {
+    return google
+      .updateContents(auth, syncConfig.remoteFiles.contents, data)
+      .catch(noisy('failed to update contents'))
   },
 
-  getContents(auth/*: Auth*/, syncConfig/*: SyncConfig*/) {
-    return google.contentsForFile(auth, syncConfig.remoteFiles.contents)
-    .catch(noisy('failed to get contents'))
+  getContents(auth /*: Auth*/, syncConfig /*: SyncConfig*/) {
+    return google
+      .contentsForFile(auth, syncConfig.remoteFiles.contents)
+      .catch(noisy('failed to get contents'))
   },
 }
 
@@ -127,7 +137,7 @@ module.exports = class Notablemind {
   user: User
   */
 
-  constructor(plugins/*: Plugin[]*/, documentsDir/*: string*/) {
+  constructor(plugins /*: Plugin[]*/, documentsDir /*: string*/) {
     this.documentsDir = documentsDir
     this.plugins = plugins
     this.pluginState = {}
@@ -160,14 +170,14 @@ module.exports = class Notablemind {
     fs.writeFileSync(metaPath, JSON.stringify(this.meta, null, 2), 'utf8')
   }
 
-  broadcast(name/*: string*/, ...args/*: any[]*/) {
+  broadcast(name /*: string*/, ...args /*: any[]*/) {
     // console.log('>>>> Broadcasting', name, args, Object.keys(this.contents))
     for (let id in this.contents) {
       this.contents[id].send(name, ...args)
     }
   }
 
-  broadrest(oid/*: string*/, name/*: string*/, ...args/*: any[]*/) {
+  broadrest(oid /*: string*/, name /*: string*/, ...args /*: any[]*/) {
     for (let id in this.contents) {
       if (id === oid) continue
       if (!this.contents[id].isDestroyed()) {
@@ -192,7 +202,7 @@ module.exports = class Notablemind {
     })
 
     // User stuff
-    ipcMain.on('user:login', (evt) => {
+    ipcMain.on('user:login', evt => {
       this.broadcast('user:status', LOADING)
       this.login().then(
         user => this.broadcast('user:status', user),
@@ -201,7 +211,7 @@ module.exports = class Notablemind {
             type: 'error',
             message: 'Unable to login',
           })
-        }
+        },
       )
     })
 
@@ -251,30 +261,30 @@ module.exports = class Notablemind {
     })
     */
 
-   ipcMain.on('doc:new', (evt, docid, title) => {
-     this.meta[docid] = {
-       id: docid,
-       title: title,
-       lastOpened: Date.now(),
-       lastModified: Date.now(),
-       size: 1,
-       sync: null, // TODO maybe auto-setup sync if that setting is set? Also once I get more confidant about it :P
-     }
-     this.saveMeta()
-     this.broadcast('meta:update', docid, this.meta[docid])
-   })
+    ipcMain.on('doc:new', (evt, docid, title) => {
+      this.meta[docid] = {
+        id: docid,
+        title: title,
+        lastOpened: Date.now(),
+        lastModified: Date.now(),
+        size: 1,
+        sync: null, // TODO maybe auto-setup sync if that setting is set? Also once I get more confidant about it :P
+      }
+      this.saveMeta()
+      this.broadcast('meta:update', docid, this.meta[docid])
+    })
 
-   ipc.on('doc:hello', (evt, docid, chanid) => {
+    ipc.on('doc:hello', (evt, docid, chanid) => {
       return this.setupDocConnection(evt.sender, docid, chanid)
-   })
+    })
 
-   ipc.on('doc:action', (evt, action, docid, data) => {
+    ipc.on('doc:action', (evt, action, docid, data) => {
       return this.processDocAction(action, docid, data)
-   })
+    })
 
-   ipcMain.on('doc:sync-now', (evt, docid) => {
-     this.doSync(docid)
-   })
+    ipcMain.on('doc:sync-now', (evt, docid) => {
+      this.doSync(docid)
+    })
 
     ipc.on('doc:import', (evt, docid, filename, data) => {
       const {meta, docs} = importData(docid, filename, data)
@@ -283,14 +293,16 @@ module.exports = class Notablemind {
       return db.bulkDocs({docs}).then(() => meta)
     })
 
-    return Promise.all(this.plugins.map(plugin => {
-      if (!plugin.init) return
-      return Promise.resolve(plugin.init(this))
-    }))
+    return Promise.all(
+      this.plugins.map(plugin => {
+        if (!plugin.init) return
+        return Promise.resolve(plugin.init(this))
+      }),
+    )
   }
 
   getToken() {
-    if (!this.userProm) return Promise.reject(new Error('not logged in'));
+    if (!this.userProm) return Promise.reject(new Error('not logged in'))
     return this.userProm.then(({token}) => {
       if (token.expires_at <= Date.now()) {
         return google.refreshToken(token, this.documentsDir).then(user => {
@@ -305,18 +317,17 @@ module.exports = class Notablemind {
   processDocAction(action, docid, data) {
     const db = this.ensureDocDb(docid)
     // console.log('processing doc action', action, docid, data)
-    return docActions[action](db, data)
-      .then(res => {
-        if (this.meta[docid].sync) {
-          this.meta[docid].sync.dirty = true
-          this.saveMeta()
-          this.broadcast('meta:update', docid, {
-            sync: this.meta[docid].sync,
-          })
-          this.bouncyUpdate(docid)
-        }
-        return res
-      })
+    return docActions[action](db, data).then(res => {
+      if (this.meta[docid].sync) {
+        this.meta[docid].sync.dirty = true
+        this.saveMeta()
+        this.broadcast('meta:update', docid, {
+          sync: this.meta[docid].sync,
+        })
+        this.bouncyUpdate(docid)
+      }
+      return res
+    })
   }
 
   login() {
@@ -330,7 +341,7 @@ module.exports = class Notablemind {
       err => {
         this.userProm = null
         throw err
-      }
+      },
     )
     return this.userProm
   }
@@ -354,53 +365,60 @@ module.exports = class Notablemind {
 
   doSync(id) {
     console.log('want to do a sync', this.working[id], !!this.user)
-    if (!this.online || !this.user || this.working[id]) return console.log('but not ready')
+    if (!this.online || !this.user || this.working[id])
+      return console.log('but not ready')
     if (!this.meta[id].sync) return console.log('but no meta.sync')
     clearTimeout(this.periods[id])
     const db = this.ensureDocDb(id)
     this.working[id] = true
     console.log('> ok actually syncing')
-    this.getToken().then(token => sync(token, this.meta[id].sync, {
-      db,
-      api: googleSyncApi,
-      dirty: this.meta[id].sync.dirty,
-      pullOnly: false,
-    }))
-      .then(contents => {
-        console.log('> did the stuff')
-        if (!contents) {
+    this.getToken()
+      .then(token =>
+        sync(token, this.meta[id].sync, {
+          db,
+          api: googleSyncApi,
+          dirty: this.meta[id].sync.dirty,
+          pullOnly: false,
+        }),
+      )
+      .then(
+        contents => {
+          console.log('> did the stuff')
+          if (!contents) {
+            const meta = this.meta[id]
+            meta.sync.lastSynced = Date.now()
+            meta.sync.dirty = false
+            this.saveMeta()
+            this.broadcast('meta:update', meta.id, {
+              sync: meta.sync,
+            })
+            this.working[id] = false
+            return console.log('no push') // didn't need push
+          }
+          console.log('updating n stuff')
           const meta = this.meta[id]
           meta.sync.lastSynced = Date.now()
           meta.sync.dirty = false
+          meta.sync.remoteFiles.contents = contents
+          meta.lastModified = contents.modifiedTime
           this.saveMeta()
           this.broadcast('meta:update', meta.id, {
             sync: meta.sync,
+            lastModified: meta.lastModified,
           })
           this.working[id] = false
-          return console.log('no push') // didn't need push
-        }
-        console.log('updating n stuff')
-        const meta = this.meta[id]
-        meta.sync.lastSynced = Date.now()
-        meta.sync.dirty = false
-        meta.sync.remoteFiles.contents = contents
-        meta.lastModified = contents.modifiedTime
-        this.saveMeta()
-        this.broadcast('meta:update', meta.id, {
-          sync: meta.sync,
-          lastModified: meta.lastModified,
-        })
-        this.working[id] = false
-      }, err => {
-        console.error('> failed to sync', err)
-        this.working[id] = false
-      })
+        },
+        err => {
+          console.error('> failed to sync', err)
+          this.working[id] = false
+        },
+      )
       .then(() => {
         this.syncPeriodically(id)
       })
   }
 
-  ensureDocDb(docid/*: string*/) {
+  ensureDocDb(docid /*: string*/) {
     if (!this.dbs[docid]) {
       const docPath = path.join(this.documentsDir, docid)
       this.dbs[docid] = new PouchDB(docPath)
@@ -413,25 +431,29 @@ module.exports = class Notablemind {
     if (!this.docConnections[docid]) {
       this.docConnections[docid] = {}
       // sync at the start if we're the first connection
-      this.doSync(docid);
+      this.doSync(docid)
     }
     this.docConnections[docid][chanid] = sender
     const db = this.ensureDocDb(docid)
 
-    const changes = db.changes({
-      live: true,
-      since: 'now',
-      include_docs: true,
-      attachments: true,
-    }).on('change', change => {
-      const id = change.doc._id
-      const doc = change.doc._deleted ? null : change.doc
-      sender.send(chanid, id, doc)
-    }).on('complete', () => {
-      console.log('done w/ changes I guess', docid, chanid)
-    }).on('error', err => {
-      console.error('failed to sync', err)
-    })
+    const changes = db
+      .changes({
+        live: true,
+        since: 'now',
+        include_docs: true,
+        attachments: true,
+      })
+      .on('change', change => {
+        const id = change.doc._id
+        const doc = change.doc._deleted ? null : change.doc
+        sender.send(chanid, id, doc)
+      })
+      .on('complete', () => {
+        console.log('done w/ changes I guess', docid, chanid)
+      })
+      .on('error', err => {
+        console.error('failed to sync', err)
+      })
 
     let cleanedUp = false
     const cleanup = () => {
@@ -447,26 +469,32 @@ module.exports = class Notablemind {
     sender.on('destroyed', cleanup)
     sender.on('devtools-reload-page', cleanup)
 
-    return db.allDocs({include_docs: true, attachments: true}).then(({rows}) => {
-      const data = {}
-      rows.forEach(({doc}) => data[doc._id] = doc)
-      return data
-    })
+    return db
+      .allDocs({include_docs: true, attachments: true})
+      .then(({rows}) => {
+        const data = {}
+        rows.forEach(({doc}) => (data[doc._id] = doc))
+        return data
+      })
   }
 
   listRemoteFiles() {
-    return this.getToken()
-      // TODO update meta's w/ sync information
-      // TODO TODO TODO WORK HERE NEXT BC I DELETED A BUNCH OF THINGS AND THEY
-      // NEED TO UPDATE NOW
-      .then(token => google.listFiles(token))
-      .then(remoteFiles => (this.processRemoteFiles(remoteFiles), remoteFiles))
+    return (
+      this.getToken()
+        // TODO update meta's w/ sync information
+        // TODO TODO TODO WORK HERE NEXT BC I DELETED A BUNCH OF THINGS AND THEY
+        // NEED TO UPDATE NOW
+        .then(token => google.listFiles(token))
+        .then(
+          remoteFiles => (this.processRemoteFiles(remoteFiles), remoteFiles),
+        )
+    )
   }
 
   processRemoteFiles(remoteFiles) {
     let changed = false
     const remotesById = {}
-    remoteFiles.forEach(file => remotesById[file.appProperties.nmId] = file)
+    remoteFiles.forEach(file => (remotesById[file.appProperties.nmId] = file))
     Object.keys(this.meta).forEach(id => {
       const meta = this.meta[id]
       if (meta.sync && !remotesById[id]) {
@@ -490,26 +518,36 @@ module.exports = class Notablemind {
     if (!this.userProm) throw new Error('not logged in')
     const db = this.ensureDocDb(id)
     const {title} = this.meta[id]
-    return this.getToken().then(token => createFileData(db).then(data => {
-      return google.getRootDirectory(token)
-        .then(({id: rootId}) => google.createFile(token, rootId, {id, data, title}))
-    })).then(remoteFiles => {
-      const sync = {
-        remoteFiles,
-        owner: {
-          me: true,
-          email: this.user.email,
-          profile: this.user.profile,
-        },
-      }
-      this.meta[id].sync = sync
-      this.saveMeta()
-      this.broadcast('meta:update', id, {sync})
-    })
+    return this.getToken()
+      .then(token =>
+        createFileData(db).then(data => {
+          return google
+            .getRootDirectory(token)
+            .then(({id: rootId}) =>
+              google.createFile(token, rootId, {id, data, title}),
+            )
+        }),
+      )
+      .then(remoteFiles => {
+        const sync = {
+          remoteFiles,
+          owner: {
+            me: true,
+            email: this.user.email,
+            profile: this.user.profile,
+          },
+        }
+        this.meta[id].sync = sync
+        this.saveMeta()
+        this.broadcast('meta:update', id, {sync})
+      })
   }
 
-  downloadRemoteFile(file/*: {id: string, name: string, appProperties: {nmId: string}}*/) {
-    return this.getToken().then(token => google.downloadRemoteFile(token, file))
+  downloadRemoteFile(
+    file /*: {id: string, name: string, appProperties: {nmId: string}}*/,
+  ) {
+    return this.getToken()
+      .then(token => google.downloadRemoteFile(token, file))
       .then(({sync, data, id}) => {
         this.meta[id] = {
           id,
@@ -522,56 +560,67 @@ module.exports = class Notablemind {
         }
         this.saveMeta()
         const db = this.ensureDocDb(id)
-        return mergeDataIntoDatabase(data, db).then(() => {
-          this.broadcast('meta:update', id, this.meta[id])
-        }, err => {
-          console.error('failed to merge data into new database?')
-          throw err
-        })
+        return mergeDataIntoDatabase(data, db).then(
+          () => {
+            this.broadcast('meta:update', id, this.meta[id])
+          },
+          err => {
+            console.error('failed to merge data into new database?')
+            throw err
+          },
+        )
       })
   }
 
-  setupSyncForRemoteFiles(files/*: any[]*/) { // TODO type file
+  setupSyncForRemoteFiles(files /*: any[]*/) {
+    // TODO type file
     if (!this.userProm) throw new Error('not logged in')
-    return this.getToken().then(token => Promise.all(files.map(file => {
-      const nmId = file.appProperties.nmId // TODO check
-      return google.contentsForFile(token, file.id).then(data => { // TODO impl
-        return this.ensureDocDb(nmId).bulkDocs({
-          docs: data,
-          new_edits: false,
-        }).then(() => {
-          this.meta[nmId] = {
-            id: nmId,
-            title: file.name, // TODO check attr
-            lastOpened: Date.now(),
-            lastModified: file.lastModified, // TODO check attr
-            size: data.length,
-            sync: {
-              // TODO fill in
-            },
-          }
-          this.saveMeta()
-          this.broadcast('meta:update', nmId, this.meta[nmId])
-        })
-      })
-    })))
+    return this.getToken().then(token =>
+      Promise.all(
+        files.map(file => {
+          const nmId = file.appProperties.nmId // TODO check
+          return google.contentsForFile(token, file.id).then(data => {
+            // TODO impl
+            return this.ensureDocDb(nmId)
+              .bulkDocs({
+                docs: data,
+                new_edits: false,
+              })
+              .then(() => {
+                this.meta[nmId] = {
+                  id: nmId,
+                  title: file.name, // TODO check attr
+                  lastOpened: Date.now(),
+                  lastModified: file.lastModified, // TODO check attr
+                  size: data.length,
+                  sync: {
+                    // TODO fill in
+                  },
+                }
+                this.saveMeta()
+                this.broadcast('meta:update', nmId, this.meta[nmId])
+              })
+          })
+        }),
+      ),
+    )
   }
 
-  trashFiles(files/*: any[]*/) {
+  trashFiles(files /*: any[]*/) {
     // TODO will get to later
   }
 
-  makeCopies(ids/*: string[]*/) {
+  makeCopies(ids /*: string[]*/) {
     // TODO will also get to later
     // will probably return a list of the newly created files?
     // And I'll want to select & scroll to them in the UI somehow
   }
 
-  reallyDelete(files/*: any[]*/) {
+  reallyDelete(files /*: any[]*/) {
     // TODO also do later
   }
 
-  attachWindow(browserWindow/*: BrowserWindow*/) {
+  attachWindow(browserWindow /*: BrowserWindow*/) {
     const id = browserWindow.id
     this.windows[browserWindow.id] = browserWindow
     browserWindow.on('closed', () => {
@@ -594,12 +643,17 @@ module.exports.LOADING = LOADING
 
 const docActions = {
   set: (db, {id, attr, value, modified}) => {
-    return db.upsert(id, doc => Object.assign({}, doc, {[attr]: value, modified}))
+    return db.upsert(id, doc =>
+      Object.assign({}, doc, {[attr]: value, modified}),
+    )
   },
   setNested: (db, {id, attrs, last, value, modified}) => {
     return db.upsert(id, doc => {
       doc = Object.assign({}, doc, {modified})
-      const lparent = attrs.reduce((o, a) => o[a] = Object.assign({}, o[a]), doc)
+      const lparent = attrs.reduce(
+        (o, a) => (o[a] = Object.assign({}, o[a])),
+        doc,
+      )
       lparent[last] = value
       return doc
     })
@@ -608,7 +662,10 @@ const docActions = {
     // console.log('updating nested', id, attrs, last, update, modified)
     return db.upsert(id, doc => {
       doc = Object.assign({}, doc, {modified})
-      const lparent = attrs.reduce((o, a) => o[a] = Object.assign({}, o[a]), doc)
+      const lparent = attrs.reduce(
+        (o, a) => (o[a] = Object.assign({}, o[a])),
+        doc,
+      )
       lparent[last] = Object.assign({}, lparent[last], update)
       return doc
     })
@@ -620,4 +677,3 @@ const docActions = {
   saveMany: (db, {docs}) => db.bulkDocs(docs), // .then(r => (console.log('savemany', r), r)),
   delete: (db, {doc}) => db.remove(doc),
 }
-

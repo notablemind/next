@@ -12,7 +12,7 @@ const getFiles = data => {
       title: file.content,
       lastOpened: file.types.file.lastOpened,
       size: file.types.file.size,
-      selected: true
+      selected: true,
     }))
     .sort((a, b) => a.lastOpened - b.lastOpened)
 }
@@ -22,7 +22,7 @@ export default class ExportModal extends Component {
     super()
 
     this.state = {
-      files: getFiles(store.db.data)
+      files: getFiles(store.db.data),
     }
   }
 
@@ -33,16 +33,16 @@ export default class ExportModal extends Component {
           file.id === id
             ? {
                 ...file,
-                selected: !file.selected
+                selected: !file.selected,
               }
-            : file
-      )
+            : file,
+      ),
     })
   }
 
   deselectAll = () => {
     this.setState({
-      files: this.state.files.map(file => ({...file, selected: false}))
+      files: this.state.files.map(file => ({...file, selected: false})),
     })
   }
 
@@ -52,13 +52,13 @@ export default class ExportModal extends Component {
       blob => {
         this.setState({
           loading: false,
-          link: URL.createObjectURL(blob)
+          link: URL.createObjectURL(blob),
         })
       },
       err => {
         console.error('failed', err)
         this.setState({loading: false})
-      }
+      },
     )
   }
 
@@ -106,7 +106,7 @@ export default class ExportModal extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
 
   title: {
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     fontSize: '80%',
     fontWeight: 600,
-    color: '#777'
+    color: '#777',
   },
 
   file: {
@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
     borderBottom: '2px solid #fff',
     alignItems: 'center',
     ':hover': {
-      backgroundColor: '#eee'
-    }
+      backgroundColor: '#eee',
+    },
   },
 
   fileTitle: {
@@ -134,30 +134,30 @@ const styles = StyleSheet.create({
     textOverflow: 'ellipsis',
     overflow: 'hidden',
     flexShrink: 1,
-    display: 'block'
+    display: 'block',
   },
 
   fileSelected: {
     backgroundColor: '#fafafa',
     ':hover': {
-      backgroundColor: '#ddd'
-    }
+      backgroundColor: '#ddd',
+    },
   },
 
   spacer: {
-    flex: 1
+    flex: 1,
   },
 
   files: {
     flex: 1,
     alignSelf: 'stretch',
-    overflow: 'auto'
+    overflow: 'auto',
   },
 
   date: {
     width: 60,
     fontSize: '70%',
     alignItems: 'flex-end',
-    fontFamily: 'monospace'
-  }
+    fontFamily: 'monospace',
+  },
 })

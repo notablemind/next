@@ -9,10 +9,10 @@ export default class Sidebar extends Component {
   props: {
     globalStore: any,
     plugins: Array<any>,
-    side: 'left' | 'right'
+    side: 'left' | 'right',
   }
   state: {
-    store: Store
+    store: Store,
   }
   _unsub: () => void
 
@@ -26,7 +26,7 @@ export default class Sidebar extends Component {
       [this.props.globalStore.events.activeView()],
       () => {
         this.setState({store: this.props.globalStore.activeView()})
-      }
+      },
     )
   }
 
@@ -59,6 +59,6 @@ const styles = StyleSheet.create({
   container: {
     padding: 10,
     // minWidth: 200,
-    borderRight: '1px solid #ccc'
-  }
+    borderRight: '1px solid #ccc',
+  },
 })

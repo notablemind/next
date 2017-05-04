@@ -25,7 +25,7 @@ export default class ViewManager {
       getters: any,
       events: any,
       plugins: any,
-    }
+    },
   ) {
     this.db = db
     this.cmd = cmd

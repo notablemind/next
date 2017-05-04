@@ -9,7 +9,7 @@ export default class KeyCompleter extends Component {
     super()
     this.state = {
       prefix: '',
-      completions: []
+      completions: [],
     }
   }
 
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#555',
     borderRadius: 5,
     marginRight: 5,
-    marginBottom: 5
+    marginBottom: 5,
   },
 
   shortcut: {
@@ -74,12 +74,12 @@ const styles = StyleSheet.create({
     color: 'white',
     textShadow: '1px 1px 2px #999',
     marginRight: 5,
-    fontSize: 14
+    fontSize: 14,
   },
 
   prefix: {
     backgroundColor: '#3030ff',
-    marginBottom: 5
+    marginBottom: 5,
   },
 
   container: {
@@ -98,6 +98,6 @@ const styles = StyleSheet.create({
     // opacity: .5,
     zIndex: 1000000,
     paddingTop: 5,
-    fontSize: 12
-  }
+    fontSize: 12,
+  },
 })

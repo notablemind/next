@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import Body from '../body'
@@ -27,10 +27,7 @@ export default class ListItem extends Component {
 
     this._sub = store.setupStateListener(
       this,
-      store => [
-        store.events.node(id),
-        store.events.nodeView(id),
-      ],
+      store => [store.events.node(id), store.events.nodeView(id)],
       store => ({
         node: store.getters.node(id),
         isActive: store.getters.isActive(id),
@@ -66,7 +63,10 @@ export default class ListItem extends Component {
   }
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
-    return nextState !== this.state || nextProps.indentStyle !== this.props.indentStyle
+    return (
+      nextState !== this.state ||
+      nextProps.indentStyle !== this.props.indentStyle
+    )
   }
 
   componentDidMount() {
@@ -93,7 +93,11 @@ export default class ListItem extends Component {
   onContextMenu = (e: any) => {
     e.preventDefault()
     e.stopPropagation()
-    this.props.store.actions.openContextMenuForNode(this.props.id, e.clientX, e.clientY)
+    this.props.store.actions.openContextMenuForNode(
+      this.props.id,
+      e.clientX,
+      e.clientY,
+    )
   }
 
   startDragging = (e: any) => {
@@ -120,79 +124,106 @@ export default class ListItem extends Component {
       this.state.editState && styles.editing,
     )
 
-    const childrenStyle = styles['children_' + indentStyle] || styles.children_lines
+    const childrenStyle =
+      styles['children_' + indentStyle] || styles.children_lines
     const isMinimal = indentStyle === 'minimal'
 
-    const nodeTypeConfig = this.state.node.type !== 'normal' &&
-      this.props.store.plugins.nodeTypes[this.state.node.type] || {}
+    const nodeTypeConfig = (this.state.node.type !== 'normal' &&
+      this.props.store.plugins.nodeTypes[this.state.node.type]) || {}
     const containerCls = nodeTypeConfig.containerClassName
-      ? ' ' + nodeTypeConfig.containerClassName(this.state.node, this.props.store)
+      ? ' ' +
+          nodeTypeConfig.containerClassName(this.state.node, this.props.store)
       : ''
 
-    return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth} Node_container_${this.state.node.type}` + (isRoot ? ' Node_root' : '') + containerCls}>
-      {!isRoot && isMinimal && this.state.node.children.length > 0 && <div
-        className={css(styles.leftPad)}
-        style={{width: Math.max(5, 40 - this.props.depth * 8)}}
-        onClick={() => this.props.store.actions.toggleCollapse(this.props.id)}
-      />}
+    return (
       <div
-        className={css(
-          styles.top,
-          !this.state.editState && styles.topNormal
-        ) + ' Node_top ListItem_top'}
-        // onMouseMove={this.onMouseMove}
-        // onMouseDownCapture={this.onMouseDown}
-        onContextMenu={this.onContextMenu}
-        ref={node => {
-          this._div = node
-          this.props.nodeMap[this.props.id] = node
-        }}
+        className={
+          css(styles.container) +
+            ` Node_item Node_level_${this.props.depth} Node_container_${this.state.node.type}` +
+            (isRoot ? ' Node_root' : '') +
+            containerCls
+        }
       >
-        {!isMinimal && !isRoot && this.state.node.children.length > 0 &&
+        {!isRoot &&
+          isMinimal &&
+          this.state.node.children.length > 0 &&
           <div
-            className={css(styles.collapser,
-                          collapsed && styles.collapsed) + ' Node_collapser'}
-            onClick={() => this.props.store.actions.toggleCollapse(this.props.id)}
+            className={css(styles.leftPad)}
+            style={{width: Math.max(5, 40 - this.props.depth * 8)}}
+            onClick={() =>
+              this.props.store.actions.toggleCollapse(this.props.id)}
           />}
+        <div
+          className={
+            css(styles.top, !this.state.editState && styles.topNormal) +
+              ' Node_top ListItem_top'
+          }
+          // onMouseMove={this.onMouseMove}
+          // onMouseDownCapture={this.onMouseDown}
+          onContextMenu={this.onContextMenu}
+          ref={node => {
+            this._div = node
+            this.props.nodeMap[this.props.id] = node
+          }}
+        >
+          {!isMinimal &&
+            !isRoot &&
+            this.state.node.children.length > 0 &&
+            <div
+              className={
+                css(styles.collapser, collapsed && styles.collapsed) +
+                  ' Node_collapser'
+              }
+              onClick={() =>
+                this.props.store.actions.toggleCollapse(this.props.id)}
+            />}
 
-        <Body
-          node={this.state.node}
-          depth={this.props.depth}
-          editState={this.state.editState}
-          actions={this.props.store.actions}
-          contentClassName={contentClassName}
-          onHeightChange={this.ensureInView}
-          keyActions={this.keyActions}
-          store={this.props.store}
-          orientation="wide"
-        />
-        <Icon
-          className={css(styles.dragger, this.state.isDragging && styles.draggerDragging) + ' Treed_show_on_top_hover'}
-          onMouseDown={this.startDragging}
-          name="arrow-move"
-        />
-      </div>
+          <Body
+            node={this.state.node}
+            depth={this.props.depth}
+            editState={this.state.editState}
+            actions={this.props.store.actions}
+            contentClassName={contentClassName}
+            onHeightChange={this.ensureInView}
+            keyActions={this.keyActions}
+            store={this.props.store}
+            orientation="wide"
+          />
+          <Icon
+            className={
+              css(
+                styles.dragger,
+                this.state.isDragging && styles.draggerDragging,
+              ) + ' Treed_show_on_top_hover'
+            }
+            onMouseDown={this.startDragging}
+            name="arrow-move"
+          />
+        </div>
 
-      <div className={css(childrenStyle) + ' Node_children'}>
-        {(!collapsed || isRoot) && this.renderChildren(nodeTypeConfig)}
+        <div className={css(childrenStyle) + ' Node_children'}>
+          {(!collapsed || isRoot) && this.renderChildren(nodeTypeConfig)}
+        </div>
       </div>
-    </div>
+    )
   }
 
   renderWrappedChildren(container) {
-    return this.state.node.children.map((id, index) => (
+    return this.state.node.children.map((id, index) =>
       container({
         id,
         index,
         indentStyle: this.props.indentStyle,
-        child: <ListItem
-          store={this.props.store}
-          depth={this.props.depth + 1}
-          nodeMap={this.props.nodeMap}
-          id={id}
-        />
-      })
-    ))
+        child: (
+          <ListItem
+            store={this.props.store}
+            depth={this.props.depth + 1}
+            nodeMap={this.props.nodeMap}
+            id={id}
+          />
+        ),
+      }),
+    )
   }
 
   renderChildren(nodeTypeConfig) {
@@ -216,12 +247,14 @@ const activeStyles: any = {}
 ;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
   activeStyles[key] =
     // {outline: `2px solid ${colors[key]}`}
-    {boxShadow: `
+    {
+      boxShadow: `
       -2px -2px 0 ${colors[key]},
       -2px 2px 0 ${colors[key]},
       2px -2px 0 ${colors[key]},
       2px 2px 0 ${colors[key]}
-    `}
+    `,
+    }
 })
 activeStyles.dragging.backgroundColor = colors.draggingBackground
 
@@ -268,7 +301,7 @@ const styles = StyleSheet.create({
     right: '100%',
     marginRight: 'calc(.35em + 1px)',
     cursor: 'pointer',
-    opacity: .2,
+    opacity: 0.2,
     ':hover': {
       opacity: 1,
     },
@@ -300,11 +333,9 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
 
-  children: {
-  },
+  children: {},
 
-  children_minimal: {
-  },
+  children_minimal: {},
 
   children_lines: {
     paddingLeft: '.7em',

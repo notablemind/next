@@ -9,12 +9,12 @@ const ViewHeader = withStore({
   events: store => [
     store.events.root(),
     store.events.viewType(),
-    store.events.defaultView(store.getters.root())
+    store.events.defaultView(store.getters.root()),
   ],
   state: store => ({
     root: store.getters.root(),
     viewType: store.getters.viewType(),
-    defaultView: store.getters.defaultView(store.getters.root())
+    defaultView: store.getters.defaultView(store.getters.root()),
   }),
   shouldRefresh: (store, state) => state.root !== store.getters.root(),
   render: ({
@@ -22,7 +22,7 @@ const ViewHeader = withStore({
     root,
     viewType,
     viewTypes,
-    defaultView: {viewType: defaultViewType, ...rest} = {}
+    defaultView: {viewType: defaultViewType, ...rest} = {},
   }) => (
     <div className={css(styles.container)}>
 
@@ -38,7 +38,7 @@ const ViewHeader = withStore({
           <button
             className={css(
               styles.typeButton,
-              key === viewType && styles.typeButtonSelected
+              key === viewType && styles.typeButtonSelected,
             )}
             key={key}
             onClick={
@@ -50,7 +50,7 @@ const ViewHeader = withStore({
         ))}
       </div>
     </div>
-  )
+  ),
 })
 
 export default ViewHeader
@@ -63,8 +63,8 @@ const button = {
   borderRadius: 4,
   color: '#999',
   ':hover': {
-    backgroundColor: '#eee'
-  }
+    backgroundColor: '#eee',
+  },
 }
 
 const styles = StyleSheet.create({
@@ -72,24 +72,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    marginTop: 5
+    marginTop: 5,
   },
 
   buttons: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
 
   typeButton: {
-    ...button
+    ...button,
   },
 
   setDefaultButton: {
-    ...button
+    ...button,
   },
 
   typeButtonSelected: {
-    backgroundColor: '#eee'
-  }
+    backgroundColor: '#eee',
+  },
 })

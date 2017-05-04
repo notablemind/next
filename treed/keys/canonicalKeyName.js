@@ -1,4 +1,3 @@
-
 import {SYNONYMS, SHIFT_KEYS} from './codes'
 
 export default (step: string) => {
@@ -7,7 +6,7 @@ export default (step: string) => {
   const mods = {}
   // TODO handle people putting `meta` instead of `cmd`
   // also maybe allow ppl to swap btw cmd + ctrl for mac vs other?
-  parts.slice(0, -1).forEach(mod => mods[mod.toLowerCase()] = true)
+  parts.slice(0, -1).forEach(mod => (mods[mod.toLowerCase()] = true))
   let last = parts[parts.length - 1]
   if (!last) {
     console.warn(`you probably used a + when you should have plus: "${step}"`)
@@ -36,4 +35,3 @@ export default (step: string) => {
   if (mods.shift) name += 'shift+'
   return name + last
 }
-

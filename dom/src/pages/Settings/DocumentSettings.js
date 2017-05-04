@@ -19,7 +19,7 @@ export default class DocumentSettings extends Component {
       onSetPlugins,
       optionalPlugins,
       nm,
-      initialTab
+      initialTab,
     } = this.props
     const pluginSettings = treed.enabledPlugins
       .filter(p => p.settingsPage)
@@ -29,9 +29,9 @@ export default class DocumentSettings extends Component {
             p.settingsPage(
               treed.db.data.settings.plugins[p.id] || p.defaultGlobalConfig,
               treed.globalStore.globalState.plugins[p.id],
-              store
+              store,
             )), o),
-        {}
+        {},
       )
     console.log('pluginSettings', pluginSettings)
     return (
@@ -41,7 +41,7 @@ export default class DocumentSettings extends Component {
           initialTab={initialTab}
           sections={{
             'This document': ['Plugins', ...Object.keys(pluginSettings)],
-            Global: ['Files & Sync', 'Keyboard Shortcuts']
+            Global: ['Files & Sync', 'Keyboard Shortcuts'],
           }}
           tabs={{
             // want sync interval, etc.
@@ -57,7 +57,7 @@ export default class DocumentSettings extends Component {
             'Files & Sync': () => <SyncSetting nm={nm} />,
             'Keyboard Shortcuts': () => <div>TODODOD</div>,
             Import: () => <Importer store={store} />,
-            Export: () => <Exporter store={store} />
+            Export: () => <Exporter store={store} />,
             // TODO default node type
             // TODO I'm sure there are note type settings I'd want (like setting
             // defaults or something)
@@ -74,6 +74,6 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexBasis: 400,
     width: 600,
-    maxWidth: '100%'
-  }
+    maxWidth: '100%',
+  },
 })

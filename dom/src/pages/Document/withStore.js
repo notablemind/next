@@ -8,7 +8,7 @@ type Args = {
   events: (store: Store, props: Props) => Array<string>,
   state: (store: Store, props: Props) => State,
   shouldRefresh?: (store: Store, state: State, props?: Props) => boolean,
-  displayName: string
+  displayName: string,
 }
 
 export default <Props, State>({
@@ -16,7 +16,7 @@ export default <Props, State>({
   events,
   state,
   shouldRefresh,
-  displayName
+  displayName,
 }: Args) => {
   return class Wrapper extends Component<void, any, any> {
     static displayName = displayName
@@ -30,7 +30,7 @@ export default <Props, State>({
         this,
         store => events(store, props),
         store => state(store, props),
-        check ? store => check(store, this.state, props) : null
+        check ? store => check(store, this.state, props) : null,
       )
     }
 

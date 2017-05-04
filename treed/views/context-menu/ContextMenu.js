@@ -1,6 +1,6 @@
 // @-flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import './menu.less'
@@ -36,55 +36,75 @@ export default class ContextMenu extends Component {
   }
 
   render() {
-    return <div
-      className={css(styles.container)}
-      style={{
-        top: this.props.pos.top + this.state.offY,
-        left: this.props.pos.left + this.state.offX,
-      }}
-      ref={n => this._node = n}
-    >
-      {renderMenu(this.props.onClose, this.props.menu)}
-    </div>
+    return (
+      <div
+        className={css(styles.container)}
+        style={{
+          top: this.props.pos.top + this.state.offY,
+          left: this.props.pos.left + this.state.offX,
+        }}
+        ref={n => (this._node = n)}
+      >
+        {renderMenu(this.props.onClose, this.props.menu)}
+      </div>
+    )
   }
 }
 
 const renderItem = (onClose, item, i) => (
-  <div
-    className={'menu__item ' + css(styles.item)}
-    key={i}
-  >
+  <div className={'menu__item ' + css(styles.item)} key={i}>
     <div
-      onMouseDown={item.action && !item.disabled ? (e => {
-        e.stopPropagation()
-        e.preventDefault()
-        onClose()
-        item.action()
-      }) : null}
-      className={css(styles.itemTop, item.action && !item.disabled && styles.clickableItem)}
+      onMouseDown={
+        item.action && !item.disabled
+          ? e => {
+              e.stopPropagation()
+              e.preventDefault()
+              onClose()
+              item.action()
+            }
+          : null
+      }
+      className={css(
+        styles.itemTop,
+        item.action && !item.disabled && styles.clickableItem,
+      )}
     >
-      <div className={css(styles.text, item.disabled && styles.itemTextDisabled)}>
+      <div
+        className={css(styles.text, item.disabled && styles.itemTextDisabled)}
+      >
         {item.text}
       </div>
-      {item.keyShortcut && <div className={css(styles.keyShortcut)}>{item.keyShortcut}</div>}
-      {item.children && item.children.length ?
-        <div className={css(styles.childMarker)}>▸</div> : null}
-      {item.radioChecked != null ?
-        <div className={css(styles.radioChecked, !item.radioChecked && styles.notRadioChecked)}/> : null}
-      {item.checked != null ?
-        <div className={css(styles.checked, !item.checked && styles.notChecked)}>✔</div> : null}
+      {item.keyShortcut &&
+        <div className={css(styles.keyShortcut)}>{item.keyShortcut}</div>}
+      {item.children && item.children.length
+        ? <div className={css(styles.childMarker)}>▸</div>
+        : null}
+      {item.radioChecked != null
+        ? <div
+            className={css(
+              styles.radioChecked,
+              !item.radioChecked && styles.notRadioChecked,
+            )}
+          />
+        : null}
+      {item.checked != null
+        ? <div
+            className={css(styles.checked, !item.checked && styles.notChecked)}
+          >
+            ✔
+          </div>
+        : null}
     </div>
-    {item.children ?
-      <div className={'menu__children ' + css(styles.subChildren)}>
-        {renderMenu(onClose, item.children)}
-      </div> : null}
+    {item.children
+      ? <div className={'menu__children ' + css(styles.subChildren)}>
+          {renderMenu(onClose, item.children)}
+        </div>
+      : null}
   </div>
 )
 
 const renderMenu = (onClose, items) => (
-  <div
-    className={css(styles.menu)}
-  >
+  <div className={css(styles.menu)}>
     {items.map(renderItem.bind(null, onClose))}
   </div>
 )

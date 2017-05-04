@@ -1,4 +1,3 @@
-
 /*
 import PouchDB from '../../node_modules/pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
@@ -25,7 +24,10 @@ export default class NotableClient extends NotableBase {
       this._onFail = rej
     })
 
-    setTimeout(() => this._onFail(new Error('Timeout waiting for electron')), 5 * 1000)
+    setTimeout(
+      () => this._onFail(new Error('Timeout waiting for electron')),
+      5 * 1000,
+    )
 
     this.remote.on('toast', (evt, data) => this.showToast(data))
 
@@ -45,7 +47,7 @@ export default class NotableClient extends NotableBase {
       // console.log('got remote update', id, update)
       this.meta[id] = {
         ...this.meta[id],
-        ...update
+        ...update,
       }
       this.notifyMeta()
       this.notifyMetaById(id)
@@ -82,19 +84,35 @@ export default class NotableClient extends NotableBase {
         const listener = (evt, id, doc) => onChange(id, doc)
         remote.on(connectionId, listener)
         cleanup = () => remote.removeListener(connectionId, listener)
-        prom.send('doc:hello', docid, connectionId)
-          .then(onDump, onError)
+        prom.send('doc:hello', docid, connectionId).then(onDump, onError)
       },
       // TODO I could probably just ditch this and go straight to
       // `processAction` or something
       set(id, attr, value, modified) {
-        return prom.send('doc:action', 'set', docid, {id, attr, value, modified})
+        return prom.send('doc:action', 'set', docid, {
+          id,
+          attr,
+          value,
+          modified,
+        })
       },
       setNested(id, attrs, last, value, modified) {
-        return prom.send('doc:action', 'setNested', docid, {id, attrs, last, value, modified})
+        return prom.send('doc:action', 'setNested', docid, {
+          id,
+          attrs,
+          last,
+          value,
+          modified,
+        })
       },
       updateNested(id, attrs, last, update, modified) {
-        return prom.send('doc:action', 'updateNested', docid, {id, attrs, last, update, modified})
+        return prom.send('doc:action', 'updateNested', docid, {
+          id,
+          attrs,
+          last,
+          update,
+          modified,
+        })
       },
       update(id, update, modified) {
         return prom.send('doc:action', 'update', docid, {id, update, modified})
@@ -149,4 +167,3 @@ export default class NotableClient extends NotableBase {
     return this.prom.send('sync:upload', ids)
   }
 }
-

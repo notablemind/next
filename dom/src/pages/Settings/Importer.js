@@ -21,7 +21,7 @@ export default class Importer extends Component {
   constructor(props) {
     super()
     this.state = {
-      error: null
+      error: null,
     }
   }
 
@@ -41,7 +41,7 @@ export default class Importer extends Component {
       files => this.onImported(files),
       err => {
         console.error(err)
-      }
+      },
     )
   }
 
@@ -56,7 +56,7 @@ export default class Importer extends Component {
         size: file.size,
         lastOpened: file.opened,
         lastModified: file.modified,
-        synced: false // TODO use a global setting to prefill this
+        synced: false, // TODO use a global setting to prefill this
       }
       fileData[file._id] = fileObj
       return {fileid: file._id}
@@ -66,13 +66,13 @@ export default class Importer extends Component {
         npid,
         null,
         now,
-        `Imported documents ${new Date().toLocaleDateString()}`
+        `Imported documents ${new Date().toLocaleDateString()}`,
       ),
       children: files.map(({file}) => ({
         ...newNode(uuid(), npid, now, file.title),
         type: 'file',
-        types: {file: addFile(file)}
-      }))
+        types: {file: addFile(file)},
+      })),
     }
     const {store} = this.props
     store.actions.insertTreeAfter(store.state.active, tree, true)
@@ -90,7 +90,7 @@ export default class Importer extends Component {
                 'bulkdocsd',
                 withoutAttachments.length,
                 'documents',
-                file.title
+                file.title,
               )
             })
         }
@@ -98,7 +98,7 @@ export default class Importer extends Component {
           p = p.then(() =>
             fn().then(doc => {
               return pouchDb.bulkDocs({docs: [doc], new_edits: false})
-            })
+            }),
           )
         })
         // FlushAndClose is my special thing for syncing to the
@@ -109,7 +109,7 @@ export default class Importer extends Component {
           },
           err => {
             console.log('not workin', file._id, err)
-          }
+          },
         )
       })
     })
@@ -127,7 +127,7 @@ export default class Importer extends Component {
       err => {
         console.error(err)
         this.setState({loading: false, error: err.message})
-      }
+      },
     )
     // TODO actually sync the stuff
   }
@@ -169,5 +169,5 @@ export default class Importer extends Component {
 }
 
 const styles = StyleSheet.create({
-  container: {}
+  container: {},
 })

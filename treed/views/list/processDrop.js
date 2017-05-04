@@ -2,8 +2,11 @@
 
 const processDrop = (data: any) => {
   return new Promise((res, rej) => {
-    if (data.items.length === 1 && data.files.length === 0 &&
-        data.items[0].kind === 'string') {
+    if (
+      data.items.length === 1 &&
+      data.files.length === 0 &&
+      data.items[0].kind === 'string'
+    ) {
       const type = data.items[0].type
       data.items[0].getAsString(text => {
         res({type: 'string', text, mimeType: type})
@@ -19,4 +22,3 @@ const processDrop = (data: any) => {
 }
 
 export default processDrop
-

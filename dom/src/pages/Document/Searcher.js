@@ -24,13 +24,13 @@ export default class Searcher extends Component {
   state: {
     results: Array<any>,
     selected: number,
-    text: string
+    text: string,
   }
 
   state = {
     results: [],
     selected: 0,
-    text: ''
+    text: '',
   }
 
   update = () => {
@@ -41,7 +41,7 @@ export default class Searcher extends Component {
     const results = this.props.treed.searchFromCurrentView(newSearched)
     this.setState({
       results,
-      selected: 0
+      selected: 0,
     })
   }
 
@@ -54,9 +54,9 @@ export default class Searcher extends Component {
   onChange = (e: any) => {
     this.setState(
       {
-        text: e.target.value
+        text: e.target.value,
       },
-      () => this.bouncyUpdate()
+      () => this.bouncyUpdate(),
     )
   }
 
@@ -101,7 +101,7 @@ export default class Searcher extends Component {
   goUp = () => {
     if (this.state.selected < this.state.results.length - 1) {
       this.setState({
-        selected: this.state.selected + 1
+        selected: this.state.selected + 1,
       })
     } else {
       this.setState({selected: 0})
@@ -111,7 +111,7 @@ export default class Searcher extends Component {
   goDown = () => {
     if (this.state.selected > 0) {
       this.setState({
-        selected: this.state.selected - 1
+        selected: this.state.selected - 1,
       })
     } else {
       this.setState({selected: this.state.results.length - 1})
@@ -125,7 +125,7 @@ export default class Searcher extends Component {
         key={i}
         className={css(
           styles.result,
-          i == this.state.selected && styles.selected
+          i == this.state.selected && styles.selected,
         )}
       >
         {result.content}
@@ -168,28 +168,28 @@ const styles = StyleSheet.create({
     marginLeft: -300,
     backgroundColor: 'white',
     zIndex: 100000,
-    boxShadow: '0 -2px 5px #aaa'
+    boxShadow: '0 -2px 5px #aaa',
   },
 
   results: {
     borderBottom: '1px solid #ccc',
     overflow: 'auto',
-    maxHeight: 500
+    maxHeight: 500,
   },
 
   result: {
     padding: '5px 10px',
-    fontSize: '1.5em'
+    fontSize: '1.5em',
   },
 
   selected: {
-    backgroundColor: '#f0f0ff'
+    backgroundColor: '#f0f0ff',
   },
 
   input: {
     padding: '3px 5px',
     fontSize: '1.5em',
     border: 'none',
-    outline: 'none'
-  }
+    outline: 'none',
+  },
 })

@@ -5,15 +5,23 @@ import newNode from './newNode'
 type Events = any
 
 type Command<T> = {
-  apply: (args: T, db: Database, events: Events) => ?{
+  apply: (
+    args: T,
+    db: Database,
+    events: Events,
+  ) => ?{
     old: any,
     prom?: Promise<void>,
-    events?: Array<string>
+    events?: Array<string>,
   },
-  undo: (old: any, db: Database, events: Events) => ?{
+  undo: (
+    old: any,
+    db: Database,
+    events: Events,
+  ) => ?{
     prom?: Promise<void>,
     events?: Array<string>,
-  }
+  },
 }
 
 const walk = (id, nodes, visit) => {
@@ -33,7 +41,7 @@ const commands: {[key: string]: Command<any>} = {
   update: {
     apply({id, update}, db, events) {
       const backdate = {}
-      Object.keys(update).forEach(k => backdate[k] = db.data[id][k])
+      Object.keys(update).forEach(k => (backdate[k] = db.data[id][k]))
       const prom = db.update(id, update)
       // not much to see here
       return {old: {backdate, id}, prom}
@@ -41,17 +49,19 @@ const commands: {[key: string]: Command<any>} = {
     undo({id, backdate}, db, events) {
       const prom = db.update(id, backdate)
       return {prom}
-    }
+    },
   },
 
   updateMany: {
     apply({ids, updates}, db, events) {
       const old = ids.map(id => db.data[id])
       // TODO maybe have updateMany be understood by the db directly?
-      const prom = db.saveMany(ids.map((id, i) => ({
-        ...db.data[id],
-        ...updates[i],
-      })))
+      const prom = db.saveMany(
+        ids.map((id, i) => ({
+          ...db.data[id],
+          ...updates[i],
+        })),
+      )
       return {old, prom}
     },
     undo(old, db, events) {
@@ -65,7 +75,7 @@ const commands: {[key: string]: Command<any>} = {
       const old = {
         id,
         attr,
-        value: db.data[id][attr]
+        value: db.data[id][attr],
       }
       const prom = db.set(id, attr, value)
       return {old, prom}
@@ -80,7 +90,7 @@ const commands: {[key: string]: Command<any>} = {
       const old = {
         id,
         attrs,
-        value: attrs.reduce((o, a) => o ? o[a] : undefined, db.data[id]),
+        value: attrs.reduce((o, a) => (o ? o[a] : undefined), db.data[id]),
       }
       const prom = db.setNested(id, attrs, value)
       return {old, prom}
@@ -95,9 +105,9 @@ const commands: {[key: string]: Command<any>} = {
 
   updateNested: {
     apply({id, attrs, update}, db, events) {
-      const oldMap = attrs.reduce((o, a) => o ? o[a] : undefined, db.data[id])
+      const oldMap = attrs.reduce((o, a) => (o ? o[a] : undefined), db.data[id])
       const oldUpdate = oldMap
-        ? Object.keys(update).reduce((o, k) => (o[k] = oldMap[k], o), {})
+        ? Object.keys(update).reduce((o, k) => ((o[k] = oldMap[k]), o), {})
         : oldMap
       const old = {
         id,
@@ -122,13 +132,16 @@ const commands: {[key: string]: Command<any>} = {
       const children = db.data[pid].children.slice()
       if (ix === -1) ix = children.length
       children.splice(ix, 0, id)
-      const prom = db.saveMany([{
-        ...newNode(id, pid, now),
-        ...data,
-      }, {
-        ...db.data[pid],
-        children,
-      }])
+      const prom = db.saveMany([
+        {
+          ...newNode(id, pid, now),
+          ...data,
+        },
+        {
+          ...db.data[pid],
+          children,
+        },
+      ])
       return {old: id, prom}
     },
 
@@ -138,13 +151,18 @@ const commands: {[key: string]: Command<any>} = {
       const parent = db.data[node.parent]
       const children = parent.children.slice()
       children.splice(children.indexOf(id), 1)
-      return {prom: db.saveMany([{
-        ...parent,
-        children,
-      }, {
-        ...node,
-        _deleted: true,
-      }])}
+      return {
+        prom: db.saveMany([
+          {
+            ...parent,
+            children,
+          },
+          {
+            ...node,
+            _deleted: true,
+          },
+        ]),
+      }
     },
 
     // TODO redo here
@@ -156,10 +174,14 @@ const commands: {[key: string]: Command<any>} = {
       if (!id || !db.data[pid]) return null
       const children = db.data[pid].children.slice()
       children.splice(ix, 0, id)
-      const prom = db.saveMany([{
-        ...db.data[pid],
-        children,
-      }].concat(items))
+      const prom = db.saveMany(
+        [
+          {
+            ...db.data[pid],
+            children,
+          },
+        ].concat(items),
+      )
       return {old: {id, items}, prom}
     },
 
@@ -169,13 +191,21 @@ const commands: {[key: string]: Command<any>} = {
       const node = db.data[id]
       const children = db.data[node.parent].children.slice()
       children.splice(children.indexOf(id), 1)
-      return {prom: db.saveMany([{
-        ...db.data[node.parent],
-        children,
-      }].concat(items.map(item => ({
-        ...item,
-        _deleted: true,
-      }))))}
+      return {
+        prom: db.saveMany(
+          [
+            {
+              ...db.data[node.parent],
+              children,
+            },
+          ].concat(
+            items.map(item => ({
+              ...item,
+              _deleted: true,
+            })),
+          ),
+        ),
+      }
     },
 
     /*
@@ -195,26 +225,34 @@ const commands: {[key: string]: Command<any>} = {
       children.splice(idx, 1)
       return {
         old: {node, idx},
-        prom: db.saveMany([{
-          ...db.data[node.parent],
-          children,
-        }, {
-          ...node,
-          trashed: Date.now(),
-        }]),
+        prom: db.saveMany([
+          {
+            ...db.data[node.parent],
+            children,
+          },
+          {
+            ...node,
+            trashed: Date.now(),
+          },
+        ]),
       }
     },
 
     undo({idx, node}, db, events) {
       const children = db.data[node.parent].children.slice()
       children.splice(idx, 0, node._id)
-      return {prom: db.saveMany([{
-        ...db.data[node.parent],
-        children,
-      }, {
-        ...node,
-        trashed: null,
-      }])}
+      return {
+        prom: db.saveMany([
+          {
+            ...db.data[node.parent],
+            children,
+          },
+          {
+            ...node,
+            trashed: null,
+          },
+        ]),
+      }
     },
   },
 
@@ -223,25 +261,36 @@ const commands: {[key: string]: Command<any>} = {
       const node = db.data[id]
       const children = db.data[node.parent].children.slice()
       children.push(node._id)
-      return {old: {id, trashed: node.trashed}, prom: db.saveMany([{
-        ...db.data[node.parent],
-        children,
-      }, {
-        ...node,
-        trashed: null,
-      }])}
+      return {
+        old: {id, trashed: node.trashed},
+        prom: db.saveMany([
+          {
+            ...db.data[node.parent],
+            children,
+          },
+          {
+            ...node,
+            trashed: null,
+          },
+        ]),
+      }
     },
 
     undo({id, trashed}, db, events) {
       const node = db.data[id]
       const children = db.data[node.parent].children.filter(cid => cid !== id)
-      return {prom: db.saveMany([{
-        ...db.data[node.parent],
-        children,
-      }, {
-        ...node,
-        trashed,
-      }])}
+      return {
+        prom: db.saveMany([
+          {
+            ...db.data[node.parent],
+            children,
+          },
+          {
+            ...node,
+            trashed,
+          },
+        ]),
+      }
     },
   },
 
@@ -251,10 +300,12 @@ const commands: {[key: string]: Command<any>} = {
       const node = db.data[oid]
       const surv = db.data[nid]
       const idx = db.data[node.parent].children.indexOf(oid)
-      const updates = [{
+      const updates = [
+        {
           ...db.data[oid],
           _deleted: true,
-        }].concat(node.children.map(cid => ({...db.data[cid], parent: nid})))
+        },
+      ].concat(node.children.map(cid => ({...db.data[cid], parent: nid})))
       if (node.parent === nid) {
         const nchildren = node.children.concat(surv.children)
         updates.push({
@@ -264,25 +315,28 @@ const commands: {[key: string]: Command<any>} = {
         })
       } else {
         const nchildren = surv.children.concat(node.children)
-        updates.push({
-          ...db.data[node.parent],
-          children: db.data[node.parent].children.filter(i => i !== oid),
-        }, {
-          ...db.data[nid],
-          content,
-          children: nchildren,
-        })
+        updates.push(
+          {
+            ...db.data[node.parent],
+            children: db.data[node.parent].children.filter(i => i !== oid),
+          },
+          {
+            ...db.data[nid],
+            content,
+            children: nchildren,
+          },
+        )
       }
       return {
         old: {node, idx, nid, ochildren: surv.children, ocontent: surv.content},
-        prom: db.saveMany(updates)
+        prom: db.saveMany(updates),
       }
     },
 
     undo({node, nid, idx, ochildren, ocontent}, db, events) {
-      const updates = [node, ].concat(node.children.map(
-        child => ({...db.data[child], parent: node._id})
-      ))
+      const updates = [node].concat(
+        node.children.map(child => ({...db.data[child], parent: node._id})),
+      )
       if (nid === node.parent) {
         updates.push({
           ...db.data[nid],
@@ -292,17 +346,20 @@ const commands: {[key: string]: Command<any>} = {
       } else {
         const sibs = db.data[node.parent].children.slice()
         sibs.splice(idx, 0, node._id)
-        updates.push({
-          ...db.data[nid],
-          children: ochildren,
-          content: ocontent,
-        }, {
-          ...db.data[node.parent],
-          children: sibs,
-        })
+        updates.push(
+          {
+            ...db.data[nid],
+            children: ochildren,
+            content: ocontent,
+          },
+          {
+            ...db.data[node.parent],
+            children: sibs,
+          },
+        )
       }
       return {
-        prom: db.saveMany(updates)
+        prom: db.saveMany(updates),
       }
     },
   },
@@ -320,26 +377,38 @@ const commands: {[key: string]: Command<any>} = {
       walk(id, db.data, cid => nodesToRemove.push(db.data[cid]))
       return {
         old: {node, idx, nodes: nodesToRemove},
-        prom: db.saveMany([{
-          ...db.data[node.parent],
-          children,
-        }, /*{
+        prom: db.saveMany(
+          [
+            {
+              ...db.data[node.parent],
+              children,
+            } /*{
           ...node,
           _deleted: true,
-        }*/].concat(nodesToRemove.map(node => ({
-          ...node,
-          _deleted: true,
-        })))),
+        }*/,
+          ].concat(
+            nodesToRemove.map(node => ({
+              ...node,
+              _deleted: true,
+            })),
+          ),
+        ),
       }
     },
 
     undo({idx, node, nodes}, db, events) {
       const children = db.data[node.parent].children.slice()
       children.splice(idx, 0, node._id)
-      return {prom: db.saveMany([{
-        ...db.data[node.parent],
-        children,
-      }].concat(nodes))}
+      return {
+        prom: db.saveMany(
+          [
+            {
+              ...db.data[node.parent],
+              children,
+            },
+          ].concat(nodes),
+        ),
+      }
     },
   },
 
@@ -372,14 +441,17 @@ const commands: {[key: string]: Command<any>} = {
         updates.push({...db.data[pid], children: nchildren})
       }
 
-      return {old: {
-        id,
-        destId,
-        oidx,
-        opid,
-        replacedNode: db.data[destId],
-        oldChildren: db.data[id].children,
-      }, prom: db.saveMany(updates)}
+      return {
+        old: {
+          id,
+          destId,
+          oidx,
+          opid,
+          replacedNode: db.data[destId],
+          oldChildren: db.data[id].children,
+        },
+        prom: db.saveMany(updates),
+      }
     },
 
     undo({id, destId, oidx, opid, replacedNode, oldChildren}, db, events) {
@@ -388,7 +460,9 @@ const commands: {[key: string]: Command<any>} = {
       const nchildren = db.data[pid].children.slice()
       nchildren[nchildren.indexOf(id)] = destId
 
-      const ochildren = pid === opid ? nchildren : db.data[opid].children.slice()
+      const ochildren = pid === opid
+        ? nchildren
+        : db.data[opid].children.slice()
       ochildren.splice(oidx, 0, id)
 
       const updates = [
@@ -409,7 +483,7 @@ const commands: {[key: string]: Command<any>} = {
 
   move: {
     apply({id, pid, idx, viewType}, db, events) {
-      if (isAncestor(id, pid, db.data))  {
+      if (isAncestor(id, pid, db.data)) {
         console.warn("Can't move something into one of its descendents")
         return
       }
@@ -431,16 +505,23 @@ const commands: {[key: string]: Command<any>} = {
         children.splice(idx, 0, id)
       }
       // TODO expandParent
-      return {prom: db.saveMany([{
-        ...db.data[opid],
-        children: ochildren,
-      }, {
-        ...db.data[pid],
-        children,
-      }, {
-        ...db.data[id],
-        parent: pid,
-      }]), old: {id, oidx, opid, pid}}
+      return {
+        prom: db.saveMany([
+          {
+            ...db.data[opid],
+            children: ochildren,
+          },
+          {
+            ...db.data[pid],
+            children,
+          },
+          {
+            ...db.data[id],
+            parent: pid,
+          },
+        ]),
+        old: {id, oidx, opid, pid},
+      }
     },
 
     undo({id, oidx, opid}, db, events) {
@@ -455,23 +536,29 @@ const commands: {[key: string]: Command<any>} = {
       }
       const ochildren = db.data[opid].children.slice()
       ochildren.splice(oidx, 0, id)
-      return {prom: db.saveMany([{
-        ...db.data[opid],
-        children: ochildren,
-      }, {
-        ...db.data[pid],
-        children,
-      }, {
-        ...db.data[id],
-        parent: opid,
-      }])}
+      return {
+        prom: db.saveMany([
+          {
+            ...db.data[opid],
+            children: ochildren,
+          },
+          {
+            ...db.data[pid],
+            children,
+          },
+          {
+            ...db.data[id],
+            parent: opid,
+          },
+        ]),
+      }
     },
   },
 
   // TODO test all these things, right?
   moveMany: {
     apply({ids, pid, idx, viewType}, db, events) {
-      if (ids.some(id => isAncestor(id, pid, db.data)))  {
+      if (ids.some(id => isAncestor(id, pid, db.data))) {
         console.warn("Can't move something into one of its descendents")
         return
       }
@@ -487,10 +574,11 @@ const commands: {[key: string]: Command<any>} = {
       ids.forEach(id => {
         const opid = db.data[id].parent
         oldParents[id] = opid
-        const ochildren = childrens[opid] || (
-          oldChildren[opid] = db.data[opid].children.slice(),
-          childrens[opid] = db.data[opid].children.slice()
-        )
+        const ochildren =
+          childrens[opid] ||
+          ((oldChildren[opid] = db.data[opid].children.slice()), (childrens[
+            opid
+          ] = db.data[opid].children.slice()))
         const oidx = ochildren.indexOf(id)
         ochildren.splice(oidx, 1)
       })
@@ -502,13 +590,17 @@ const commands: {[key: string]: Command<any>} = {
       }
 
       // TODO I should check for the no-op case...
-      const updates = Object.keys(childrens).map(opid => ({
+      const updates = Object.keys(childrens)
+        .map(opid => ({
           ...db.data[opid],
           children: childrens[opid],
-      })).concat(ids.map(id => ({
-        ...db.data[id],
-        parent: pid,
-      })))
+        }))
+        .concat(
+          ids.map(id => ({
+            ...db.data[id],
+            parent: pid,
+          })),
+        )
 
       return {
         prom: db.saveMany(updates),
@@ -518,19 +610,22 @@ const commands: {[key: string]: Command<any>} = {
 
     undo({oldChildren, oldParents}, db, events) {
       return {
-        prom: db.saveMany(Object.keys(oldChildren).map(pid => ({
-          ...db.data[pid],
-          children: oldChildren[pid],
-        })).concat(Object.keys(oldParents).map(id => ({
-          ...db.data[id],
-          parent: oldParents[id],
-        })))),
+        prom: db.saveMany(
+          Object.keys(oldChildren)
+            .map(pid => ({
+              ...db.data[pid],
+              children: oldChildren[pid],
+            }))
+            .concat(
+              Object.keys(oldParents).map(id => ({
+                ...db.data[id],
+                parent: oldParents[id],
+              })),
+            ),
+        ),
       }
     },
   },
-
-
 }
 
 export default commands
-

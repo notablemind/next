@@ -18,7 +18,7 @@ const refresh = ({clientId, scopes}): Promise<?Object> => {
           client_id: clientId,
           fetch_basic_profile: true,
           scope: scopes.join(' '),
-          immediate: true
+          immediate: true,
         },
         authResult => {
           if (authResult && !authResult.error) {
@@ -38,19 +38,19 @@ const refresh = ({clientId, scopes}): Promise<?Object> => {
                   photo,
                   isExpired: () => Date.now() / 1000 > expires_at,
                   refresh,
-                  token
+                  token,
                 })
               },
               err => {
                 console.error('failed to get profile')
                 rej('bad profile')
-              }
+              },
             )
           } else {
             console.log('failed')
             rej('logged out')
           }
-        }
+        },
       )
     }
 
@@ -59,7 +59,7 @@ const refresh = ({clientId, scopes}): Promise<?Object> => {
         initialized = true
         Promise.all([
           prom(done => gapi.client.load('drive', 'v3', done)),
-          prom(done => gapi.client.load('people', 'v1', done))
+          prom(done => gapi.client.load('people', 'v1', done)),
         ]).then(run, rej)
       }
       injected = true

@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import ListItem from './ListItem'
@@ -16,7 +16,7 @@ type Store = any
 type State = {
   root: string,
   mode: string,
-  isActiveView: bool,
+  isActiveView: boolean,
   contextMenu: ?{
     menu: Array<MenuItem>,
     pos: {top: number, left: number},
@@ -38,7 +38,7 @@ export default class ListView extends Component {
   _nodes: {[key: string]: any}
   dragger: Dragger
   dropper: Dragger
-  dropAgain: bool
+  dropAgain: boolean
 
   constructor(props: Props) {
     super()
@@ -74,7 +74,8 @@ export default class ListView extends Component {
   // Reorder Nodes
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    const nowDragging = this.state.mode === 'dragging' && this.state.isActiveView
+    const nowDragging =
+      this.state.mode === 'dragging' && this.state.isActiveView
     const prevDragging = prevState.mode === 'dragging' && prevState.isActiveView
     if (nowDragging && !prevDragging) {
       this.startDragging()
@@ -148,7 +149,12 @@ export default class ListView extends Component {
     const data = e.dataTransfer
     processDrop(data).then(result => {
       if (result.type === 'string') {
-        this.props.store.actions.dropString(id, at, result.text, result.mimeType)
+        this.props.store.actions.dropString(
+          id,
+          at,
+          result.text,
+          result.mimeType,
+        )
       } else {
         const files = result.files
         if (files.length === 1) {
@@ -180,38 +186,40 @@ export default class ListView extends Component {
   render() {
     const root = this.props.store.state.root
     const depth = findDepth(root, this.props.store.db.data)
-    const {viewTheme={}} = this.state
-    return <div
-      className={css(styles.container)}
-      onDragOver={this.onDrag}
-      onDrop={this.onDrop}
-      onDragLeave={this.stopDropping}
-      onContextMenu={this.onContextMenu}
-    >
-      <div className={css(styles.scroller)}>
-        <div
-          className={css(styles.thinWidth)}
-          style={{
-            width: viewTheme.maxWidth || 1000,
-          }}
-        >
-          <ListItem
-            id={root}
-            key={root}
-            depth={depth}
-            nodeMap={this._nodes}
-            store={this.props.store}
-            indentStyle={viewTheme.indentStyle || 'lines'}
-          />
+    const {viewTheme = {}} = this.state
+    return (
+      <div
+        className={css(styles.container)}
+        onDragOver={this.onDrag}
+        onDrop={this.onDrop}
+        onDragLeave={this.stopDropping}
+        onContextMenu={this.onContextMenu}
+      >
+        <div className={css(styles.scroller)}>
+          <div
+            className={css(styles.thinWidth)}
+            style={{
+              width: viewTheme.maxWidth || 1000,
+            }}
+          >
+            <ListItem
+              id={root}
+              key={root}
+              depth={depth}
+              nodeMap={this._nodes}
+              store={this.props.store}
+              indentStyle={viewTheme.indentStyle || 'lines'}
+            />
+          </div>
         </div>
+        {this.state.contextMenu &&
+          <ContextMenu
+            pos={this.state.contextMenu.pos}
+            menu={this.state.contextMenu.menu}
+            onClose={this.props.store.actions.closeContextMenu}
+          />}
       </div>
-      {this.state.contextMenu &&
-        <ContextMenu
-          pos={this.state.contextMenu.pos}
-          menu={this.state.contextMenu.menu}
-          onClose={this.props.store.actions.closeContextMenu}
-        />}
-    </div>
+    )
   }
 }
 
@@ -239,4 +247,3 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 })
-

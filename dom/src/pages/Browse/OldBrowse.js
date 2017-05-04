@@ -40,7 +40,7 @@ type FolderT = {
   _rev: string,
   type: 'folder',
   folder: ?string,
-  title: string
+  title: string,
 }
 
 type DocT = {
@@ -50,11 +50,11 @@ type DocT = {
   folder: ?string,
   title: string,
   last_opened: number,
-  size: number
+  size: number,
 }
 
 type Props = {
-  userDb: any
+  userDb: any,
 }
 
 type PouchChange = any // TODO can be polymorphic
@@ -70,11 +70,11 @@ export default class Browse extends Component {
     data: {[key: string]: any},
     menu?: ?{
       pos: {left: number, top: number},
-      items: Array<MenuItem>
+      items: Array<MenuItem>,
     },
     local?: any,
     remote?: any,
-    showSettings?: boolean
+    showSettings?: boolean,
   }
 
   changes: any
@@ -91,12 +91,12 @@ export default class Browse extends Component {
         root: {
           _id: 'root',
           title: 'Root',
-          children: []
-        }
+          children: [],
+        },
       },
       selected: 0,
       local: null,
-      remote: null
+      remote: null,
     }
 
     window.browse = this
@@ -111,12 +111,12 @@ export default class Browse extends Component {
           goDown: {
             shortcut: 'j, down',
             action: this.goDown,
-            description: 'go down'
-          }
+            description: 'go down',
+          },
         },
         'browse.',
-        {}
-      )
+        {},
+      ),
     ])
   }
 
@@ -148,7 +148,7 @@ export default class Browse extends Component {
       .changes({
         include_docs: true,
         live: true,
-        since: 'now'
+        since: 'now',
       })
       .on('change', this.onChange)
       .on('error', err => {
@@ -159,7 +159,7 @@ export default class Browse extends Component {
       result => {
         console.log('alldocs', result.rows)
         const data = {
-          root: {_id: 'root', children: [], title: 'Root', type: 'folder'}
+          root: {_id: 'root', children: [], title: 'Root', type: 'folder'},
         }
         result.rows.forEach(({doc}) => {
           doc.children = doc.children || []
@@ -180,7 +180,7 @@ export default class Browse extends Component {
       },
       err => {
         console.log('failed to get docs list', err)
-      }
+      },
     )
   }
 
@@ -196,7 +196,7 @@ export default class Browse extends Component {
       parent: 'root',
       size: 0,
       modified: Date.now(),
-      opened: Date.now()
+      opened: Date.now(),
     })
     // TODO add to children
     // but really, let's just use treed, for reals
@@ -210,7 +210,7 @@ export default class Browse extends Component {
       folder: null,
       size: 0,
       modified: Date.now(),
-      opened: Date.now()
+      opened: Date.now(),
     })
   }
 
@@ -244,13 +244,13 @@ export default class Browse extends Component {
       () => {
         this.props.userDb.put({
           ...doc,
-          synced: true
+          synced: true,
         })
       },
       err => {
         console.error('failure', err)
         // umm
-      }
+      },
     )
   }
 
@@ -260,28 +260,28 @@ export default class Browse extends Component {
     const actions = [
       {
         text: 'Open',
-        action: () => this.onOpen(doc._id)
+        action: () => this.onOpen(doc._id),
       },
       {
         text: 'Open in new tab',
-        action: () => window.open(`#/doc/${doc._id}`, '_blank')
+        action: () => window.open(`#/doc/${doc._id}`, '_blank'),
       },
       {
         text: 'Delete',
-        action: () => this.onDelete(doc._id)
-      }
+        action: () => this.onDelete(doc._id),
+      },
     ]
     // if (!doc.synced) {
     actions.push({
       text: 'Start syncing',
-      action: () => this.startSyncing(doc)
+      action: () => this.startSyncing(doc),
     })
     // }
     this.setState({
       menu: {
         pos: {left: evt.clientX, top: evt.clientY},
-        items: actions
-      }
+        items: actions,
+      },
     })
   }
 
@@ -327,7 +327,7 @@ const Folder = ({data, folder, onOpen, onContextMenu}) => (
       className={css(
         styles.item,
         styles.folder,
-        folder._id === 'root' && styles.rootName
+        folder._id === 'root' && styles.rootName,
       )}
       // onContextMenu={evt => onContextMenu(evt, folder._id)}
     >
@@ -336,7 +336,7 @@ const Folder = ({data, folder, onOpen, onContextMenu}) => (
     <div
       className={css(
         styles.children,
-        folder._id === 'root' && styles.rootChildren
+        folder._id === 'root' && styles.rootChildren,
       )}
     >
       {folder.children.map(
@@ -354,7 +354,7 @@ const Folder = ({data, folder, onOpen, onContextMenu}) => (
                 doc={data[id]}
                 onOpen={onOpen}
                 onContextMenu={onContextMenu}
-              />
+              />,
       )}
     </div>
   </div>
@@ -385,31 +385,31 @@ const styles = StyleSheet.create({
   container: {
     width: 800,
     maxWidth: '100%',
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
 
   buttons: {
     alignSelf: 'center',
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
 
   itemTitle: {
-    flex: 1
+    flex: 1,
   },
 
   doc: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
 
   synced: {
     fontSize: 10,
-    padding: '0 10px'
+    padding: '0 10px',
   },
 
   lastOpened: {
     fontSize: '80%',
-    marginLeft: 10
+    marginLeft: 10,
   },
 
   item: {
@@ -420,25 +420,25 @@ const styles = StyleSheet.create({
     borderLeft: '1px solid #ccc',
 
     ':hover': {
-      backgroundColor: '#eee'
-    }
+      backgroundColor: '#eee',
+    },
   },
 
   rootName: {
     border: '1px solid #ccc',
-    display: 'none'
+    display: 'none',
   },
 
   children: {
-    marginLeft: 20
+    marginLeft: 20,
     // paddingLeft: 20,
     // borderLeft: '1px solid #ccc',
   },
 
   rootChildren: {
     marginLeft: 0,
-    borderTop: '1px solid #ccc'
+    borderTop: '1px solid #ccc',
   },
 
-  folder: {}
+  folder: {},
 })

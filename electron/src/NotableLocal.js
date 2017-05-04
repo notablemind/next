@@ -1,4 +1,3 @@
-
 import PouchDB from '../../node_modules/pouchdb'
 PouchDB.plugin(require('pouchdb-authentication'))
 PouchDB.plugin(require('pouchdb-adapter-idb'))
@@ -15,7 +14,7 @@ const loadFiles = () => {
   }
 }
 const onChange = () => {} // noop
-const saveFiles = files => localStorage[LS_KEY] = JSON.stringify(files)
+const saveFiles = files => (localStorage[LS_KEY] = JSON.stringify(files))
 const updateFile = (files, id, update) => {
   files[id] = {...files[id], ...update}
   saveFiles(files)
@@ -46,7 +45,9 @@ export default class NotableLocal extends NotableBase {
   }
 
   getFileDb(docid) {
-    const db = new PouchDB(id ? `doc_${id}` : 'notablemind_user', {adapter: 'idb'})
+    const db = new PouchDB(id ? `doc_${id}` : 'notablemind_user', {
+      adapter: 'idb',
+    })
     db.flushAndClose = () => db.close()
     return db
   }

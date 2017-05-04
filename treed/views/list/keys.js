@@ -23,7 +23,7 @@ const keys: ViewActionConfig = {
 
   focusLastJumpPoint: {
     shortcuts: {
-      normal: '\'',
+      normal: "'",
     },
     description: 'focus last jump point',
     alias: 'focusLastJumpOrigin',
@@ -332,7 +332,6 @@ const keys: ViewActionConfig = {
     alias: 'visualMode',
   },
   */
-
 }
 
 export default keys

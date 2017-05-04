@@ -1,4 +1,3 @@
-
 const selectBoxes = (x, y, w, h, boxes) => {
   const ids = []
   if (w < 0) {
@@ -11,12 +10,12 @@ const selectBoxes = (x, y, w, h, boxes) => {
   }
   boxes.forEach(([id, box]) => {
     if (
-      (x < box.left && box.left < x + w ||
-      x < box.right && box.right < x + w ||
-      box.left < x && x < box.right) &&
-      (y < box.top && box.top < y + h ||
-      y < box.bottom && box.bottom < y + h ||
-      box.top < y && y < box.bottom)
+      ((x < box.left && box.left < x + w) ||
+        (x < box.right && box.right < x + w) ||
+        (box.left < x && x < box.right)) &&
+      ((y < box.top && box.top < y + h) ||
+        (y < box.bottom && box.bottom < y + h) ||
+        (box.top < y && y < box.bottom))
     ) {
       ids.push(id)
     }

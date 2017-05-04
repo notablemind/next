@@ -13,8 +13,8 @@ const port = process.env.PORT || 4150
 app.use(
   devMiddleware(compiler, {
     publicPath: config.output.publicPath,
-    historyApiFallback: true
-  })
+    historyApiFallback: true,
+  }),
 )
 
 app.use(hotMiddleware(compiler))

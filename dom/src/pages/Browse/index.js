@@ -24,7 +24,7 @@ const plugins = [
   require('../../../../plugins/todos/dom').default,
   require('../../../../plugins/image/dom').default,
   require('../../../../plugins/date/dom').default,
-  require('../../../../plugins/tags').default
+  require('../../../../plugins/tags').default,
   // require('../../../../plugins/themes').default,
   // require('../../../../plugins/todos/dom').default,
   // require('../../../../plugins/image/dom').default,
@@ -34,7 +34,7 @@ const plugins = [
 
 const viewTypes = {
   // table: require('treed/views/table').default,
-  list: require('treed/views/list').default
+  list: require('treed/views/list').default,
   // whiteboard: require('treed/views/whiteboard').default,
 }
 
@@ -43,7 +43,7 @@ type FolderT = {
   _rev: string,
   type: 'folder',
   folder: ?string,
-  title: string
+  title: string,
 }
 
 type DocT = {
@@ -53,11 +53,11 @@ type DocT = {
   folder: ?string,
   title: string,
   last_opened: number,
-  size: number
+  size: number,
 }
 
 type Props = {
-  userDb: any
+  userDb: any,
 }
 
 type PouchChange = any // TODO can be polymorphic
@@ -83,7 +83,7 @@ export default class Browse extends Component {
     treed: any,
     menu: any,
     showSettings: boolean,
-    searching: boolean
+    searching: boolean,
   }
   _unsubs: Array<() => void>
 
@@ -94,7 +94,7 @@ export default class Browse extends Component {
       searching: false,
       treed: null,
       store: null,
-      menu: null
+      menu: null,
     }
     this._unsubs = []
   }
@@ -103,18 +103,18 @@ export default class Browse extends Component {
     undo: {
       shortcut: 'u, cmd+z',
       description: 'Undo the last action',
-      action: () => this.state.treed && this.state.treed.activeView().undo()
+      action: () => this.state.treed && this.state.treed.activeView().undo(),
     },
     redo: {
       shortcut: 'R, cmd+shift+z',
       description: 'Redo the last action',
-      action: () => this.state.treed && this.state.treed.activeView().redo()
+      action: () => this.state.treed && this.state.treed.activeView().redo(),
     },
     search: {
       shortcut: '/, cmd+f',
       description: 'Search',
-      action: () => this.setState({searching: true})
-    }
+      action: () => this.setState({searching: true}),
+    },
   }
 
   makeTreed() {
@@ -123,18 +123,18 @@ export default class Browse extends Component {
       plugins,
       viewTypes,
       'notablemind_user',
-      loadSharedViewData('notablemind_user')
+      loadSharedViewData('notablemind_user'),
     ))
     const userShortcuts = {}
     const globalLayer = makeKeyLayer(
       {
-        ...this.keyLayerConfig
+        ...this.keyLayerConfig,
       },
       'global',
-      userShortcuts
+      userShortcuts,
     )
     treed.addKeyLayer(
-      () => (treed.isCurrentViewInInsertMode() ? null : globalLayer)
+      () => (treed.isCurrentViewInInsertMode() ? null : globalLayer),
     )
     treed.ready.then(() => {
       const store = treed.registerView({viewType: 'list'})
@@ -143,12 +143,12 @@ export default class Browse extends Component {
           const node = store.getters.activeNode()
           if (node.type !== 'file') {
             return console.error(
-              "Can't setup sync for something that's not a file"
+              "Can't setup sync for something that's not a file",
             )
           }
           this.props.userSession.setupSyncing(node._id)
           // TODO sync it then
-        })
+        }),
       )
       this._unsubs.push(
         store.on(['navigate-to-current-active'], () => {
@@ -156,20 +156,20 @@ export default class Browse extends Component {
           const node = store.getters.activeNode()
           if (node.type !== 'file') {
             return console.error(
-              "Can't navigate to something that's not a file"
+              "Can't navigate to something that's not a file",
             )
           }
           hashHistory.push('/doc/' + store.state.active)
-        })
+        }),
       )
       this._unsubs.push(
         store.on([store.events.sharedViewData()], () => {
           saveSharedViewData('notablemind_user', store.sharedViewData)
-        })
+        }),
       )
       this.setState({
         treed,
-        store
+        store,
       })
     })
   }
@@ -239,7 +239,7 @@ export default class Browse extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
   settingsButton: {
     padding: '5px 10px',
@@ -248,6 +248,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     alignSelf: 'flex-end',
     marginRight: 10,
-    cursor: 'pointer'
-  }
+    cursor: 'pointer',
+  },
 })

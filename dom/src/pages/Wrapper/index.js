@@ -18,7 +18,7 @@ type State = {
   // remoteSession: any,
   title: string,
   settings: ?any,
-  loginError: ?string
+  loginError: ?string,
 }
 
 // NOTE unused
@@ -34,7 +34,7 @@ export default class Wrapper_unused extends Component {
       loginError: null,
       online: true,
       title: 'Notablemind',
-      settings: null // do I need the settings?
+      settings: null, // do I need the settings?
     }
   }
 
@@ -92,7 +92,7 @@ export default class Wrapper_unused extends Component {
             // remoteUser: this.state.user,
             // updateFile: this.updateFile,
             // setTitle: this.setTitle,
-          }
+          },
         )}
       </div>
     )
@@ -101,6 +101,6 @@ export default class Wrapper_unused extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
-  }
+    flex: 1,
+  },
 })

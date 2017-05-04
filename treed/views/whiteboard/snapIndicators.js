@@ -1,4 +1,3 @@
-
 export default parent => {
   const x = document.createElement('div')
   Object.assign(x.style, {
@@ -46,4 +45,3 @@ export default parent => {
     },
   }
 }
-

@@ -1,4 +1,3 @@
-
 import Remarkable from 'remarkable'
 
 const rem = new Remarkable({
@@ -16,4 +15,3 @@ export default text => {
   if (renderCache[text]) return renderCache[text]
   return (renderCache[text] = rem.render(text))
 }
-

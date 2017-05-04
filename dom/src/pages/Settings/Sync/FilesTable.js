@@ -12,7 +12,7 @@ export default class FilesTable extends Component {
       id: string,
       name: string,
       trashed: boolean,
-      version: number
+      version: number,
     }>,
     localFiles: Array<{
       id: string,
@@ -20,8 +20,8 @@ export default class FilesTable extends Component {
       lastModified: number,
       lastOpened: number,
       size: number,
-      sync: ?{}
-    }>
+      sync: ?{},
+    }>,
   }
 
   state: {selected: {[key: string]: boolean}, loading: boolean}
@@ -29,7 +29,7 @@ export default class FilesTable extends Component {
     super()
     this.state = {
       selected: {},
-      loading: false
+      loading: false,
     }
   }
 
@@ -37,7 +37,7 @@ export default class FilesTable extends Component {
     const selected = {}
     this.props.localFiles.forEach(f => (selected[f.id] = !allSelected))
     this.props.remoteOnly.forEach(
-      f => (selected[f.appProperties.nmId] = !allSelected)
+      f => (selected[f.appProperties.nmId] = !allSelected),
     )
     this.setState({selected})
   }
@@ -46,8 +46,8 @@ export default class FilesTable extends Component {
     this.setState({
       selected: {
         ...this.state.selected,
-        [id]: !this.state.selected[id]
-      }
+        [id]: !this.state.selected[id],
+      },
     })
   }
 
@@ -66,7 +66,7 @@ export default class FilesTable extends Component {
 
   downloadFiles = () => {
     const files = this.props.remoteOnly.filter(
-      f => this.state.selected[f.appProperties.nmId]
+      f => this.state.selected[f.appProperties.nmId],
     )
     this.setState({loading: true})
     this.props
@@ -79,8 +79,8 @@ export default class FilesTable extends Component {
       .filter(f => this.state.selected[f.id])
       .concat(
         this.props.remoteOnly.filter(
-          f => this.state.selected[f.appProperties.nmId]
-        )
+          f => this.state.selected[f.appProperties.nmId],
+        ),
       )
     if (!selecteds.length) return
     let status = null
@@ -216,7 +216,7 @@ const Button = ({label, onClick, color = 'white', textColor = '#555'}) => (
     className={css(styles.button)}
     style={{
       backgroundColor: color,
-      color: textColor
+      color: textColor,
     }}
     onClick={onClick}
   >
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     overflow: 'hidden',
-    position: 'relative'
+    position: 'relative',
   },
 
   button: {
@@ -238,13 +238,13 @@ const styles = StyleSheet.create({
     margin: 4,
     padding: '5px 10px',
     textWrap: 'nowrap',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
     // backgroundColor: 'white',
   },
 
   scroll: {
     flex: 1,
-    overflow: 'auto'
+    overflow: 'auto',
   },
 
   overlay: {
@@ -259,28 +259,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: 20,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
 
   header: {
     padding: '5px 10px',
     flexDirection: 'row',
     alignItems: 'center',
-    boxShadow: '0 1px 2px #ccc'
+    boxShadow: '0 1px 2px #ccc',
   },
 
   status: {
     flexDirection: 'row',
     alignItems: 'center',
-    fontSize: 12
+    fontSize: 12,
   },
 
   icon: {
     fontSize: 24,
     cursor: 'pointer',
     ':hover': {
-      color: 'rgb(0, 232, 70)'
-    }
+      color: 'rgb(0, 232, 70)',
+    },
   },
 
   file: {
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
 
     ':hover': {
-      backgroundColor: '#eee'
-    }
-  }
+      backgroundColor: '#eee',
+    },
+  },
 })

@@ -15,7 +15,7 @@ class LiveSince extends Component {
   componentDidMount() {
     this._int = setInterval(
       () => this.setState({tick: this.state.tick + 1}),
-      1000
+      1000,
     )
   }
   componentWillUnmount() {
@@ -38,7 +38,7 @@ class LiveSince extends Component {
 export default class SyncStatus extends Component {
   _unsub: () => void
   state: {
-    user: ?User
+    user: ?User,
   }
 
   constructor({nm}) {
@@ -49,7 +49,7 @@ export default class SyncStatus extends Component {
   componentWillMount() {
     this._unsubs = [
       this.props.nm.onUser(user => this.setState({user})),
-      this.props.nm.onMetaById(this.props.docid, meta => this.setState({meta}))
+      this.props.nm.onMetaById(this.props.docid, meta => this.setState({meta})),
     ]
   }
 
@@ -110,7 +110,7 @@ export default class SyncStatus extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
 
   button: {
@@ -122,20 +122,20 @@ const styles = StyleSheet.create({
 
     ':hover': {
       backgroundColor: '#eee',
-      borderRadius: 3
-    }
+      borderRadius: 3,
+    },
   },
 
   syncTime: {
     WebkitAppRegion: 'no-drag',
     marginRight: 5,
     fontSize: 12,
-    padding: '5px'
+    padding: '5px',
   },
 
   unsaved: {
     marginRight: 5,
     fontSize: 12,
-    padding: '5px'
-  }
+    padding: '5px',
+  },
 })

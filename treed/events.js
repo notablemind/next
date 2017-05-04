@@ -1,10 +1,9 @@
-
 export default {
   global: {
     node: (globalStore, id) => 'node:' + id,
-    activeView: (globalStore) => 'active-view',
-    activeMode: (globalStore) => 'active-mode',
-    settingsChanged: (globalStore) => 'node:settings',
+    activeView: globalStore => 'active-view',
+    activeMode: globalStore => 'active-mode',
+    settingsChanged: globalStore => 'node:settings',
     clipboardChanged: globalStore => 'clipboard',
     searching: globalStore => 'searching',
     // changed: () => 'changed',
@@ -25,6 +24,5 @@ export default {
     viewState: store => `view-state:${store.id}`,
     viewType: store => `view-type:${store.id}`,
     viewSettings: store => `view-settings:${store.id}`,
-  }
+  },
 }
-

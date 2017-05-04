@@ -1,4 +1,3 @@
-
 export default {
   global: {
     node: (globalStore, id) => globalStore.db.data[id],
@@ -15,7 +14,6 @@ export default {
       globalStore.db.data.settings.views[viewType],
     defaultView: (globalStore, id) =>
       globalStore.db.data.settings.defaultViews[id],
-
   },
 
   view: {
@@ -31,20 +29,20 @@ export default {
     isActiveView: store => store.id === store.globalState.activeView,
     isActive: (store, id) => id === store.state.active,
     // TODO check selection
-    isDragging: (store, id) => id === store.state.active &&
-      store.state.mode === 'dragging',
+    isDragging: (store, id) =>
+      id === store.state.active && store.state.mode === 'dragging',
     isCutting: (store, id) => id === store.globalState.cut,
     isSelected: (store, id) => false, // TODO selection
-    editState: (store, id) => store.state.mode === 'insert' &&
-      id === store.state.active ? store.state.editPos : null,
+    editState: (store, id) =>
+      store.state.mode === 'insert' && id === store.state.active
+        ? store.state.editPos
+        : null,
     viewState: store => store.state.view,
 
     viewType: store => store.state.viewType,
-    dropping: (store) => store.state.mode === 'dropping' &&
-      store.globalState.dropping,
-    nodeViewData: (store, id) => store.db.data[id] &&
-      store.db.data[id].views[store.state.viewType],
+    dropping: store =>
+      store.state.mode === 'dropping' && store.globalState.dropping,
+    nodeViewData: (store, id) =>
+      store.db.data[id] && store.db.data[id].views[store.state.viewType],
   },
-
 }
-

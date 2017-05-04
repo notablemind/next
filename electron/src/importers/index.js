@@ -1,6 +1,1 @@
-
-module.exports = [
-  require('./oldNm'),
-  require('./current'),
-]
-
+module.exports = [require('./oldNm'), require('./current')]

@@ -13,7 +13,7 @@ class Base<Props: Object, State, DefaultProps: $Shape<Props>>
   static shouldRefreshEvents: ?(
     store: Store,
     state: State,
-    props?: Props
+    props?: Props,
   ) => boolean
 
   constructor({store}: any) {
@@ -22,7 +22,7 @@ class Base<Props: Object, State, DefaultProps: $Shape<Props>>
       this,
       store => this.constructor.storeEvents(store, this.props),
       store => this.constructor.storeState(store, this.props),
-      this.constructor.shouldRefreshEvents
+      this.constructor.shouldRefreshEvents,
     )
   }
 
@@ -41,7 +41,7 @@ class ViewHeader extends Base {
   static storeEvents = store => [store.events.root(), store.events.viewType()]
   static storeState = store => ({
     root: store.getters.root(),
-    viewType: store.getters.viewType()
+    viewType: store.getters.viewType(),
   })
 
   render() {}

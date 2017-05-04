@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import ContextMenu from '../context-menu/ContextMenu'
@@ -128,8 +128,8 @@ export default class Whiteboard extends Component {
       return
     }
     this.dropNode.style.display = 'block'
-    this.dropNode.style.top = (e.clientY - 20) + 'px'
-    this.dropNode.style.left = (e.clientX - 100) + 'px'
+    this.dropNode.style.top = e.clientY - 20 + 'px'
+    this.dropNode.style.left = e.clientX - 100 + 'px'
   }
 
   dropUp = (e: any) => {
@@ -149,7 +149,7 @@ export default class Whiteboard extends Component {
         ...node,
         views: {
           ...node.views,
-          whiteboard: { x, y },
+          whiteboard: {x, y},
         },
       },
     })
@@ -160,10 +160,7 @@ export default class Whiteboard extends Component {
   onWheel = (e: any) => {
     e.preventDefault()
     e.stopPropagation()
-    this.setPos(
-      this.state.view.x - e.deltaX,
-      this.state.view.y - e.deltaY,
-    )
+    this.setPos(this.state.view.x - e.deltaX, this.state.view.y - e.deltaY)
     // this.updateViewState()
   }
 
@@ -240,7 +237,11 @@ export default class Whiteboard extends Component {
             return
           }
         }
-        const {insertPos, indicator} = calcChildInsertPos(childBoxes, x + w, y + h)
+        const {insertPos, indicator} = calcChildInsertPos(
+          childBoxes,
+          x + w,
+          y + h,
+        )
         if (!indicator) {
           if (!snapLines) {
             const hasBoxes = !draggingIds.some(id => !nodeMap[id])
@@ -271,11 +272,7 @@ export default class Whiteboard extends Component {
             w = news.x - x
             h = news.y - y
 
-            this.showIndicators(
-              news.xsnap,
-              news.ysnap,
-              true,
-            )
+            this.showIndicators(news.xsnap, news.ysnap, true)
           }
         }
 
@@ -303,19 +300,13 @@ export default class Whiteboard extends Component {
 
         if (childDrag.insertPos) {
           const {pid, idx} = childDrag.insertPos
-          this.props.store.actions.moveSelected(
-            pid,
-            idx,
-          )
+          this.props.store.actions.moveSelected(pid, idx)
           this.setState({
             childDrag: null,
           })
         } else {
           const {x, y} = childDrag.pos
-          this.props.store.actions.moveSelected(
-            this.state.root,
-            -1,
-          )
+          this.props.store.actions.moveSelected(this.state.root, -1)
           let relBox = this.relative.getBoundingClientRect()
           let top = y - relBox.top
           let left = x - relBox.left
@@ -335,10 +326,7 @@ export default class Whiteboard extends Component {
               },
             }
           })
-          this.showIndicators(
-            null,
-            null,
-          )
+          this.showIndicators(null, null)
           this.props.store.actions.updateMany(draggingIds, updates)
           // TODO set their positions to make sense
           console.log(childDrag.pos)
@@ -362,8 +350,12 @@ export default class Whiteboard extends Component {
     const x = e.clientX - box.left + this.state.view.x
     const y = e.clientY - box.top + this.state.view.y
     console.warn('TODO create a new node')
-    const viewData = { x, y }
-    let nid = this.props.store.actions.createLastChild(this.state.root, '', viewData)
+    const viewData = {x, y}
+    let nid = this.props.store.actions.createLastChild(
+      this.state.root,
+      '',
+      viewData,
+    )
     if (nid) {
       this.props.store.actions.edit(nid)
     }
@@ -373,8 +365,13 @@ export default class Whiteboard extends Component {
     let moved = false
     let boxes = []
     const adding = e.shiftKey
-    this.props.store.db.data[this.props.store.state.root].children.forEach(id => {
-      boxes.push([id, this.props.store.state.nodeMap[id].getBoundingClientRect()])
+    this.props.store.db.data[
+      this.props.store.state.root
+    ].children.forEach(id => {
+      boxes.push([
+        id,
+        this.props.store.state.nodeMap[id].getBoundingClientRect(),
+      ])
     })
 
     this._dragger = dragger(e, {
@@ -429,60 +426,78 @@ export default class Whiteboard extends Component {
       y += h
       h *= -1
     }
-    return <div
-      className={css(styles.selectBox)}
-      style={{
-        top: y,
-        left: x,
-        height: h,
-        width: w,
-      }}
-    />
+    return (
+      <div
+        className={css(styles.selectBox)}
+        style={{
+          top: y,
+          left: x,
+          height: h,
+          width: w,
+        }}
+      />
+    )
   }
 
   renderChildDrag() {
     if (!this.state.childDrag) return null
-    const {pos, indicator, moveCount, draggingIds, nodeMap} = this.state.childDrag
-    return <div>
-      {indicator &&
-        <div style={{
-          top: indicator.top,
-          left: indicator.left,
-          width: indicator.width,
-        }} className={css(styles.childDragIndicator)} />}
-      {(indicator || !draggingIds) && <div style={{
-        top: pos.y,
-        left: pos.x,
-      }} className={css(styles.childDragCircle)}>
-        {moveCount}
-      </div>}
-      {draggingIds && <div
-          style={{
-            top: pos.y,
-            left: pos.x,
-            position: 'absolute',
-            transition: 'opacity .2s ease',
-            opacity: indicator ? 0 : 1,
-          }}
-        >
-          {draggingIds.map(child => (
-            <WhiteboardNode
-              id={child}
-              key={child}
-              store={this.props.store}
-              dx={0}
-              dy={0}
-              inline={true}
-              defaultPos={{x: 0, y: 0}}
-              nodeMap={nodeMap}
-            />
-          ))}
-        </div>}
-      }
-    </div>
+    const {
+      pos,
+      indicator,
+      moveCount,
+      draggingIds,
+      nodeMap,
+    } = this.state.childDrag
+    return (
+      <div>
+        {indicator &&
+          <div
+            style={{
+              top: indicator.top,
+              left: indicator.left,
+              width: indicator.width,
+            }}
+            className={css(styles.childDragIndicator)}
+          />}
+        {(indicator || !draggingIds) &&
+          <div
+            style={{
+              top: pos.y,
+              left: pos.x,
+            }}
+            className={css(styles.childDragCircle)}
+          >
+            {moveCount}
+          </div>}
+        {draggingIds &&
+          <div
+            style={{
+              top: pos.y,
+              left: pos.x,
+              position: 'absolute',
+              transition: 'opacity .2s ease',
+              opacity: indicator ? 0 : 1,
+            }}
+          >
+            {draggingIds.map(child => (
+              <WhiteboardNode
+                id={child}
+                key={child}
+                store={this.props.store}
+                dx={0}
+                dy={0}
+                inline={true}
+                defaultPos={{x: 0, y: 0}}
+                nodeMap={nodeMap}
+              />
+            ))}
+          </div>}
+        }
+      </div>
+    )
   }
 
-  showIndicators = (x: ?number, y: ?number, relative?: bool) => {
+  showIndicators = (x: ?number, y: ?number, relative?: boolean) => {
     if (relative) {
       const box = this.relative.getBoundingClientRect()
       this._indicators.set(
@@ -493,7 +508,7 @@ export default class Whiteboard extends Component {
       // this._indicators.set(x, y)
       this._indicators.set(
         x != null ? x + this.state.view.x : null,
-        y != null ? y + this.state.view.y: null,
+        y != null ? y + this.state.view.y : null,
       )
     }
   }
@@ -502,77 +517,85 @@ export default class Whiteboard extends Component {
     const {dropping} = this.state
     if (!dropping) return
     const nodeMap = {}
-    return <div
-      ref={dropNode => this.dropNode = dropNode}
-      style={{
-    position: 'absolute',
-    display: 'none',
-    pointerEvents: 'none',
-  }}
-    >
-      {dropping.map((node, i) => (
-        <WhiteboardNodeRendered
-          id={i}
-          key={i}
-          node={node}
-          nodeMap={nodeMap}
-          store={this.props.store}
-        />
-      ))}
-    </div>
+    return (
+      <div
+        ref={dropNode => (this.dropNode = dropNode)}
+        style={{
+          position: 'absolute',
+          display: 'none',
+          pointerEvents: 'none',
+        }}
+      >
+        {dropping.map((node, i) => (
+          <WhiteboardNodeRendered
+            id={i}
+            key={i}
+            node={node}
+            nodeMap={nodeMap}
+            store={this.props.store}
+          />
+        ))}
+      </div>
+    )
   }
 
   render() {
     const {x, y, zoom} = this.state.view
     // TODO zoom?
-    return <div className={css(styles.container)}>
-      <div
-        onMouseDown={this.onMouseDown}
-        onDoubleClick={this.onDblClick}
-        onContextMenu={this.onContextMenu}
-        onWheel={this.onWheel}
-        className={css(styles.relative)}
-        ref={rel => this.relative = rel}
-      >
-        <div className={css(styles.xAxis)} style={{
-          transform: `translateY(${y}px)`,
-          willChange: 'transform',
-        }} />
-        <div className={css(styles.yAxis)} style={{
-          transform: `translateX(${x}px)`,
-          willChange: 'transform',
-        }} />
+    return (
+      <div className={css(styles.container)}>
         <div
-          className={css(styles.offset)}
-          style={{
-            transform: `translate(${x}px, ${y}px)`,
-            willChange: 'transform',
-          }}
+          onMouseDown={this.onMouseDown}
+          onDoubleClick={this.onDblClick}
+          onContextMenu={this.onContextMenu}
+          onWheel={this.onWheel}
+          className={css(styles.relative)}
+          ref={rel => (this.relative = rel)}
         >
-          <WhiteboardRoot
-            store={this.props.store}
-            nodeMap={this.props.store.state.nodeMap}
-            showIndicators={this.showIndicators}
-            startChildDragging={this.startChildDragging}
-            setChildDrag={childDrag => this.setState({childDrag})}
+          <div
+            className={css(styles.xAxis)}
+            style={{
+              transform: `translateY(${y}px)`,
+              willChange: 'transform',
+            }}
           />
+          <div
+            className={css(styles.yAxis)}
+            style={{
+              transform: `translateX(${x}px)`,
+              willChange: 'transform',
+            }}
+          />
+          <div
+            className={css(styles.offset)}
+            style={{
+              transform: `translate(${x}px, ${y}px)`,
+              willChange: 'transform',
+            }}
+          >
+            <WhiteboardRoot
+              store={this.props.store}
+              nodeMap={this.props.store.state.nodeMap}
+              showIndicators={this.showIndicators}
+              startChildDragging={this.startChildDragging}
+              setChildDrag={childDrag => this.setState({childDrag})}
+            />
+          </div>
         </div>
+        {this.state.selectBox && this.renderSelectBox()}
+
+        {this.renderChildDrag()}
+
+        {this.state.dropping && this.renderDropping()}
+
+        {this.state.contextMenu &&
+          <ContextMenu
+            pos={this.state.contextMenu.pos}
+            menu={this.state.contextMenu.menu}
+            onClose={this.props.store.actions.closeContextMenu}
+          />}
       </div>
-      {this.state.selectBox &&
-        this.renderSelectBox()}
-
-      {this.renderChildDrag()}
-
-      {this.state.dropping &&
-        this.renderDropping()}
-
-      {this.state.contextMenu &&
-        <ContextMenu
-          pos={this.state.contextMenu.pos}
-          menu={this.state.contextMenu.menu}
-          onClose={this.props.store.actions.closeContextMenu}
-        />}
-    </div>
+    )
   }
 }
 
@@ -638,11 +661,9 @@ const styles = StyleSheet.create({
   childDragIndicator: {
     height: 5,
     backgroundColor: '#555',
-    opacity: .2,
+    opacity: 0.2,
     borderRadius: 5,
     position: 'absolute',
     marginTop: -2,
   },
-
 })
-

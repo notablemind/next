@@ -1,4 +1,3 @@
-
 const makeCodeSettings = settings => {
   // TODO
 }
@@ -25,11 +24,13 @@ const makeSettings = data => {
 }
 
 const flattenTree = (parent, tree) => {
-  return [{
-    ...tree,
-    parent,
-    children: tree.children.map(child => child.id),
-  }].concat(...tree.children.map(flattenTree.bind(null, tree.id)))
+  return [
+    {
+      ...tree,
+      parent,
+      children: tree.children.map(child => child.id),
+    },
+  ].concat(...tree.children.map(flattenTree.bind(null, tree.id)))
 }
 
 const makeDoc = node => {
@@ -50,10 +51,12 @@ const makeDoc = node => {
 }
 
 module.exports = (id, filename, data) => {
-  if (typeof data.root !== 'object' ||
-      typeof data.title !== 'string' ||
-      typeof data.windows !== 'object' ||
-      typeof data.id !== 'string') {
+  if (
+    typeof data.root !== 'object' ||
+    typeof data.title !== 'string' ||
+    typeof data.windows !== 'object' ||
+    typeof data.id !== 'string'
+  ) {
     return
   }
   const meta = {
@@ -70,4 +73,3 @@ module.exports = (id, filename, data) => {
 
   return {meta, docs}
 }
-

@@ -24,8 +24,18 @@ const addPluginKeys = (store, layers, plugins) => {
         }
         const typeName = defn.title || type
         if (!defn.disableSwitch && defn.shortcut) {
-          addKey(layers.normal, `t ${defn.shortcut}`, action, `Set type: ${typeName}`)
-          addKey(layers.insert, `alt+t ${defn.shortcut}`, action, `Set type: ${typeName}`)
+          addKey(
+            layers.normal,
+            `t ${defn.shortcut}`,
+            action,
+            `Set type: ${typeName}`,
+          )
+          addKey(
+            layers.insert,
+            `alt+t ${defn.shortcut}`,
+            action,
+            `Set type: ${typeName}`,
+          )
         }
 
         if (defn.actions) {
@@ -34,20 +44,28 @@ const addPluginKeys = (store, layers, plugins) => {
             Object.keys(adef.shortcuts).forEach(mode => {
               const scut = adef.shortcuts[mode]
               if (!typeSpecific[mode][scut]) {
-                const byType = typeSpecific[mode][scut] = {}
+                const byType = (typeSpecific[mode][scut] = {})
                 if (!layers[mode]) layers[mode] = {prefixes: {}, actions: {}}
-                addKey(layers[mode], scut, () => {
-                  const node = store.db.data[store.state.active]
-                  if (node && byType[node.type]) {
-                    // TODO I could do visual mode "apply to all" without much
-                    // fuss here. I'll really want transactions though
-                    byType[node.type](store, node)
-                  } else {
-                    console.warn("that shortcut isn't defined for this node type")
-                    console.log(scut, node.type, byType)
-                    return false
-                  }
-                }, adef.description, true)
+                addKey(
+                  layers[mode],
+                  scut,
+                  () => {
+                    const node = store.db.data[store.state.active]
+                    if (node && byType[node.type]) {
+                      // TODO I could do visual mode "apply to all" without much
+                      // fuss here. I'll really want transactions though
+                      byType[node.type](store, node)
+                    } else {
+                      console.warn(
+                        "that shortcut isn't defined for this node type",
+                      )
+                      console.log(scut, node.type, byType)
+                      return false
+                    }
+                  },
+                  adef.description,
+                  true,
+                )
               }
               typeSpecific[mode][scut][type] = adef.action
             })
@@ -56,7 +74,6 @@ const addPluginKeys = (store, layers, plugins) => {
       })
     }
   })
-
 }
 
 export default addPluginKeys

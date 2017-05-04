@@ -33,7 +33,7 @@ const plugin = {
         err => {
           console.log('umm failed to sign in')
           console.error(err)
-        }
+        },
       )
     })
 
@@ -72,7 +72,7 @@ const plugin = {
     ipcMain.on('sync:files', evt => {
       getFiles().then(files => evt.sender.send('sync:files', files))
     })
-  }
+  },
 }
 
 const ext = (a, b) => {
@@ -95,8 +95,8 @@ const remoteFile = file => {
       name: owner.displayName,
       me: owner.me,
       email: owner.emailAddress,
-      profilePhoto: owner.photoLink
-    }
+      profilePhoto: owner.photoLink,
+    },
   }
 }
 
@@ -108,11 +108,11 @@ const syncObj = file => {
       name: owner.displayName,
       me: owner.me,
       email: owner.emailAddress,
-      profilePhoto: owner.photoLink
+      profilePhoto: owner.photoLink,
     },
     remoteId: file.id,
     lastSyncTime: null, // Date.now(),
-    lastSyncVersion: null // file.version,
+    lastSyncVersion: null, // file.version,
   }
 }
 

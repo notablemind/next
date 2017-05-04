@@ -1,4 +1,3 @@
-
 import type {Store} from 'treed/types'
 
 import Component from './Trash'
@@ -50,5 +49,3 @@ export default {
   },
   shortcut: 't',
 }
-
-

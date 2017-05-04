@@ -14,7 +14,11 @@ type UserShortcuts = {
   [key: string]: string,
 }
 
-export default (config: Config, namePrefix: string, userShortcuts: UserShortcuts) => {
+export default (
+  config: Config,
+  namePrefix: string,
+  userShortcuts: UserShortcuts,
+) => {
   const layer = {
     prefixes: {},
     actions: {},
@@ -25,4 +29,3 @@ export default (config: Config, namePrefix: string, userShortcuts: UserShortcuts
   })
   return layer
 }
-

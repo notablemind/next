@@ -6,11 +6,7 @@ import uuid from './uuid'
 import * as nav from './nav'
 import * as move from './move'
 
-import type {
-  Db,
-  Node,
-  DumpedNode,
-} from './Database'
+import type {Db, Node, DumpedNode} from './Database'
 
 import type {
   Mode,
@@ -27,7 +23,7 @@ export type DefEditPos = EditPos | false
 
 const fixedChildren = (id, nodes) =>
   dedup(nodes[id].children)
-    .map(cid => typeof cid === 'string' ? cid : '' + cid)
+    .map(cid => (typeof cid === 'string' ? cid : '' + cid))
     .filter(cid => !!nodes[cid] && nodes[cid].parent === id)
 
 const checkParentage = (id, nodes, ids, updates) => {
@@ -41,10 +37,10 @@ const checkParentage = (id, nodes, ids, updates) => {
 
 const dedup = ids => {
   const seen = {}
-  return ids.filter(id => [!seen[id], seen[id]=true][0])
+  return ids.filter(id => [!seen[id], (seen[id] = true)][0])
 }
 
-const copyToClipboard = (data) => {
+const copyToClipboard = data => {
   const handler = (e: any) => {
     document.removeEventListener('copy', handler)
     console.log('copying')
@@ -134,17 +130,35 @@ const actions = {
       globalStore.emit(globalStore.events.clipboardChanged())
     },
 
-    setNested(globalStore: GlobalStore, id: string, attrs: Array<string>, value: any) {
+    setNested(
+      globalStore: GlobalStore,
+      id: string,
+      attrs: Array<string>,
+      value: any,
+    ) {
       const att: any = attrs
-      const current = att.reduce((o, a) => o ? o[a] : undefined, globalStore.db.data[id])
+      const current = att.reduce(
+        (o, a) => (o ? o[a] : undefined),
+        globalStore.db.data[id],
+      )
       if (current === value) return
       globalStore.execute({type: 'setNested', args: {id, attrs, value}})
     },
 
-    updateNested(globalStore: GlobalStore, id: string, attrs: Array<string>, update: any) {
+    updateNested(
+      globalStore: GlobalStore,
+      id: string,
+      attrs: Array<string>,
+      update: any,
+    ) {
       const att: any = attrs
-      const current = att.reduce((o, a) => o ? o[a] : undefined, globalStore.db.data[id])
-      const diff = !current || Object.keys(update).some(key => update[key] !== current[key])
+      const current = att.reduce(
+        (o, a) => (o ? o[a] : undefined),
+        globalStore.db.data[id],
+      )
+      const diff =
+        !current ||
+        Object.keys(update).some(key => update[key] !== current[key])
       if (diff) {
         globalStore.execute({type: 'updateNested', args: {id, attrs, update}})
       }
@@ -154,10 +168,14 @@ const actions = {
       globalStore.execute({type: 'update', args: {id, update}})
     },
 
-    updateMany(globalStore: GlobalStore, ids: Array<string>, updates: Array<any>) {
+    updateMany(
+      globalStore: GlobalStore,
+      ids: Array<string>,
+      updates: Array<any>,
+    ) {
       globalStore.execute({
         type: 'updateMany',
-        args: {ids, updates}
+        args: {ids, updates},
       })
     },
 
@@ -166,15 +184,29 @@ const actions = {
       globalStore.actions.set(id, 'content', content)
     },
 
-    setPluginData(globalStore: GlobalStore, id: string, plugin: string, data: any) {
+    setPluginData(
+      globalStore: GlobalStore,
+      id: string,
+      plugin: string,
+      data: any,
+    ) {
       globalStore.actions.setNested(id, ['plugins', plugin], data)
     },
 
-    setNodeViewData(globalStore: GlobalStore, id: string, view: string, data: any) {
+    setNodeViewData(
+      globalStore: GlobalStore,
+      id: string,
+      view: string,
+      data: any,
+    ) {
       globalStore.actions.setNested(id, ['views', view], data)
     },
 
-    setGlobalPluginConfig(globalStore: GlobalStore, plugin: string, config: any) {
+    setGlobalPluginConfig(
+      globalStore: GlobalStore,
+      plugin: string,
+      config: any,
+    ) {
       globalStore.actions.setNested('settings', ['plugins', plugin], config)
     },
   },
@@ -188,11 +220,15 @@ const actions = {
     },
 
     setDefaultView(store: Store, defaultView: any) {
-      store.actions.setNested('settings', ['defaultViews', store.state.root], defaultView)
+      store.actions.setNested(
+        'settings',
+        ['defaultViews', store.state.root],
+        defaultView,
+      )
       store.emit(store.events.defaultView(store.state.root))
     },
 
-    setActive(store: Store, id: string, nonJump: bool=false) {
+    setActive(store: Store, id: string, nonJump: boolean = false) {
       if (!id || !store.db.data[id]) return
       const old = store.state.active
       store.actions.setActiveView()
@@ -212,10 +248,7 @@ const actions = {
       if (store.db.data[old]) {
         store.emit(store.events.nodeView(old))
       }
-      store.emitMany([
-        store.events.activeNode(),
-        store.events.nodeView(id),
-      ])
+      store.emitMany([store.events.activeNode(), store.events.nodeView(id)])
       return true
     },
 
@@ -228,8 +261,11 @@ const actions = {
 
     setMode(store: Store, mode: Mode) {
       if (store.state.mode === mode) return
-      if ((store.state.mode === 'visual' || store.state.mode === 'dragging')
-          && mode !== 'visual' && mode !== 'dragging') {
+      if (
+        (store.state.mode === 'visual' || store.state.mode === 'dragging') &&
+        mode !== 'visual' &&
+        mode !== 'dragging'
+      ) {
         store.actions.clearSelection()
       }
       store.state.mode = mode
@@ -240,13 +276,13 @@ const actions = {
       store.emit(store.events.nodeView(store.state.active))
     },
 
-    normalMode(store: Store, id: string=store.state.active) {
+    normalMode(store: Store, id: string = store.state.active) {
       if (store.state.mode === 'normal' && store.state.active === id) return
       store.actions.setActive(id)
       store.actions.setMode('normal')
     },
 
-    visualMode(store: Store, id: string=store.state.active) {
+    visualMode(store: Store, id: string = store.state.active) {
       if (store.state.mode === 'visual' && store.state.active === id) return
       // store.actions.setMode('visual')
       store.actions.select(id)
@@ -266,15 +302,15 @@ const actions = {
       throw new Error('not implt')
     },
 
-    toggleCollapse(store: Store, id: string=store.state.active) {
+    toggleCollapse(store: Store, id: string = store.state.active) {
       store.actions.setCollapsed(id, !store.getters.isCollapsed(id))
     },
 
-    expand(store: Store, id: string=store.state.active) {
+    expand(store: Store, id: string = store.state.active) {
       store.actions.setCollapsed(id, false)
     },
 
-    collapse(store: Store, id: string=store.state.active) {
+    collapse(store: Store, id: string = store.state.active) {
       store.actions.setCollapsed(id, true)
     },
 
@@ -322,7 +358,7 @@ const actions = {
       store.actions.select(id)
     },
 
-    setSelection(store: Store, ids: Array<string>, adding: bool=false) {
+    setSelection(store: Store, ids: Array<string>, adding: boolean = false) {
       const oldSelected = store.state.selected || {}
       const selected = {}
       store.actions.setMode('visual')
@@ -380,7 +416,11 @@ const actions = {
     editStart: (store: Store, id: string) => store.actions.editAt(id, 'start'),
     editEnd: (store: Store, id: string) => store.actions.editAt(id, 'end'),
 
-    editAt(store: Store, id: string=store.state.active, at: EditPos='default') {
+    editAt(
+      store: Store,
+      id: string = store.state.active,
+      at: EditPos = 'default',
+    ) {
       if (store.state.mode === 'edit' && store.state.active === id) return
       if (!store.actions.setActive(id)) {
         store.emit(store.events.nodeView(id))
@@ -392,15 +432,21 @@ const actions = {
 
     pasteFile(store: Store, file: any, type: string, filename: string) {
       const fns = store.plugins.node.pasteFile
-      const handled = fns.some(fn => fn(
-        store, store.state.active, file, type, filename))
+      const handled = fns.some(fn =>
+        fn(store, store.state.active, file, type, filename),
+      )
       if (!handled) {
         // TODO toast
         console.warn("Don't know how to paste this file")
       }
     },
 
-    dropFiles(store: Store, id: string, at: 'before' | 'after' | 'over', files: Array<any>) {
+    dropFiles(
+      store: Store,
+      id: string,
+      at: 'before' | 'after' | 'over',
+      files: Array<any>,
+    ) {
       let pid, idx
       if (id === store.state.root) {
         pid = id
@@ -427,7 +473,12 @@ const actions = {
       })
     },
 
-    dropFile(store: Store, id: string, at: 'before' | 'after' | 'over', file: any) {
+    dropFile(
+      store: Store,
+      id: string,
+      at: 'before' | 'after' | 'over',
+      file: any,
+    ) {
       if (at === 'over') {
         const fns = store.plugins.node.dropFileOnto
         const handled = fns.some(fn => fn(store, id, file))
@@ -460,7 +511,7 @@ const actions = {
       }
     },
 
-    startDragging(store: Store, id: string=store.state.active) {
+    startDragging(store: Store, id: string = store.state.active) {
       if (!store.actions.setActive(id)) {
         store.emit(store.events.nodeView(id))
       }
@@ -497,10 +548,14 @@ const actions = {
       }
 
       // TODO maybe don't do after for children
-      store.execute({
-        type: 'move',
-        args: {id: did, pid, idx, viewType: store.state.viewType}
-      }, did, did)
+      store.execute(
+        {
+          type: 'move',
+          args: {id: did, pid, idx, viewType: store.state.viewType},
+        },
+        did,
+        did,
+      )
       store.emit(store.events.nodeView(did))
       store.actions.setActive(did)
       store.actions.setMode('normal')
@@ -513,10 +568,14 @@ const actions = {
         if (oidx < idx) idx -= 1
       }
       const nextActive = !store.getters.isCollapsed(pid) ? id : pid
-      store.execute({
-        type: 'move',
-        args: {id, pid, idx, viewType: store.state.viewType}
-      }, id, nextActive)
+      store.execute(
+        {
+          type: 'move',
+          args: {id, pid, idx, viewType: store.state.viewType},
+        },
+        id,
+        nextActive,
+      )
       store.emit(store.events.nodeView(id))
       store.actions.setActive(nextActive)
       store.actions.setMode('normal')
@@ -545,10 +604,14 @@ const actions = {
       idx -= idxCorrection
 
       const nextActive = !store.getters.isCollapsed(pid) ? ids[0] : pid
-      store.execute({
-        type: 'moveMany',
-        args: {ids, pid, idx, viewType: store.state.viewType}
-      }, store.state.active, nextActive)
+      store.execute(
+        {
+          type: 'moveMany',
+          args: {ids, pid, idx, viewType: store.state.viewType},
+        },
+        store.state.active,
+        nextActive,
+      )
       store.emitMany(ids.map(id => store.events.nodeView(id)))
       store.actions.setActive(nextActive)
       if (nextActive === pid) {
@@ -558,33 +621,46 @@ const actions = {
       }
     },
 
-    createBeforeNormal(store: Store, id: string=store.state.active) {
+    createBeforeNormal(store: Store, id: string = store.state.active) {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
       if (!pid || id === 'root') return
       const idx = store.db.data[pid].children.indexOf(id)
       const nid = uuid()
-      store.execute({
-        type: 'create',
-        args: {id: nid, pid, ix: idx},
-      }, id, nid)
+      store.execute(
+        {
+          type: 'create',
+          args: {id: nid, pid, ix: idx},
+        },
+        id,
+        nid,
+      )
       store.actions.editStart(nid)
       return nid
     },
 
-    createAfterNormal(store: Store, id: string=store.state.active) {
+    createAfterNormal(store: Store, id: string = store.state.active) {
       if (!id || !store.db.data[id]) return
       const {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       const nid = uuid()
-      store.execute({
-        type: 'create',
-        args: {id: nid, pid, ix: idx},
-      }, id, nid)
+      store.execute(
+        {
+          type: 'create',
+          args: {id: nid, pid, ix: idx},
+        },
+        id,
+        nid,
+      )
       store.actions.editStart(nid)
       return nid
     },
 
-    createBefore(store: Store, id: string=store.state.active, content: string='', viewData: ?any=null) {
+    createBefore(
+      store: Store,
+      id: string = store.state.active,
+      content: string = '',
+      viewData: ?any = null,
+    ) {
       const node = store.db.data[id]
       if (!id || !node) return
       let pid = node.parent
@@ -617,14 +693,19 @@ const actions = {
       */
     },
 
-    createAfter(store: Store, id: string=store.state.active, content: string='', viewData: ?any=null) {
+    createAfter(
+      store: Store,
+      id: string = store.state.active,
+      content: string = '',
+      viewData: ?any = null,
+    ) {
       const node = store.db.data[id]
       if (!id || !node) return
       const {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
 
       let fromNode = pid === node.parent
         ? node
-        : (node.children[0] && store.db.data[node.children[0]])
+        : node.children[0] && store.db.data[node.children[0]]
 
       return store.actions.create({
         fromNode,
@@ -635,7 +716,11 @@ const actions = {
       })
     },
 
-    createChild(store: Store, id: string=store.state.active, content: string='') {
+    createChild(
+      store: Store,
+      id: string = store.state.active,
+      content: string = '',
+    ) {
       const node = store.db.data[id]
       if (!id || !node) return
       const firstChild = node.children[0] && store.db.data[node.children[0]]
@@ -653,9 +738,20 @@ const actions = {
       })
     },
 
-    createParentsNextSibling(store: Store, id: string=store.state.active, content: string='') {
+    createParentsNextSibling(
+      store: Store,
+      id: string = store.state.active,
+      content: string = '',
+    ) {
       const node = store.db.data[id]
-      if (!id || !node || !node.parent || id === 'root' || id === store.state.root) return
+      if (
+        !id ||
+        !node ||
+        !node.parent ||
+        id === 'root' ||
+        id === store.state.root
+      )
+        return
       const gparent = store.db.data[node.parent].parent
       const parentSibs = store.db.data[gparent].children
       const pidx = parentSibs.indexOf(node.parent)
@@ -668,33 +764,46 @@ const actions = {
       })
     },
 
-    createLastChild(store: Store, id: string=store.state.active, content: string='', viewData: ?any=null) {
+    createLastChild(
+      store: Store,
+      id: string = store.state.active,
+      content: string = '',
+      viewData: ?any = null,
+    ) {
       const node = store.db.data[id]
       if (!id || !node) return
       const nid = uuid()
       let type = 'normal'
       const firstChild = node.children[0] && store.db.data[node.children[0]]
-      if (firstChild && store.plugins.nodeTypes[firstChild.type].newSiblingsShouldCarryType) {
+      if (
+        firstChild &&
+        store.plugins.nodeTypes[firstChild.type].newSiblingsShouldCarryType
+      ) {
         type = firstChild.type
       }
       const nodeType = store.plugins.nodeTypes[type]
-      const types = nodeType.defaultNodeConfig ?
-        {[type]: nodeType.defaultNodeConfig()} : {}
+      const types = nodeType.defaultNodeConfig
+        ? {[type]: nodeType.defaultNodeConfig()}
+        : {}
       const views = viewData ? {[store.state.viewType]: viewData} : {}
 
       if (store.getters.isCollapsed(id)) {
         store.actions.setCollapsed(id, false)
       }
 
-      store.execute({
-        type: 'create',
-        args: {id: nid, pid: id, ix: -1, data: {content, type, types, views}},
-      }, id, nid)
+      store.execute(
+        {
+          type: 'create',
+          args: {id: nid, pid: id, ix: -1, data: {content, type, types, views}},
+        },
+        id,
+        nid,
+      )
       store.actions.editStart(nid)
       return nid
     },
 
-    createNextSibling(store: Store, id: string=store.state.active) {
+    createNextSibling(store: Store, id: string = store.state.active) {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
       if (!pid || id === 'root') return
@@ -702,30 +811,48 @@ const actions = {
       const nid = uuid()
       const oldType = store.db.data[id].type
       const nodeType = store.plugins.nodeTypes[oldType]
-      const type = nodeType.newSiblingsShouldCarryType ?
-        oldType : 'normal'
-      const types = nodeType.newSiblingsShouldCarryType && nodeType.defaultNodeConfig ?
-        {[oldType]: nodeType.defaultNodeConfig(store.db.data[id])} : {}
-      store.execute({
-        type: 'create',
-        args: {id: nid, pid, ix: idx, data: {type, types}},
-      }, id, nid)
+      const type = nodeType.newSiblingsShouldCarryType ? oldType : 'normal'
+      const types = nodeType.newSiblingsShouldCarryType &&
+        nodeType.defaultNodeConfig
+        ? {[oldType]: nodeType.defaultNodeConfig(store.db.data[id])}
+        : {}
+      store.execute(
+        {
+          type: 'create',
+          args: {id: nid, pid, ix: idx, data: {type, types}},
+        },
+        id,
+        nid,
+      )
       store.actions.editStart(nid)
       return nid
     },
 
-    createFull(store: Store, {pid, ix, node}: {pid: string, ix: string, node: Node}) {
+    createFull(
+      store: Store,
+      {pid, ix, node}: {pid: string, ix: string, node: Node},
+    ) {
       const nid = uuid()
-      store.execute({
-        type: 'create',
-        args: {id: nid, pid, ix, data: node},
-      }, store.state.active, nid)
+      store.execute(
+        {
+          type: 'create',
+          args: {id: nid, pid, ix, data: node},
+        },
+        store.state.active,
+        nid,
+      )
       return nid
     },
 
-    create(store: Store, {pid, ix, content, type, fromNode, viewData, typeData}: any) {
+    create(
+      store: Store,
+      {pid, ix, content, type, fromNode, viewData, typeData}: any,
+    ) {
       if (!type) {
-        if (fromNode && store.plugins.nodeTypes[fromNode.type].newSiblingsShouldCarryType) {
+        if (
+          fromNode &&
+          store.plugins.nodeTypes[fromNode.type].newSiblingsShouldCarryType
+        ) {
           type = fromNode.type
         } else {
           type = 'normal'
@@ -734,23 +861,38 @@ const actions = {
 
       const nid = uuid()
       const nodeType = store.plugins.nodeTypes[type]
-      const types = typeData ?
-        {[type]: typeData} :
-        (nodeType.defaultNodeConfig ?
-        {[type]: nodeType.defaultNodeConfig(fromNode)} : {})
+      const types = typeData
+        ? {[type]: typeData}
+        : nodeType.defaultNodeConfig
+            ? {[type]: nodeType.defaultNodeConfig(fromNode)}
+            : {}
       const views = viewData ? {[store.state.viewType]: viewData} : {}
-      store.execute({
-        type: 'create',
-        args: {id: nid, pid, ix, data: {content, type, types, views}},
-      }, store.state.active, nid)
+      store.execute(
+        {
+          type: 'create',
+          args: {id: nid, pid, ix, data: {content, type, types, views}},
+        },
+        store.state.active,
+        nid,
+      )
       store.actions.editStart(nid)
       return nid
     },
 
-    editChange: (store: Store, id: string) => store.actions.editAt(id, 'change'),
+    editChange: (store: Store, id: string) =>
+      store.actions.editAt(id, 'change'),
 
-    focusNext(store: Store, id: string=store.state.active, editState: DefEditPos=false) {
-      const next = nav.next(id, store.db.data, store.state.root, store.getters.isCollapsed)
+    focusNext(
+      store: Store,
+      id: string = store.state.active,
+      editState: DefEditPos = false,
+    ) {
+      const next = nav.next(
+        id,
+        store.db.data,
+        store.state.root,
+        store.getters.isCollapsed,
+      )
       if (editState !== false) {
         store.actions.editAt(next, editState)
       } else {
@@ -758,8 +900,17 @@ const actions = {
       }
     },
 
-    focusPrev(store: Store, id: string=store.state.active, editState: DefEditPos=false) {
-      const prev = nav.prev(id, store.db.data, store.state.root, store.getters.isCollapsed)
+    focusPrev(
+      store: Store,
+      id: string = store.state.active,
+      editState: DefEditPos = false,
+    ) {
+      const prev = nav.prev(
+        id,
+        store.db.data,
+        store.state.root,
+        store.getters.isCollapsed,
+      )
       if (editState !== false) {
         store.actions.editAt(prev, editState)
       } else {
@@ -767,38 +918,51 @@ const actions = {
       }
     },
 
-    focusParent(store: Store, id: string=store.state.active) {
+    focusParent(store: Store, id: string = store.state.active) {
       if (id === store.state.root) return
       store.actions.setActive(store.db.data[id].parent)
     },
 
-    insertTreeAfter(store: Store, id: string, tree: *, preserveIds: boolean = false) {
+    insertTreeAfter(
+      store: Store,
+      id: string,
+      tree: *,
+      preserveIds: boolean = false,
+    ) {
       let {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       const nid = uuid()
       const items = []
       treeToItems(pid, nid, tree, items, preserveIds)
-      store.execute({
-        type: 'insertTree',
-        args: {id: nid, pid, ix: idx, items},
-      }, id, nid)
+      store.execute(
+        {
+          type: 'insertTree',
+          args: {id: nid, pid, ix: idx, items},
+        },
+        id,
+        nid,
+      )
       store.actions.setActive(nid, true)
     },
 
-    replaceFromCut(store: Store, id: string=store.state.active) {
+    replaceFromCut(store: Store, id: string = store.state.active) {
       const cut = store.globalState.cut
       if (!cut) return
       store.globalState.cut = null
       store.actions.setActive(cut)
-      store.execute({
-        type: 'replaceMergingChildren',
-        args: {
-          id: cut,
-          destId: id,
+      store.execute(
+        {
+          type: 'replaceMergingChildren',
+          args: {
+            id: cut,
+            destId: id,
+          },
         },
-      }, id, cut)
+        id,
+        cut,
+      )
     },
 
-    pasteCutAfter(store: Store, id: string=store.state.active) {
+    pasteCutAfter(store: Store, id: string = store.state.active) {
       let {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       if (!store.globalState.cut) return
       const cid = store.globalState.cut
@@ -809,28 +973,39 @@ const actions = {
         }
       }
       store.globalState.cut = null
-      store.execute({
-        type: 'move',
-        args: {id: cid, pid, idx, viewType: store.state.viewType}
-      }, cid, cid)
+      store.execute(
+        {
+          type: 'move',
+          args: {id: cid, pid, idx, viewType: store.state.viewType},
+        },
+        cid,
+        cid,
+      )
       store.emit(store.events.nodeView(cid))
       store.actions.setActive(cid, true)
     },
 
-    pasteClipboardAfter(store: Store, id: string=store.state.active) {
+    pasteClipboardAfter(store: Store, id: string = store.state.active) {
       let {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       const nid = uuid()
       const items = []
       if (!store.globalState.clipboard) return
       treeToItems(pid, nid, store.globalState.clipboard, items)
-      store.execute({
-        type: 'insertTree',
-        args: {id: nid, pid, ix: idx, items},
-      }, id, nid)
+      store.execute(
+        {
+          type: 'insertTree',
+          args: {id: nid, pid, ix: idx, items},
+        },
+        id,
+        nid,
+      )
       store.actions.setActive(nid, true)
     },
 
-    pasteClipboardAfterWithoutChildren(store: Store, id: string=store.state.active) {
+    pasteClipboardAfterWithoutChildren(
+      store: Store,
+      id: string = store.state.active,
+    ) {
       let {pid, idx} = afterPos(store, id, store.db.data, store.state.root)
       const nid = uuid()
       const item = {
@@ -839,14 +1014,18 @@ const actions = {
         parent: pid,
         children: [],
       }
-      store.execute({
-        type: 'insertTree',
-        args: {id: nid, pid, ix: idx, items: [item]},
-      }, id, nid)
+      store.execute(
+        {
+          type: 'insertTree',
+          args: {id: nid, pid, ix: idx, items: [item]},
+        },
+        id,
+        nid,
+      )
       store.actions.setActive(nid, true)
     },
 
-    pasteAfter(store: Store, id: string=store.state.active) {
+    pasteAfter(store: Store, id: string = store.state.active) {
       if (!id || !store.db.data[id]) return
       if (store.globalState.cut) {
         store.actions.pasteCutAfter(id)
@@ -855,7 +1034,7 @@ const actions = {
       }
     },
 
-    pasteClipboardBefore(store: Store, id: string=store.state.active) {
+    pasteClipboardBefore(store: Store, id: string = store.state.active) {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
       if (!pid || id === 'root') return
@@ -864,14 +1043,18 @@ const actions = {
       const items = []
       if (!store.globalState.clipboard) return
       treeToItems(pid, nid, store.globalState.clipboard, items)
-      store.execute({
-        type: 'insertTree',
-        args: {id: nid, pid, ix: idx, items},
-      }, id, nid)
+      store.execute(
+        {
+          type: 'insertTree',
+          args: {id: nid, pid, ix: idx, items},
+        },
+        id,
+        nid,
+      )
       store.actions.setActive(nid, true)
     },
 
-    pasteCutBefore(store: Store, id: string=store.state.active) {
+    pasteCutBefore(store: Store, id: string = store.state.active) {
       if (!id || !store.db.data[id]) return
       let pid = store.db.data[id].parent
       if (!pid || id === 'root') return
@@ -885,15 +1068,19 @@ const actions = {
         }
       }
       store.globalState.cut = null
-      store.execute({
-        type: 'move',
-        args: {id: cid, pid, idx, viewType: store.state.viewType}
-      }, cid, cid)
+      store.execute(
+        {
+          type: 'move',
+          args: {id: cid, pid, idx, viewType: store.state.viewType},
+        },
+        cid,
+        cid,
+      )
       store.emit(store.events.nodeView(cid))
       store.actions.setActive(cid, true)
     },
 
-    pasteBefore(store: Store, id: string=store.state.active) {
+    pasteBefore(store: Store, id: string = store.state.active) {
       if (store.globalState.cut) {
         store.actions.pasteCutBefore(id)
       } else {
@@ -908,45 +1095,49 @@ const actions = {
         if (store.viewTypes[store.state.viewType].contextMenuVisual) {
           addMenuResult(
             menu,
-            store.viewTypes[store.state.viewType].contextMenuVisual(
-              store
-            )
+            store.viewTypes[store.state.viewType].contextMenuVisual(store),
           )
           // TODO add plugins stuffs
         }
         // TODO
       } else {
-        menu = [{
-          text: 'Copy',
-          action: store.actions.copyNode,
-        // }, {
-          // text: 'Paste',
-          // action: store.actions.pasteAfter,
-        }]
+        menu = [
+          {
+            text: 'Copy',
+            action: store.actions.copyNode,
+            // }, {
+            // text: 'Paste',
+            // action: store.actions.pasteAfter,
+          },
+        ]
       }
       store.actions.openContextMenu({top: y, left: x}, menu)
     },
 
-    replaceFromClipboard(store: Store, id: string) {
-    },
+    replaceFromClipboard(store: Store, id: string) {},
 
     openContextMenuForNode(store: Store, id: string, x: number, y: number) {
       // TODO if visual mode, only do visual mode items
       const node = store.db.data[id]
-      const baseItems: Array<MenuItem> = [{
-        text: 'Zoom to here',
-        disabled: node._id === store.state.root,
-        action: () => store.actions.rebase(node._id),
-      }, {
-        text: 'Copy',
-        action: () => store.actions.copyNode(node._id),
-      }, {
-        text: 'Cut',
-        action: () => store.actions.setCut(node._id),
-      }, {
-        text: 'Delete',
-        action: () => store.actions.remove(node._id),
-      }]
+      const baseItems: Array<MenuItem> = [
+        {
+          text: 'Zoom to here',
+          disabled: node._id === store.state.root,
+          action: () => store.actions.rebase(node._id),
+        },
+        {
+          text: 'Copy',
+          action: () => store.actions.copyNode(node._id),
+        },
+        {
+          text: 'Cut',
+          action: () => store.actions.setCut(node._id),
+        },
+        {
+          text: 'Delete',
+          action: () => store.actions.remove(node._id),
+        },
+      ]
       if (store.globalState.cut) {
         baseItems.push({
           text: 'Paste cut item after',
@@ -960,7 +1151,7 @@ const actions = {
       if (store.viewTypes[store.state.viewType].contextMenu) {
         addMenuResult(
           baseItems,
-          store.viewTypes[store.state.viewType].contextMenu(store, id)
+          store.viewTypes[store.state.viewType].contextMenu(store, id),
         )
         // TODO add plugins stuffs
       }
@@ -972,7 +1163,7 @@ const actions = {
             action: () => {
               store.actions.replaceFromClipboard(id)
             },
-          }
+          },
         ]
         if (clipboard.children.length) {
           pasteSpecial.push({
@@ -990,7 +1181,7 @@ const actions = {
               clipboard,
               node,
               store,
-            )
+            ),
           )
         }
 
@@ -1014,19 +1205,31 @@ const actions = {
 
       const nodeType = store.plugins.nodeTypes[node.type]
       if (nodeType && nodeType.contextMenu) {
-        addMenuResult(menu, nodeType.contextMenu(node.types[node.type], node, store))
+        addMenuResult(
+          menu,
+          nodeType.contextMenu(node.types[node.type], node, store),
+        )
       }
 
       menu.sort((a, b) => (a.children ? 0 : 1) - (b.children ? 0 : 1))
 
       store.actions.setActive(id)
-      store.actions.openContextMenu({
-        top: y,
-        left: x,
-      }, menu, node)
+      store.actions.openContextMenu(
+        {
+          top: y,
+          left: x,
+        },
+        menu,
+        node,
+      )
     },
 
-    openContextMenu(store: Store, pos: {top: number, left: number}, menu: Array<MenuItem>, node?: any) {
+    openContextMenu(
+      store: Store,
+      pos: {top: number, left: number},
+      menu: Array<MenuItem>,
+      node?: any,
+    ) {
       store.state.contextMenu = {pos, menu, node}
       store.emit(store.events.contextMenu())
     },
@@ -1036,7 +1239,11 @@ const actions = {
       store.emit(store.events.contextMenu())
     },
 
-    copyNode(store: Store, id: string=store.state.active, copyToSystemClipboard: bool=true) {
+    copyNode(
+      store: Store,
+      id: string = store.state.active,
+      copyToSystemClipboard: boolean = true,
+    ) {
       if (store.globalState.cut) {
         store.emit(store.events.nodeView(store.globalState.cut))
         store.globalState.cut = null
@@ -1045,32 +1252,32 @@ const actions = {
       if (copyToSystemClipboard) {
         copyToClipboard({
           'application/x-notablemind': JSON.stringify({
-            'source': 'clipboard',
-            'document': store.globalState.documentId,
-            'runtime': store.globalState.runtimeId,
+            source: 'clipboard',
+            document: store.globalState.documentId,
+            runtime: store.globalState.runtimeId,
             // TODO copying attachments doesn't work cross-document.
-            'tree': store.globalState.clipboard,
+            tree: store.globalState.clipboard,
           }),
         })
       }
     },
 
-    setCut(store: Store, id: string=store.state.active) {
+    setCut(store: Store, id: string = store.state.active) {
       if (store.globalState.cut) {
         store.emit(store.events.nodeView(store.globalState.cut))
       }
       store.globalState.cut = id // TODO multi-node
       copyToClipboard({
         'application/x-notablemind': JSON.stringify({
-          'source': 'cut',
-          'runtime': store.globalState.runtimeId,
-          'tree': store.db.cloneTree(id),
+          source: 'cut',
+          runtime: store.globalState.runtimeId,
+          tree: store.db.cloneTree(id),
         }),
       })
       store.emit(store.events.nodeView(id))
     },
 
-    joinWithNext(store: store, id: string=store.state.active) {
+    joinWithNext(store: store, id: string = store.state.active) {
       let next
       const nodes = store.db.data
       const node = nodes[id]
@@ -1086,86 +1293,142 @@ const actions = {
         }
       }
       let mergedText = store.db.data[id].content + store.db.data[next].content
-      if (store.db.data[id].type === 'code' || store.db.data[next].type === 'code') {
-        mergedText = store.db.data[id].content + '\n' + store.db.data[next].content
+      if (
+        store.db.data[id].type === 'code' ||
+        store.db.data[next].type === 'code'
+      ) {
+        mergedText =
+          store.db.data[id].content + '\n' + store.db.data[next].content
       }
-      store.execute({
-        type: 'merge',
-        args: {nid: id, oid: next, content: mergedText}
-      }, id, id)
+      store.execute(
+        {
+          type: 'merge',
+          args: {nid: id, oid: next, content: mergedText},
+        },
+        id,
+        id,
+      )
     },
 
     joinToPrevious(store: store, id: string, text: string) {
-      const nid = nextActiveAfterRemoval(id, store.db.data, store.getters.isCollapsed, true)
+      const nid = nextActiveAfterRemoval(
+        id,
+        store.db.data,
+        store.getters.isCollapsed,
+        true,
+      )
       store.actions.setActive(nid, true)
       store.actions.editAt(nid, store.db.data[nid].content.length)
       let mergedText = store.db.data[nid].content + text
-      if (store.db.data[id].type === 'code' || store.db.data[nid].type === 'code') {
+      if (
+        store.db.data[id].type === 'code' ||
+        store.db.data[nid].type === 'code'
+      ) {
         mergedText = store.db.data[nid].content + '\n' + text
       }
-      store.execute({
-        type: 'merge',
-        args: {nid, oid: id, content: mergedText}
-      }, id, nid)
+      store.execute(
+        {
+          type: 'merge',
+          args: {nid, oid: id, content: mergedText},
+        },
+        id,
+        nid,
+      )
     },
 
-    remove(store: Store, id: string=store.state.active, goUp: boolean=false) {
+    remove(
+      store: Store,
+      id: string = store.state.active,
+      goUp: boolean = false,
+    ) {
       if (id === store.state.root) return
-      const nid = nextActiveAfterRemoval(id, store.db.data, store.getters.isCollapsed, goUp)
+      const nid = nextActiveAfterRemoval(
+        id,
+        store.db.data,
+        store.getters.isCollapsed,
+        goUp,
+      )
       store.actions.setActive(nid, true)
       store.actions.copyNode(id, false)
-      store.execute({
-        type: 'remove',
-        args: {id},
-      }, id, nid)
+      store.execute(
+        {
+          type: 'remove',
+          args: {id},
+        },
+        id,
+        nid,
+      )
       return nid
     },
 
-    trash(store: Store, id: string=store.state.active, goUp: boolean=false) {
+    trash(
+      store: Store,
+      id: string = store.state.active,
+      goUp: boolean = false,
+    ) {
       if (id === store.state.root) return
-      const nid = nextActiveAfterRemoval(id, store.db.data, store.getters.isCollapsed, goUp)
+      const nid = nextActiveAfterRemoval(
+        id,
+        store.db.data,
+        store.getters.isCollapsed,
+        goUp,
+      )
       store.actions.setActive(nid, true)
       const node = store.getters.node(id)
       // if it's been around for under 5 seconds, or it's been around for
       // under 10 seconds and has no content
       const now = Date.now()
-      if (now - node.created < 5 * 1000 ||
-         (now - node.created < 10 * 1000 && node.content === '')) {
+      if (
+        now - node.created < 5 * 1000 ||
+        (now - node.created < 10 * 1000 && node.content === '')
+      ) {
         store.actions.copyNode(id, false)
-        store.execute({
-          type: 'remove',
-          args: {id},
-        }, id, nid)
+        store.execute(
+          {
+            type: 'remove',
+            args: {id},
+          },
+          id,
+          nid,
+        )
       } else {
         // TODO handle copying of trashed things better, so that
         // the first paste just untrashes it.
         store.actions.copyNode(id, false)
-        store.execute({
-          type: 'trash',
-          args: {id},
-        }, id, nid)
+        store.execute(
+          {
+            type: 'trash',
+            args: {id},
+          },
+          id,
+          nid,
+        )
       }
       return nid
     },
 
-    unTrash(store: Store, id: string=store.state.active) {
+    unTrash(store: Store, id: string = store.state.active) {
       // TODO find the next available node? And make it active
       // Need an action that's like "next available node"
       // Or "activeNodeAfterRemoval", and each view would have
       // to define it.
-      store.execute({
-        type: 'unTrash',
-        args: {id},
-      }, id, id)
+      store.execute(
+        {
+          type: 'unTrash',
+          args: {id},
+        },
+        id,
+        id,
+      )
       // store.actions.setActive(id, true)
     },
 
-    _fixChildren(store: Store, id: string=store.state.active) {
+    _fixChildren(store: Store, id: string = store.state.active) {
       const children = fixedChildren(id, store.db.data)
       store.actions.set(id, 'children', children)
     },
 
-    makePrevSiblingsLastChild(store: Store, id: string=store.state.active) {
+    makePrevSiblingsLastChild(store: Store, id: string = store.state.active) {
       const sibs = store.db.data[store.db.data[id].parent].children
       const idx = sibs.indexOf(id)
       if (idx === 0) return
@@ -1175,12 +1438,16 @@ const actions = {
       }
       store.execute({
         type: 'move',
-        args: {id, pid, idx: -1, viewType: store.state.viewType}
+        args: {id, pid, idx: -1, viewType: store.state.viewType},
       })
     },
 
-    makeParentsNextSibling(store: Store, id: string=store.state.active) {
-      if (id === store.state.root || store.db.data[id].parent === store.state.root) return
+    makeParentsNextSibling(store: Store, id: string = store.state.active) {
+      if (
+        id === store.state.root ||
+        store.db.data[id].parent === store.state.root
+      )
+        return
       const parent = store.db.data[store.db.data[id].parent]
       const sibs = store.db.data[parent.parent].children
       const idx = sibs.indexOf(parent._id)
@@ -1190,8 +1457,8 @@ const actions = {
           id,
           pid: parent.parent,
           idx: idx + 1,
-          viewType: store.state.viewType
-        }
+          viewType: store.state.viewType,
+        },
       })
     },
 
@@ -1199,7 +1466,7 @@ const actions = {
       store.actions.rebase(store.state.lastRoot)
     },
 
-    rebase(store: Store, id: string=store.state.active) {
+    rebase(store: Store, id: string = store.state.active) {
       if (!id) return
       if (id === store.state.root) return
       // TODO track a full history of roots?
@@ -1207,7 +1474,8 @@ const actions = {
       store.state.root = id
 
       // TODO climb up parentage to see what the view should be?
-      const defaultView = store.getters.defaultView(id) || store.getters.defaultView('root')
+      const defaultView =
+        store.getters.defaultView(id) || store.getters.defaultView('root')
       if (defaultView && defaultView.viewType) {
         store.actions.changeViewType(defaultView.viewType, defaultView)
       }
@@ -1224,7 +1492,10 @@ const actions = {
         }
         tmp = node.parent
       }
-      if (active === store.state.root && store.state.viewTypeConfig.defaultActive === 'firstChild') {
+      if (
+        active === store.state.root &&
+        store.state.viewTypeConfig.defaultActive === 'firstChild'
+      ) {
         if (store.db.data[active].children.length) {
           active = store.db.data[active].children[0]
         }
@@ -1254,9 +1525,14 @@ const actions = {
       }
     },
 
-    movePrev(store: Store, id: string=store.state.active) {
+    movePrev(store: Store, id: string = store.state.active) {
       if (id === store.state.root) return
-      const res = move.movePrev(id, store.db.data, store.state.root, store.getters.isCollapsed)
+      const res = move.movePrev(
+        id,
+        store.db.data,
+        store.state.root,
+        store.getters.isCollapsed,
+      )
       if (!res) return
       store.execute({
         type: 'move',
@@ -1264,14 +1540,19 @@ const actions = {
           id,
           pid: res.pid,
           idx: res.idx,
-          viewType: store.state.viewType
-        }
+          viewType: store.state.viewType,
+        },
       })
     },
 
-    moveNext(store: Store, id: string=store.state.active) {
+    moveNext(store: Store, id: string = store.state.active) {
       if (id === store.state.root) return
-      const res = move.moveNext(id, store.db.data, store.state.root, store.getters.isCollapsed)
+      const res = move.moveNext(
+        id,
+        store.db.data,
+        store.state.root,
+        store.getters.isCollapsed,
+      )
       if (!res) return
       store.execute({
         type: 'move',
@@ -1279,12 +1560,16 @@ const actions = {
           id,
           pid: res.pid,
           idx: res.idx,
-          viewType: store.state.viewType
-        }
+          viewType: store.state.viewType,
+        },
       })
     },
 
-    focusNextSibling(store: Store, id: string=store.state.active, editState: DefEditPos=false) {
+    focusNextSibling(
+      store: Store,
+      id: string = store.state.active,
+      editState: DefEditPos = false,
+    ) {
       if (id === store.state.root) return
       const sibs = store.db.data[store.db.data[id].parent].children
       const idx = sibs.indexOf(id)
@@ -1298,7 +1583,11 @@ const actions = {
       return true
     },
 
-    focusPrevSibling(store: Store, id: string=store.state.active, editState: DefEditPos=false) {
+    focusPrevSibling(
+      store: Store,
+      id: string = store.state.active,
+      editState: DefEditPos = false,
+    ) {
       if (id === store.state.root) return
       const sibs = store.db.data[store.db.data[id].parent].children
       const idx = sibs.indexOf(id)
@@ -1312,21 +1601,21 @@ const actions = {
       return true
     },
 
-    focusFirstChild(store: Store, id: string=store.state.active) {
+    focusFirstChild(store: Store, id: string = store.state.active) {
       const child = store.db.data[id].children[0]
       if (child) {
         store.actions.setActive(child, true)
       }
     },
 
-    focusFirstSibling(store: Store, id: string=store.state.active) {
+    focusFirstSibling(store: Store, id: string = store.state.active) {
       if (id === store.state.root) return
       let nid = store.db.data[store.db.data[id].parent].children[0]
       if (nid === id) nid = store.db.data[id].parent
       store.actions.setActive(nid)
     },
 
-    focusLastSibling(store: Store, id: string=store.state.active) {
+    focusLastSibling(store: Store, id: string = store.state.active) {
       let nid
       if (id !== store.state.root) {
         const sibs = store.db.data[store.db.data[id].parent].children
@@ -1334,7 +1623,13 @@ const actions = {
           nid = sibs[sibs.length - 1]
         }
       }
-      if (!nid) nid = nav.next(id, store.db.data, store.state.root, store.getters.isCollapsed)
+      if (!nid)
+        nid = nav.next(
+          id,
+          store.db.data,
+          store.state.root,
+          store.getters.isCollapsed,
+        )
       store.actions.setActive(nid)
     },
 
@@ -1343,7 +1638,14 @@ const actions = {
     },
 
     focusLastVisibleChild(store: Store) {
-      store.actions.setActive(nav.last(store.state.root, store.db.data, store.getters.isCollapsed, true))
+      store.actions.setActive(
+        nav.last(
+          store.state.root,
+          store.db.data,
+          store.getters.isCollapsed,
+          true,
+        ),
+      )
     },
 
     // plugins things?
@@ -1353,7 +1655,11 @@ const actions = {
         console.warn(`Trying to change ${id} to nonexistant type ${type}`)
         return false
       }
-      if ((node.types && node.types[type]) || !store.plugins.nodeTypes[type].defaultNodeConfig) { // if we already have data, don't fill w/ the default
+      if (
+        (node.types && node.types[type]) ||
+        !store.plugins.nodeTypes[type].defaultNodeConfig
+      ) {
+        // if we already have data, don't fill w/ the default
         // TODO maybe let a plugin update the data if we're changing back?
         // dunno when we'd want that.
         store.actions.set(id, 'type', type)
@@ -1371,7 +1677,6 @@ const actions = {
         // TODO emit "node:{type}:child-added:{pid}"
       }
     },
-
 
     _auditTree(store: Store) {
       const ids = []

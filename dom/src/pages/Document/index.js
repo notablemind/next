@@ -36,7 +36,7 @@ const plugins = [
   require('../../../../plugins/basics').default,
   require('../../../../plugins/code').default,
   require('../../../../plugins/text-actions').default,
-  require('../../../../plugins/debug').default
+  require('../../../../plugins/debug').default,
 ]
 
 // const pluginMap = plugins.reduce((obj, pl) => (obj[pl.id] = pl, obj), {})
@@ -52,7 +52,7 @@ const viewTypes = {
   list: require('treed/views/list').default,
   whiteboard: require('treed/views/whiteboard').default,
   search: require('treed/views/search').default,
-  trash: require('treed/views/trash').default
+  trash: require('treed/views/trash').default,
 }
 
 const activeButtons = [] // ['date:newEntry']
@@ -65,7 +65,7 @@ const makeViewTypeLayerConfig = (viewTypes, setViewType) => {
     layer['setViewType' + key] = {
       shortcut: `alt+v ${viewTypes[key].shortcut}`,
       description: `Change view type to ${viewTypes[key].title}`,
-      action: () => setViewType(key)
+      action: () => setViewType(key),
     }
   })
   return layer
@@ -88,7 +88,7 @@ const viewStateKey = id => `last-view-state:${id}`
 const loadLastViewState = id =>
   maybeLoad(viewStateKey(id)) || {
     viewType: 'list',
-    root: 'root'
+    root: 'root',
   }
 const saveLastViewState = (id, data) =>
   (localStorage[viewStateKey(id)] = JSON.stringify(data))
@@ -103,15 +103,15 @@ type ViewState = {
   viewType: string,
   custom: any,
   initialState: {
-    root: string
-  }
+    root: string,
+  },
 }
 
 const ViewWrapper = withStore({
   displayName: 'ViewWrapper',
   events: store => [store.events.viewType()],
   state: store => ({
-    viewType: store.getters.viewType()
+    viewType: store.getters.viewType(),
   }),
   render({store, viewTypes, viewType}) {
     const Component = viewTypes[viewType].Component
@@ -121,18 +121,18 @@ const ViewWrapper = withStore({
         <Component store={store} />
       </div>
     )
-  }
+  },
 })
 
 type OverlayState =
   | {
       type: 'search',
       tagIds: string[],
-      query: string
+      query: string,
     }
   | {
       type: 'list',
-      root: string
+      root: string,
     }
 
 class Document extends Component {
@@ -147,7 +147,7 @@ class Document extends Component {
     showingSyncSettings: boolean,
     tick: number,
     overlayState: ?OverlayState,
-    quick: ?('search' | 'open' | 'command')
+    quick: ?('search' | 'open' | 'command'),
   }
   _unsubs: Array<() => void>
 
@@ -164,7 +164,7 @@ class Document extends Component {
       showingSettings: null,
       showingSyncSettings: false,
       tick: 0,
-      overlayState: null
+      overlayState: null,
       // panesSetup,
     }
     this._unsubs = []
@@ -192,66 +192,66 @@ class Document extends Component {
     {
       id: 'go_home',
       title: 'Go home',
-      action: this.goBack
+      action: this.goBack,
     },
     {
       id: 'undo',
       title: 'Undo the last action',
-      action: () => this.state.treed && this.state.treed.activeView().undo()
+      action: () => this.state.treed && this.state.treed.activeView().undo(),
     },
     {
       id: 'redo',
       title: 'Redo the last action',
-      action: () => this.state.treed && this.state.treed.activeView().redo()
+      action: () => this.state.treed && this.state.treed.activeView().redo(),
     },
     {
       id: 'settings_plugins',
       title: 'Settings: plugins',
-      action: () => this.setState({showingSettings: 'Plugins'})
+      action: () => this.setState({showingSettings: 'Plugins'}),
     },
     {
       id: 'settings_sync',
       title: 'Settings: files & sync',
-      action: () => this.setState({showingSettings: 'Files & Sync'})
+      action: () => this.setState({showingSettings: 'Files & Sync'}),
     },
     {
       id: 'settings_code',
       title: 'Settings: code, kernels, connections',
-      action: () => this.setState({showingSettings: 'Code'})
-    }
+      action: () => this.setState({showingSettings: 'Code'}),
+    },
   ]
 
   keyLayerConfig = {
     goHome: {
       shortcut: 'g q',
       description: 'Go back to the documents screen',
-      action: this.goBack
+      action: this.goBack,
     },
     undo: {
       shortcut: 'u, cmd+z',
       description: 'Undo the last action',
-      action: () => this.state.treed && this.state.treed.activeView().undo()
+      action: () => this.state.treed && this.state.treed.activeView().undo(),
     },
     redo: {
       shortcut: 'R, cmd+shift+z',
       description: 'Redo the last action',
-      action: () => this.state.treed && this.state.treed.activeView().redo()
+      action: () => this.state.treed && this.state.treed.activeView().redo(),
     },
     search: {
       shortcut: '/, cmd+f',
       description: 'Search',
-      action: () => this.setState({quick: 'search'})
+      action: () => this.setState({quick: 'search'}),
     },
     open: {
       shortcut: 'cmd+p',
       description: 'Open file',
-      action: () => this.setState({quick: 'open'})
+      action: () => this.setState({quick: 'open'}),
     },
     command: {
       shortcut: 'cmd+P',
       description: 'Quick command',
-      action: () => this.setState({quick: 'command'})
-    }
+      action: () => this.setState({quick: 'command'}),
+    },
   }
 
   onDrag = (e: any) => {
@@ -304,26 +304,26 @@ class Document extends Component {
         sharedViewData: loadSharedViewData(this.props.id),
         defaultRootContents: title,
         defaultPlugins,
-        initialClipboard: window.sharedClipboard
-      }
+        initialClipboard: window.sharedClipboard,
+      },
     ))
     this._unsubs.push(
       treed.on(['node:root'], () => {
         this.onTitleChange(treed.db.data.root.content)
-      })
+      }),
     )
     // TODO actually get the user shortcuts
     const userShortcuts = {}
     const globalLayer = makeKeyLayer(
       {
         ...this.keyLayerConfig,
-        ...makeViewTypeLayerConfig(viewTypes, this.setViewType)
+        ...makeViewTypeLayerConfig(viewTypes, this.setViewType),
       },
       'global',
-      userShortcuts
+      userShortcuts,
     )
     treed.addKeyLayer(
-      () => (treed.isCurrentViewInInsertMode() ? null : globalLayer)
+      () => (treed.isCurrentViewInInsertMode() ? null : globalLayer),
     )
     treed.ready.then(() => {
       this.onTitleChange(treed.db.data.root.content)
@@ -334,31 +334,31 @@ class Document extends Component {
         store.on([store.events.serializableState()], () => {
           const state = treed.serializeViewState(store.id)
           saveLastViewState(this.props.id, state)
-        })
+        }),
       )
       this._unsubs.push(
         store.on([store.events.clipboardChanged()], () => {
           window.sharedClipboard = treed.globalStore.globalState.clipboard
-        })
+        }),
       )
       this._unsubs.push(
         store.on([store.events.sharedViewData()], () => {
           saveSharedViewData(this.props.id, store.sharedViewData)
-        })
+        }),
       )
       this._unsubs.push(store.onIntent('filter-by-tag', this.onTagFilter))
       this._unsubs.push(
-        store.onIntent('navigate-to-file', (_, id) => this.onNavigate(id))
+        store.onIntent('navigate-to-file', (_, id) => this.onNavigate(id)),
       )
       this._unsubs.push(
         store.on([store.events.viewType()], () => {
           this.setState({})
-        })
+        }),
       )
       this.setState({
         treed,
         store,
-        tick: this.state.tick + 1
+        tick: this.state.tick + 1,
       })
     })
   }
@@ -369,8 +369,8 @@ class Document extends Component {
       overlayState: {
         type: 'search',
         tagIds: [tagid],
-        query: ''
-      }
+        query: '',
+      },
     })
   }
 
@@ -389,12 +389,12 @@ class Document extends Component {
         (obj, pid) =>
           ((obj[pid] = settings.plugins[pid] ||
           plugins[pid].defaultGlobalConfig || {}), obj),
-        {}
+        {},
       )
     treed.db
       .save({
         ...settings,
-        plugins: pluginSettings
+        plugins: pluginSettings,
       })
       .then(() => {
         this.makeTreed('')
@@ -406,7 +406,7 @@ class Document extends Component {
     if (this.state.treed) {
       this.state.treed.changeViewType(
         this.state.treed.globalState.activeView,
-        type
+        type,
       )
     }
   }
@@ -429,8 +429,8 @@ class Document extends Component {
           nextProps.id,
           syncState => {
             this.setState({syncState})
-          }
-        )
+          },
+        ),
       )
     }
   }
@@ -607,7 +607,7 @@ class Document extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
 
   top: {
@@ -617,12 +617,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignSelf: 'stretch',
     height: 76 / 2,
-    backgroundColor: '#fafafa'
+    backgroundColor: '#fafafa',
   },
 
   title: {
     flex: 1,
-    alignItems: 'center'
+    alignItems: 'center',
   },
 
   trashcan: {
@@ -635,8 +635,8 @@ const styles = StyleSheet.create({
     color: '#aaa',
     ':hover': {
       color: 'black',
-      backgroundColor: '#eee'
-    }
+      backgroundColor: '#eee',
+    },
   },
 
   settings: {
@@ -649,8 +649,8 @@ const styles = StyleSheet.create({
     marginRight: 5,
     ':hover': {
       color: 'black',
-      backgroundColor: '#eee'
-    }
+      backgroundColor: '#eee',
+    },
   },
 
   homeButton: {
@@ -666,31 +666,31 @@ const styles = StyleSheet.create({
     color: '#aaa',
     ':hover': {
       color: 'black',
-      backgroundColor: '#eee'
-    }
+      backgroundColor: '#eee',
+    },
   },
 
   homeArrow: {
     marginRight: 5,
-    height: 13
+    height: 13,
   },
 
   main: {
     flexDirection: 'row',
-    flex: 1
+    flex: 1,
   },
 
   actionButtons: {
     position: 'absolute',
     bottom: 10,
     right: 20,
-    zIndex: 100000
+    zIndex: 100000,
   },
 
   actionButton: {
     padding: '10px 20px',
     backgroundColor: '#80edff',
-    borderRadius: 20
+    borderRadius: 20,
   },
 
   loading: {
@@ -698,11 +698,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'column',
     fontSize: '2em',
-    color: '#ccc'
+    color: '#ccc',
   },
 
   treedContainer: {
-    flex: 1
+    flex: 1,
     //  position: 'relative',
-  }
+  },
 })

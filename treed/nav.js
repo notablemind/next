@@ -1,4 +1,3 @@
-
 const lastChild = (id, nodes, isCollapsed) => {
   const node = nodes[id]
   if (!node || !node.children.length || isCollapsed(id)) return id

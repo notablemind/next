@@ -7,14 +7,14 @@ import type {KeyLayer} from '../types'
 
 window.DEBUG_KEYS = false
 
-type Layer = KeyLayer | () => ?KeyLayer
+type Layer = KeyLayer | (() => ?KeyLayer)
 
 export default class KeyManager {
   prefix: string
   layers: Array<Layer>
   prefixListeners: Array<Function>
 
-  constructor(layers: Array<Layer>=[]) {
+  constructor(layers: Array<Layer> = []) {
     this.layers = layers
     this.prefix = ''
     this.prefixListeners = []
@@ -31,7 +31,8 @@ export default class KeyManager {
 
   addPrefixListener(fn: Function) {
     this.prefixListeners.push(fn)
-    return () => this.prefixListeners.splice(this.prefixListeners.indexOf(fn), 1)
+    return () =>
+      this.prefixListeners.splice(this.prefixListeners.indexOf(fn), 1)
   }
 
   makeCompletionsList(firstLayer: KeyLayer, i: number) {
@@ -101,4 +102,3 @@ export default class KeyManager {
     }
   }
 }
-

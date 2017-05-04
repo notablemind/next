@@ -13,8 +13,8 @@ export default class PluginsPane extends Component {
     this.state = {
       enabledPlugins: makeBoolMap(
         optionalPlugins,
-        treed.db.data.settings.plugins
-      )
+        treed.db.data.settings.plugins,
+      ),
     }
   }
 
@@ -31,7 +31,7 @@ export default class PluginsPane extends Component {
 
   commit = () => {
     const ids = Object.keys(this.state.enabledPlugins).filter(
-      id => !!this.state.enabledPlugins[id]
+      id => !!this.state.enabledPlugins[id],
     )
     this.props.onSetPlugins(ids)
     this.props.onClose()
@@ -49,7 +49,7 @@ export default class PluginsPane extends Component {
             key={id}
             className={css(
               styles.plugin,
-              this.state.enabledPlugins[id] && styles.pluginSelected
+              this.state.enabledPlugins[id] && styles.pluginSelected,
             )}
           >
             <input
@@ -59,8 +59,8 @@ export default class PluginsPane extends Component {
                 this.setState({
                   enabledPlugins: {
                     ...this.state.enabledPlugins,
-                    [id]: e.target.checked
-                  }
+                    [id]: e.target.checked,
+                  },
                 })}
             />
             <div className={css(styles.name)}>
@@ -82,18 +82,18 @@ const styles = StyleSheet.create({
     padding: 5,
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
 
   pluginSelected: {
-    backgroundColor: '#eef'
+    backgroundColor: '#eef',
   },
 
   name: {
-    padding: '5px 10px'
+    padding: '5px 10px',
   },
 
   title: {
-    fontSize: 20
-  }
+    fontSize: 20,
+  },
 })

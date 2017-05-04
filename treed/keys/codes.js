@@ -1,4 +1,3 @@
-
 export const MODS = {
   91: 'meta',
   93: 'meta',
@@ -45,35 +44,35 @@ export const KEYS = {
   220: '\\',
   222: "'",
   219: '[',
-  221: ']'
+  221: ']',
 }
 
 export const KEY_NAMES = Object.keys(KEYS).map(key => KEYS[key])
 
 export const SYNONYMS = {
   esc: 'escape',
-  'return': 'enter',
+  return: 'enter',
 }
 
 export const SHIFT_KEYS = {
   '!': '1',
   '@': '2',
   '#': '3',
-  '$': '4',
+  $: '4',
   '%': '5',
   '^': '6',
   '&': '7',
   '*': '8',
   '(': '9',
   ')': '0',
-  '_': '-',
-  'plus': '=',
+  _: '-',
+  plus: '=',
   '~': '`',
   '{': '[',
   '}': ']',
   '|': '\\',
   ':': ';',
-  '"': '\'',
+  '"': "'",
   '<': ',',
   '>': '.',
   '?': '/',

@@ -27,4 +27,3 @@ export default (event: any) => {
   }
   return name
 }
-

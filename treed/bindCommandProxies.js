@@ -1,15 +1,32 @@
-
-const bindCommandProxies = (store: any, commands, emitter, args, viewId: ?string) => {
+const bindCommandProxies = (
+  store: any,
+  commands,
+  emitter,
+  args,
+  viewId: ?string,
+) => {
   if (viewId) {
-    store.execute = (cmd, preActive?: string=store.state.active,
-                     postActive?: string=store.state.active) => {
+    store.execute = (
+      cmd,
+      preActive?: string = store.state.active,
+      postActive?: string = store.state.active,
+    ) => {
       const res = commands.execute(cmd, args, store.id, preActive, postActive)
       emitter.emitMany(res.events)
       return res.idx
     }
-    store.executeMany = (cmds, preActive?: string=store.state.active,
-                         postActive?: string=store.state.active) => {
-      const res = commands.executeMany(cmds, args, store.id, preActive, postActive)
+    store.executeMany = (
+      cmds,
+      preActive?: string = store.state.active,
+      postActive?: string = store.state.active,
+    ) => {
+      const res = commands.executeMany(
+        cmds,
+        args,
+        store.id,
+        preActive,
+        postActive,
+      )
       emitter.emitMany(res.events)
       return res.idx
     }
@@ -26,8 +43,7 @@ const bindCommandProxies = (store: any, commands, emitter, args, viewId: ?string
     }
   }
 
-  store.append = (idx, cmd) =>
-    emitter.emitMany(commands.append(idx, cmd, args))
+  store.append = (idx, cmd) => emitter.emitMany(commands.append(idx, cmd, args))
   store.appendMany = (idx, cmds) =>
     emitter.emitMany(commands.appendMany(idx, cmds, args))
 }

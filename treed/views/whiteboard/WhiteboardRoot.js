@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import WhiteboardNode from './WhiteboardNode'
@@ -19,7 +19,7 @@ type State = {
   node: any,
   root: string,
   defaultPositions: ?Array<any>,
-  hideSelected: bool,
+  hideSelected: boolean,
 }
 
 export default class WhiteboardRoot extends Component {
@@ -33,10 +33,7 @@ export default class WhiteboardRoot extends Component {
     super()
     this._sub = props.store.setupStateListener(
       this,
-      store => [
-        store.events.root(),
-        store.events.node(store.getters.root())
-      ],
+      store => [store.events.root(), store.events.node(store.getters.root())],
       store => ({
         root: store.getters.root(),
         node: store.getters.node(store.getters.root()),
@@ -99,25 +96,23 @@ export default class WhiteboardRoot extends Component {
   offsetSelected(dx: number, dy: number) {
     const ids = Object.keys(this.props.store.state.selected)
     const defaultPositions = this.state.defaultPositions || []
-    const updates = ids.map(id => this.props.store.db.data[id])
-      .map(node => {
-        const pos = node.views.whiteboard || defaultPositions[
-          this.state.node.children.indexOf(node._id)
-        ] || {
-          x: 0,
-          y: this.state.node.children.indexOf(node._id) * 100,
-        }
-        return {
-          views: {
-            ...node.views,
-            whiteboard: {
-              ...node.views.whiteboard,
-              x: pos.x + dx,
-              y: pos.y + dy,
-            },
+    const updates = ids.map(id => this.props.store.db.data[id]).map(node => {
+      const pos = node.views.whiteboard ||
+      defaultPositions[this.state.node.children.indexOf(node._id)] || {
+        x: 0,
+        y: this.state.node.children.indexOf(node._id) * 100,
+      }
+      return {
+        views: {
+          ...node.views,
+          whiteboard: {
+            ...node.views.whiteboard,
+            x: pos.x + dx,
+            y: pos.y + dy,
           },
-        }
-      })
+        },
+      }
+    })
     this.props.store.actions.updateMany(ids, updates)
     this.props.store.emit('x-selection')
   }
@@ -172,13 +167,16 @@ export default class WhiteboardRoot extends Component {
               store.state.selected,
             )
             moveCount = Object.keys(store.state.selected).length
-
           } else {
             return
           }
         }
 
-        const {insertPos, indicator} = calcChildInsertPos(childBoxes, x + w, y + h)
+        const {insertPos, indicator} = calcChildInsertPos(
+          childBoxes,
+          x + w,
+          y + h,
+        )
         childPos = insertPos
 
         if (!insertPos) {
@@ -190,11 +188,7 @@ export default class WhiteboardRoot extends Component {
             snapLines,
           )
 
-          this.props.showIndicators(
-            news.xsnap,
-            news.ysnap,
-            true,
-          )
+          this.props.showIndicators(news.xsnap, news.ysnap, true)
           this.props.setChildDrag(null)
 
           this.setState({
@@ -229,10 +223,7 @@ export default class WhiteboardRoot extends Component {
             dx: 0,
             dy: 0,
           })
-          this.props.store.actions.moveSelected(
-            pid,
-            idx,
-          )
+          this.props.store.actions.moveSelected(pid, idx)
           return
         }
         let news = trySnapping(
@@ -243,10 +234,7 @@ export default class WhiteboardRoot extends Component {
           snapLines,
         )
         this.props.showIndicators(null, null)
-        this.offsetSelected(
-          news.x - box.left,
-          news.y - box.top,
-        )
+        this.offsetSelected(news.x - box.left, news.y - box.top)
         if (!wasSelected) {
           this.props.store.actions.normalMode()
         }
@@ -256,33 +244,33 @@ export default class WhiteboardRoot extends Component {
 
   render() {
     const {dx, dy, defaultPositions} = this.state
-    return <div className={css(styles.container)} ref={node => this.div = node}>
-      {this.state.node.children.map((child, i) => (
-        <WhiteboardNode
-          id={child}
-          key={child}
-          store={this.props.store}
-          nodeMap={this.props.nodeMap}
-          onSelectedDown={this.onSelectedDown}
-          showIndicators={this.props.showIndicators}
-          startChildDragging={this.props.startChildDragging}
-          dx={dx}
-          dy={dy}
-          hideSelected={this.state.hideSelected}
-          defaultPos={defaultPositions &&
-            defaultPositions[i] || {
-              x: 0,
-              y: i * 100,
+    return (
+      <div className={css(styles.container)} ref={node => (this.div = node)}>
+        {this.state.node.children.map((child, i) => (
+          <WhiteboardNode
+            id={child}
+            key={child}
+            store={this.props.store}
+            nodeMap={this.props.nodeMap}
+            onSelectedDown={this.onSelectedDown}
+            showIndicators={this.props.showIndicators}
+            startChildDragging={this.props.startChildDragging}
+            dx={dx}
+            dy={dy}
+            hideSelected={this.state.hideSelected}
+            defaultPos={
+              (defaultPositions && defaultPositions[i]) || {
+                x: 0,
+                y: i * 100,
+              }
             }
-          }
-        />
-      ))}
-    </div>
+          />
+        ))}
+      </div>
+    )
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-  },
+  container: {},
 })
-

@@ -1,11 +1,11 @@
-
 const path = require('path')
 const fs = require('fs')
 const child_process = require('child_process')
 
 module.exports = ({documentsDir, actions}) => {
   const META = path.join(documentsDir, 'meta.json')
-  const saveFiles = () => fs.writeFileSync(META, JSON.stringify(meta, null, 2), 'utf8')
+  const saveFiles = () =>
+    fs.writeFileSync(META, JSON.stringify(meta, null, 2), 'utf8')
   let meta = JSON.parse(fs.readFileSync(META, 'utf8'))
 
   Object.assign(actions, {
@@ -45,7 +45,7 @@ module.exports = ({documentsDir, actions}) => {
   })
 }
 
-    /*
+/*
     if (files === null) {
       let files = {}
       const nodes = globalStore.db.data

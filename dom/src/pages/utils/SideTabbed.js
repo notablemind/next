@@ -3,7 +3,7 @@ import {css, StyleSheet} from 'aphrodite'
 
 export default class SideTabbed extends Component {
   state: {
-    currentTab: string
+    currentTab: string,
   }
 
   constructor({tabs, sections, initialTab = null}) {
@@ -13,7 +13,7 @@ export default class SideTabbed extends Component {
         ? initialTab
         : sections
             ? sections[Object.keys(sections)[0]][0]
-            : Object.keys(tabs)[0]
+            : Object.keys(tabs)[0],
     }
   }
 
@@ -25,7 +25,7 @@ export default class SideTabbed extends Component {
         onClick={() => this.setState({currentTab: title})}
         className={css(
           styles.tabTitle,
-          title === currentTab && styles.tabTitleCurrent
+          title === currentTab && styles.tabTitleCurrent,
         )}
       >
         {title}
@@ -59,37 +59,37 @@ export default class SideTabbed extends Component {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'stretch'
+    alignItems: 'stretch',
   },
 
   sectionTitle: {
     fontSize: '80%',
     padding: '5px 10px',
-    color: '#777'
+    color: '#777',
   },
 
   section: {
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   leftPane: {
     width: 200,
-    paddingRight: 10
+    paddingRight: 10,
   },
 
   rightPane: {
-    flex: 1
+    flex: 1,
   },
 
   tabTitle: {
     padding: '5px 10px',
     cursor: 'pointer',
     ':hover': {
-      backgroundColor: '#eee'
-    }
+      backgroundColor: '#eee',
+    },
   },
 
   tabTitleCurrent: {
-    backgroundColor: '#ddd'
-  }
+    backgroundColor: '#ddd',
+  },
 })

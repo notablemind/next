@@ -60,12 +60,12 @@ const listFiles = token => {
   const query = kwds({
     pageSize: 1000,
     fields: 'files(id, name, appProperties, version, size, trashed)',
-    q: `appProperties has { key='nmType' and value='doc' }`
+    q: `appProperties has { key='nmType' and value='doc' }`,
   })
   return fetch(`https://www.googleapis.com/drive/v3/files?${query}`, {
     headers: {
-      Authorization: 'Bearer ' + token.access_token
-    }
+      Authorization: 'Bearer ' + token.access_token,
+    },
   })
     .then(res => res.json())
     .then(data => {
@@ -81,9 +81,9 @@ const getProfile = token => {
     `https://www.googleapis.com/plus/v1/people/me?key=${googleApiKey}`,
     {
       headers: {
-        Authorization: 'Bearer ' + token.access_token
-      }
-    }
+        Authorization: 'Bearer ' + token.access_token,
+      },
+    },
   )
     .then(res => res.json())
     .then(data => {
@@ -95,14 +95,14 @@ const getProfile = token => {
         name: data.displayName,
         profile: data.image.url,
         email: data.emails[0] && data.emails[0].value,
-        token
+        token,
       }
     })
 }
 
 const getUser = documentsDir => {
   return getSavedData(documentsDir).then(
-    saved => (saved ? restoreUser(saved, documentsDir) : null)
+    saved => (saved ? restoreUser(saved, documentsDir) : null),
   )
 }
 
@@ -123,5 +123,5 @@ const signIn = documentsDir => {
 module.exports = {
   signIn,
   getUser,
-  listFiles
+  listFiles,
 }

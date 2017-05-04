@@ -1,4 +1,3 @@
-
 export const moveNext = (id, nodes, root, isCollapsed) => {
   const pid = nodes[id].parent
   const sibs = nodes[pid].children
@@ -41,5 +40,3 @@ export const movePrev = (id, nodes, root, isCollapsed) => {
   }
   return {pid, idx: idx - 1}
 }
-
-

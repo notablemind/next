@@ -1,4 +1,3 @@
-
 const {VERSION, MIME} = require('./consts')
 
 const migrateData = data => {
@@ -23,36 +22,48 @@ const findConflictingDocs = (newDocsById, db) => {
         myConflictingRevs.push(row)
       }
     })
-    console.log('checked for conflicts', myConflictingRevs.length, 'definite', maybeConflicting.length, 'maybe')
+    console.log(
+      'checked for conflicts',
+      myConflictingRevs.length,
+      'definite',
+      maybeConflicting.length,
+      'maybe',
+    )
 
     const prom = maybeConflicting.length === 0
       ? Promise.resolve([])
       : db.bulkGet({docs: maybeConflicting, revs: true}).then(({results}) => {
-        const conflictingDocs = []
-        results.forEach(result => {
-          result.docs.forEach(item => {
-            const doc = item.ok
-            if (!doc) return
-            const newDoc = newDocsById[doc._id]
-            if (doc._revisions.ids.indexOf(newDoc._revisions.ids[0]) === -1) {
-              // not shared history!
-              conflictingDocs.push(doc)
-            }
+          const conflictingDocs = []
+          results.forEach(result => {
+            result.docs.forEach(item => {
+              const doc = item.ok
+              if (!doc) return
+              const newDoc = newDocsById[doc._id]
+              if (doc._revisions.ids.indexOf(newDoc._revisions.ids[0]) === -1) {
+                // not shared history!
+                conflictingDocs.push(doc)
+              }
+            })
           })
+          return conflictingDocs
         })
-        return conflictingDocs
-      })
 
-    return prom.then(conflictingDocs => {
-      if (!myConflictingRevs.length) return conflictingDocs
-      return db.bulkGet({docs: myConflictingRevs}).then(({results}) => {
-        results.forEach(({docs}) => docs.forEach(({ok}) => {
-          if (ok) conflictingDocs.push(ok)
-        }))
-        return conflictingDocs
+    return prom
+      .then(conflictingDocs => {
+        if (!myConflictingRevs.length) return conflictingDocs
+        return db.bulkGet({docs: myConflictingRevs}).then(({results}) => {
+          results.forEach(({docs}) =>
+            docs.forEach(({ok}) => {
+              if (ok) conflictingDocs.push(ok)
+            }),
+          )
+          return conflictingDocs
+        })
       })
-    })
-    .then(conflictingDocs => ({conflictingDocs, dirty: myConflictingRevs.length || maybeConflicting.length}))
+      .then(conflictingDocs => ({
+        conflictingDocs,
+        dirty: myConflictingRevs.length || maybeConflicting.length,
+      }))
   })
 }
 
@@ -72,7 +83,7 @@ const mergeDocs = (myDoc, theirDoc) => {
 }
 
 // TODO TODO TODO test this all up in here
-const mergeDataIntoDatabase = (data/*: SerializedData*/, db) => {
+const mergeDataIntoDatabase = (data /*: SerializedData*/, db) => {
   if (data.type !== MIME) {
     console.log(data)
     throw new Error('wrong notablemind type: ' + data.type)
@@ -80,25 +91,40 @@ const mergeDataIntoDatabase = (data/*: SerializedData*/, db) => {
   if (data.version !== VERSION) data = migrateData(data)
 
   const newDocsById = {}
-  data.docs.forEach(doc => newDocsById[doc._id] = doc)
+  data.docs.forEach(doc => (newDocsById[doc._id] = doc))
 
-  return findConflictingDocs(newDocsById, db)
-    .then(({conflictingDocs, dirty}) => {
-      // # Delete docs that will conflict
-      return (conflictingDocs.length ? db.bulkDocs({
-        docs: [...conflictingDocs.map(doc => Object.assign({}, doc, {_deleted: true}))]
-      }) : Promise.resolve())
-      // # Merge in new data
-      .then(() => db.bulkDocs({docs: data.docs, new_edits: false}))
-      // # Commit merged docs
-      .then(() => {
-        if (!conflictingDocs.length) return
-        // merge each conflicting doc & commit the result
-        return db.bulkDocs({
-          docs: [...conflictingDocs.map(doc => mergeDocs(doc, newDocsById[doc._id]))]
+  return findConflictingDocs(
+    newDocsById,
+    db,
+  ).then(({conflictingDocs, dirty}) => {
+    // # Delete docs that will conflict
+    return (
+      (conflictingDocs.length
+        ? db.bulkDocs({
+            docs: [
+              ...conflictingDocs.map(doc =>
+                Object.assign({}, doc, {_deleted: true}),
+              ),
+            ],
+          })
+        : Promise.resolve())
+        // # Merge in new data
+        .then(() => db.bulkDocs({docs: data.docs, new_edits: false}))
+        // # Commit merged docs
+        .then(() => {
+          if (!conflictingDocs.length) return
+          // merge each conflicting doc & commit the result
+          return db.bulkDocs({
+            docs: [
+              ...conflictingDocs.map(doc =>
+                mergeDocs(doc, newDocsById[doc._id]),
+              ),
+            ],
+          })
         })
-      }).then(() => (console.log('from merge, dirty is', dirty), dirty))
-    })
+        .then(() => (console.log('from merge, dirty is', dirty), dirty))
+    )
+  })
 
   /*
   return db.bulkDocs({docs: data.docs, new_edits: false})

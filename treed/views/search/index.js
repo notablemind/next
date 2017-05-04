@@ -1,4 +1,3 @@
-
 import Component from './Search'
 // import actions from './actions'
 // import keys from './keys'
@@ -34,4 +33,3 @@ export default {
   },
   shortcut: 's',
 }
-

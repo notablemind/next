@@ -41,11 +41,15 @@ export default class GrowingTextarea extends Component {
       const lineHeight = parseFloat(style.lineHeight)
       const paddingTop = parseFloat(style.paddingTop)
       const paddingBottom = parseFloat(style.paddingBottom)
-      height = (lineHeight + paddingTop + paddingBottom) + 'px'
+      height = lineHeight + paddingTop + paddingBottom + 'px'
     } else {
       height = style.height
     }
-    if (this.props.onHeightChange && this._prevHeight && this._prevHeight !== height) {
+    if (
+      this.props.onHeightChange &&
+      this._prevHeight &&
+      this._prevHeight !== height
+    ) {
       this.props.onHeightChange(parseFloat(height))
     }
     this.textarea.style.height = height
@@ -67,7 +71,10 @@ export default class GrowingTextarea extends Component {
     if (this.textarea.selectionStart === 0) return 0
     if (this.textarea.selectionStart === this.props.value.length) return -1
     const prevContent = this.shadow.firstChild.nodeValue
-    const testContent = getTestContent(this.props.value, this.textarea.selectionStart)
+    const testContent = getTestContent(
+      this.props.value,
+      this.textarea.selectionStart,
+    )
     this.shadow.firstChild.nodeValue = testContent
     const testHeight = this.shadow.getBoundingClientRect().height
     this.shadow.firstChild.nodeValue = prevContent
@@ -121,19 +128,21 @@ export default class GrowingTextarea extends Component {
 
   render() {
     const {onHeightChange, ...props} = this.props
-    return <div className={css(styles.container)}>
-      <textarea
-        {...props}
-        ref={n => this.textarea = n}
-        className={css(styles.textarea) + ' ' + this.props.className}
-      />
-      <div
-        ref={n => this.shadow = n}
-        className={css(styles.shadow) + ' ' + this.props.className}
-      >
-        {this.props.value + ' '}
+    return (
+      <div className={css(styles.container)}>
+        <textarea
+          {...props}
+          ref={n => (this.textarea = n)}
+          className={css(styles.textarea) + ' ' + this.props.className}
+        />
+        <div
+          ref={n => (this.shadow = n)}
+          className={css(styles.shadow) + ' ' + this.props.className}
+        >
+          {this.props.value + ' '}
+        </div>
       </div>
-    </div>
+    )
   }
 }
 

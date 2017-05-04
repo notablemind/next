@@ -20,14 +20,14 @@ export default class App extends Component {
   nm: any
   state: {
     toast: Array<{type: 'error', message: string}>,
-    loading: boolean
+    loading: boolean,
   }
 
   constructor() {
     super()
     this.state = {
       toast: [],
-      loading: true
+      loading: true,
     }
     this.nm = new NotableMind(this.showToast)
   }

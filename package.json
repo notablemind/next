@@ -3,7 +3,7 @@
     "start": "node dom/scripts/server.js",
     "server": "node server/server.js",
     "electron-server": "PORT=4151 ELECTRON=1 node dom/scripts/server.js",
-    "format": "./node_modules/.bin/prettier --no-semi --no-bracket-spacing --single-quote --write 'dom/**/*.js' 'treed/*.js' 'treed/views/**/*.js' 'treed/keys/**/*.js' 'electron/src/**/*.js'"
+    "format": "./node_modules/.bin/prettier --no-semi --no-bracket-spacing --trailing-comma all --single-quote --write 'dom/**/*.js' 'treed/*.js' 'treed/views/**/*.js' 'treed/keys/**/*.js' 'electron/src/**/*.js'"
   },
   "devDependencies": {
     "babel-core": "^6.20.0",

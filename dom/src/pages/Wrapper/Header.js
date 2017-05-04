@@ -33,10 +33,10 @@ export default class Header extends Component {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    padding: '10px 20px'
+    padding: '10px 20px',
   },
 
   title: {
-    alignItems: 'center'
-  }
+    alignItems: 'center',
+  },
 })

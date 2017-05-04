@@ -1,4 +1,3 @@
-
 const genid = () => Math.random().toString(16).slice(2)
 
 module.exports = main => {
@@ -14,7 +13,7 @@ module.exports = main => {
               message: err.message,
               stack: err.stack,
             })
-          }
+          },
         )
       })
     },
@@ -34,4 +33,3 @@ module.exports = main => {
     },
   }
 }
-

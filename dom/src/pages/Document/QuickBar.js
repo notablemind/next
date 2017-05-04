@@ -10,7 +10,7 @@ type Tab = 'search' | 'command' | 'open'
 type PluginQuickCommand = {
   id: string,
   title: string,
-  action: () => void
+  action: () => void,
 }
 
 const makeTypeCommands = (store, node) => {
@@ -22,7 +22,7 @@ const makeTypeCommands = (store, node) => {
       id: 'set_type_' + type,
       key: 'set_type_' + type,
       title: 'Set node type: ' + config.title,
-      action: () => store.actions.setNodeType(node._id, type)
+      action: () => store.actions.setNodeType(node._id, type),
     })
   })
   return commands
@@ -36,7 +36,7 @@ const collectCommands = (plugins, store, extraCommands) => {
       commands.push(
         ...plugin
           .quickActions(store, node)
-          .map(a => ({...a, plugin: plugin.id, key: plugin.id + ':' + a.id}))
+          .map(a => ({...a, plugin: plugin.id, key: plugin.id + ':' + a.id})),
       )
     }
   })
@@ -49,7 +49,7 @@ const searchCommands = (commands, text) => {
     return commands.map(command => ({
       key: command.key,
       title: command.title,
-      command
+      command,
     }))
   }
   return (
@@ -58,7 +58,7 @@ const searchCommands = (commands, text) => {
       .filter(
         command =>
           fuzzysearch(text, command.title.toLowerCase()) ||
-          fuzzysearch(text, command.key.toLowerCase())
+          fuzzysearch(text, command.key.toLowerCase()),
       )
       .sort((a, b) => {
         const aa = a.title.toLowerCase().indexOf(text) !== -1 ||
@@ -107,13 +107,13 @@ export default class QuickBar extends Component {
     nm: any,
     treed: any,
     extraCommands: any[],
-    onClose: () => void
+    onClose: () => void,
   }
   state: {
     tab: Tab,
     commands: any[],
     results: {title: string, key: string}[],
-    text: string
+    text: string,
   }
 
   constructor(props) {
@@ -121,7 +121,7 @@ export default class QuickBar extends Component {
     const commands = collectCommands(
       props.treed.enabledPlugins,
       props.store,
-      props.extraCommands
+      props.extraCommands,
     )
     let results
     switch (props.initialTab) {
@@ -140,7 +140,7 @@ export default class QuickBar extends Component {
       commands,
       selected: 0,
       results,
-      text: ''
+      text: '',
       // TODO precache files?
     }
   }
@@ -153,7 +153,7 @@ export default class QuickBar extends Component {
     this.setState({
       text,
       results: this.search(text.toLowerCase(), this.state.tab),
-      selected: 0
+      selected: 0,
     })
   }
 
@@ -188,7 +188,7 @@ export default class QuickBar extends Component {
     this.setState({
       tab,
       results,
-      selected: 0
+      selected: 0,
     })
   }
 
@@ -215,14 +215,14 @@ export default class QuickBar extends Component {
     if (e.key === 'ArrowDown' || (e.key === 'j' && e.metaKey)) {
       e.preventDefault()
       this.setState(({selected, results}) => ({
-        selected: selected < results.length - 1 ? selected + 1 : 0
+        selected: selected < results.length - 1 ? selected + 1 : 0,
       }))
       // TODO make sure the selected result is in view
     }
     if (e.key === 'ArrowUp' || (e.key === 'k' && e.metaKey)) {
       e.preventDefault()
       this.setState(({selected, results}) => ({
-        selected: selected > 0 ? selected - 1 : results.length - 1
+        selected: selected > 0 ? selected - 1 : results.length - 1,
       }))
     }
   }
@@ -250,7 +250,7 @@ export default class QuickBar extends Component {
               onClick={() => this.onSelect(i)}
               className={css(
                 styles.result,
-                i === selected && styles.resultSelected
+                i === selected && styles.resultSelected,
               )}
             >
               {shortn(result.title)}
@@ -265,7 +265,7 @@ export default class QuickBar extends Component {
 const placeholders = {
   command: 'Run a command',
   search: 'Jump to a node',
-  open: 'Open a file'
+  open: 'Open a file',
 }
 
 const shortn = (text, len = 100) =>
@@ -282,26 +282,26 @@ const styles = StyleSheet.create({
     position: 'absolute',
     backgroundColor: 'white',
     boxShadow: '0 1px 10px rgba(0, 0, 0, 0.5)',
-    zIndex: 100000
+    zIndex: 100000,
   },
 
   input: {
     fontSize: 20,
     padding: '5px 10px',
     border: 'none',
-    outline: 'none'
+    outline: 'none',
   },
 
   result: {
-    padding: '5px 10px'
+    padding: '5px 10px',
   },
 
   resultSelected: {
-    backgroundColor: '#eee'
+    backgroundColor: '#eee',
   },
 
   results: {
     flex: 1,
-    overflow: 'auto'
-  }
+    overflow: 'auto',
+  },
 })

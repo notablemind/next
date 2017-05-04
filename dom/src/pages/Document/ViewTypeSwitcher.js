@@ -7,7 +7,7 @@ const withCurrentStore = (Child, loading) =>
       this._sub = props.globalStore.setupStateListener(
         this,
         store => [store.events.activeView()],
-        store => ({store: store.activeView()})
+        store => ({store: store.activeView()}),
       )
     }
 
@@ -36,9 +36,9 @@ class ViewTypeSwitcher extends Component {
         return {
           root: store.getters.root(),
           defaultView: store.getters.defaultView(store.getters.root()) ||
-            store.getters.defaultView('root')
+            store.getters.defaultView('root'),
         }
-      }
+      },
     )
   }
 

@@ -1,4 +1,3 @@
-
 import Database from './Database'
 
 export const version = 1
@@ -13,7 +12,7 @@ const migrations = {
           type: 'list',
           settings: {},
         },
-      }
+      },
     })
   },
 }
@@ -27,4 +26,3 @@ export const migrate = (db: Database): Promise<void> => {
   }
   return promise
 }
-

@@ -1,13 +1,12 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import Body from '../body'
 import ensureInView from '../../ensureInView'
 import * as colors from '../utils/colors'
 import Icon from '../utils/Icon'
-
 
 // TODO a settings to make editing be on double-click, or enter or something
 export default class TableItem extends Component {
@@ -27,10 +26,7 @@ export default class TableItem extends Component {
 
     this._sub = store.setupStateListener(
       this,
-      store => [
-        store.events.node(id),
-        store.events.nodeView(id),
-      ],
+      store => [store.events.node(id), store.events.nodeView(id)],
       store => ({
         node: store.getters.node(id),
         isActive: store.getters.isActive(id),
@@ -95,7 +91,11 @@ export default class TableItem extends Component {
   onContextMenu = (e: any) => {
     e.preventDefault()
     e.stopPropagation()
-    this.props.store.actions.openContextMenuForNode(this.props.id, e.clientX, e.clientY)
+    this.props.store.actions.openContextMenuForNode(
+      this.props.id,
+      e.clientX,
+      e.clientY,
+    )
   }
 
   startDragging = (e: any) => {
@@ -121,59 +121,74 @@ export default class TableItem extends Component {
       this.state.editState && styles.editing,
     )
 
-    return <div className={css(styles.container) + ` Node_item Node_level_${this.props.depth}` + (isRoot ? ' Node_root' : '')}>
+    return (
       <div
-        className={css(
-          styles.top,
-          !this.state.editState && styles.topNormal
-        ) + ' Node_top ListItem_top'}
-        // onMouseMove={this.onMouseMove}
-        // onMouseDownCapture={this.onMouseDown}
-        onContextMenu={this.onContextMenu}
-        ref={node => {
-          this._div = node
-          this.props.nodeMap[this.props.id] = node
-        }}
+        className={
+          css(styles.container) +
+            ` Node_item Node_level_${this.props.depth}` +
+            (isRoot ? ' Node_root' : '')
+        }
       >
-        {!isRoot && this.state.node.children.length > 0 &&
-          <div
-            className={css(styles.collapser,
-                          collapsed && styles.collapsed) + ' Node_collapser'}
-            onClick={() => this.props.store.actions.toggleCollapse(this.props.id)}
-          />}
+        <div
+          className={
+            css(styles.top, !this.state.editState && styles.topNormal) +
+              ' Node_top ListItem_top'
+          }
+          // onMouseMove={this.onMouseMove}
+          // onMouseDownCapture={this.onMouseDown}
+          onContextMenu={this.onContextMenu}
+          ref={node => {
+            this._div = node
+            this.props.nodeMap[this.props.id] = node
+          }}
+        >
+          {!isRoot &&
+            this.state.node.children.length > 0 &&
+            <div
+              className={
+                css(styles.collapser, collapsed && styles.collapsed) +
+                  ' Node_collapser'
+              }
+              onClick={() =>
+                this.props.store.actions.toggleCollapse(this.props.id)}
+            />}
 
-        <Body
-          node={this.state.node}
-          depth={this.props.depth}
-          editState={this.state.editState}
-          actions={this.props.store.actions}
-          contentClassName={contentClassName}
-          onHeightChange={this.ensureInView}
-
-          keyActions={this.keyActions}
-
-          store={this.props.store}
-
-        />
-          <Icon
-          className={css(styles.dragger, this.state.isDragging && styles.draggerDragging) + ' ListItem_dragger'}
-          onMouseDown={this.startDragging}
-          name="arrow-move"
-          />
-      </div>
-
-      <div className={css(styles.children) + ' Node_children'}>
-        {(!collapsed || isRoot) && this.state.node.children.map(id => (
-          <TableItem
+          <Body
+            node={this.state.node}
+            depth={this.props.depth}
+            editState={this.state.editState}
+            actions={this.props.store.actions}
+            contentClassName={contentClassName}
+            onHeightChange={this.ensureInView}
+            keyActions={this.keyActions}
             store={this.props.store}
-            depth={this.props.depth + 1}
-            nodeMap={this.props.nodeMap}
-            id={id}
-            key={id}
           />
-        ))}
+          <Icon
+            className={
+              css(
+                styles.dragger,
+                this.state.isDragging && styles.draggerDragging,
+              ) + ' ListItem_dragger'
+            }
+            onMouseDown={this.startDragging}
+            name="arrow-move"
+          />
+        </div>
+
+        <div className={css(styles.children) + ' Node_children'}>
+          {(!collapsed || isRoot) &&
+            this.state.node.children.map(id => (
+              <TableItem
+                store={this.props.store}
+                depth={this.props.depth + 1}
+                nodeMap={this.props.nodeMap}
+                id={id}
+                key={id}
+              />
+            ))}
+        </div>
       </div>
-    </div>
+    )
   }
 }
 
@@ -181,12 +196,14 @@ const activeStyles: any = {}
 ;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
   activeStyles[key] =
     // {outline: `2px solid ${colors[key]}`}
-    {boxShadow: `
+    {
+      boxShadow: `
       -2px -2px 0 ${colors[key]},
       -2px 2px 0 ${colors[key]},
       2px -2px 0 ${colors[key]},
       2px 2px 0 ${colors[key]}
-    `}
+    `,
+    }
 })
 activeStyles.dragging.backgroundColor = colors.draggingBackground
 
@@ -222,7 +239,7 @@ const styles = StyleSheet.create({
     right: '100%',
     marginRight: 'calc(.35em + 1px)',
     cursor: 'pointer',
-    opacity: .2,
+    opacity: 0.2,
     ':hover': {
       opacity: 1,
     },
@@ -260,4 +277,3 @@ const styles = StyleSheet.create({
     marginLeft: '.7em',
   },
 })
-

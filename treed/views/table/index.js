@@ -17,8 +17,8 @@ export default {
   actions,
   keys,
   getters: {
-    isCollapsed: (store: any, id: string) => !store.sharedViewData.table.expanded[id],
+    isCollapsed: (store: any, id: string) =>
+      !store.sharedViewData.table.expanded[id],
   },
   shortcut: 't',
 }
-

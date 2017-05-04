@@ -1,4 +1,3 @@
-
 const findEnclosingBox = (selected: any, nodeMap: any) => {
   let box
   Object.keys(selected).forEach(id => {
@@ -6,7 +5,9 @@ const findEnclosingBox = (selected: any, nodeMap: any) => {
     if (!box) {
       box = {
         left: rect.left,
-        top: rect.top, right: rect.right, bottom: rect.bottom,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
         width: 0,
         height: 0,
       }

@@ -1,4 +1,3 @@
-
 const createFileData = require('./createFileData')
 const mergeDataIntoDatabase = require('./mergeDataIntoDatabase')
 
@@ -20,17 +19,27 @@ type Api = {
 }
 */
 
-module.exports = (auth, syncConfig, {db, api, dirty, pullOnly})/*: ?RemoteFile*/ => {
-  return api.checkRemote(auth, syncConfig).then(needsRefresh => {
-    if (!needsRefresh) return dirty
-    console.log('doc needs a refresh')
-    return api.getContents(auth, syncConfig).then(
-      (data/*: SerializedData*/) => mergeDataIntoDatabase(data, db)
+module.exports = (
+  auth,
+  syncConfig,
+  {db, api, dirty, pullOnly} /*: ?RemoteFile*/,
+) => {
+  return api
+    .checkRemote(auth, syncConfig)
+    .then(needsRefresh => {
+      if (!needsRefresh) return dirty
+      console.log('doc needs a refresh')
+      return api
+        .getContents(auth, syncConfig)
+        .then((data /*: SerializedData*/) => mergeDataIntoDatabase(data, db))
+    })
+    .then(
+      needsPush =>
+        (console.log('needs', needsPush, dirty), (needsPush || dirty) &&
+          !pullOnly)
+          ? createFileData(db).then(data =>
+              api.updateContents(auth, syncConfig, data),
+            )
+          : null,
     )
-  })
-  .then(needsPush => (console.log('needs', needsPush, dirty), ((needsPush || dirty) && !pullOnly))
-    ? createFileData(db)
-        .then(data => api.updateContents(auth, syncConfig, data))
-    : null)
 }
-

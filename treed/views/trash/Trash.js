@@ -1,18 +1,19 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import ContextMenu from '../context-menu/ContextMenu'
 import TrashItem from './TrashItem'
 
-type State = {
-}
+type State = {}
 
-const nonempty = txt => txt.length ? txt : null
+const nonempty = txt => (txt.length ? txt : null)
 
-const findTrash = (store) => {
-  const trashIds = Object.keys(store.db.data).filter(id => store.db.data[id].trashed)
+const findTrash = store => {
+  const trashIds = Object.keys(store.db.data).filter(
+    id => store.db.data[id].trashed,
+  )
   trashIds.sort((a, b) => store.db.data[a].trashed - store.db.data[b].trashed)
   return trashIds
 }
@@ -55,32 +56,36 @@ export default class Trash extends Component {
 
   render() {
     const {store} = this.props
-    const {items, selected=0} = this.state.view
-    return <div className={css(styles.container)}>
-      <div className={css(styles.results)}>
-        {!items || !items.length
-          && <div className={css(styles.empty)}>
-            Nothing has been trashed!
-          </div>}
-        {items && items.map((id, i) => (
-          <TrashItem
-            selected={i === selected}
-            onClick={() => {
-              store.actions.setSelected(items.indexOf(id))
-            }}
-            id={id}
-            key={id}
-            store={store}
-          />
-        ))}
+    const {items, selected = 0} = this.state.view
+    return (
+      <div className={css(styles.container)}>
+        <div className={css(styles.results)}>
+          {!items ||
+            (!items.length &&
+              <div className={css(styles.empty)}>
+                Nothing has been trashed!
+              </div>)}
+          {items &&
+            items.map((id, i) => (
+              <TrashItem
+                selected={i === selected}
+                onClick={() => {
+                  store.actions.setSelected(items.indexOf(id))
+                }}
+                id={id}
+                key={id}
+                store={store}
+              />
+            ))}
+        </div>
+        {this.state.contextMenu &&
+          <ContextMenu
+            pos={this.state.contextMenu.pos}
+            menu={this.state.contextMenu.menu}
+            onClose={this.props.store.actions.closeContextMenu}
+          />}
       </div>
-      {this.state.contextMenu &&
-        <ContextMenu
-          pos={this.state.contextMenu.pos}
-          menu={this.state.contextMenu.menu}
-          onClose={this.props.store.actions.closeContextMenu}
-        />}
-    </div>
+    )
   }
 }
 
@@ -97,5 +102,3 @@ const styles = StyleSheet.create({
     padding: 50,
   },
 })
-
-

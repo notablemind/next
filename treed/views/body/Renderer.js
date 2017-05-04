@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import textStyle from './textStyle'
@@ -27,16 +27,16 @@ const text2react = content => {
 }
 
 const Renderer = ({style, content, className}: Props) => {
-  return <div style={style} className={
-    css(
-      styles.text,
-    ) + ' Node_rendered ' + (className || '')
-  }>
-    {content.trim() ?
-      text2react(content) :
-      <div className={css(styles.empty)} />
-    }
-  </div>
+  return (
+    <div
+      style={style}
+      className={css(styles.text) + ' Node_rendered ' + (className || '')}
+    >
+      {content.trim()
+        ? text2react(content)
+        : <div className={css(styles.empty)} />}
+    </div>
+  )
 }
 
 export default Renderer

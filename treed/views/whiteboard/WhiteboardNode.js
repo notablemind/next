@@ -1,5 +1,4 @@
-
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import Body from '../body'
@@ -13,27 +12,24 @@ import dragger from './dragger'
 
 const roundBy = (n, by) => parseInt(n / by) * by
 
-export const WhiteboardNodeRendered = ({
-  id,
-  node,
-  nodeMap,
-  store,
-}) => {
-  return <div
-    ref={n => n && (nodeMap[id] = n)}
-    className={css(styles.container, styles.inline)}
-  >
-    <Body
-      // depth={100}
-      node={node}
-      actions={store.actions}
-      // setChildDrop={setChildDrop}
-      // releaseChildDrop={releaseChildDrop}
-      editState={false}
-      keyActions={null}
-      store={store}
-    />
-  </div>
+export const WhiteboardNodeRendered = ({id, node, nodeMap, store}) => {
+  return (
+    <div
+      ref={n => n && (nodeMap[id] = n)}
+      className={css(styles.container, styles.inline)}
+    >
+      <Body
+        // depth={100}
+        node={node}
+        actions={store.actions}
+        // setChildDrop={setChildDrop}
+        // releaseChildDrop={releaseChildDrop}
+        editState={false}
+        keyActions={null}
+        store={store}
+      />
+    </div>
+  )
 }
 
 export default class WhiteboardNode extends Component {
@@ -43,20 +39,16 @@ export default class WhiteboardNode extends Component {
     super()
     this._sub = store.setupStateListener(
       this,
-      store => [
-        store.events.node(id),
-        store.events.nodeView(id),
-      ],
+      store => [store.events.node(id), store.events.nodeView(id)],
       store => ({
         node: store.getters.node(id),
         isActive: store.getters.isActive(id),
-        isSelected: store.state.selected &&
-          store.state.selected[id],
+        isSelected: store.state.selected && store.state.selected[id],
         // isCutting: store.getters.isCutting(id),
         editState: store.getters.editState(id),
         handoff: null,
         height: (store.getters.nodeViewData(id) || {}).height,
-      })
+      }),
     )
     this.state.moving = false
 
@@ -81,22 +73,30 @@ export default class WhiteboardNode extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return nextState !== this.state ||
-      (!!this.state.isSelected && (
-        nextProps.dx !== this.props.dx ||
-        nextProps.dy !== this.props.dy ||
-        nextProps.hideSelected !== this.props.hideSelected)) ||
+    return (
+      nextState !== this.state ||
+      (!!this.state.isSelected &&
+        (nextProps.dx !== this.props.dx ||
+          nextProps.dy !== this.props.dy ||
+          nextProps.hideSelected !== this.props.hideSelected)) ||
       nextProps.defaultPos !== this.props.defaultPos
+    )
   }
 
   createAfter = text => {
     console.log('want to create')
     const myData = this.state.node.views.whiteboard
-    const viewData = myData ? {
-      x: myData.x,
-      y: myData.y + this.div.offsetHeight + 5, // TODO avoid obstacles
-    } : null
-    let nid = this.props.store.actions.createAfter(this.props.id, text, viewData)
+    const viewData = myData
+      ? {
+          x: myData.x,
+          y: myData.y + this.div.offsetHeight + 5, // TODO avoid obstacles
+        }
+      : null
+    let nid = this.props.store.actions.createAfter(
+      this.props.id,
+      text,
+      viewData,
+    )
     if (nid) {
       this.props.store.actions.setActive(nid)
     }
@@ -106,7 +106,10 @@ export default class WhiteboardNode extends Component {
     e.preventDefault()
     e.stopPropagation()
     this.props.store.actions.openContextMenuForNode(
-      this.props.id, e.clientX, e.clientY)
+      this.props.id,
+      e.clientX,
+      e.clientY,
+    )
   }
 
   onMouseDown = (e: any) => {
@@ -171,7 +174,7 @@ export default class WhiteboardNode extends Component {
     this.props.store.actions.setNested(
       this.props.id,
       ['views', 'whiteboard', 'collapsed'],
-      true
+      true,
     )
     this.props.store.actions.setActive(this.props.id)
   }
@@ -182,7 +185,7 @@ export default class WhiteboardNode extends Component {
     this.props.store.actions.setNested(
       this.props.id,
       ['views', 'whiteboard', 'collapsed'],
-      false
+      false,
     )
     this.props.store.actions.setActive(this.props.id)
   }
@@ -197,7 +200,10 @@ export default class WhiteboardNode extends Component {
           return
         }
       } else {
-        if (this.childrenNode.scrollTop < this.childrenNode.scrollHeight - this.childrenNode.offsetHeight) {
+        if (
+          this.childrenNode.scrollTop <
+          this.childrenNode.scrollHeight - this.childrenNode.offsetHeight
+        ) {
           evt.stopPropagation()
           return
         }
@@ -208,98 +214,118 @@ export default class WhiteboardNode extends Component {
   render() {
     if (!this.state.node) return
     const settings = this.state.node.views.whiteboard
-    let {x, y} = this.state.handoff || this.state.moving ||
-      this.state.node.views.whiteboard || this.props.defaultPos
+    let {x, y} =
+      this.state.handoff ||
+      this.state.moving ||
+      this.state.node.views.whiteboard ||
+      this.props.defaultPos
 
     const {inline} = this.props
-    const activityStyles = inline ? '' : css(
-      // styles.contentWrapper,
-      this.state.isActive && styles.active,
-      this.state.isSelected && styles.selected,
-      this.state.isCutting && styles.cutting,
-      this.state.isDragging && styles.dragging,
-      this.state.editState && styles.editing,
-    )
+    const activityStyles = inline
+      ? ''
+      : css(
+          // styles.contentWrapper,
+          this.state.isActive && styles.active,
+          this.state.isSelected && styles.selected,
+          this.state.isCutting && styles.cutting,
+          this.state.isDragging && styles.dragging,
+          this.state.editState && styles.editing,
+        )
 
     const collapsed = (this.state.node.views.whiteboard || {}).collapsed
     if (!x) x = 0
     if (!y) y = 0
-    const {dx, dy, hideSelected} = (this.state.isSelected ? this.props : {dx: 0, dy: 0, hideSelected: false})
-    return <div
-      ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
-      className={css(styles.container, hideSelected && styles.hide, inline && styles.inline) + ' ' + activityStyles}
-      onMouseDownCapture={this.onMouseDown}
-      onContextMenu={this.onContextMenu}
-      style={{
-        transform: inline ? '' : `translate(${x + dx}px, ${y + dy}px)`,
-        zIndex: this.state.moving ? 10000 : undefined,
-        height: this.state.height,
-      }}
-    >
-      <Body
-        // depth={100}
-        node={this.state.node}
-        actions={this.props.store.actions}
-        editState={this.state.editState}
-        setChildDrop={this.props.setChildDrop}
-        releaseChildDrop={this.props.releaseChildDrop}
-        keyActions={this.keyActions}
-        store={this.props.store}
-      />
-      {(this.state.node.children.length > 0 || this.state.height) &&
-        (!collapsed ?
-          <div
-            className={css(styles.children)}
-            ref={node => this.childrenNode = node}
-          >
-            <div
-              onWheel={this.onWheel}
-              className={css(this.state.height ? styles.fixedChildren : null)}
-              style={{flex: 1}}
-            >
-            {this.state.node.children.map(child => (
-              <Child
-                id={child}
-                key={child}
-                store={this.props.store}
-                nodeMap={this.props.nodeMap}
-                startChildDragging={this.props.startChildDragging}
-              />
-            ))}
-            </div>
-            <div
-              onMouseDown={() => this.props.store.actions.createLastChild(this.props.id)}
-              className={css(styles.addChild)}>
-              Add child
-            </div>
-            <Icon
-              name="arrow-shrink"
-              className={css(styles.collapser)}
-              onClick={this.collapseChildren}
-            />
-          </div> :
-          <div
-            onClick={this.expandChildren}
-            className={css(styles.kidBadge)}
-            ref={node => this.childrenNode = node}
-          >
-            {this.state.node.children.length}
-          </div>)}
+    const {dx, dy, hideSelected} = this.state.isSelected
+      ? this.props
+      : {dx: 0, dy: 0, hideSelected: false}
+    return (
       <div
-        ref={node => this._heightDragger = node}
-        className={css(styles.heightDragger)}
-        onMouseDown={this.startResizingHeight}
-        onContextMenu={e => (e.preventDefault(), e.stopPropagation())}
-      />
-    </div>
+        ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
+        className={
+          css(
+            styles.container,
+            hideSelected && styles.hide,
+            inline && styles.inline,
+          ) +
+            ' ' +
+            activityStyles
+        }
+        onMouseDownCapture={this.onMouseDown}
+        onContextMenu={this.onContextMenu}
+        style={{
+          transform: inline ? '' : `translate(${x + dx}px, ${y + dy}px)`,
+          zIndex: this.state.moving ? 10000 : undefined,
+          height: this.state.height,
+        }}
+      >
+        <Body
+          // depth={100}
+          node={this.state.node}
+          actions={this.props.store.actions}
+          editState={this.state.editState}
+          setChildDrop={this.props.setChildDrop}
+          releaseChildDrop={this.props.releaseChildDrop}
+          keyActions={this.keyActions}
+          store={this.props.store}
+        />
+        {(this.state.node.children.length > 0 || this.state.height) &&
+          (!collapsed
+            ? <div
+                className={css(styles.children)}
+                ref={node => (this.childrenNode = node)}
+              >
+                <div
+                  onWheel={this.onWheel}
+                  className={css(
+                    this.state.height ? styles.fixedChildren : null,
+                  )}
+                  style={{flex: 1}}
+                >
+                  {this.state.node.children.map(child => (
+                    <Child
+                      id={child}
+                      key={child}
+                      store={this.props.store}
+                      nodeMap={this.props.nodeMap}
+                      startChildDragging={this.props.startChildDragging}
+                    />
+                  ))}
+                </div>
+                <div
+                  onMouseDown={() =>
+                    this.props.store.actions.createLastChild(this.props.id)}
+                  className={css(styles.addChild)}
+                >
+                  Add child
+                </div>
+                <Icon
+                  name="arrow-shrink"
+                  className={css(styles.collapser)}
+                  onClick={this.collapseChildren}
+                />
+              </div>
+            : <div
+                onClick={this.expandChildren}
+                className={css(styles.kidBadge)}
+                ref={node => (this.childrenNode = node)}
+              >
+                {this.state.node.children.length}
+              </div>)}
+        <div
+          ref={node => (this._heightDragger = node)}
+          className={css(styles.heightDragger)}
+          onMouseDown={this.startResizingHeight}
+          onContextMenu={e => (e.preventDefault(), e.stopPropagation())}
+        />
+      </div>
+    )
   }
 }
 
 const activeStyles = {}
 ;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
-  activeStyles[key] =
-    {outline: `2px solid ${colors[key]}`}
-    /*{boxShadow: `
+  activeStyles[key] = {outline: `2px solid ${colors[key]}`}
+  /*{boxShadow: `
       -2px -2px 0 ${colors[key]},
       -2px 2px 0 ${colors[key]},
       2px -2px 0 ${colors[key]},

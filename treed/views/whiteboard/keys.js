@@ -54,7 +54,6 @@ const keys: ViewActionConfig = {
     alias: 'setCut',
   },
 
-
   rebase: {
     shortcuts: {
       normal: 'g d',
@@ -65,7 +64,7 @@ const keys: ViewActionConfig = {
 
   rebaseLast: {
     shortcuts: {
-      normal: 'g \'',
+      normal: "g '",
     },
     alias: 'rebaseLast',
     description: 'Go to previous zoom state',
@@ -86,7 +85,6 @@ const keys: ViewActionConfig = {
     alias: 'rebasePrev',
     description: 'Zoom to previous sibling of root',
   },
-
 
   rebaseRoot: {
     shortcuts: {
@@ -109,7 +107,6 @@ const keys: ViewActionConfig = {
     description: 'Zoom to parent of current root',
   },
 
-
   up: {
     shortcuts: {
       normal: 'k, up, alt+k, alt+up',
@@ -122,7 +119,11 @@ const keys: ViewActionConfig = {
       const pid = store.db.data[active].parent
       if (!pid) return
       if (pid === store.state.root) {
-        const next = motion.up(store.db.data[pid].children, store.state.nodeMap, active)
+        const next = motion.up(
+          store.db.data[pid].children,
+          store.state.nodeMap,
+          active,
+        )
         if (next) {
           store.actions.setActive(next)
         }
@@ -131,7 +132,7 @@ const keys: ViewActionConfig = {
           store.actions.focusParent()
         }
       }
-    }
+    },
   },
 
   left: {
@@ -145,7 +146,11 @@ const keys: ViewActionConfig = {
       if (!pid) return
       // need to find "next open space" on the whiteboard
       if (pid === store.state.root) {
-        const next = motion.left(store.db.data[pid].children, store.state.nodeMap, active)
+        const next = motion.left(
+          store.db.data[pid].children,
+          store.state.nodeMap,
+          active,
+        )
         if (next) {
           store.actions.setActive(next)
         }
@@ -166,7 +171,11 @@ const keys: ViewActionConfig = {
       const pid = store.db.data[active].parent
       if (!pid) return
       if (pid === store.state.root) {
-        const next = motion.down(store.db.data[pid].children, store.state.nodeMap, active)
+        const next = motion.down(
+          store.db.data[pid].children,
+          store.state.nodeMap,
+          active,
+        )
         if (next) {
           store.actions.setActive(next)
         }
@@ -187,7 +196,11 @@ const keys: ViewActionConfig = {
       const pid = store.db.data[active].parent
       if (!pid) return
       if (pid === store.state.root) {
-        const next = motion.right(store.db.data[pid].children, store.state.nodeMap, active)
+        const next = motion.right(
+          store.db.data[pid].children,
+          store.state.nodeMap,
+          active,
+        )
         if (next) {
           store.actions.setActive(next)
         }
@@ -208,24 +221,35 @@ const keys: ViewActionConfig = {
       const pid = store.db.data[active].parent
       if (!pid) return
       if (pid === store.state.root) {
-        if (store.db.data[active].children.length && !store.getters.isCollapsed(active)) {
+        if (
+          store.db.data[active].children.length &&
+          !store.getters.isCollapsed(active)
+        ) {
           store.actions.focusFirstChild(active)
           return
         }
-        const next = motion.down(store.db.data[pid].children, store.state.nodeMap, active)
+        const next = motion.down(
+          store.db.data[pid].children,
+          store.state.nodeMap,
+          active,
+        )
         if (next) {
           store.actions.setActive(next)
         }
       } else {
         if (!store.actions.focusNextSibling()) {
           const pid = store.db.data[active].parent
-          const next = motion.down(store.db.data[store.state.root].children, store.state.nodeMap, pid)
+          const next = motion.down(
+            store.db.data[store.state.root].children,
+            store.state.nodeMap,
+            pid,
+          )
           if (next) {
             store.actions.setActive(next)
           }
         }
       }
-    }
+    },
   },
 
   createAfter: {
@@ -276,7 +300,7 @@ const keys: ViewActionConfig = {
         // TODO make sure it's not collapsed
       } else {
       }
-    }
+    },
   },
 
   lineNodesUpVertically: {
@@ -291,5 +315,3 @@ const keys: ViewActionConfig = {
 }
 
 export default keys
-
-

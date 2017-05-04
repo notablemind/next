@@ -14,7 +14,7 @@ const scopes = [
   'email',
   'profile',
   'https://www.googleapis.com/auth/drive.file',
-  'https://www.googleapis.com/auth/drive.appdata'
+  'https://www.googleapis.com/auth/drive.appdata',
 ]
 
 export const loadUser = () => {
@@ -40,12 +40,12 @@ export const getSession = (done: Function) => {
   console.log('getting session')
   googleWrapper({
     clientId: googleClientId,
-    scopes
+    scopes,
   }).then(
     user => {
       done(null, new Session(user))
     },
-    err => done(err)
+    err => done(err),
   )
 }
 
@@ -91,7 +91,7 @@ export const login = () => {
   const uri = oauthUrl({
     clientId: googleClientId,
     scopes: scopes,
-    redirectUri: 'http://localhost:4150/'
+    redirectUri: 'http://localhost:4150/',
   })
   window.location = uri
 }
@@ -100,14 +100,14 @@ const getOldestItem = query => {
   return Promise.resolve(
     gapi.client.drive.files.list({
       q: query,
-      fields: 'files(id, name, appProperties, version, size, trashed)'
-    })
+      fields: 'files(id, name, appProperties, version, size, trashed)',
+    }),
   ).then(({result: {files}}) => {
     files = files.filter(file => !file.trashed)
     if (files.length === 1) return files[0]
     files.sort(
       (a, b) =>
-        new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime()
+        new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
     )
     return files[0]
   })
@@ -116,7 +116,7 @@ const getOldestItem = query => {
 const fetchFileContents = file => {
   return fetch(
     `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
-    {headers: {Authorization: `Bearer ${accessToken}`}}
+    {headers: {Authorization: `Bearer ${accessToken}`}},
   )
 }
 
@@ -126,7 +126,7 @@ const createDocFolder = (root, id): Promise<*> => {
       name: 'Untitled',
       mimeType: 'application/vnd.google-apps.folder',
       appProperties: {nmId: id},
-      parents: [root]
+      parents: [root],
     })
     .then(({result, status}) => {
       if (status !== 200) throw new Error('failed to create')
@@ -170,7 +170,7 @@ class Session {
         console.log('failed to sync', err)
         // TODO retries?
         return null
-      }
+      },
     )
     return this.init
   }
@@ -198,7 +198,7 @@ class Session {
       return googleUpload.updateFile({
         id: contentsId,
         mimeType: MIME_TYPE,
-        contents
+        contents,
       })
     })
   }
@@ -238,7 +238,7 @@ class Session {
         'pend',
         latestVersion,
         lastCheckTime,
-        pendingChanges
+        pendingChanges,
       )
 
       return getOldestItem(`'${parentId}' in parents and name = 'contents.nm'`)
@@ -264,13 +264,13 @@ class Session {
                   name: 'contents.nm',
                   mimeType: MIME_TYPE,
                   parents: [parentId],
-                  contents
+                  contents,
                 })
                 .then(doc => {
                   return gapi.client.drive.files
                     .get({
                       fileId: doc.id,
-                      fields: 'id, name, version, size'
+                      fields: 'id, name, version, size',
                     })
                     .then(res => {
                       if (res.status !== 200) throw new Error('not 200 on get')
@@ -291,7 +291,7 @@ class Session {
             .changes({
               include_docs: true,
               live: true,
-              since: 'now'
+              since: 'now',
             })
             .on('change', () => {
               if (!lastCheckTime || lastCheckTime < Date.now() - TEN_MINUTES) {

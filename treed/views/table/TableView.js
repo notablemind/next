@@ -1,13 +1,12 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import TableItem from './TableItem'
 
 // import Dragger from './Dragger'
 import ContextMenu from '../context-menu/ContextMenu'
-
 
 type MenuItem = any
 type Store = any
@@ -46,7 +45,7 @@ type ViewSettings = {
 type State = {
   root: string,
   mode: string,
-  isActiveView: bool,
+  isActiveView: boolean,
   contextMenu: ?{
     menu: Array<MenuItem>,
     pos: {top: number, left: number},
@@ -110,42 +109,40 @@ export default class TableView extends Component {
   render() {
     const root = this.props.store.state.root
     const depth = findDepth(root, this.props.store.db.data)
-    return <div
-      className={css(styles.container)}
-      // onDragOver={this.onDrag}
-      // onDrop={this.onDrop}
-      // onDragLeave={this.stopDropping}
-      onContextMenu={this.onContextMenu}
-    >
-      <div className={css(styles.scroller)}>
-        <div
-          className={css(styles.thinWidth)}
-        >
-          <TableItem
-            id={root}
-            key={root}
-            depth={depth}
-            nodeMap={this._nodes}
-            store={this.props.store}
-          />
+    return (
+      <div
+        className={css(styles.container)}
+        // onDragOver={this.onDrag}
+        // onDrop={this.onDrop}
+        // onDragLeave={this.stopDropping}
+        onContextMenu={this.onContextMenu}
+      >
+        <div className={css(styles.scroller)}>
+          <div className={css(styles.thinWidth)}>
+            <TableItem
+              id={root}
+              key={root}
+              depth={depth}
+              nodeMap={this._nodes}
+              store={this.props.store}
+            />
+          </div>
         </div>
+        {this.state.contextMenu &&
+          <ContextMenu
+            pos={this.state.contextMenu.pos}
+            menu={this.state.contextMenu.menu}
+            onClose={this.props.store.actions.closeContextMenu}
+          />}
       </div>
-      {this.state.contextMenu &&
-        <ContextMenu
-          pos={this.state.contextMenu.pos}
-          menu={this.state.contextMenu.menu}
-          onClose={this.props.store.actions.closeContextMenu}
-        />}
-    </div>
+    )
   }
 }
-
 
 const findDepth = (id, data) => {
   if (id === 'root' || !id) return 0
   return 1 + findDepth(data[id].parent, data)
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -166,4 +163,3 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 })
-

@@ -1,16 +1,15 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import SearchItem from './SearchItem'
 import BouncyInput from './BouncyInput'
 import Tags from './TagsSearch'
 
-type State = {
-}
+type State = {}
 
-const nonempty = txt => txt.length ? txt : null
+const nonempty = txt => (txt.length ? txt : null)
 
 const walk = (nodes, id, fn) => {
   fn(nodes[id])
@@ -76,10 +75,11 @@ export default class Search extends Component {
         contextMenu: store.getters.contextMenu(),
         view: store.getters.viewState(),
         dropping: store.getters.dropping(),
-        results: !this.state || (
-          store.getters.root() !== this.state.root ||
-          store.getters.viewState() !== this.state.view
-        ) ? findResults(store.getters.viewState(), store) : this.state.results,
+        results: !this.state ||
+          (store.getters.root() !== this.state.root ||
+            store.getters.viewState() !== this.state.view)
+          ? findResults(store.getters.viewState(), store)
+          : this.state.results,
       }),
     )
   }
@@ -94,29 +94,28 @@ export default class Search extends Component {
 
   render() {
     const {store} = this.props
-    return <div className={css(styles.container)}>
-      <div className={css(styles.top)}>
-        <Tags
-          ids={this.state.view.tagIds}
-          tags={store.getters.pluginConfig('tags').tags}
-          onAddTag={tag => store.actions.addSearchTag(tag.id)}
-        />
-        <BouncyInput
-          value={this.state.view.searchText}
-          onChange={store.actions.setSearchText}
-        />
-      </div>
-      <div className={css(styles.results)}>
-        {this.state.results.map(id => (
-          <div key={id}>
-          <SearchItem
-            id={id}
-            store={store}
+    return (
+      <div className={css(styles.container)}>
+        <div className={css(styles.top)}>
+          <Tags
+            ids={this.state.view.tagIds}
+            tags={store.getters.pluginConfig('tags').tags}
+            onAddTag={tag => store.actions.addSearchTag(tag.id)}
           />
-          </div>
-        ))}
+          <BouncyInput
+            value={this.state.view.searchText}
+            onChange={store.actions.setSearchText}
+          />
+        </div>
+        <div className={css(styles.results)}>
+          {this.state.results.map(id => (
+            <div key={id}>
+              <SearchItem id={id} store={store} />
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    )
   }
 }
 
@@ -126,7 +125,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
-  results: {
-  },
+  results: {},
 })
-

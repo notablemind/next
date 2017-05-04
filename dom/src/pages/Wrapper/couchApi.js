@@ -23,7 +23,7 @@ class Session {
   sync(userDb: any) {
     userDb.sync(this.db, {
       live: true,
-      retry: true
+      retry: true,
     })
   }
 
@@ -64,7 +64,7 @@ const createUserSession = (id, remoteUserDb) => {
     const user = {
       id,
       email: res.email,
-      realName: res.realName
+      realName: res.realName,
     }
     return new Session(user, remoteUserDb)
   })
@@ -74,7 +74,7 @@ export const ensureUserDb = (): Promise<void> => {
   return fetch(`${apiURL}/api/ensure-user`, {
     method: 'POST',
     mode: 'cors',
-    credentials: 'include'
+    credentials: 'include',
   }).then(res => {
     if (res.status == 401) {
       throw new Error('failed to login')
@@ -86,7 +86,7 @@ export const ensureDocDb = (id: string) => {
   return fetch(`${apiURL}/api/create-doc?id=${id}`, {
     method: 'POST',
     mode: 'cors',
-    credentials: 'include'
+    credentials: 'include',
   }).then(res => new PouchDB(`${dbURL}/${id}`))
 }
 
@@ -136,7 +136,7 @@ export const getSession = (done: Function) => {
           done('invalid')
           return
         }
-      }
+      },
     )
   })
 }
@@ -189,13 +189,13 @@ const authWithApiServer = (id: string, pwd: string): Promise<void> => {
 export const signup = (
   name: string,
   email: string,
-  pwd: string
+  pwd: string,
 ): Promise<any> => {
   const id = uuid()
   const remoteUserDb = new PouchDB(`${dbURL}/user_${id}`, {skipSetup: true})
   return remoteUserDb
     .signup(id, pwd, {
-      metadata: {email, realName: name}
+      metadata: {email, realName: name},
     })
     .then(res => {
       console.log(res)

@@ -1,4 +1,3 @@
-
 export default class NotableBase {
   constructor() {
     this.metaById = {}
@@ -8,9 +7,15 @@ export default class NotableBase {
     this.user = null
   }
 
-  init() { throw new Error('not overridden') }
-  getFileDb(docid) { throw new Error('not overridden') }
-  _updateMeta(id, update) { throw new Error('not implemented') }
+  init() {
+    throw new Error('not overridden')
+  }
+  getFileDb(docid) {
+    throw new Error('not overridden')
+  }
+  _updateMeta(id, update) {
+    throw new Error('not implemented')
+  }
 
   notifyMeta() {
     this.metaListeners.forEach(fn => fn(this.meta))
@@ -45,11 +50,10 @@ export default class NotableBase {
   updateMeta(id, update) {
     this.meta[id] = {
       ...this.meta[id],
-      ...update
+      ...update,
     }
     this.notifyMeta()
     this.notifyMetaById(id)
     this._updateMeta(id, update)
   }
-
 }

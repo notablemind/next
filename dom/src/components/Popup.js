@@ -13,7 +13,7 @@ export default class Popup extends Component {
   constructor() {
     super()
     this.state = {
-      isOpen: false
+      isOpen: false,
     }
   }
 
@@ -53,7 +53,7 @@ export default class Popup extends Component {
     return this.props.children(
       this.state.isOpen,
       this.setOpen,
-      node => (this.node = node)
+      node => (this.node = node),
     )
   }
 }

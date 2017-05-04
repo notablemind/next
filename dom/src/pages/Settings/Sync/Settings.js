@@ -12,7 +12,7 @@ type User =
   | {
       email: string,
       name: string,
-      profile: string
+      profile: string,
     }
 
 type File = RemoteFile | LocalFile
@@ -25,8 +25,8 @@ type RemoteFile = {
     profilePhoto: string,
     name: string,
     email: string,
-    me: boolean
-  }
+    me: boolean,
+  },
 }
 
 type FileMeta = {
@@ -40,12 +40,12 @@ type FileMeta = {
       profilePhoto: string,
       name: string,
       email: string,
-      me: boolean
+      me: boolean,
     },
     remoteId: string,
     lastSyncTime: number,
-    lastSyncVersion: number
-  }
+    lastSyncVersion: number,
+  },
 }
 
 export default class SyncSettings extends Component {
@@ -54,7 +54,7 @@ export default class SyncSettings extends Component {
     user: ?User,
     remote: ?(RemoteFile[]),
     meta: {[key: string]: FileMeta},
-    loading: boolean
+    loading: boolean,
   }
 
   constructor({nm}) {
@@ -63,7 +63,7 @@ export default class SyncSettings extends Component {
       user: nm.user,
       meta: nm.meta,
       remote: [],
-      loading: false
+      loading: false,
     }
   }
 
@@ -78,7 +78,7 @@ export default class SyncSettings extends Component {
         }
         this.setState({user})
       }),
-      this.props.nm.onMeta(meta => this.setState({meta}))
+      this.props.nm.onMeta(meta => this.setState({meta})),
     ]
   }
 
@@ -131,7 +131,7 @@ export default class SyncSettings extends Component {
   renderFiles() {
     const {remote, meta} = this.state
     const remoteOnly = remote.filter(
-      file => !this.state.meta[file.appProperties.nmId]
+      file => !this.state.meta[file.appProperties.nmId],
     )
     const remoteById = {}
     remote.forEach(file => (remoteById[file.appProperties.nmId] = file))
@@ -185,14 +185,14 @@ export default class SyncSettings extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
     // width: 600,
     // height: 400,
   },
 
   loggedOut: {
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
     // flex: 1,
   },
 
@@ -207,11 +207,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     fontSize: 20,
     borderRadius: 4,
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   loginDetails: {
-    fontSize: '80%'
+    fontSize: '80%',
     // maxWidth: 300,
   },
 
@@ -219,15 +219,15 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: '50%',
-    marginRight: 10
+    marginRight: 10,
   },
 
   username: {
-    fontWeight: 400
+    fontWeight: 400,
   },
 
   top: {
     flexDirection: 'row',
-    alignItems: 'center'
-  }
+    alignItems: 'center',
+  },
 })

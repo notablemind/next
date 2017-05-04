@@ -1,4 +1,3 @@
-
 import {KEY_NAMES, SHIFT_KEYS, SYNONYMS, KEYS} from './codes'
 
 const letters = 'abcdefghijklmnopqrstuvwxyz'
@@ -11,7 +10,10 @@ const handleVariants = single => {
     last = SHIFT_KEYS[last]
   } else if (SYNONYMS[last]) {
     last = SYNONYMS[last]
-  } else if (last.toLowerCase() !== last && letters.indexOf(last.toLowerCase()) !== -1) {
+  } else if (
+    last.toLowerCase() !== last &&
+    letters.indexOf(last.toLowerCase()) !== -1
+  ) {
     moded.push('shift')
     last = last.toLowerCase()
   } else if (KEY_NAMES.indexOf(last) === -1 && letters.indexOf(last) === -1) {
@@ -45,4 +47,3 @@ export default function modKeyName(e) {
   if (e.metaKey) key = 'cmd+' + key
   return key
 }
-

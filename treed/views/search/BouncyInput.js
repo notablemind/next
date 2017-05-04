@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 
 const debounce = (fn, min) => {
   let wait = null
@@ -27,12 +27,13 @@ export default class BouncyInput extends Component {
   }
 
   render() {
-    return <input
-      {...this.props}
-      value={this.state.text}
-      onChange={this.onChange}
-      onKeyDown={e => e.stopPropagation()}
-    />
+    return (
+      <input
+        {...this.props}
+        value={this.state.text}
+        onChange={this.onChange}
+        onKeyDown={e => e.stopPropagation()}
+      />
+    )
   }
 }
-

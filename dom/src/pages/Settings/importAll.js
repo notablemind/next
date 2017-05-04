@@ -11,9 +11,9 @@ type Result = {
     parent: string,
     size: number,
     modified: number,
-    opened: number
+    opened: number,
   },
-  contents: {[key: string]: any}
+  contents: {[key: string]: any},
 }
 
 export default (file: File): Promise<Result[]> => {
@@ -66,7 +66,7 @@ export default (file: File): Promise<Result[]> => {
               size: Object.keys(contents).length,
               modified: Date.now(),
               opened: Date.now(),
-              _id: doc.id
+              _id: doc.id,
             },
             getContents() {
               const withAttachments = []
@@ -83,7 +83,7 @@ export default (file: File): Promise<Result[]> => {
                     return Promise.all(
                       Object.keys(node._attachments).map(aid => {
                         const att = (node._attachments[aid] = {
-                          ...node._attachments[aid]
+                          ...node._attachments[aid],
                         })
                         if (attachmentsById[aid]) {
                           return attachmentsById[aid]
@@ -98,16 +98,16 @@ export default (file: File): Promise<Result[]> => {
                           console.log('missing an attachment', doc.title, aid)
                           return null
                         }
-                      })
+                      }),
                     ).then(() => node)
                   })
                 }
               })
               return {withAttachments, withoutAttachments}
-            }
+            },
           }
         })
-      })
+      }),
     )
   })
 }

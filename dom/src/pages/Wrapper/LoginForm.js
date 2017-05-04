@@ -8,7 +8,7 @@ export default class LoginForm extends Component {
     signup: boolean,
     name: string,
     email: string,
-    pwd: string
+    pwd: string,
   }
 
   constructor() {
@@ -17,7 +17,7 @@ export default class LoginForm extends Component {
       signup: false,
       name: '',
       email: '',
-      pwd: ''
+      pwd: '',
     }
   }
 
@@ -26,7 +26,7 @@ export default class LoginForm extends Component {
     this.setState({
       name: '',
       email: '',
-      pwd: ''
+      pwd: '',
     })
   }
 
@@ -35,7 +35,7 @@ export default class LoginForm extends Component {
     this.setState({
       name: '',
       email: '',
-      pwd: ''
+      pwd: '',
     })
   }
 
@@ -86,12 +86,12 @@ const styles = StyleSheet.create({
     border: 'none',
     padding: '3px 5px',
     fontSize: '1.2em',
-    width: 300
+    width: 300,
   },
 
   linkButton: {
     color: 'blue',
     border: 'none',
-    backgroundColor: 'white'
-  }
+    backgroundColor: 'white',
+  },
 })

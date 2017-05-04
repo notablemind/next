@@ -15,7 +15,7 @@ type Props = {
   loginError: ?string,
   onLogin: (email: string, pwd: string) => void,
   onSignUp: (name: string, email: string, pwd: string) => void,
-  onLogout: () => void
+  onLogout: () => void,
 }
 
 const LoginStatus = ({
@@ -25,7 +25,7 @@ const LoginStatus = ({
   loginError,
   onLogin,
   onSignUp,
-  onLogout
+  onLogout,
 }: Props) => {
   if (user) {
     return (
@@ -84,15 +84,15 @@ export default LoginStatus
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative'
+    position: 'relative',
   },
 
   email: {
-    cursor: 'pointer'
+    cursor: 'pointer',
   },
 
   loginToSync: {
-    cursor: 'pointer'
+    cursor: 'pointer',
   },
 
   profile: {
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 10,
     right: 10,
-    zIndex: 100
+    zIndex: 100,
   },
 
   loginForm: {
@@ -114,10 +114,10 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 10,
     right: 10,
-    zIndex: 100
+    zIndex: 100,
   },
 
   offline: {
-    color: '#999'
-  }
+    color: '#999',
+  },
 })

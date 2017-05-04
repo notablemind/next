@@ -31,7 +31,7 @@ export const updateFile = ({id, contents, mimeType}) => {
     method: 'PATCH',
     params: {uploadType: 'media'},
     headers: {'Content-Type': mimeType},
-    body: contents
+    body: contents,
   })
 
   return new Promise((res, rej) => {
@@ -47,18 +47,18 @@ export const insertFile = ({name, mimeType, parents, contents}) => {
     method: 'POST',
     params: {uploadType: 'multipart'},
     headers: {
-      'Content-Type': 'multipart/mixed; boundary="' + BOUNDARY + '"'
+      'Content-Type': 'multipart/mixed; boundary="' + BOUNDARY + '"',
     },
     body: makeBody(
       BOUNDARY,
       {
         name,
         mimeType,
-        parents
+        parents,
       },
       mimeType,
-      contents
-    )
+      contents,
+    ),
   })
 
   return new Promise((res, rej) => {

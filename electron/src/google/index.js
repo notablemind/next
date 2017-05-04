@@ -21,12 +21,12 @@ type User = {
 }
 */
 
-const saveData = (documentsDir/*: string*/, token/*: any*/) => {
+const saveData = (documentsDir /*: string*/, token /*: any*/) => {
   const savedPath = path.join(documentsDir, 'user.json')
   fs.writeFileSync(savedPath, JSON.stringify(token))
 }
 
-const getSavedData = (documentsDir) => {
+const getSavedData = documentsDir => {
   const savedPath = path.join(documentsDir, 'user.json')
   return new Promise((res, rej) => {
     fs.readFile(savedPath, 'utf8', (err, data) => {
@@ -45,14 +45,19 @@ const getSavedData = (documentsDir) => {
   })
 }
 
-const addExpiresAt = token => (token.expires_at = Date.now() + token.expires_in * 1000, token)
+const addExpiresAt = token =>
+  ((token.expires_at = Date.now() + token.expires_in * 1000), token)
 
 const getProfile = token => {
-  return fetch(`https://www.googleapis.com/plus/v1/people/me?key=${googleApiKey}`, {
-    headers: {
-      'Authorization': 'Bearer ' + token.access_token,
+  return fetch(
+    `https://www.googleapis.com/plus/v1/people/me?key=${googleApiKey}`,
+    {
+      headers: {
+        Authorization: 'Bearer ' + token.access_token,
+      },
     },
-  }).then(res => res.json())
+  )
+    .then(res => res.json())
     .then(data => {
       if (data.error) {
         console.error('failed to get user', data, googleApiKey, token)
@@ -67,19 +72,24 @@ const getProfile = token => {
     })
 }
 
-const login = (documentsDir/*: string*/) => {
-  return googleLogin.authorize()
+const login = (documentsDir /*: string*/) => {
+  return googleLogin
+    .authorize()
     .then(addExpiresAt)
     .then(token => (saveData(documentsDir, token), token))
     .then(getProfile)
 }
 
-const restoreUser = (documentsDir/*: string*/) => {
-  return getSavedData(documentsDir)
-    .then(saved => saved ? getOrRefreshUser(saved, documentsDir) : null)
+const restoreUser = (documentsDir /*: string*/) => {
+  return getSavedData(documentsDir).then(
+    saved => (saved ? getOrRefreshUser(saved, documentsDir) : null),
+  )
 }
 
-const getOrRefreshUser = (token/*: {expires_at: number, access_token: string, refresh_token: string}*/, documentsDir/*: string*/) => {
+const getOrRefreshUser = (
+  token /*: {expires_at: number, access_token: string, refresh_token: string}*/,
+  documentsDir /*: string*/,
+) => {
   console.log('restoring', token)
   if (token.expires_at > Date.now()) {
     return getProfile(token)
@@ -89,16 +99,24 @@ const getOrRefreshUser = (token/*: {expires_at: number, access_token: string, re
 }
 
 const refreshToken = (token, documentsDir) => {
-  return googleLogin.refresh(token)
-    .then(token => {if (!token) {throw new Error('unable to refresh')} return token})
+  return googleLogin
+    .refresh(token)
+    .then(token => {
+      if (!token) {
+        throw new Error('unable to refresh')
+      }
+      return token
+    })
     .then(addExpiresAt)
     .then(token => (saveData(documentsDir, token), token))
     .then(getProfile)
 }
 
-module.exports = Object.assign({
-  restoreUser,
-  refreshToken,
-  login,
-}, files)
-
+module.exports = Object.assign(
+  {
+    restoreUser,
+    refreshToken,
+    login,
+  },
+  files,
+)

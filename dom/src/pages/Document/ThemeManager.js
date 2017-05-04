@@ -5,7 +5,7 @@ type Style = {
   fontFamily?: ?string, // will have dropdown box for this
   fontWeight?: ?number, // or normal|bold|lighter|bolder?
   lineHeight?: ?number,
-  italic?: boolean
+  italic?: boolean,
   // padding: maybe
 }
 
@@ -14,15 +14,15 @@ type ThemeSettings = {
   headerStyles: Array<{
     style: Style,
     level: number,
-    enabled: boolean
+    enabled: boolean,
   }>,
   // TODO maybe enable styling of node types?
   individualStyles: {
     [key: string]: {
       enabled: boolean,
-      style: Style
-    }
-  }
+      style: Style,
+    },
+  },
 }
 
 const themeToCss = (settings: ThemeSettings): string => {
@@ -64,30 +64,30 @@ export const defaultThemeSettings: ThemeSettings = {
       style: {
         fontSize: 1.5,
         fontWeight: 'normal',
-        italic: true
+        italic: true,
       },
       level: 0,
-      enabled: true
+      enabled: true,
     },
     {
       style: {
         fontSize: 1.3,
         fontWeight: 'normal',
-        color: '#5385ff'
+        color: '#5385ff',
       },
       level: 1,
-      enabled: true
+      enabled: true,
     },
     {
       style: {
         fontSize: 1.1,
         fontWeight: 'normal',
-        italic: true
+        italic: true,
       },
       level: 2,
-      enabled: true
-    }
-  ]
+      enabled: true,
+    },
+  ],
 }
 
 export default class ThemeManager {

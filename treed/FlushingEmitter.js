@@ -1,4 +1,3 @@
-
 const pauseMs = 10
 
 window.DEBUG_EVENTS = false
@@ -20,7 +19,7 @@ export default class FlushingEmitter {
     this.listeners[evt].delete(fn)
   }
 
-  emit = (evt) => {
+  emit = evt => {
     if (!evt) return
     // TODO maybe for debugging skip this
     if (!this.listeners[evt]) {
@@ -35,7 +34,7 @@ export default class FlushingEmitter {
     }
   }
 
-  emitMany = (evts) => {
+  emitMany = evts => {
     if (!evts || !evts.length) return
     let added = false
     evts.forEach(evt => {
@@ -69,4 +68,3 @@ export default class FlushingEmitter {
     }
   }
 }
-

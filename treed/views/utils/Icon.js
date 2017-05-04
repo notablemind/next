@@ -1,11 +1,13 @@
-
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import buildData from '../../../dom/public/fonts/ionicons.json'
 
 const byName = {}
-buildData.icons.forEach(icon => byName[icon.name] = String.fromCharCode(parseInt(icon.code.slice(2), 16)))
+buildData.icons.forEach(
+  icon =>
+    (byName[icon.name] = String.fromCharCode(parseInt(icon.code.slice(2), 16))),
+)
 
 const Icon = ({name, size, color, style, className, ...props}) => (
   <div
@@ -21,12 +23,11 @@ export default Icon
 
 const styles = StyleSheet.create({
   icon: {
-    fontFamily: 'ionicons', /*[{
+    fontFamily: 'ionicons' /*[{
       fontFamily: 'ionicons',
       fontStyle: 'normal',
       fontWeight: 'normal',
       src: 'url("/fonts/ionicons.woff") format("woff")'
-    }],*/
+    }],*/,
   },
 })
-

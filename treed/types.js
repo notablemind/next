@@ -11,8 +11,8 @@ export type ClipboardContents = DumpedNode
 export type MenuItem = {
   text: string,
   action?: () => any,
-  checked?: bool,
-  disabled?: bool,
+  checked?: boolean,
+  disabled?: boolean,
   children?: Array<MenuItem>,
 }
 
@@ -47,7 +47,7 @@ export type StoreState = {
   root: string,
   lastRoot: string,
   active: string,
-  activeIsJump: bool,
+  activeIsJump: boolean,
   mode: Mode,
   lastEdited: ?string,
   editPos: ?EditPos,
@@ -134,13 +134,15 @@ export type KeyAction = {|
   action: (store: Store) => void,
 |}
 
-export type ViewKeyAction = KeyAction | {|
-  shortcuts: {
-    [mode: string]: string,
-  },
-  description: string,
-  alias: string,
-|}
+export type ViewKeyAction =
+  | KeyAction
+  | {|
+      shortcuts: {
+        [mode: string]: string,
+      },
+      description: string,
+      alias: string,
+    |}
 
 export type ViewActionConfig = {
   [actionName: string]: ViewKeyAction,
@@ -151,7 +153,7 @@ export type ViewActionConfig = {
 export type MenuResult = MenuItem | Array<MenuItem>
 
 export type ColumnConfig = {
-  editable?: bool,
+  editable?: boolean,
   type?: string,
 }
 
@@ -160,19 +162,30 @@ export type PluginNodeConfig = {|
   contextMenu?: (pluginData: any, node: Node, store: Store) => ?MenuResult,
   pasteSpecial?: (node: Node, store: Store, clipboard: any) => ?MenuResult,
 
-  dropFileNew?: (store: Store, pid: string, idx: number, file: File) => bool,
-  dropFileOnto?: (store: Store, id: string, file: File) => bool,
-  pasteFile?: (store: Store, id: string, file: File, type: string, filename: string) => bool,
+  dropFileNew?: (store: Store, pid: string, idx: number, file: File) => boolean,
+  dropFileOnto?: (store: Store, id: string, file: File) => boolean,
+  pasteFile?: (
+    store: Store,
+    id: string,
+    file: File,
+    type: string,
+    filename: string,
+  ) => boolean,
 |}
 
 export type PluginNodeTypeConfig<T> = {
   title: string,
-  newSiblingsShouldCarryType?: bool,
+  newSiblingsShouldCarryType?: boolean,
   shortcut: string,
   render?: ?any,
   defaultNodeConfig?: () => T,
   contextMenu?: (typeData: T, node: Node, store: Store) => ?MenuResult,
-  pasteSpecial?: (typeData: T, clipboardData: any, node: Node, store: Store) => ?MenuResult,
+  pasteSpecial?: (
+    typeData: T,
+    clipboardData: any,
+    node: Node,
+    store: Store,
+  ) => ?MenuResult,
   actions?: {
     [key: string]: KeyAction,
   },
@@ -223,4 +236,3 @@ export type Plugin<T, S> = {|
     },
   },
 |}
-

@@ -25,7 +25,7 @@ const pouchToJsonAndBlobs = pouch => {
     .allDocs({
       include_docs: true,
       attachments: true,
-      binary: true
+      binary: true,
     })
     .then(({rows}) => {
       const blobs = {}
@@ -50,7 +50,7 @@ const extForMime = {
   'text/plain': 'txt',
   'text/html': 'html',
   'application/json': 'json',
-  'text/javascript': 'js'
+  'text/javascript': 'js',
   // TODO flesh this out?
 }
 
@@ -64,11 +64,11 @@ export default (files: Array<File>) => {
             id: file.id,
             title: file.title,
             json,
-            blobs
+            blobs,
           }
         })
       })
-    })
+    }),
   ).then(dumped => {
     const zip = new JSZip()
     const dir = zip.folder('ExportedDocuments')

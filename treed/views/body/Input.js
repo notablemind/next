@@ -22,4 +22,3 @@ export default class Input extends Component {
     this.input.selectionStart = this.input.selectionEnd = pos
   }
 }
-

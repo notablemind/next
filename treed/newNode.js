@@ -1,6 +1,11 @@
 // @flow
 
-module.exports = (id/*: string*/, parent/*: ?string*/, now/*: number*/, content/*: string*/ = '') => ({
+module.exports = (
+  id /*: string*/,
+  parent /*: ?string*/,
+  now /*: number*/,
+  content /*: string*/ = '',
+) => ({
   _id: id,
   created: now,
   modified: now,
@@ -12,4 +17,3 @@ module.exports = (id/*: string*/, parent/*: ?string*/, now/*: number*/, content/
   types: {},
   views: {},
 })
-

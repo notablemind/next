@@ -1,5 +1,4 @@
-
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import Body from '../body'
@@ -19,8 +18,7 @@ export default class Child extends Component {
         activeIsJump: store.state.activeIsJump,
         isActive: store.getters.isActive(id),
         isDragging: store.getters.isDragging(id),
-        isSelected: store.state.selected &&
-          store.state.selected[id],
+        isSelected: store.state.selected && store.state.selected[id],
         editState: store.getters.editState(id),
       }),
     )
@@ -78,11 +76,13 @@ export default class Child extends Component {
     e.preventDefault()
     e.stopPropagation()
     this.props.store.actions.openContextMenuForNode(
-      this.props.id, e.clientX, e.clientY)
+      this.props.id,
+      e.clientX,
+      e.clientY,
+    )
   }
 
   render() {
-
     const activityStyles = css(
       styles.contentWrapper,
       this.state.isActive && styles.active,
@@ -92,44 +92,50 @@ export default class Child extends Component {
       this.state.editState && styles.editing,
     )
 
-    return <div
-      ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
-      className={css(styles.child,
-                     this.state.isActive && styles.activeChild,
-                     this.state.isDragging && styles.dragging,
-                    ) + ' ' + activityStyles}
-      onMouseDownCapture={this.onMouseDown}
-      onContextMenu={this.onContextMenu}
-    >
-    <div style={{flex: 1}}>
-      <Body
-        node={this.state.node}
-        isActive={this.state.isActive}
-        isSelected={this.state.isSelected}
-        // isCutting={this.state.isCutting}
-        actions={this.props.store.actions}
-        editState={this.state.editState}
-        onHeightChange={this.ensureInView}
-        keyActions={this.keyActions}
-        store={this.props.store}
-        textClassName={css(styles.text)}
-      />
+    return (
+      <div
+        ref={n => n && (this.div = this.props.nodeMap[this.props.id] = n)}
+        className={
+          css(
+            styles.child,
+            this.state.isActive && styles.activeChild,
+            this.state.isDragging && styles.dragging,
+          ) +
+            ' ' +
+            activityStyles
+        }
+        onMouseDownCapture={this.onMouseDown}
+        onContextMenu={this.onContextMenu}
+      >
+        <div style={{flex: 1}}>
+          <Body
+            node={this.state.node}
+            isActive={this.state.isActive}
+            isSelected={this.state.isSelected}
+            // isCutting={this.state.isCutting}
+            actions={this.props.store.actions}
+            editState={this.state.editState}
+            onHeightChange={this.ensureInView}
+            keyActions={this.keyActions}
+            store={this.props.store}
+            textClassName={css(styles.text)}
+          />
+        </div>
+        {this.state.node.children.length > 0 &&
+          <Icon
+            name="chevron-right"
+            className={css(styles.childrenIndicator)}
+            size={10}
+          />}
       </div>
-      {this.state.node.children.length > 0 &&
-        <Icon
-          name="chevron-right"
-          className={css(styles.childrenIndicator)}
-          size={10}
-        />}
-    </div>
+    )
   }
 }
 
 const activeStyles = {}
 ;['active', 'selected', 'editing', 'cutting', 'dragging'].forEach(key => {
-  activeStyles[key] =
-    {outline: `2px solid ${colors[key]}`}
-    /*{boxShadow: `
+  activeStyles[key] = {outline: `2px solid ${colors[key]}`}
+  /*{boxShadow: `
       inset -2px -2px 0 ${colors[key]},
       inset -2px 2px 0 ${colors[key]},
       inset 2px -2px 0 ${colors[key]},
@@ -141,7 +147,6 @@ activeStyles.active.backgroundColor = 'transparent'
 activeStyles.active[':hover'] = {
   backgroundColor: 'transparent',
 }
-
 
 const styles = StyleSheet.create({
   ...activeStyles,

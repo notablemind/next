@@ -29,7 +29,10 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
   commands: Commands
   histpos: number
 
-  constructor(commands: Commands, setActive: (view: ViewId, id: string) => void) {
+  constructor(
+    commands: Commands,
+    setActive: (view: ViewId, id: string) => void,
+  ) {
     this.history = []
     this.histpos = 0
     this.commands = commands
@@ -66,21 +69,35 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
     return [].concat.apply([], changes.map(c => c.events || []))
   }
 
-  execute(command: Command, args: Args, view: ?ViewId, preActive: ?string, postActive: ?string) {
+  execute(
+    command: Command,
+    args: Args,
+    view: ?ViewId,
+    preActive: ?string,
+    postActive: ?string,
+  ) {
     return this.executeMany([command], args, view, preActive, postActive)
   }
 
   // TODO care about the "prom"s?
-  executeMany(commands: Array<Command>, args: Args, view: ?ViewId, preActive: ?string, postActive: ?string) {
+  executeMany(
+    commands: Array<Command>,
+    args: Args,
+    view: ?ViewId,
+    preActive: ?string,
+    postActive: ?string,
+  ) {
     const date = Date.now()
     const changes = this._do(commands, args)
-    this.history = this.history.slice(0, this.histpos).concat([{
-      view,
-      preActive,
-      postActive,
-      date,
-      changes,
-    }])
+    this.history = this.history.slice(0, this.histpos).concat([
+      {
+        view,
+        preActive,
+        postActive,
+        date,
+        changes,
+      },
+    ])
     this.histpos = this.history.length
     return {
       idx: this.histpos - 1,
@@ -124,9 +141,10 @@ export default class Commandeger<Commands: {[key: string]: *}, Args: Array<*>> {
     return changes.map(config => ({
       ...config,
       events: null,
-      ...(this.commands[config.type].redo ||
-          this.commands[config.type].apply)(config.args, ...extra)
+      ...(this.commands[config.type].redo || this.commands[config.type].apply)(
+        config.args,
+        ...extra,
+      ),
     }))
   }
 }
-

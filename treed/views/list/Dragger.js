@@ -1,4 +1,3 @@
-
 const pixeled = {top: 1, left: 1, width: 1, height: 1}
 
 const extend = (a, b) => {
@@ -17,46 +16,48 @@ export default class Dragger {
     extend(this.indicator.style, {
       backgroundColor: 'black',
       position: 'absolute',
-      opacity: .1,
+      opacity: 0.1,
       pointerEvents: 'none',
     })
 
-    this.measure = canOver ? (top) => {
-      for (let i=0; i<this.measurements.length; i++) {
-        if (this.measurements[i][1].bottom <= top) continue;
-        const box = this.measurements[i][1]
-        if (top - box.top < 5 && i > 0) {
-          this.showBefore(i, box.top, box.left, box.width)
-        } else if (top < box.bottom - 5) {
-          this.showOver(i, box)
-        } else if (!this.measurements[i][2]) {
-          // TODO disallow the "after" for things w/ open children
+    this.measure = canOver
+      ? top => {
+          for (let i = 0; i < this.measurements.length; i++) {
+            if (this.measurements[i][1].bottom <= top) continue
+            const box = this.measurements[i][1]
+            if (top - box.top < 5 && i > 0) {
+              this.showBefore(i, box.top, box.left, box.width)
+            } else if (top < box.bottom - 5) {
+              this.showOver(i, box)
+            } else if (!this.measurements[i][2]) {
+              // TODO disallow the "after" for things w/ open children
+              this.showAfter(i, box.bottom, box.left, box.width)
+            } else {
+              continue
+            }
+            return
+          }
+          const i = this.measurements.length - 1
+          const box = this.measurements[i][1]
           this.showAfter(i, box.bottom, box.left, box.width)
-        } else {
-          continue
         }
-        return
-      }
-      const i = this.measurements.length - 1
-      const box = this.measurements[i][1]
-      this.showAfter(i, box.bottom, box.left, box.width)
-    } : (top) => {
-      for (let i=0; i<this.measurements.length; i++) {
-        if (this.measurements[i][1].bottom <= top) continue;
-        const box = this.measurements[i][1]
-        if (top < box.top + box.height / 2 && i > 0) {
-          this.showBefore(i, box.top, box.left, box.width)
-        } else if (!this.measurements[i][2]) {
+      : top => {
+          for (let i = 0; i < this.measurements.length; i++) {
+            if (this.measurements[i][1].bottom <= top) continue
+            const box = this.measurements[i][1]
+            if (top < box.top + box.height / 2 && i > 0) {
+              this.showBefore(i, box.top, box.left, box.width)
+            } else if (!this.measurements[i][2]) {
+              this.showAfter(i, box.bottom, box.left, box.width)
+            } else {
+              continue
+            }
+            return
+          }
+          const i = this.measurements.length - 1
+          const box = this.measurements[i][1]
           this.showAfter(i, box.bottom, box.left, box.width)
-        } else {
-          continue
         }
-        return
-      }
-      const i = this.measurements.length - 1
-      const box = this.measurements[i][1]
-      this.showAfter(i, box.bottom, box.left, box.width)
-    }
   }
 
   showBefore(index, top, left, width) {
@@ -109,4 +110,3 @@ export default class Dragger {
     this.indicator = null
   }
 }
-
