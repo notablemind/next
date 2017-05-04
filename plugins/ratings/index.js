@@ -64,6 +64,13 @@ const plugin: Plugin<void, void> = {
           description: 'Rate 5',
           action: store => store.actions.setRating(5)
         },
+        rateClear: {
+          shortcuts: {
+            normal: 'r 0',
+          },
+          description: 'Clear rating',
+          action: store => store.actions.setRating(null)
+        },
       },
 
       render: props => {

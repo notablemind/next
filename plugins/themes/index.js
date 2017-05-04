@@ -21,10 +21,10 @@ const config = {
 
 const PLUGIN_ID = 'themes'
 
-const makeActions = (themeSettings, globalStore) => {
+const makeActions = (individualStyles, globalStore) => {
   const actions = {}
-  Object.keys(themeSettings.individualStyles).forEach(key => {
-    const istyle = themeSettings.individualStyles[key]
+  Object.keys(individualStyles).forEach(key => {
+    const istyle = individualStyles[key]
     actions[key] = {
       shortcut: 's ' + istyle.shortcut,
       description: `Toggle ${istyle.name}`,
@@ -98,15 +98,15 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
     document.head.appendChild(styleNode)
     styleNode.textContent = themeToCss(globalPluginConfig, themes)
 
-    /*
-     * TODO fix this
-    const actions = makeActions(globalPluginConfig, globalStore)
+    const themeStyle = themes[globalPluginConfig.theme || 'default']
+    const individuals = {...themeStyle.individualStyles, ...globalPluginConfig.individualStyles}
+
+    const actions = makeActions(individuals, globalStore)
     const keyLayer = makeKeyLayer(
       actions,
       `plugins.${PLUGIN_ID}.setStyle`,
       {}, // TODO userSettings
     )
-    */
 
     return {
       styleNode,
@@ -120,7 +120,7 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
           themes
         )
       }),
-      // removeKeyLayer: globalStore.addNormalKeyLayer(keyLayer),
+      removeKeyLayer: globalStore.addNormalKeyLayer(keyLayer),
     }
   },
 

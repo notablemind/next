@@ -62,6 +62,22 @@ const exporters = {
 const plugin: Plugin<void, void> = {
   id: PLUGIN_ID,
 
+  quickActions(store, node) {
+    return [{
+      title: 'Export Markdown list',
+      id: 'export_markdown_list',
+      action: () => {
+        doCopy(exporters.markdownList(node, store))
+      },
+    }, {
+      title: 'Export Markdown document',
+      id: 'export_markdown_document',
+      action: () => {
+        doCopy(exporters.markdownDocument(node, store))
+      }
+    }]
+  },
+
   // TODO I want to show a modal where you can customize it probably
   node: {
     contextMenu: (pluginData, node, store) => {
