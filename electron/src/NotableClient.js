@@ -43,6 +43,11 @@ export default class NotableClient extends NotableBase {
       this.user = user
       this.notifyUser()
     })
+    this.remote.on('meta:delete', (evt, id) => {
+      delete this.meta[id]
+      this.notifyMeta()
+      this.notifyMetaById(id)
+    })
     this.remote.on('meta:update', (evt, id, update) => {
       // console.log('got remote update', id, update)
       this.meta[id] = {
@@ -151,8 +156,7 @@ export default class NotableClient extends NotableBase {
   }
 
   deleteFiles(files) {
-    // TODO
-    return Promise.reject()
+    return this.prom.send('doc:delete', files)
   }
 
   listRemoteFiles() {

@@ -314,11 +314,14 @@ module.exports = class Notablemind {
         throw new Error('Invalid data format')
       }
       const {meta, docs} = result
-      console.log('imported', meta)
+      console.log('imported', meta, docs.length)
       this.meta[docid] = meta
+      this.saveMeta()
       const db = this.ensureDocDb(docid)
       return db.bulkDocs({docs}).then(() => meta)
     })
+
+    ipc.on('doc:delete', (evt, files) => this.deleteFiles(files))
 
     return Promise.all(
       this.plugins.map(plugin => {
@@ -326,6 +329,21 @@ module.exports = class Notablemind {
         return Promise.resolve(plugin.init(this))
       })
     )
+  }
+
+  deleteFiles(files) {
+    console.log('want to delete', files)
+    return Promise.all(files.map(file => {
+      if (typeof file !== 'string') {
+        console.log(file)
+        throw new Error('wat not aa local file')
+      }
+      console.log('removing')
+      delete this.meta[file]
+      this.saveMeta()
+      this.broadcast('meta:delete', file)
+      return this.ensureDocDb(file).destroy()
+    }))
   }
 
   getToken() {
