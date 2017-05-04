@@ -24,7 +24,7 @@ const plugins = [
   require('../../../../plugins/todos/dom').default,
   require('../../../../plugins/image/dom').default,
   require('../../../../plugins/date/dom').default,
-  require('../../../../plugins/tags').default,
+  require('../../../../plugins/tags').default
   // require('../../../../plugins/themes').default,
   // require('../../../../plugins/todos/dom').default,
   // require('../../../../plugins/image/dom').default,
@@ -34,17 +34,16 @@ const plugins = [
 
 const viewTypes = {
   // table: require('treed/views/table').default,
-  list: require('treed/views/list').default,
+  list: require('treed/views/list').default
   // whiteboard: require('treed/views/whiteboard').default,
 }
-
 
 type FolderT = {
   _id: string,
   _rev: string,
   type: 'folder',
   folder: ?string,
-  title: string,
+  title: string
 }
 
 type DocT = {
@@ -54,21 +53,28 @@ type DocT = {
   folder: ?string,
   title: string,
   last_opened: number,
-  size: number,
+  size: number
 }
 
 type Props = {
-  userDb: any,
+  userDb: any
 }
 
 type PouchChange = any // TODO can be polymorphic
 
 // TODO I need this to be abstracted
-const maybeLoad = key => { try { return JSON.parse(localStorage[key] || '') } catch (e) { return null } }
+const maybeLoad = key => {
+  try {
+    return JSON.parse(localStorage[key] || '')
+  } catch (e) {
+    return null
+  }
+}
 
 const sharedViewDataKey = id => `shared-view-data:${id}`
 const loadSharedViewData = id => maybeLoad(sharedViewDataKey(id)) || null
-const saveSharedViewData = (id, data) => localStorage[sharedViewDataKey(id)] = JSON.stringify(data)
+const saveSharedViewData = (id, data) =>
+  (localStorage[sharedViewDataKey(id)] = JSON.stringify(data))
 
 export default class Browse extends Component {
   keyManager: KeyManager
@@ -77,7 +83,7 @@ export default class Browse extends Component {
     treed: any,
     menu: any,
     showSettings: boolean,
-    searching: boolean,
+    searching: boolean
   }
   _unsubs: Array<() => void>
 
@@ -88,7 +94,7 @@ export default class Browse extends Component {
       searching: false,
       treed: null,
       store: null,
-      menu: null,
+      menu: null
     }
     this._unsubs = []
   }
@@ -97,57 +103,73 @@ export default class Browse extends Component {
     undo: {
       shortcut: 'u, cmd+z',
       description: 'Undo the last action',
-      action: () => this.state.treed && this.state.treed.activeView().undo(),
+      action: () => this.state.treed && this.state.treed.activeView().undo()
     },
     redo: {
       shortcut: 'R, cmd+shift+z',
       description: 'Redo the last action',
-      action: () => this.state.treed && this.state.treed.activeView().redo(),
+      action: () => this.state.treed && this.state.treed.activeView().redo()
     },
     search: {
       shortcut: '/, cmd+f',
       description: 'Search',
-      action: () => this.setState({searching: true}),
-    },
+      action: () => this.setState({searching: true})
+    }
   }
 
   makeTreed() {
-    const treed = window._treed = new Treed(
+    const treed = (window._treed = new Treed(
       treedPouch(this.props.userDb),
       plugins,
       viewTypes,
       'notablemind_user',
-      loadSharedViewData('notablemind_user'),
-    )
+      loadSharedViewData('notablemind_user')
+    ))
     const userShortcuts = {}
-    const globalLayer = makeKeyLayer({
-      ...this.keyLayerConfig,
-    }, 'global', userShortcuts)
-    treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
+    const globalLayer = makeKeyLayer(
+      {
+        ...this.keyLayerConfig
+      },
+      'global',
+      userShortcuts
+    )
+    treed.addKeyLayer(
+      () => (treed.isCurrentViewInInsertMode() ? null : globalLayer)
+    )
     treed.ready.then(() => {
       const store = treed.registerView({viewType: 'list'})
-      this._unsubs.push(store.on(['file:setup sync'], () => {
-        const node = store.getters.activeNode()
-        if (node.type !== 'file') {
-          return console.error("Can't setup sync for something that's not a file")
-        }
-        this.props.userSession.setupSyncing(node._id)
-        // TODO sync it then
-      }))
-      this._unsubs.push(store.on(['navigate-to-current-active'], () => {
-        console.log('want to navigate to', store.state.active)
-        const node = store.getters.activeNode()
-        if (node.type !== 'file') {
-          return console.error("Can't navigate to something that's not a file")
-        }
-        hashHistory.push('/doc/' + store.state.active)
-      }))
-      this._unsubs.push(store.on([store.events.sharedViewData()], () => {
-        saveSharedViewData('notablemind_user', store.sharedViewData)
-      }))
+      this._unsubs.push(
+        store.on(['file:setup sync'], () => {
+          const node = store.getters.activeNode()
+          if (node.type !== 'file') {
+            return console.error(
+              "Can't setup sync for something that's not a file"
+            )
+          }
+          this.props.userSession.setupSyncing(node._id)
+          // TODO sync it then
+        })
+      )
+      this._unsubs.push(
+        store.on(['navigate-to-current-active'], () => {
+          console.log('want to navigate to', store.state.active)
+          const node = store.getters.activeNode()
+          if (node.type !== 'file') {
+            return console.error(
+              "Can't navigate to something that's not a file"
+            )
+          }
+          hashHistory.push('/doc/' + store.state.active)
+        })
+      )
+      this._unsubs.push(
+        store.on([store.events.sharedViewData()], () => {
+          saveSharedViewData('notablemind_user', store.sharedViewData)
+        })
+      )
       this.setState({
         treed,
-        store,
+        store
       })
     })
   }
@@ -181,42 +203,43 @@ export default class Browse extends Component {
   render() {
     const {store, treed} = this.state
     const ListView = viewTypes.list.Component
-    return <div className={css(styles.container)}>
-      <div className={css(styles.buttons)}>
-        <button
-          className={css(styles.settingsButton)}
-          onClick={() => this.setState({showSettings: true})}
-        >
-          Settings
-        </button>
+    return (
+      <div className={css(styles.container)}>
+        <div className={css(styles.buttons)}>
+          <button
+            className={css(styles.settingsButton)}
+            onClick={() => this.setState({showSettings: true})}
+          >
+            Settings
+          </button>
+        </div>
+        {store && <ListView store={store} />}
+        {this.state.menu &&
+          <ContextMenu
+            pos={this.state.menu.pos}
+            menu={this.state.menu.items}
+            onClose={() => this.setState({menu: null})}
+          />}
+        {this.state.showSettings &&
+          <SettingsModal
+            onClose={() => this.setState({showSettings: false})}
+            store={store}
+          />}
+        {treed && <KeyCompleter treed={treed} />}
+        {treed &&
+          this.state.searching &&
+          <Searcher
+            treed={treed}
+            onClose={() => this.setState({searching: false})}
+          />}
       </div>
-      {store && <ListView store={store} />}
-      {this.state.menu &&
-        <ContextMenu
-          pos={this.state.menu.pos}
-          menu={this.state.menu.items}
-          onClose={() => this.setState({menu: null})}
-        />}
-      {this.state.showSettings &&
-        <SettingsModal
-          onClose={() => this.setState({showSettings: false})}
-          store={store}
-        />}
-        {treed && <KeyCompleter
-          treed={treed}
-        />}
-      {treed && this.state.searching &&
-        <Searcher
-          treed={treed}
-          onClose={() => this.setState({searching: false})}
-        />}
-    </div>
+    )
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   settingsButton: {
     padding: '5px 10px',
@@ -225,7 +248,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     alignSelf: 'flex-end',
     marginRight: 10,
-    cursor: 'pointer',
-  },
+    cursor: 'pointer'
+  }
 })
-

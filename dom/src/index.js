@@ -1,29 +1,29 @@
 // @flow
 
 // import "react-devtools"
-import { AppContainer } from 'react-hot-loader';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
+import {AppContainer} from 'react-hot-loader'
+import React from 'react'
+import ReactDOM from 'react-dom'
+import App from './App'
 
-const rootEl = document.getElementById('root');
+const rootEl = document.getElementById('root')
 ReactDOM.render(
   <AppContainer>
     <App />
   </AppContainer>,
   rootEl
-);
+)
 
 if (module.hot) {
-  (module.hot: any).accept('./App', () => {
+  ;(module.hot: any).accept('./App', () => {
     // If you use Webpack 2 in ES modules mode, you can
     // use <App /> here rather than require() a <NextApp />.
-    const NextApp = require('./App').default;
+    const NextApp = require('./App').default
     ReactDOM.render(
       <AppContainer>
-         <NextApp />
+        <NextApp />
       </AppContainer>,
       rootEl
-    );
-  });
+    )
+  })
 }

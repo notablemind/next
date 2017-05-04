@@ -13,7 +13,7 @@ import ContextMenu from 'treed/views/context-menu/ContextMenu'
 
 import type {MenuItem} from 'treed/types'
 
-const organizeFolders = (rows) => {
+const organizeFolders = rows => {
   const map = {}
   const children = {root: []}
   let settings = null
@@ -40,7 +40,7 @@ type FolderT = {
   _rev: string,
   type: 'folder',
   folder: ?string,
-  title: string,
+  title: string
 }
 
 type DocT = {
@@ -50,11 +50,11 @@ type DocT = {
   folder: ?string,
   title: string,
   last_opened: number,
-  size: number,
+  size: number
 }
 
 type Props = {
-  userDb: any,
+  userDb: any
 }
 
 type PouchChange = any // TODO can be polymorphic
@@ -70,11 +70,11 @@ export default class Browse extends Component {
     data: {[key: string]: any},
     menu?: ?{
       pos: {left: number, top: number},
-      items: Array<MenuItem>,
+      items: Array<MenuItem>
     },
     local?: any,
     remote?: any,
-    showSettings?: boolean,
+    showSettings?: boolean
   }
 
   changes: any
@@ -91,12 +91,12 @@ export default class Browse extends Component {
         root: {
           _id: 'root',
           title: 'Root',
-          children: [],
-        },
+          children: []
+        }
       },
       selected: 0,
       local: null,
-      remote: null,
+      remote: null
     }
 
     window.browse = this
@@ -106,13 +106,17 @@ export default class Browse extends Component {
 
   componentDidMount() {
     this.keyManager = new KeyManager([
-      makeKeyLayer({
-        goDown: {
-          shortcut: 'j, down',
-          action: this.goDown,
-          description: 'go down',
+      makeKeyLayer(
+        {
+          goDown: {
+            shortcut: 'j, down',
+            action: this.goDown,
+            description: 'go down'
+          }
         },
-      }, 'browse.', {})
+        'browse.',
+        {}
+      )
     ])
   }
 
@@ -140,38 +144,44 @@ export default class Browse extends Component {
   }
 
   listen(userDb: any) {
-    this.changes = userDb.changes({
-      include_docs: true,
-      live: true,
-      since: 'now',
-    })
-    .on('change', this.onChange)
-    .on('error', err => {
-      console.log('error syncing', err)
-    })
+    this.changes = userDb
+      .changes({
+        include_docs: true,
+        live: true,
+        since: 'now'
+      })
+      .on('change', this.onChange)
+      .on('error', err => {
+        console.log('error syncing', err)
+      })
 
-    userDb.allDocs({include_docs: true}).then(result => {
-      console.log('alldocs', result.rows)
-      const data = {root: {_id: 'root', children: [], title: 'Root', type: 'folder'}}
-      result.rows.forEach(({doc}) => {
-        doc.children = doc.children || []
-        data[doc._id] = doc
-      })
-      result.rows.forEach(({doc}) => {
-        if (doc._id === 'root') return
-        if (!doc.parent) {
-          doc.parent = 'root'
-          data.root.children.push(doc._id)
-        } else if (data[doc.parent].children.indexOf(doc._id)) {
-          data[doc.parent].children.push(doc._id)
+    userDb.allDocs({include_docs: true}).then(
+      result => {
+        console.log('alldocs', result.rows)
+        const data = {
+          root: {_id: 'root', children: [], title: 'Root', type: 'folder'}
         }
-      })
-      this.setState({data})
-      // TODO: backfill
-      // this.setState(organizeFolders(result.rows))
-    }, err => {
-      console.log('failed to get docs list', err)
-    })
+        result.rows.forEach(({doc}) => {
+          doc.children = doc.children || []
+          data[doc._id] = doc
+        })
+        result.rows.forEach(({doc}) => {
+          if (doc._id === 'root') return
+          if (!doc.parent) {
+            doc.parent = 'root'
+            data.root.children.push(doc._id)
+          } else if (data[doc.parent].children.indexOf(doc._id)) {
+            data[doc.parent].children.push(doc._id)
+          }
+        })
+        this.setState({data})
+        // TODO: backfill
+        // this.setState(organizeFolders(result.rows))
+      },
+      err => {
+        console.log('failed to get docs list', err)
+      }
+    )
   }
 
   componentWillUnmount() {
@@ -186,7 +196,7 @@ export default class Browse extends Component {
       parent: 'root',
       size: 0,
       modified: Date.now(),
-      opened: Date.now(),
+      opened: Date.now()
     })
     // TODO add to children
     // but really, let's just use treed, for reals
@@ -200,7 +210,7 @@ export default class Browse extends Component {
       folder: null,
       size: 0,
       modified: Date.now(),
-      opened: Date.now(),
+      opened: Date.now()
     })
   }
 
@@ -230,79 +240,84 @@ export default class Browse extends Component {
   }
 
   startSyncing = (doc: any) => {
-    this.props.userSession.setupSyncing(doc._id).then(() => {
-      this.props.userDb.put({
-        ...doc,
-        synced: true,
-      })
-    }, err => {
-      console.error('failure', err)
-      // umm
-    })
+    this.props.userSession.setupSyncing(doc._id).then(
+      () => {
+        this.props.userDb.put({
+          ...doc,
+          synced: true
+        })
+      },
+      err => {
+        console.error('failure', err)
+        // umm
+      }
+    )
   }
 
   onContextMenu = (evt: any, doc: any) => {
     evt.preventDefault()
     evt.stopPropagation()
-    const actions = [{
-      text: 'Open',
-      action: () => this.onOpen(doc._id),
-    }, {
-      text: 'Open in new tab',
-      action: () => window.open(`#/doc/${doc._id}`, '_blank'),
-    }, {
-      text: 'Delete',
-      action: () => this.onDelete(doc._id),
-    }]
+    const actions = [
+      {
+        text: 'Open',
+        action: () => this.onOpen(doc._id)
+      },
+      {
+        text: 'Open in new tab',
+        action: () => window.open(`#/doc/${doc._id}`, '_blank')
+      },
+      {
+        text: 'Delete',
+        action: () => this.onDelete(doc._id)
+      }
+    ]
     // if (!doc.synced) {
-      actions.push({
-        text: 'Start syncing',
-        action: () => this.startSyncing(doc),
-      })
+    actions.push({
+      text: 'Start syncing',
+      action: () => this.startSyncing(doc)
+    })
     // }
     this.setState({
       menu: {
         pos: {left: evt.clientX, top: evt.clientY},
         items: actions
-      },
+      }
     })
   }
 
   render() {
-    return <div className={css(styles.container)}>
-      <div className={css(styles.buttons)}>
-        <button
-          onClick={this.onNewFile}
-        >
-          New file
-        </button>
-        <button
-          onClick={this.onNewFolder}
-        >
-          New folder
-        </button>
-        <button onClick={() => this.setState({showSettings: true})}>
-          Settings
-        </button>
-      </div>
-      <Folder
-        data={this.state.data}
-        folder={this.state.data.root}
-        onOpen={this.onOpen}
-        onContextMenu={this.onContextMenu}
-      />
-      {this.state.menu &&
-        <ContextMenu
-          pos={this.state.menu.pos}
-          menu={this.state.menu.items}
-          onClose={() => this.setState({menu: null})}
-        />}
-      {this.state.showSettings &&
-        <SettingsModal
-          onClose={() => this.setState({showSettings: false})}
+    return (
+      <div className={css(styles.container)}>
+        <div className={css(styles.buttons)}>
+          <button onClick={this.onNewFile}>
+            New file
+          </button>
+          <button onClick={this.onNewFolder}>
+            New folder
+          </button>
+          <button onClick={() => this.setState({showSettings: true})}>
+            Settings
+          </button>
+        </div>
+        <Folder
           data={this.state.data}
-        />}
-    </div>
+          folder={this.state.data.root}
+          onOpen={this.onOpen}
+          onContextMenu={this.onContextMenu}
+        />
+        {this.state.menu &&
+          <ContextMenu
+            pos={this.state.menu.pos}
+            menu={this.state.menu.items}
+            onClose={() => this.setState({menu: null})}
+          />}
+        {this.state.showSettings &&
+          <SettingsModal
+            onClose={() => this.setState({showSettings: false})}
+            data={this.state.data}
+          />}
+      </div>
+    )
   }
 }
 
@@ -318,26 +333,29 @@ const Folder = ({data, folder, onOpen, onContextMenu}) => (
     >
       {folder.title}
     </div>
-    <div className={css(
-      styles.children,
-      folder._id === 'root' && styles.rootChildren
-    )}>
-      {(folder.children.map(id => (
-        data[id].type === 'folder' ?
-          <Folder
-            key={id}
-            data={data}
-            onOpen={onOpen}
-            onContextMenu={onContextMenu}
-            folder={data[id]}
-          /> :
-          <Doc
-            key={id}
-            doc={data[id]}
-            onOpen={onOpen}
-            onContextMenu={onContextMenu}
-          />
-      )))}
+    <div
+      className={css(
+        styles.children,
+        folder._id === 'root' && styles.rootChildren
+      )}
+    >
+      {folder.children.map(
+        id =>
+          data[id].type === 'folder'
+            ? <Folder
+                key={id}
+                data={data}
+                onOpen={onOpen}
+                onContextMenu={onContextMenu}
+                folder={data[id]}
+              />
+            : <Doc
+                key={id}
+                doc={data[id]}
+                onOpen={onOpen}
+                onContextMenu={onContextMenu}
+              />
+      )}
     </div>
   </div>
 )
@@ -367,31 +385,31 @@ const styles = StyleSheet.create({
   container: {
     width: 800,
     maxWidth: '100%',
-    alignSelf: 'center',
+    alignSelf: 'center'
   },
 
   buttons: {
     alignSelf: 'center',
-    flexDirection: 'row',
+    flexDirection: 'row'
   },
 
   itemTitle: {
-    flex: 1,
+    flex: 1
   },
 
   doc: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center'
   },
 
   synced: {
     fontSize: 10,
-    padding: '0 10px',
+    padding: '0 10px'
   },
 
   lastOpened: {
     fontSize: '80%',
-    marginLeft: 10,
+    marginLeft: 10
   },
 
   item: {
@@ -402,29 +420,25 @@ const styles = StyleSheet.create({
     borderLeft: '1px solid #ccc',
 
     ':hover': {
-      backgroundColor: '#eee',
-    },
+      backgroundColor: '#eee'
+    }
   },
 
   rootName: {
     border: '1px solid #ccc',
-    display: 'none',
+    display: 'none'
   },
 
   children: {
-    marginLeft: 20,
+    marginLeft: 20
     // paddingLeft: 20,
     // borderLeft: '1px solid #ccc',
   },
 
   rootChildren: {
     marginLeft: 0,
-    borderTop: '1px solid #ccc',
+    borderTop: '1px solid #ccc'
   },
 
-  folder: {
-  },
+  folder: {}
 })
-
-
-

@@ -20,25 +20,27 @@ const pouchFromJsonAndBlobs = (pouch, json, blobs) => {
   return pouch.bulkDocs({docs, new_edits: false})
 }
 
-const pouchToJsonAndBlobs = (pouch) => {
-  return pouch.allDocs({
-    include_docs: true,
-    attachments: true,
-    binary: true,
-  }).then(({rows}) => {
-    const blobs = {}
-    const json = {}
-    rows.forEach(({doc}) => {
-      if (doc._attachments) {
-        Object.keys(doc._attachments).forEach(id => {
-          blobs[id] = doc._attachments[id].data
-          doc._attachments[id].data = null
-        })
-      }
-      json[doc._id] = doc
+const pouchToJsonAndBlobs = pouch => {
+  return pouch
+    .allDocs({
+      include_docs: true,
+      attachments: true,
+      binary: true
     })
-    return {json, blobs}
-  })
+    .then(({rows}) => {
+      const blobs = {}
+      const json = {}
+      rows.forEach(({doc}) => {
+        if (doc._attachments) {
+          Object.keys(doc._attachments).forEach(id => {
+            blobs[id] = doc._attachments[id].data
+            doc._attachments[id].data = null
+          })
+        }
+        json[doc._id] = doc
+      })
+      return {json, blobs}
+    })
 }
 
 const extForMime = {
@@ -48,24 +50,26 @@ const extForMime = {
   'text/plain': 'txt',
   'text/html': 'html',
   'application/json': 'json',
-  'text/javascript': 'js',
+  'text/javascript': 'js'
   // TODO flesh this out?
 }
 
 export default (files: Array<File>) => {
-  return Promise.all(files.map(file => {
-    return getFileDb(file.id).then(pdb => {
-      return pouchToJsonAndBlobs(pdb).then(({json, blobs}) => {
-        pdb.close()
-        return {
-          id: file.id,
-          title: file.title,
-          json,
-          blobs,
-        }
+  return Promise.all(
+    files.map(file => {
+      return getFileDb(file.id).then(pdb => {
+        return pouchToJsonAndBlobs(pdb).then(({json, blobs}) => {
+          pdb.close()
+          return {
+            id: file.id,
+            title: file.title,
+            json,
+            blobs
+          }
+        })
       })
     })
-  })).then(dumped => {
+  ).then(dumped => {
     const zip = new JSZip()
     const dir = zip.folder('ExportedDocuments')
     dumped.forEach(dump => {
@@ -81,4 +85,3 @@ export default (files: Array<File>) => {
     return zip.generateAsync({type: 'blob'})
   })
 }
-

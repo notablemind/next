@@ -1,11 +1,8 @@
 // Umm not using this atm, might be useful though.
 // withStore is the other possibility
 
-class Base<
-  Props:Object,
-  State,
-  DefaultProps: $Shape<Props>
-> extends Component<DefaultProps, Props, State> {
+class Base<Props: Object, State, DefaultProps: $Shape<Props>>
+  extends Component<DefaultProps, Props, State> {
   static defaultProps: $Abstract<DefaultProps>
   state: $Abstract<State>
   props: Props
@@ -13,7 +10,11 @@ class Base<
 
   static storeEvents: (store: Store, props?: Props) => Array<string>
   static storeState: (store: Store, props?: Props) => State
-  static shouldRefreshEvents: ?(store: Store, state: State, props?: Props) => boolean
+  static shouldRefreshEvents: ?(
+    store: Store,
+    state: State,
+    props?: Props
+  ) => boolean
 
   constructor({store}: any) {
     super()
@@ -21,7 +22,7 @@ class Base<
       this,
       store => this.constructor.storeEvents(store, this.props),
       store => this.constructor.storeState(store, this.props),
-      this.constructor.shouldRefreshEvents,
+      this.constructor.shouldRefreshEvents
     )
   }
 
@@ -34,16 +35,14 @@ class Base<
   }
 }
 
-
 // Example usage
 class ViewHeader extends Base {
   state: {root: string, viewType: string}
   static storeEvents = store => [store.events.root(), store.events.viewType()]
   static storeState = store => ({
     root: store.getters.root(),
-    viewType: store.getters.viewType(),
+    viewType: store.getters.viewType()
   })
 
-  render() {
-  }
+  render() {}
 }

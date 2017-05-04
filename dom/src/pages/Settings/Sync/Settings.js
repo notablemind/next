@@ -1,16 +1,19 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import Modal from '../../utils/Modal'
 import FilesTable from './FilesTable'
 
-type User = 'logged-out' | 'loading' | {
-  email: string,
-  name: string,
-  profile: string,
-}
+type User =
+  | 'logged-out'
+  | 'loading'
+  | {
+      email: string,
+      name: string,
+      profile: string
+    }
 
 type File = RemoteFile | LocalFile
 
@@ -22,8 +25,8 @@ type RemoteFile = {
     profilePhoto: string,
     name: string,
     email: string,
-    me: boolean,
-  },
+    me: boolean
+  }
 }
 
 type FileMeta = {
@@ -37,21 +40,21 @@ type FileMeta = {
       profilePhoto: string,
       name: string,
       email: string,
-      me: boolean,
+      me: boolean
     },
     remoteId: string,
     lastSyncTime: number,
-    lastSyncVersion: number,
-  },
+    lastSyncVersion: number
+  }
 }
 
 export default class SyncSettings extends Component {
   _unsubs: Array<() => void>
   state: {
     user: ?User,
-    remote: ?RemoteFile[],
+    remote: ?(RemoteFile[]),
     meta: {[key: string]: FileMeta},
-    loading: boolean,
+    loading: boolean
   }
 
   constructor({nm}) {
@@ -60,7 +63,7 @@ export default class SyncSettings extends Component {
       user: nm.user,
       meta: nm.meta,
       remote: [],
-      loading: false,
+      loading: false
     }
   }
 
@@ -75,13 +78,14 @@ export default class SyncSettings extends Component {
         }
         this.setState({user})
       }),
-      this.props.nm.onMeta(meta => this.setState({meta})),
+      this.props.nm.onMeta(meta => this.setState({meta}))
     ]
   }
 
   fetchRemote() {
     this.setState({loading: true})
-    this.props.nm.listRemoteFiles()
+    this.props.nm
+      .listRemoteFiles()
       .then(remote => this.setState({remote, loading: false}))
       .catch(err => this.setState({loading: false}))
   }
@@ -91,94 +95,104 @@ export default class SyncSettings extends Component {
   }
 
   renderLoggedOut() {
-    return <div className={css(styles.loggedOut)}>
-      <button
-        onClick={() => this.props.nm.signIn()}
-        className={css(styles.loginButton)}
-      >
-        Login with Google Drive
-      </button>
-      <div className={css(styles.loginDetails)}>
-        Login with Google Drive to sync your documents any computer, device, and the web. You can also share documents and collaborate with other Notablemind users that have signed in with Google Drive.
+    return (
+      <div className={css(styles.loggedOut)}>
+        <button
+          onClick={() => this.props.nm.signIn()}
+          className={css(styles.loginButton)}
+        >
+          Login with Google Drive
+        </button>
+        <div className={css(styles.loginDetails)}>
+          Login with Google Drive to sync your documents any computer, device, and the web. You can also share documents and collaborate with other Notablemind users that have signed in with Google Drive.
+        </div>
       </div>
-    </div>
+    )
   }
 
   renderLoggedIn(user: User) {
-    return <div className={css(styles.loggedIn)}>
-      <div className={css(styles.top)}>
-        <img src={user.profile} className={css(styles.profile)} />
-        <div className={css(styles.username)}>
-          {user.name} ({user.email})
+    return (
+      <div className={css(styles.loggedIn)}>
+        <div className={css(styles.top)}>
+          <img src={user.profile} className={css(styles.profile)} />
+          <div className={css(styles.username)}>
+            {user.name} ({user.email})
+          </div>
+          <div style={{flex: 1}} />
+          <button onClick={() => this.props.nm.signOut()}>
+            Logout
+          </button>
+          {this.state.loading && 'Loading...'}
         </div>
-        <div style={{flex: 1}} />
-        <button
-          onClick={() => this.props.nm.signOut()}
-        >
-          Logout
-        </button>
-        {this.state.loading && 'Loading...'}
       </div>
-    </div>
+    )
   }
 
   renderFiles() {
     const {remote, meta} = this.state
-    const remoteOnly = remote.filter(file => !this.state.meta[file.appProperties.nmId])
+    const remoteOnly = remote.filter(
+      file => !this.state.meta[file.appProperties.nmId]
+    )
     const remoteById = {}
-    remote.forEach(file => remoteById[file.appProperties.nmId] = file)
+    remote.forEach(file => (remoteById[file.appProperties.nmId] = file))
 
-    return <FilesTable
-      localFiles={Object.keys(meta).map(id => meta[id]).filter(m => m.id)}
-      remoteById={remoteById}
-      remoteOnly={remoteOnly}
-      downloadFiles={files => {
-        return this.props.nm.downloadFiles(files)
-      }}
-      deleteFiles={files => {
-        // TODO ????
-        return this.props.nm.deleteFiles(files.map(f => f.id))
-      }}
-      syncFiles={files => {
-        return this.props.nm.syncFiles(files.map(f => f.id))
-      }}
-    />
+    return (
+      <FilesTable
+        localFiles={Object.keys(meta).map(id => meta[id]).filter(m => m.id)}
+        remoteById={remoteById}
+        remoteOnly={remoteOnly}
+        downloadFiles={files => {
+          return this.props.nm.downloadFiles(files)
+        }}
+        deleteFiles={files => {
+          // TODO ????
+          return this.props.nm.deleteFiles(files.map(f => f.id))
+        }}
+        syncFiles={files => {
+          return this.props.nm.syncFiles(files.map(f => f.id))
+        }}
+      />
+    )
   }
 
   renderFiles_() {
-    return <FilesTable
-      files={files}
-      deleteFiles={files => {
-        // TODO ????
-        return this.props.nm.deleteFiles(files.map(f => f.id))
-      }}
-      syncFiles={files => {
-        return this.props.nm.syncFiles(files.map(f => f.id))
-      }}
-    />
+    return (
+      <FilesTable
+        files={files}
+        deleteFiles={files => {
+          // TODO ????
+          return this.props.nm.deleteFiles(files.map(f => f.id))
+        }}
+        syncFiles={files => {
+          return this.props.nm.syncFiles(files.map(f => f.id))
+        }}
+      />
+    )
   }
 
   render() {
-    return <div className={css(styles.container)}>
-      {typeof this.state.user === 'object'
-        ? this.renderLoggedIn(this.state.user)
-        : this.renderLoggedOut()}
-      <div style={{flexBasis: 10}}/>
-      {this.renderFiles(this.state.files)}
-    </div>
+    return (
+      <div className={css(styles.container)}>
+        {typeof this.state.user === 'object'
+          ? this.renderLoggedIn(this.state.user)
+          : this.renderLoggedOut()}
+        <div style={{flexBasis: 10}} />
+        {this.renderFiles(this.state.files)}
+      </div>
+    )
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
     // width: 600,
     // height: 400,
   },
 
   loggedOut: {
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
     // flex: 1,
   },
 
@@ -193,11 +207,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     fontSize: 20,
     borderRadius: 4,
-    marginBottom: 10,
+    marginBottom: 10
   },
 
   loginDetails: {
-    fontSize: '80%',
+    fontSize: '80%'
     // maxWidth: 300,
   },
 
@@ -205,17 +219,15 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: '50%',
-    marginRight: 10,
+    marginRight: 10
   },
 
   username: {
-    fontWeight: 400,
+    fontWeight: 400
   },
 
   top: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
-
+    alignItems: 'center'
+  }
 })
-

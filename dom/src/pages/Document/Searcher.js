@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 const debounce = (fn, wait) => {
@@ -24,13 +24,13 @@ export default class Searcher extends Component {
   state: {
     results: Array<any>,
     selected: number,
-    text: string,
+    text: string
   }
 
   state = {
     results: [],
     selected: 0,
-    text: '',
+    text: ''
   }
 
   update = () => {
@@ -41,7 +41,7 @@ export default class Searcher extends Component {
     const results = this.props.treed.searchFromCurrentView(newSearched)
     this.setState({
       results,
-      selected: 0,
+      selected: 0
     })
   }
 
@@ -52,9 +52,12 @@ export default class Searcher extends Component {
   }
 
   onChange = (e: any) => {
-    this.setState({
-      text: e.target.value,
-    }, () => this.bouncyUpdate())
+    this.setState(
+      {
+        text: e.target.value
+      },
+      () => this.bouncyUpdate()
+    )
   }
 
   componentDidUpdate(prevProps: any, prevState: any) {
@@ -84,7 +87,7 @@ export default class Searcher extends Component {
     e.preventDefault()
   }
 
-  onEnter(rebase: bool) {
+  onEnter(rebase: boolean) {
     const activeView = this.props.treed.activeView()
     if (rebase) {
       activeView.actions.rebase(this.state.results[this.state.selected]._id)
@@ -117,35 +120,42 @@ export default class Searcher extends Component {
 
   renderResult(i: number) {
     const result = this.state.results[i]
-    return <div
-      key={i}
-      className={css(styles.result, i == this.state.selected && styles.selected)}
-    >
-      {result.content}
-    </div>
+    return (
+      <div
+        key={i}
+        className={css(
+          styles.result,
+          i == this.state.selected && styles.selected
+        )}
+      >
+        {result.content}
+      </div>
+    )
   }
 
   render() {
     // TODO indicate the node type? yeah.
     const items = []
     const numResults = this.state.results.length
-    for (let i=0; i<numResults; i++) {
+    for (let i = 0; i < numResults; i++) {
       items.push(this.renderResult(numResults - i - 1))
     }
-    return <div className={css(styles.container)}>
-      <div ref={n => this._results = n} className={css(styles.results)}>
-        {items}
-      </div>
+    return (
+      <div className={css(styles.container)}>
+        <div ref={n => (this._results = n)} className={css(styles.results)}>
+          {items}
+        </div>
 
-      <input
-        className={css(styles.input)}
-        value={this.state.text}
-        onChange={this.onChange}
-        onBlur={this.props.onClose}
-        onKeyDown={this.onKeyDown}
-        autoFocus
-      />
-    </div>
+        <input
+          className={css(styles.input)}
+          value={this.state.text}
+          onChange={this.onChange}
+          onBlur={this.props.onClose}
+          onKeyDown={this.onKeyDown}
+          autoFocus
+        />
+      </div>
+    )
   }
 }
 
@@ -158,29 +168,28 @@ const styles = StyleSheet.create({
     marginLeft: -300,
     backgroundColor: 'white',
     zIndex: 100000,
-    boxShadow: '0 -2px 5px #aaa',
+    boxShadow: '0 -2px 5px #aaa'
   },
 
   results: {
     borderBottom: '1px solid #ccc',
     overflow: 'auto',
-    maxHeight: 500,
+    maxHeight: 500
   },
 
   result: {
     padding: '5px 10px',
-    fontSize: '1.5em',
+    fontSize: '1.5em'
   },
 
   selected: {
-    backgroundColor: '#f0f0ff',
+    backgroundColor: '#f0f0ff'
   },
 
   input: {
     padding: '3px 5px',
     fontSize: '1.5em',
     border: 'none',
-    outline: 'none',
-  },
+    outline: 'none'
+  }
 })
-

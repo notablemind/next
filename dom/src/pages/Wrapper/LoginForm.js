@@ -1,14 +1,14 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 export default class LoginForm extends Component {
   state: {
-    signup: bool,
+    signup: boolean,
     name: string,
     email: string,
-    pwd: string,
+    pwd: string
   }
 
   constructor() {
@@ -17,7 +17,7 @@ export default class LoginForm extends Component {
       signup: false,
       name: '',
       email: '',
-      pwd: '',
+      pwd: ''
     }
   }
 
@@ -26,7 +26,7 @@ export default class LoginForm extends Component {
     this.setState({
       name: '',
       email: '',
-      pwd: '',
+      pwd: ''
     })
   }
 
@@ -35,49 +35,48 @@ export default class LoginForm extends Component {
     this.setState({
       name: '',
       email: '',
-      pwd: '',
+      pwd: ''
     })
   }
 
   render() {
-    return <div className={css(styles.container)}>
-      {this.state.signup && <input
-          value={this.state.name}
-          placeholder="Name"
+    return (
+      <div className={css(styles.container)}>
+        {this.state.signup &&
+          <input
+            value={this.state.name}
+            placeholder="Name"
+            className={css(styles.input)}
+            onKeyDown={e => e.stopPropagation()}
+            onChange={e => this.setState({name: e.target.value})}
+          />}
+        <input
+          value={this.state.email}
+          placeholder="Email"
           className={css(styles.input)}
           onKeyDown={e => e.stopPropagation()}
-          onChange={e => this.setState({name: e.target.value})}
-        />}
-      <input
-        value={this.state.email}
-        placeholder="Email"
-        className={css(styles.input)}
-        onKeyDown={e => e.stopPropagation()}
-        onChange={e => this.setState({email: e.target.value})}
-      />
-      <input
-        value={this.state.pwd}
-        placeholder="Password"
-        type="password"
-        className={css(styles.input)}
-        onKeyDown={e => e.stopPropagation()}
-        onChange={e => this.setState({pwd: e.target.value})}
-      />
-      <button
-        onClick={this.state.signup ? this.onSignUp : this.onLogin}
-      >
-        {this.state.signup ? 'Sign up' : 'Login'}
-      </button>
-      {this.props.loginError ?
-        <div>{this.props.loginError}</div> :
-          null}
-      <button
-        onClick={() => this.setState({signup: !this.state.signup})}
-        className={css(styles.linkButton)}
-      >
-        switch to {this.state.signup ? 'login' : 'sign up'}
-      </button>
-    </div>
+          onChange={e => this.setState({email: e.target.value})}
+        />
+        <input
+          value={this.state.pwd}
+          placeholder="Password"
+          type="password"
+          className={css(styles.input)}
+          onKeyDown={e => e.stopPropagation()}
+          onChange={e => this.setState({pwd: e.target.value})}
+        />
+        <button onClick={this.state.signup ? this.onSignUp : this.onLogin}>
+          {this.state.signup ? 'Sign up' : 'Login'}
+        </button>
+        {this.props.loginError ? <div>{this.props.loginError}</div> : null}
+        <button
+          onClick={() => this.setState({signup: !this.state.signup})}
+          className={css(styles.linkButton)}
+        >
+          switch to {this.state.signup ? 'login' : 'sign up'}
+        </button>
+      </div>
+    )
   }
 }
 
@@ -87,12 +86,12 @@ const styles = StyleSheet.create({
     border: 'none',
     padding: '3px 5px',
     fontSize: '1.2em',
-    width: 300,
+    width: 300
   },
 
   linkButton: {
     color: 'blue',
     border: 'none',
-    backgroundColor: 'white',
-  },
+    backgroundColor: 'white'
+  }
 })

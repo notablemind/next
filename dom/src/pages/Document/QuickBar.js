@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import fuzzysearch from 'fuzzysearch'
@@ -10,7 +10,7 @@ type Tab = 'search' | 'command' | 'open'
 type PluginQuickCommand = {
   id: string,
   title: string,
-  action: () => void,
+  action: () => void
 }
 
 const makeTypeCommands = (store, node) => {
@@ -22,7 +22,7 @@ const makeTypeCommands = (store, node) => {
       id: 'set_type_' + type,
       key: 'set_type_' + type,
       title: 'Set node type: ' + config.title,
-      action: () => store.actions.setNodeType(node._id, type),
+      action: () => store.actions.setNodeType(node._id, type)
     })
   })
   return commands
@@ -33,7 +33,11 @@ const collectCommands = (plugins, store, extraCommands) => {
   const commands = []
   plugins.forEach(plugin => {
     if (plugin.quickActions) {
-      commands.push(...plugin.quickActions(store, node).map(a => ({...a, plugin: plugin.id, key: plugin.id + ':' + a.id})))
+      commands.push(
+        ...plugin
+          .quickActions(store, node)
+          .map(a => ({...a, plugin: plugin.id, key: plugin.id + ':' + a.id}))
+      )
     }
   })
   commands.push(...extraCommands.map(a => ({...a, key: 'doc:' + a.id})))
@@ -42,17 +46,33 @@ const collectCommands = (plugins, store, extraCommands) => {
 
 const searchCommands = (commands, text) => {
   if (!text || !text.trim()) {
-    return commands.map(command => ({key: command.key, title: command.title, command}))
+    return commands.map(command => ({
+      key: command.key,
+      title: command.title,
+      command
+    }))
   }
-  return commands
-  // TODO maybe precache the lowercase versions?
-    .filter(command => fuzzysearch(text, command.title.toLowerCase()) || fuzzysearch(text, command.key.toLowerCase()))
-    .sort((a, b) => {
-      const aa = (a.title.toLowerCase().indexOf(text) !== -1 || a.key.toLowerCase().indexOf(text) !== -1) ? 1 : 0
-      const bb = (b.title.toLowerCase().indexOf(text) !== -1 || b.key.toLowerCase().indexOf(text) !== -1) ? 1 : 0
-      return bb - aa
-    })
-    .map(command => ({key: command.key, title: command.title, command}))
+  return (
+    commands
+      // TODO maybe precache the lowercase versions?
+      .filter(
+        command =>
+          fuzzysearch(text, command.title.toLowerCase()) ||
+          fuzzysearch(text, command.key.toLowerCase())
+      )
+      .sort((a, b) => {
+        const aa = a.title.toLowerCase().indexOf(text) !== -1 ||
+          a.key.toLowerCase().indexOf(text) !== -1
+          ? 1
+          : 0
+        const bb = b.title.toLowerCase().indexOf(text) !== -1 ||
+          b.key.toLowerCase().indexOf(text) !== -1
+          ? 1
+          : 0
+        return bb - aa
+      })
+      .map(command => ({key: command.key, title: command.title, command}))
+  )
 }
 
 const walk = (id, data, fn) => {
@@ -76,7 +96,8 @@ const searchNodes = (data, text) => {
 }
 
 const searchFiles = (meta, text) => {
-  return Object.values(meta).filter(meta => fuzzysearch(text, meta.title.toLowerCase()))
+  return Object.values(meta)
+    .filter(meta => fuzzysearch(text, meta.title.toLowerCase()))
     .map(file => ({key: file.id, title: file.title, file}))
 }
 
@@ -86,18 +107,22 @@ export default class QuickBar extends Component {
     nm: any,
     treed: any,
     extraCommands: any[],
-    onClose: () => void,
+    onClose: () => void
   }
   state: {
     tab: Tab,
     commands: any[],
     results: {title: string, key: string}[],
-    text: string,
+    text: string
   }
 
   constructor(props) {
     super()
-    const commands = collectCommands(props.treed.enabledPlugins, props.store, props.extraCommands)
+    const commands = collectCommands(
+      props.treed.enabledPlugins,
+      props.store,
+      props.extraCommands
+    )
     let results
     switch (props.initialTab) {
       case 'command':
@@ -115,7 +140,7 @@ export default class QuickBar extends Component {
       commands,
       selected: 0,
       results,
-      text: '',
+      text: ''
       // TODO precache files?
     }
   }
@@ -128,15 +153,18 @@ export default class QuickBar extends Component {
     this.setState({
       text,
       results: this.search(text.toLowerCase(), this.state.tab),
-      selected: 0,
+      selected: 0
     })
   }
 
   search(text, tab) {
     switch (tab) {
-      case 'command': return searchCommands(this.state.commands, text)
-      case 'search': return searchNodes(this.props.treed.db.data, text)
-      case 'open': return searchFiles(this.props.nm.meta, text)
+      case 'command':
+        return searchCommands(this.state.commands, text)
+      case 'search':
+        return searchNodes(this.props.treed.db.data, text)
+      case 'open':
+        return searchFiles(this.props.nm.meta, text)
     }
   }
 
@@ -160,7 +188,7 @@ export default class QuickBar extends Component {
     this.setState({
       tab,
       results,
-      selected: 0,
+      selected: 0
     })
   }
 
@@ -187,54 +215,61 @@ export default class QuickBar extends Component {
     if (e.key === 'ArrowDown' || (e.key === 'j' && e.metaKey)) {
       e.preventDefault()
       this.setState(({selected, results}) => ({
-        selected: selected < results.length - 1 ? selected + 1 : 0,
+        selected: selected < results.length - 1 ? selected + 1 : 0
       }))
       // TODO make sure the selected result is in view
     }
     if (e.key === 'ArrowUp' || (e.key === 'k' && e.metaKey)) {
       e.preventDefault()
       this.setState(({selected, results}) => ({
-        selected: selected > 0 ? selected - 1 : results.length - 1,
+        selected: selected > 0 ? selected - 1 : results.length - 1
       }))
     }
   }
 
-  render()  {
+  render() {
     const {selected} = this.state
-    return <div
-      className={css(styles.container)}
-      style={{maxHeight: window.innerHeight - 100}}
-    >
-      <input
-        ref={node => this.node = node}
-        onKeyDown={this.onKeyDown}
-        onBlur={this.props.onClose}
-        value={this.state.text}
-        onChange={e => this.setText(e.target.value)}
-        placeholder={placeholders[this.state.tab]}
-        className={css(styles.input)}
-      />
-      <div className={css(styles.results)}>
-        {this.state.results.map((result, i) => (
-          <div
-            key={result.key}
-            onClick={() => this.onSelect(i)}
-            className={css(styles.result, i === selected && styles.resultSelected)}>
-            {shortn(result.title)}
-          </div>
-        ))}
+    return (
+      <div
+        className={css(styles.container)}
+        style={{maxHeight: window.innerHeight - 100}}
+      >
+        <input
+          ref={node => (this.node = node)}
+          onKeyDown={this.onKeyDown}
+          onBlur={this.props.onClose}
+          value={this.state.text}
+          onChange={e => this.setText(e.target.value)}
+          placeholder={placeholders[this.state.tab]}
+          className={css(styles.input)}
+        />
+        <div className={css(styles.results)}>
+          {this.state.results.map((result, i) => (
+            <div
+              key={result.key}
+              onClick={() => this.onSelect(i)}
+              className={css(
+                styles.result,
+                i === selected && styles.resultSelected
+              )}
+            >
+              {shortn(result.title)}
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    )
   }
 }
 
 const placeholders = {
   command: 'Run a command',
   search: 'Jump to a node',
-  open: 'Open a file',
+  open: 'Open a file'
 }
 
-const shortn = (text, len = 100) => text.length <= len ? text : text.slice(0, len) + '…'
+const shortn = (text, len = 100) =>
+  text.length <= len ? text : text.slice(0, len) + '…'
 
 const width = 500
 
@@ -243,32 +278,30 @@ const styles = StyleSheet.create({
     top: 50,
     left: '50%',
     width: width,
-    marginLeft: -width/2,
+    marginLeft: -width / 2,
     position: 'absolute',
     backgroundColor: 'white',
     boxShadow: '0 1px 10px rgba(0, 0, 0, 0.5)',
-    zIndex: 100000,
+    zIndex: 100000
   },
 
   input: {
     fontSize: 20,
     padding: '5px 10px',
     border: 'none',
-    outline: 'none',
+    outline: 'none'
   },
 
   result: {
-    padding: '5px 10px',
+    padding: '5px 10px'
   },
 
   resultSelected: {
-    backgroundColor: '#eee',
+    backgroundColor: '#eee'
   },
 
   results: {
     flex: 1,
-    overflow: 'auto',
-  },
-
+    overflow: 'auto'
+  }
 })
-

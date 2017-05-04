@@ -1,4 +1,3 @@
-
 // NOTE replaced by `electron/src/NotableClient and NotableLocal`
 /*
 import PouchDB from 'pouchdb'
@@ -89,4 +88,3 @@ if (ELECTRON) {
 
 export default getFileDb
 */
-

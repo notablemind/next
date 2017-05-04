@@ -1,4 +1,3 @@
-
 import {googleClientId} from '../../../../shared/config.json'
 import type {User} from './types'
 import googleWrapper from './googleWrapper'
@@ -15,9 +14,8 @@ const scopes = [
   'email',
   'profile',
   'https://www.googleapis.com/auth/drive.file',
-  'https://www.googleapis.com/auth/drive.appdata',
+  'https://www.googleapis.com/auth/drive.appdata'
 ]
-
 
 export const loadUser = () => {
   let val = localStorage[USER_KEY]
@@ -42,7 +40,7 @@ export const getSession = (done: Function) => {
   console.log('getting session')
   googleWrapper({
     clientId: googleClientId,
-    scopes,
+    scopes
   }).then(
     user => {
       done(null, new Session(user))
@@ -50,11 +48,6 @@ export const getSession = (done: Function) => {
     err => done(err)
   )
 }
-
-
-
-
-
 
 export const _getSession = (done: Function) => {
   if (returning) {
@@ -98,19 +91,24 @@ export const login = () => {
   const uri = oauthUrl({
     clientId: googleClientId,
     scopes: scopes,
-    redirectUri: 'http://localhost:4150/',
+    redirectUri: 'http://localhost:4150/'
   })
   window.location = uri
 }
 
 const getOldestItem = query => {
-  return Promise.resolve(gapi.client.drive.files.list({
-    q: query,
-    fields: 'files(id, name, appProperties, version, size, trashed)',
-  })).then(({result: {files}}) => {
+  return Promise.resolve(
+    gapi.client.drive.files.list({
+      q: query,
+      fields: 'files(id, name, appProperties, version, size, trashed)'
+    })
+  ).then(({result: {files}}) => {
     files = files.filter(file => !file.trashed)
     if (files.length === 1) return files[0]
-    files.sort((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())
+    files.sort(
+      (a, b) =>
+        new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime()
+    )
     return files[0]
   })
 }
@@ -123,27 +121,27 @@ const fetchFileContents = file => {
 }
 
 const createDocFolder = (root, id): Promise<*> => {
-  return gapi.client.drive.files.create({
-    name: 'Untitled',
-    mimeType: 'application/vnd.google-apps.folder',
-    appProperties: {nmId: id},
-    parents: [root],
-  }).then(({result, status}) => {
-    if (status !== 200) throw new Error('failed to create')
-    return result
-  })
+  return gapi.client.drive.files
+    .create({
+      name: 'Untitled',
+      mimeType: 'application/vnd.google-apps.folder',
+      appProperties: {nmId: id},
+      parents: [root]
+    })
+    .then(({result, status}) => {
+      if (status !== 200) throw new Error('failed to create')
+      return result
+    })
 }
 
 const getDocFolder = id => {
-  return getOldestItem(
-    `appProperties has { key='nmId' and value='${id}' }`
-  )
+  return getOldestItem(`appProperties has { key='nmId' and value='${id}' }`)
 }
 
 const getDocContents = driveId => {
-  return getOldestItem(
-    `'${id}' in parents and name = 'contents.nm'`
-  ).then(downloadFile).then(res => res.json())
+  return getOldestItem(`'${id}' in parents and name = 'contents.nm'`)
+    .then(downloadFile)
+    .then(res => res.json())
 }
 
 class Session {
@@ -154,23 +152,26 @@ class Session {
   }
 
   sync(userDb: any) {
-    this.init = getRootFolder().then(({folder, children}) => {
-      console.log('folders n stuff', folder, children)
-      children.forEach(child => {
-        if (!child.appProperties || !child.appProperties.nmId) return
-        this.docs[child.appProperties.nmId] = child
-      })
-      // TODO: folders n stuff
-      // TODO: periodically recheck drive for new files n stuff
-      // TODO: go through files I've got and sync them probably
-      // TODO: actually sync
-      // userDb.changes().on('change', ....
-      return folder
-    }, err => {
-      console.log('failed to sync', err)
-      // TODO retries?
-      return null
-    })
+    this.init = getRootFolder().then(
+      ({folder, children}) => {
+        console.log('folders n stuff', folder, children)
+        children.forEach(child => {
+          if (!child.appProperties || !child.appProperties.nmId) return
+          this.docs[child.appProperties.nmId] = child
+        })
+        // TODO: folders n stuff
+        // TODO: periodically recheck drive for new files n stuff
+        // TODO: go through files I've got and sync them probably
+        // TODO: actually sync
+        // userDb.changes().on('change', ....
+        return folder
+      },
+      err => {
+        console.log('failed to sync', err)
+        // TODO retries?
+        return null
+      }
+    )
     return this.init
   }
 
@@ -223,7 +224,6 @@ class Session {
       }
     }
     this.getDocFolder(id).then(parent => {
-
       const parentId = parent.id
       const vid = id + ':latestVersion'
       const tid = id + ':lastCheckTime'
@@ -232,7 +232,14 @@ class Session {
       // This is to distinguish between multiple tabs
       let lastCheckTime = +(localStorage[tid] || 0)
       let pendingChanges = !!localStorage[cid]
-      console.log('v', 'check', 'pend', latestVersion, lastCheckTime, pendingChanges)
+      console.log(
+        'v',
+        'check',
+        'pend',
+        latestVersion,
+        lastCheckTime,
+        pendingChanges
+      )
 
       return getOldestItem(`'${parentId}' in parents and name = 'contents.nm'`)
         .then(doc => {
@@ -245,57 +252,62 @@ class Session {
               return doc
             } else if (pendingChanges) {
               console.log('uploading pending changes', pendingChanges)
-              return this.uploadDoc(docDb, doc.id)
-                .then(() => doc)
+              return this.uploadDoc(docDb, doc.id).then(() => doc)
             } else {
               return doc
             }
           } else {
             console.log('creating contents doc')
             return pouchDump.toString(docDb).then(contents => {
-              return googleUpload.insertFile({
-                name: 'contents.nm',
-                mimeType: MIME_TYPE,
-                parents: [parentId],
-                contents
-              }).then(doc => {
-                return gapi.client.drive.files.get({
-                  fileId: doc.id,
-                  fields: 'id, name, version, size',
-                }).then(res => {
-                  if (res.status !== 200) throw new Error('not 200 on get')
-                  return res.result
+              return googleUpload
+                .insertFile({
+                  name: 'contents.nm',
+                  mimeType: MIME_TYPE,
+                  parents: [parentId],
+                  contents
                 })
-              })
+                .then(doc => {
+                  return gapi.client.drive.files
+                    .get({
+                      fileId: doc.id,
+                      fields: 'id, name, version, size'
+                    })
+                    .then(res => {
+                      if (res.status !== 200) throw new Error('not 200 on get')
+                      return res.result
+                    })
+                })
             })
           }
-        }).then(doc => {
+        })
+        .then(doc => {
           console.log('ok version', doc.version, doc)
           latestVersion = doc.version
           localStorage[vid] = latestVersion
           pendingChanges = false
           localStorage.removeItem(cid)
           console.log('listening for changes')
-          changes = docDb.changes({
-            include_docs: true,
-            live: true,
-            since: 'now',
-          })
-          .on('change', () => {
-            if (!lastCheckTime || lastCheckTime < Date.now() - TEN_MINUTES) {
-              console.log('gonna sync in 5 minutes')
-              lastCheckTime = Date.now()
-              localStorage[tid] = lastCheckTime
-              setTimeout(() => {
-                this.uploadDoc(docDb, doc.id)
-              }, FIVE_MINUTES)
-            }
-            pendingChanges = true
-            localStorage[cid] = true
-          })
-          .on('error', err => {
-            console.log('error syncing', err)
-          })
+          changes = docDb
+            .changes({
+              include_docs: true,
+              live: true,
+              since: 'now'
+            })
+            .on('change', () => {
+              if (!lastCheckTime || lastCheckTime < Date.now() - TEN_MINUTES) {
+                console.log('gonna sync in 5 minutes')
+                lastCheckTime = Date.now()
+                localStorage[tid] = lastCheckTime
+                setTimeout(() => {
+                  this.uploadDoc(docDb, doc.id)
+                }, FIVE_MINUTES)
+              }
+              pendingChanges = true
+              localStorage[cid] = true
+            })
+            .on('error', err => {
+              console.log('error syncing', err)
+            })
         })
     })
     return stop
@@ -306,4 +318,3 @@ class Session {
     clearUser()
   }
 }
-

@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import {Router, Route, IndexRoute, hashHistory} from 'react-router'
@@ -20,14 +20,14 @@ export default class App extends Component {
   nm: any
   state: {
     toast: Array<{type: 'error', message: string}>,
-    loading: boolean,
+    loading: boolean
   }
 
   constructor() {
     super()
     this.state = {
       toast: [],
-      loading: true,
+      loading: true
     }
     this.nm = new NotableMind(this.showToast)
   }
@@ -41,12 +41,19 @@ export default class App extends Component {
       return <Loading />
     }
 
-    return <Router history={hashHistory}>
-      <Route path="/">
-        <IndexRoute component={props => <Document {...props} nm={this.nm} />}/>
-        <Route path="doc/:id" component={props => <Document {...props} nm={this.nm} />} />
-      </Route>
-    </Router>
+    return (
+      <Router history={hashHistory}>
+        <Route path="/">
+          <IndexRoute
+            component={props => <Document {...props} nm={this.nm} />}
+          />
+          <Route
+            path="doc/:id"
+            component={props => <Document {...props} nm={this.nm} />}
+          />
+        </Route>
+      </Router>
+    )
   }
 }
 

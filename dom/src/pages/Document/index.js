@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 import {hashHistory} from 'react-router'
 
@@ -36,13 +36,15 @@ const plugins = [
   require('../../../../plugins/basics').default,
   require('../../../../plugins/code').default,
   require('../../../../plugins/text-actions').default,
-  require('../../../../plugins/debug').default,
+  require('../../../../plugins/debug').default
 ]
 
 // const pluginMap = plugins.reduce((obj, pl) => (obj[pl.id] = pl, obj), {})
 
 const optionalPlugins = ['scriptures', 'browser']
-const defaultPlugins = plugins.map(pl => pl.id).filter(id => optionalPlugins.indexOf(id) === -1)
+const defaultPlugins = plugins
+  .map(pl => pl.id)
+  .filter(id => optionalPlugins.indexOf(id) === -1)
 // const defaultPlugins = ['minimap', 'themes', 'todos', 'image', 'date', 'tags']
 // const alwaysPlugins = ['files', 'themes', 'todos', 'image']
 
@@ -50,7 +52,7 @@ const viewTypes = {
   list: require('treed/views/list').default,
   whiteboard: require('treed/views/whiteboard').default,
   search: require('treed/views/search').default,
-  trash: require('treed/views/trash').default,
+  trash: require('treed/views/trash').default
 }
 
 const activeButtons = [] // ['date:newEntry']
@@ -63,26 +65,37 @@ const makeViewTypeLayerConfig = (viewTypes, setViewType) => {
     layer['setViewType' + key] = {
       shortcut: `alt+v ${viewTypes[key].shortcut}`,
       description: `Change view type to ${viewTypes[key].title}`,
-      action: () => setViewType(key),
+      action: () => setViewType(key)
     }
   })
   return layer
 }
 
-const maybeLoad = key => { try { return JSON.parse(localStorage[key] || '') } catch (e) { return null } }
+const maybeLoad = key => {
+  try {
+    return JSON.parse(localStorage[key] || '')
+  } catch (e) {
+    return null
+  }
+}
 
 const sharedViewDataKey = id => `shared-view-data:${id}`
 const loadSharedViewData = id => maybeLoad(sharedViewDataKey(id)) || null
-const saveSharedViewData = (id, data) => localStorage[sharedViewDataKey(id)] = JSON.stringify(data)
+const saveSharedViewData = (id, data) =>
+  (localStorage[sharedViewDataKey(id)] = JSON.stringify(data))
 
 const viewStateKey = id => `last-view-state:${id}`
-const loadLastViewState = id => maybeLoad(viewStateKey(id)) || {
-  viewType: 'list',
-  root: 'root',
-}
-const saveLastViewState = (id, data) => localStorage[viewStateKey(id)] = JSON.stringify(data)
+const loadLastViewState = id =>
+  maybeLoad(viewStateKey(id)) || {
+    viewType: 'list',
+    root: 'root'
+  }
+const saveLastViewState = (id, data) =>
+  (localStorage[viewStateKey(id)] = JSON.stringify(data))
 
-const DocumentPage = ({params, ...props}: any) => <Document key={params.id || 'root'} id={params.id} {...props} />
+const DocumentPage = ({params, ...props}: any) => (
+  <Document key={params.id || 'root'} id={params.id} {...props} />
+)
 export default DocumentPage
 
 type ViewState = {
@@ -90,24 +103,37 @@ type ViewState = {
   viewType: string,
   custom: any,
   initialState: {
-    root: string,
-  },
+    root: string
+  }
 }
 
 const ViewWrapper = withStore({
   displayName: 'ViewWrapper',
   events: store => [store.events.viewType()],
   state: store => ({
-    viewType: store.getters.viewType(),
+    viewType: store.getters.viewType()
   }),
   render({store, viewTypes, viewType}) {
     const Component = viewTypes[viewType].Component
-    return <div style={{flex: 1}}>
-      <ViewHeader store={store} viewTypes={viewTypes} />
-      <Component store={store} />
-    </div>
+    return (
+      <div style={{flex: 1}}>
+        <ViewHeader store={store} viewTypes={viewTypes} />
+        <Component store={store} />
+      </div>
+    )
   }
 })
+
+type OverlayState =
+      | {
+          type: 'search',
+          tagIds: string[],
+          query: string
+        }
+      | {
+          type: 'list',
+          root: string
+        }
 
 class Document extends Component {
   state: {
@@ -120,15 +146,8 @@ class Document extends Component {
     showingSettings: ?string,
     showingSyncSettings: boolean,
     tick: number,
-    overlayState: ?({
-      type: 'search',
-      tagIds: string[],
-      query: string,
-    } | {
-      type: 'list',
-      root: string,
-    }),
-    quick: ?('search' | 'open' | 'command'),
+    overlayState: ?OverlayState,
+    quick: ?('search' | 'open' | 'command')
   }
   _unsubs: Array<() => void>
 
@@ -145,11 +164,10 @@ class Document extends Component {
       showingSettings: null,
       showingSyncSettings: false,
       tick: 0,
-      overlayState: null,
+      overlayState: null
       // panesSetup,
     }
-    this._unsubs = [
-    ]
+    this._unsubs = []
   }
 
   componentDidMount() {
@@ -170,63 +188,70 @@ class Document extends Component {
     hashHistory.push('/')
   }
 
-  quickCommands = [{
-    id: 'go_home',
-    title: 'Go home',
-    action: this.goBack,
-  }, {
-    id: 'undo',
-    title: 'Undo the last action',
-    action: () => this.state.treed && this.state.treed.activeView().undo(),
-  }, {
-    id: 'redo',
-    title: 'Redo the last action',
-    action: () => this.state.treed && this.state.treed.activeView().redo(),
-  }, {
-    id: 'settings_plugins',
-    title: 'Settings: plugins',
-    action: () => this.setState({showingSettings: 'Plugins'}),
-  }, {
-    id: 'settings_sync',
-    title: 'Settings: files & sync',
-    action: () => this.setState({showingSettings: 'Files & Sync'}),
-  }, {
-    id: 'settings_code',
-    title: 'Settings: code, kernels, connections',
-    action: () => this.setState({showingSettings: 'Code'}),
-  }]
+  quickCommands = [
+    {
+      id: 'go_home',
+      title: 'Go home',
+      action: this.goBack
+    },
+    {
+      id: 'undo',
+      title: 'Undo the last action',
+      action: () => this.state.treed && this.state.treed.activeView().undo()
+    },
+    {
+      id: 'redo',
+      title: 'Redo the last action',
+      action: () => this.state.treed && this.state.treed.activeView().redo()
+    },
+    {
+      id: 'settings_plugins',
+      title: 'Settings: plugins',
+      action: () => this.setState({showingSettings: 'Plugins'})
+    },
+    {
+      id: 'settings_sync',
+      title: 'Settings: files & sync',
+      action: () => this.setState({showingSettings: 'Files & Sync'})
+    },
+    {
+      id: 'settings_code',
+      title: 'Settings: code, kernels, connections',
+      action: () => this.setState({showingSettings: 'Code'})
+    }
+  ]
 
   keyLayerConfig = {
     goHome: {
       shortcut: 'g q',
       description: 'Go back to the documents screen',
-      action: this.goBack,
+      action: this.goBack
     },
     undo: {
       shortcut: 'u, cmd+z',
       description: 'Undo the last action',
-      action: () => this.state.treed && this.state.treed.activeView().undo(),
+      action: () => this.state.treed && this.state.treed.activeView().undo()
     },
     redo: {
       shortcut: 'R, cmd+shift+z',
       description: 'Redo the last action',
-      action: () => this.state.treed && this.state.treed.activeView().redo(),
+      action: () => this.state.treed && this.state.treed.activeView().redo()
     },
     search: {
       shortcut: '/, cmd+f',
       description: 'Search',
-      action: () => this.setState({quick: 'search'}),
+      action: () => this.setState({quick: 'search'})
     },
     open: {
       shortcut: 'cmd+p',
       description: 'Open file',
-      action: () => this.setState({quick: 'open'}),
+      action: () => this.setState({quick: 'open'})
     },
     command: {
       shortcut: 'cmd+P',
       description: 'Quick command',
-      action: () => this.setState({quick: 'command'}),
-    },
+      action: () => this.setState({quick: 'command'})
+    }
   }
 
   onDrag = (e: any) => {
@@ -270,7 +295,7 @@ class Document extends Component {
       return plugin
     })
 
-    const treed = window._treed = new Treed(
+    const treed = (window._treed = new Treed(
       db,
       treedPlugins,
       viewTypes,
@@ -279,43 +304,61 @@ class Document extends Component {
         sharedViewData: loadSharedViewData(this.props.id),
         defaultRootContents: title,
         defaultPlugins,
-        initialClipboard: window.sharedClipboard,
-      },
+        initialClipboard: window.sharedClipboard
+      }
+    ))
+    this._unsubs.push(
+      treed.on(['node:root'], () => {
+        this.onTitleChange(treed.db.data.root.content)
+      })
     )
-    this._unsubs.push(treed.on(['node:root'], () => {
-      this.onTitleChange(treed.db.data.root.content)
-    }))
     // TODO actually get the user shortcuts
     const userShortcuts = {}
-    const globalLayer = makeKeyLayer({
-      ...this.keyLayerConfig,
-      ...makeViewTypeLayerConfig(viewTypes, this.setViewType),
-    }, 'global', userShortcuts)
-    treed.addKeyLayer(() => treed.isCurrentViewInInsertMode() ? null : globalLayer)
+    const globalLayer = makeKeyLayer(
+      {
+        ...this.keyLayerConfig,
+        ...makeViewTypeLayerConfig(viewTypes, this.setViewType)
+      },
+      'global',
+      userShortcuts
+    )
+    treed.addKeyLayer(
+      () => (treed.isCurrentViewInInsertMode() ? null : globalLayer)
+    )
     treed.ready.then(() => {
       this.onTitleChange(treed.db.data.root.content)
       const viewState = loadLastViewState(this.props.id)
       if (!viewState.viewType) viewState.viewType = 'list'
       const store = treed.registerView(viewState)
-      this._unsubs.push(store.on([store.events.serializableState()], () => {
-        const state = treed.serializeViewState(store.id)
-        saveLastViewState(this.props.id, state)
-      }))
-      this._unsubs.push(store.on([store.events.clipboardChanged()], () => {
-        window.sharedClipboard = treed.globalStore.globalState.clipboard
-      }))
-      this._unsubs.push(store.on([store.events.sharedViewData()], () => {
-        saveSharedViewData(this.props.id, store.sharedViewData)
-      }))
+      this._unsubs.push(
+        store.on([store.events.serializableState()], () => {
+          const state = treed.serializeViewState(store.id)
+          saveLastViewState(this.props.id, state)
+        })
+      )
+      this._unsubs.push(
+        store.on([store.events.clipboardChanged()], () => {
+          window.sharedClipboard = treed.globalStore.globalState.clipboard
+        })
+      )
+      this._unsubs.push(
+        store.on([store.events.sharedViewData()], () => {
+          saveSharedViewData(this.props.id, store.sharedViewData)
+        })
+      )
       this._unsubs.push(store.onIntent('filter-by-tag', this.onTagFilter))
-      this._unsubs.push(store.onIntent('navigate-to-file', (_, id) => this.onNavigate(id)))
-      this._unsubs.push(store.on([store.events.viewType()], () => {
-        this.setState({})
-      }))
+      this._unsubs.push(
+        store.onIntent('navigate-to-file', (_, id) => this.onNavigate(id))
+      )
+      this._unsubs.push(
+        store.on([store.events.viewType()], () => {
+          this.setState({})
+        })
+      )
       this.setState({
         treed,
         store,
-        tick: this.state.tick + 1,
+        tick: this.state.tick + 1
       })
     })
   }
@@ -326,8 +369,8 @@ class Document extends Component {
       overlayState: {
         type: 'search',
         tagIds: [tagid],
-        query: '',
-      },
+        query: ''
+      }
     })
   }
 
@@ -340,15 +383,22 @@ class Document extends Component {
     if (!treed) return
     const plugins = treed.config.plugins
     const settings = treed.db.data.settings
-    const pluginSettings = defaultPlugins.concat(ids).reduce((obj, pid) => (
-      obj[pid] = settings.plugins[pid] || plugins[pid].defaultGlobalConfig || {}, obj
-    ), {})
-    treed.db.save({
-      ...settings,
-      plugins: pluginSettings,
-    }).then(() => {
-      this.makeTreed('')
-    })
+    const pluginSettings = defaultPlugins
+      .concat(ids)
+      .reduce(
+        (obj, pid) =>
+          ((obj[pid] = settings.plugins[pid] ||
+          plugins[pid].defaultGlobalConfig || {}), obj),
+        {}
+      )
+    treed.db
+      .save({
+        ...settings,
+        plugins: pluginSettings
+      })
+      .then(() => {
+        this.makeTreed('')
+      })
   }
 
   setViewType = (type: string) => {
@@ -356,7 +406,7 @@ class Document extends Component {
     if (this.state.treed) {
       this.state.treed.changeViewType(
         this.state.treed.globalState.activeView,
-        type,
+        type
       )
     }
   }
@@ -368,12 +418,20 @@ class Document extends Component {
   }
 
   componentWillReceiveProps(nextProps: any) {
-    if (this.state.shouldSync &&
-        nextProps.userSession &&
-        !this.props.userSession) {
-      this._unsubs.push(nextProps.userSession.syncDoc(this.state.db, nextProps.id, syncState => {
-        this.setState({syncState})
-      }))
+    if (
+      this.state.shouldSync &&
+      nextProps.userSession &&
+      !this.props.userSession
+    ) {
+      this._unsubs.push(
+        nextProps.userSession.syncDoc(
+          this.state.db,
+          nextProps.id,
+          syncState => {
+            this.setState({syncState})
+          }
+        )
+      )
     }
   }
 
@@ -411,17 +469,19 @@ class Document extends Component {
     const {treed} = this.state
     const actionButtons = this.getActionButtons()
     if (!actionButtons.length || !treed) return null
-    return <div className={css(styles.actionButtons)}>
-      {actionButtons.map(button => (
-        <div
-          key={button.id}
-          onClick={() => button.action(treed.activeView())}
-          className={css(styles.actionButton)}
-        >
-          {button.title}
-        </div>
-      ))}
-    </div>
+    return (
+      <div className={css(styles.actionButtons)}>
+        {actionButtons.map(button => (
+          <div
+            key={button.id}
+            onClick={() => button.action(treed.activeView())}
+            className={css(styles.actionButton)}
+          >
+            {button.title}
+          </div>
+        ))}
+      </div>
+    )
   }
 
   renderHeader() {
@@ -448,107 +508,106 @@ class Document extends Component {
         />
       </div>
       */
-     traffic = <div style={{flexBasis: 80}} />
+      traffic = <div style={{flexBasis: 80}} />
     }
 
     const backButton = this.props.id
-      // TODO if the last doc wasn't home, indicate that
-      ? <div className={css(styles.homeButton)}
+      ? // TODO if the last doc wasn't home, indicate that
+        <div
+          className={css(styles.homeButton)}
           onClick={() => window.history.back()}
         >
-          <Icon
-            name="ios-arrow-left"
-            className={css(styles.homeArrow)}
-          />
+          <Icon name="ios-arrow-left" className={css(styles.homeArrow)} />
           <div className={css(styles.homeText)}>
-          Home
+            Home
           </div>
         </div>
       : null
 
-    return <div className={css(styles.top)}>
-      {traffic}
-      {backButton}
-      <Icon
-        name="ios-trash-outline"
-        className={css(styles.trashcan)}
-      />
-      <div className={css(styles.title)}>
-        {this.state.store.db.data.root.content}
+    return (
+      <div className={css(styles.top)}>
+        {traffic}
+        {backButton}
+        <Icon name="ios-trash-outline" className={css(styles.trashcan)} />
+        <div className={css(styles.title)}>
+          {this.state.store.db.data.root.content}
+        </div>
+        <SyncStatus
+          docid={this.props.id}
+          nm={this.props.nm}
+          onClick={() => this.setState({showingSettings: 'Files & Sync'})}
+        />
+        <Icon
+          name="ios-settings"
+          onClick={() => this.setState({showingSettings: 'Plugins'})}
+          className={css(styles.settings)}
+        />
       </div>
-      <SyncStatus
-        docid={this.props.id}
-        nm={this.props.nm}
-        onClick={() => this.setState({showingSettings: 'Files & Sync'})}
-      />
-      <Icon
-        name="ios-settings"
-        onClick={() => this.setState({showingSettings: 'Plugins'})}
-        className={css(styles.settings)}
-      />
-    </div>
+    )
   }
 
   render() {
     const {treed} = this.state
     if (!treed) {
-      return <div className={css(styles.container, styles.loading)}>Loading...</div>
+      return (
+        <div className={css(styles.container, styles.loading)}>Loading...</div>
+      )
     }
 
-    return <div className={css(styles.container)}>
-      {this.renderHeader()}
-      <div className={css(styles.main)}>
-        <Sidebar
-          side="left"
-          globalStore={treed.globalStore}
-          plugins={treed.enabledPlugins}
-        />
-        <div className={css(styles.treedContainer) + ' Theme_basic'}>
-          <ViewWrapper
-            key={'view:' + this.state.tick}
-            viewTypes={viewTypes}
-            store={this.state.store}
+    return (
+      <div className={css(styles.container)}>
+        {this.renderHeader()}
+        <div className={css(styles.main)}>
+          <Sidebar
+            side="left"
+            globalStore={treed.globalStore}
+            plugins={treed.enabledPlugins}
+          />
+          <div className={css(styles.treedContainer) + ' Theme_basic'}>
+            <ViewWrapper
+              key={'view:' + this.state.tick}
+              viewTypes={viewTypes}
+              store={this.state.store}
+            />
+
+            {this.renderActionButtons()}
+          </div>
+          <Sidebar
+            side="right"
+            globalStore={treed.globalStore}
+            plugins={treed.enabledPlugins}
           />
 
-          {this.renderActionButtons()}
+          <KeyCompleter treed={treed} />
+          {this.state.quick &&
+            <QuickBar
+              treed={treed}
+              store={this.state.store}
+              nm={this.props.nm}
+              extraCommands={this.quickCommands}
+              onOpen={file => this.onNavigate(file.id)}
+              initialTab={this.state.quick}
+              onClose={() => this.setState({quick: null})}
+            />}
+          {this.state.showingSettings &&
+            <Settings
+              treed={treed}
+              nm={this.props.nm}
+              store={this.state.store}
+              initialTab={this.state.showingSettings}
+              onClose={() => this.setState({showingSettings: null})}
+              onSetPlugins={this.onSetPlugins}
+              optionalPlugins={optionalPlugins}
+            />}
         </div>
-        <Sidebar
-          side="right"
-          globalStore={treed.globalStore}
-          plugins={treed.enabledPlugins}
-        />
-
-        <KeyCompleter
-          treed={treed}
-        />
-        {this.state.quick &&
-          <QuickBar
-            treed={treed}
-            store={this.state.store}
-            nm={this.props.nm}
-            extraCommands={this.quickCommands}
-            onOpen={file => this.onNavigate(file.id)}
-            initialTab={this.state.quick}
-            onClose={() => this.setState({quick: null})}
-          />}
-        {this.state.showingSettings &&
-          <Settings
-            treed={treed}
-            nm={this.props.nm}
-            store={this.state.store}
-            initialTab={this.state.showingSettings}
-            onClose={() => this.setState({showingSettings: null})}
-            onSetPlugins={this.onSetPlugins}
-            optionalPlugins={optionalPlugins}
-          />}
       </div>
-    </div>
+    )
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
 
   top: {
@@ -558,12 +617,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignSelf: 'stretch',
     height: 76 / 2,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#fafafa'
   },
 
   title: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'center'
   },
 
   trashcan: {
@@ -576,8 +635,8 @@ const styles = StyleSheet.create({
     color: '#aaa',
     ':hover': {
       color: 'black',
-      backgroundColor: '#eee',
-    },
+      backgroundColor: '#eee'
+    }
   },
 
   settings: {
@@ -590,8 +649,8 @@ const styles = StyleSheet.create({
     marginRight: 5,
     ':hover': {
       color: 'black',
-      backgroundColor: '#eee',
-    },
+      backgroundColor: '#eee'
+    }
   },
 
   homeButton: {
@@ -607,49 +666,43 @@ const styles = StyleSheet.create({
     color: '#aaa',
     ':hover': {
       color: 'black',
-      backgroundColor: '#eee',
-    },
+      backgroundColor: '#eee'
+    }
   },
 
   homeArrow: {
     marginRight: 5,
-    height: 13,
+    height: 13
   },
 
   main: {
     flexDirection: 'row',
-    flex: 1,
+    flex: 1
   },
 
   actionButtons: {
     position: 'absolute',
     bottom: 10,
     right: 20,
-    zIndex: 100000,
+    zIndex: 100000
   },
 
   actionButton: {
     padding: '10px 20px',
     backgroundColor: '#80edff',
-    borderRadius: 20,
+    borderRadius: 20
   },
-
 
   loading: {
     padding: 100,
     alignItems: 'center',
     flexDirection: 'column',
     fontSize: '2em',
-    color: '#ccc',
+    color: '#ccc'
   },
 
   treedContainer: {
-    flex: 1,
+    flex: 1
     //  position: 'relative',
-  },
-
-
-
-
-
+  }
 })

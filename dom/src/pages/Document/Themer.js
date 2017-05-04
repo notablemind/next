@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 export default class Themer extends Component {
@@ -9,6 +9,4 @@ export default class Themer extends Component {
   }
 }
 
-const styles = StyleSheet.create({
-})
-
+const styles = StyleSheet.create({})

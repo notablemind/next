@@ -1,7 +1,6 @@
-
 export type User = {
   name: string,
-  email: string,
+  email: string
 }
 
 let onUser
@@ -21,18 +20,20 @@ if (ELECTRON) {
   }
   getUser = () => ipcRenderer.send('sync:user')
   signIn = () => ipcRenderer.send('sync:signin')
-  getFiles = () => new Promise((res, rej) => {
-    ipcRenderer.once('sync:files', (evt, files) => res(files))
-    ipcRenderer.send('sync:files')
-  })
+  getFiles = () =>
+    new Promise((res, rej) => {
+      ipcRenderer.once('sync:files', (evt, files) => res(files))
+      ipcRenderer.send('sync:files')
+    })
   deleteFiles = ids => ipcRenderer.send('sync:files:delete', ids)
   syncFiles = ids => ipcRenderer.send('sync:files:sync', ids)
-
 } else {
-
-  getUser = () => { throw new Error('not impl') }
-  signIn = () => { throw new Error('not impl') }
-
+  getUser = () => {
+    throw new Error('not impl')
+  }
+  signIn = () => {
+    throw new Error('not impl')
+  }
 }
 
 export {onUser, getUser, signIn, getFiles, deleteFiles, syncFiles}

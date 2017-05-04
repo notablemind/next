@@ -1,6 +1,6 @@
 // @flow
 
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import Header from './Header'
@@ -13,12 +13,12 @@ import type {User} from './types'
 
 type State = {
   user: ?User,
-  loading: bool,
-  online: bool,
+  loading: boolean,
+  online: boolean,
   // remoteSession: any,
   title: string,
   settings: ?any,
-  loginError: ?string,
+  loginError: ?string
 }
 
 // NOTE unused
@@ -34,7 +34,7 @@ export default class Wrapper_unused extends Component {
       loginError: null,
       online: true,
       title: 'Notablemind',
-      settings: null, // do I need the settings?
+      settings: null // do I need the settings?
     }
   }
 
@@ -73,8 +73,9 @@ export default class Wrapper_unused extends Component {
   }
 
   render() {
-    return <div className={css(styles.container)}>
-      {/*<Header
+    return (
+      <div className={css(styles.container)}>
+        {/*<Header
         user={this.state.user}
         title={this.state.title}
         loading={this.state.loading}
@@ -84,18 +85,22 @@ export default class Wrapper_unused extends Component {
         // onSignUp={this.onSignUp}
         loginError={this.state.loginError}
       />*/}
-      {React.cloneElement(this.props.children, {
-        // userSession: this.state.remoteSession,
-        // remoteUser: this.state.user,
-        // updateFile: this.updateFile,
-        // setTitle: this.setTitle,
-      })}
-    </div>
+        {React.cloneElement(
+          this.props.children,
+          {
+            // userSession: this.state.remoteSession,
+            // remoteUser: this.state.user,
+            // updateFile: this.updateFile,
+            // setTitle: this.setTitle,
+          }
+        )}
+      </div>
+    )
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
+    flex: 1
+  }
 })

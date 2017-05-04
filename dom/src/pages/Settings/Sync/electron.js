@@ -1,4 +1,3 @@
-
 const google = require('./google')
 
 const PLUGIN_ID = 'sync'
@@ -7,7 +6,6 @@ const plugin = {
   id: PLUGIN_ID,
 
   init({baseDir, documentsDir, ipcMain, actions}) {
-
     let clients = []
     let userProm = google.getUser(documentsDir)
 
@@ -28,36 +26,40 @@ const plugin = {
 
     ipcMain.on('sync:signin', evt => {
       console.log('google sign in')
-      google.signIn(documentsDir).then(user => {
-        updateUser(user)
-      }, err => {
-        console.log('umm failed to sign in')
-        console.error(err)
-      })
+      google.signIn(documentsDir).then(
+        user => {
+          updateUser(user)
+        },
+        err => {
+          console.log('umm failed to sign in')
+          console.error(err)
+        }
+      )
     })
 
     const getFiles = () => {
-      return userProm
-        // TODO ignore trashed files
-        .then(user => google.listFiles(user.token))
-        .then(files => {
-          const meta = actions.getMeta()
-          const nmIds = {}
-          files.forEach(file => nmIds[file.appProperties.nmId] = file)
-          const locals = Object.keys(meta)
-            // TODO update the meta w/ sync info if the sync info wasn't there?
-            .map(id => ext(meta[id], {local: true, sync: syncObj(nmIds[id])}))
-          const remotes = files
-            .filter(file => !meta[file.appProperties.nmId])
-            .map(remoteFile)
-          return locals.concat(remotes)
-        })
+      return (
+        userProm
+          // TODO ignore trashed files
+          .then(user => google.listFiles(user.token))
+          .then(files => {
+            const meta = actions.getMeta()
+            const nmIds = {}
+            files.forEach(file => (nmIds[file.appProperties.nmId] = file))
+            const locals = Object.keys(meta)
+              // TODO update the meta w/ sync info if the sync info wasn't there?
+              .map(id => ext(meta[id], {local: true, sync: syncObj(nmIds[id])}))
+            const remotes = files
+              .filter(file => !meta[file.appProperties.nmId])
+              .map(remoteFile)
+            return locals.concat(remotes)
+          })
+      )
     }
 
     ipcMain.on('sync:files:delete', (evt, ids) => {
       actions.deleteFiles(ids)
-      getFiles()
-        .then(files => evt.sender.send('sync:files', files))
+      getFiles().then(files => evt.sender.send('sync:files', files))
     })
 
     ipcMain.on('sync:files:sync', (evt, ids) => {
@@ -68,16 +70,17 @@ const plugin = {
     })
 
     ipcMain.on('sync:files', evt => {
-      getFiles()
-        .then(files => evt.sender.send('sync:files', files))
+      getFiles().then(files => evt.sender.send('sync:files', files))
     })
   }
 }
 
 const ext = (a, b) => {
   const c = {}
-  for (let n in a) c[n] = a[n]
-  for (let n in b) c[n] = b[n]
+  for (let n in a)
+    c[n] = a[n]
+  for (let n in b)
+    c[n] = b[n]
   return c
 }
 
@@ -92,8 +95,8 @@ const remoteFile = file => {
       name: owner.displayName,
       me: owner.me,
       email: owner.emailAddress,
-      profilePhoto: owner.photoLink,
-    },
+      profilePhoto: owner.photoLink
+    }
   }
 }
 
@@ -105,11 +108,11 @@ const syncObj = file => {
       name: owner.displayName,
       me: owner.me,
       email: owner.emailAddress,
-      profilePhoto: owner.photoLink,
+      profilePhoto: owner.photoLink
     },
     remoteId: file.id,
     lastSyncTime: null, // Date.now(),
-    lastSyncVersion: null, // file.version,
+    lastSyncVersion: null // file.version,
   }
 }
 

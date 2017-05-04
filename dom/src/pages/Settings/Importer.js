@@ -1,4 +1,3 @@
-
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
@@ -22,7 +21,7 @@ export default class Importer extends Component {
   constructor(props) {
     super()
     this.state = {
-      error: null,
+      error: null
     }
   }
 
@@ -57,18 +56,23 @@ export default class Importer extends Component {
         size: file.size,
         lastOpened: file.opened,
         lastModified: file.modified,
-        synced: false, // TODO use a global setting to prefill this
+        synced: false // TODO use a global setting to prefill this
       }
       fileData[file._id] = fileObj
       return {fileid: file._id}
     }
     const tree = {
-      ...newNode(npid, null, now, `Imported documents ${new Date().toLocaleDateString()}`),
+      ...newNode(
+        npid,
+        null,
+        now,
+        `Imported documents ${new Date().toLocaleDateString()}`
+      ),
       children: files.map(({file}) => ({
         ...newNode(uuid(), npid, now, file.title),
         type: 'file',
-        types: {file: addFile(file)},
-      })),
+        types: {file: addFile(file)}
+      }))
     }
     const {store} = this.props
     store.actions.insertTreeAfter(store.state.active, tree, true)
@@ -79,14 +83,23 @@ export default class Importer extends Component {
       return getFileDb(file._id).then(pouchDb => {
         let p = Promise.resolve()
         if (withoutAttachments.length) {
-          p = pouchDb.bulkDocs({docs: withoutAttachments, new_edits: false}).then(() => {
-            console.log('bulkdocsd', withoutAttachments.length, 'documents', file.title)
-          })
+          p = pouchDb
+            .bulkDocs({docs: withoutAttachments, new_edits: false})
+            .then(() => {
+              console.log(
+                'bulkdocsd',
+                withoutAttachments.length,
+                'documents',
+                file.title
+              )
+            })
         }
         withAttachments.forEach(fn => {
-          p = p.then(() => fn().then(doc => {
-            return pouchDb.bulkDocs({docs: [doc], new_edits: false})
-          }))
+          p = p.then(() =>
+            fn().then(doc => {
+              return pouchDb.bulkDocs({docs: [doc], new_edits: false})
+            })
+          )
         })
         // FlushAndClose is my special thing for syncing to the
         // electron backend
@@ -96,56 +109,65 @@ export default class Importer extends Component {
           },
           err => {
             console.log('not workin', file._id, err)
-          })
+          }
+        )
       })
     })
     this.setState({left: actions.length, total: actions.length})
-    const next = () => (
-      this.setState({left: actions.length}),
-      actions.length ? actions.pop()().then(next) : Promise.resolve()
-    )
+    const next = () =>
+      (this.setState({left: actions.length}), actions.length
+        ? actions.pop()().then(next)
+        : Promise.resolve())
     // TODO maybe sequentially?
-    next().then(() => {
-      console.log('finished importing!')
-      this.setState({loading: false, file: null, error: null})
-    }, err => {
-      console.error(err)
-      this.setState({loading: false, error: err.message})
-    })
+    next().then(
+      () => {
+        console.log('finished importing!')
+        this.setState({loading: false, file: null, error: null})
+      },
+      err => {
+        console.error(err)
+        this.setState({loading: false, error: err.message})
+      }
+    )
     // TODO actually sync the stuff
   }
 
   render() {
     if (this.state.loading) {
-      return <div>Processing {this.state.total && `${this.state.total - this.state.left} / ${this.state.total}`}...</div>
+      return (
+        <div>
+          Processing
+          {' '}
+          {this.state.total &&
+            `${this.state.total - this.state.left} / ${this.state.total}`}
+          ...
+        </div>
+      )
     }
     if (this.state.file) {
-      return <div className={css(styles.container)}>
-        <div>{this.state.file.name}</div>
-        <div>{readableSize(this.state.file.size)}</div>
-        <button
-          onClick={this.onImport}
-        >
-          Import from zip
-        </button>
-        {this.state.error}
-      </div>
+      return (
+        <div className={css(styles.container)}>
+          <div>{this.state.file.name}</div>
+          <div>{readableSize(this.state.file.size)}</div>
+          <button onClick={this.onImport}>
+            Import from zip
+          </button>
+          {this.state.error}
+        </div>
+      )
     }
 
-    return <div className={css(styles.container)}>
-      <div>
-        <input
-          onChange={this.onGotFile}
-          type="file"
-        />
-        Drag & drop your zip, folder, or `.nm` here.
+    return (
+      <div className={css(styles.container)}>
+        <div>
+          <input onChange={this.onGotFile} type="file" />
+          Drag & drop your zip, folder, or `.nm` here.
+        </div>
       </div>
-    </div>
+    )
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-  },
+  container: {}
 })
-
