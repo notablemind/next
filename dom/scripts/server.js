@@ -14,7 +14,7 @@ app.use(
   devMiddleware(compiler, {
     publicPath: config.output.publicPath,
     historyApiFallback: true,
-  }),
+  })
 )
 
 app.use(hotMiddleware(compiler))

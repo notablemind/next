@@ -18,10 +18,20 @@ const checkParentage = (id, nodes, ids, updates) => {
   children.forEach(child => checkParentage(child, nodes, ids, updates))
 }
 
+const walkNodes = (root, nodes, fn) => {
+  fn(nodes[root])
+  nodes[root].children.forEach(id => walkNodes(id, nodes, fn))
+}
 
 const plugin = {
   id: 'debug',
   title: 'Debug',
+
+  actions: {
+    walk(store, fn) {
+      walkNodes(store.state.active, store.db.data, node => fn(node, store))
+    },
+  },
 
   quickActions(store, node) {
       const id = node._id

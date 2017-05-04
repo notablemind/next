@@ -24,6 +24,19 @@ const plugin = {
       action() {
         store.actions.setContent(node._id, titleCase(node.content))
       },
+    }, {
+      title: 'Split lines',
+      id: 'split_lines',
+      action() {
+        const lines = node.content.split(/\n/g).map(l => l.trim()).filter(l => l)
+        const keep = lines.shift()
+        let id = node._id
+        store.actions.setContent(node._id, keep)
+        lines.forEach(line => {
+          id = store.actions.createAfter(id, line)
+        })
+        store.actions.normalMode()
+      }
     }]
   },
 }

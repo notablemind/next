@@ -37,9 +37,8 @@ const plugins = [
   require('../../../../plugins/code').default,
   require('../../../../plugins/text-actions').default,
   require('../../../../plugins/debug').default,
+  require('../../../../plugins/ratings').default,
 ]
-
-// const pluginMap = plugins.reduce((obj, pl) => (obj[pl.id] = pl, obj), {})
 
 const optionalPlugins = ['scriptures', 'browser']
 const defaultPlugins = plugins

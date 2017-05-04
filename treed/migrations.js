@@ -16,7 +16,10 @@ const migrations = {
     })
   },
   1: (db: Database): Promise<void> => {
-    const changed = []
+    const changed = [{
+      ...db.data.settings,
+      version: 2,
+    }]
     Object.keys(db.data).forEach(key => {
       if (key === 'settings') return
       const node = db.data[key]

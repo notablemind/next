@@ -193,7 +193,7 @@ export default class Treed {
         // TODO handle initial sync - if the doc is already on the server, don't
         // open this up until we've had a full sync.
         if (!this.db.data.root) {
-          console.log('creating')
+          console.log('creating - the doc did not exist')
           return this.db.saveMany([
             newNode('root', null, now, defaultRootContents),
             createSettings(now, plugins, defaultPlugins),
@@ -202,6 +202,7 @@ export default class Treed {
           !this.db.data.settings.version ||
           this.db.data.settings.version < migrations.version
         ) {
+          console.log('migrating old db', migrations.version)
           return migrations.migrate(this.db)
         }
         const newPluginSettings = {}
