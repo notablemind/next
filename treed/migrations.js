@@ -1,6 +1,6 @@
 import Database from './Database'
 
-export const version = 1
+export const version = 2
 
 const migrations = {
   0: (db: Database): Promise<void> => {
@@ -14,6 +14,26 @@ const migrations = {
         },
       },
     })
+  },
+  1: (db: Database): Promise<void> => {
+    const changed = []
+    Object.keys(db.data).forEach(key => {
+      if (key === 'settings') return
+      const node = db.data[key]
+      if (node.types && node.types.todo && node.types.todo.done) {
+        changed.push({
+          ...node,
+          completed: node.types.todo.didDate,
+          types: {
+            ...node.types,
+            todo: {
+              dueDate: node.types.todo.dueDate,
+            },
+          },
+        })
+      }
+    })
+    return db.saveMany(changed)
   },
 }
 

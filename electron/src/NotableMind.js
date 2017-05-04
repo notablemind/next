@@ -314,10 +314,11 @@ module.exports = class Notablemind {
         throw new Error('Invalid data format')
       }
       const {meta, docs} = result
-      console.log('imported', meta, docs.length)
+      console.log('imported', docid, meta, docs.length)
       this.meta[docid] = meta
       this.saveMeta()
       const db = this.ensureDocDb(docid)
+      console.log(docs[0], docs[1])
       return db.bulkDocs({docs}).then(() => meta)
     })
 

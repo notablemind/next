@@ -32,6 +32,17 @@ const flattenTree = (parent, tree) => {
   ].concat(...tree.children.map(flattenTree.bind(null, tree.id)))
 }
 
+const typeOptions = {
+  todo: node => ({}),
+}
+
+const importTypes = node => {
+  if (node.type === 'normal' || node.type === 'base') return {}
+  return {
+    [node.type]: typeOptions[node.type] ? typeOptions[node.type](node) : {}
+  }
+}
+
 const makeDoc = node => {
   return {
     _id: node.id,
@@ -39,12 +50,12 @@ const makeDoc = node => {
     modified: node.modified,
     parent: node.parent,
     children: node.children,
-    type: node.type, // TODO translate type
+    type: node.type === 'base' ? 'normal' : node.type, // TODO translate type
     content: node.content,
+    completed: node.done ? node.modified : null,
     // TODO import plugins?
     plugins: {},
-    // TODO import types
-    types: {},
+    types: importTypes(node),
     views: {}
   }
 }
@@ -68,7 +79,9 @@ module.exports = (id, filename, data) => {
     sync: null
   }
   const settings = makeSettings(data)
-  const docs = [settings].concat(flattenTree(null, data.root).map(makeDoc))
+  data.root.id = 'root'
+  const nodes = flattenTree(null, data.root)
+  const docs = [settings].concat(nodes.map(makeDoc))
 
   return {meta, docs}
 }

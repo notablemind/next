@@ -30,6 +30,7 @@ export type Node = {
   modified: number,
   created: number,
   trashed: ?number,
+  completed: ?number,
   types: {[type: string]: {}},
   views: {[type: string]: {}},
   plugins: {[type: string]: {}},

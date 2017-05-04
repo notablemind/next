@@ -14,18 +14,22 @@ type Props = {
 
 export default (props: Props) => {
   const todo = props.node.types.todo || {}
+  const completed = props.node.completed
   return <div className={css(styles.container)}>
     <input
       type="checkbox"
       className={css(styles.checkbox)}
       onMouseDown={e => e.stopPropagation()}
+      onChange={e => props.store.actions.toggleDone(props.node._id)}
+      /*
       onChange={e => props.store.actions.setNested(props.node._id, ['types', 'todo'], {
         // TODO dedup w/ the key handler
         ...todo,
         done: !todo.done,
         didDate: todo.done ? null : Date.now(),
       })}
-      checked={todo.done}
+      */
+      checked={completed}
     />
     <Content {...props} style={{flex: 1}}/>
   </div>
