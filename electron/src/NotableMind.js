@@ -11,6 +11,29 @@ const google = require('./google')
 const sync = require('./sync')
 const createFileData = require('./createFileData')
 const mergeDataIntoDatabase = require('./mergeDataIntoDatabase')
+const importers = require('./importers')
+
+const tryParse = data => {
+  try {
+    return JSON.parse(data)
+  } catch (e) {}
+}
+
+// TODO in order to handle binary formats, I'll want to pass a buffer around
+const importData = (id, filename, data) => {
+  const json = tryParse(data)
+  if (json) {
+    for (let importer of importers.json) {
+      const result = importer(id, filename, json)
+      if (result) return result
+    }
+  } else {
+    for (let importer of importers.text) {
+      const result = importer(id, filename, data)
+      if (result) return result
+    }
+  }
+}
 
 const loadMeta = (documentsDir /*: Meta*/) => {
   const metaPath = path.join(documentsDir, 'meta.json')
@@ -24,8 +47,8 @@ const loadMeta = (documentsDir /*: Meta*/) => {
         lastOpened: Date.now(),
         size: 1,
         sync: null,
-        title: 'Home',
-      },
+        title: 'Home'
+      }
     }
   }
 }
@@ -99,8 +122,7 @@ const googleSyncApi = {
       .metaForFile(auth, syncConfig.remoteFiles.contents)
       .then(
         file =>
-          file.headRevisionId !==
-          syncConfig.remoteFiles.contents.headRevisionId,
+          file.headRevisionId !== syncConfig.remoteFiles.contents.headRevisionId
       )
       .catch(noisy('failed to get meta for file'))
   },
@@ -108,7 +130,7 @@ const googleSyncApi = {
   updateContents(
     auth /*: Auth*/,
     syncConfig /*: SyncConfig*/,
-    data /*: SerializedData*/,
+    data /*: SerializedData*/
   ) {
     return google
       .updateContents(auth, syncConfig.remoteFiles.contents, data)
@@ -119,7 +141,7 @@ const googleSyncApi = {
     return google
       .contentsForFile(auth, syncConfig.remoteFiles.contents)
       .catch(noisy('failed to get contents'))
-  },
+  }
 }
 
 module.exports = class Notablemind {
@@ -196,7 +218,7 @@ module.exports = class Notablemind {
       console.log('got hello')
       evt.sender.send('hello', {
         user: this.user || (this.userProm ? LOADING : LOGGED_OUT),
-        meta: this.meta,
+        meta: this.meta
       })
       console.log('responded with hello')
     })
@@ -209,9 +231,9 @@ module.exports = class Notablemind {
         error => {
           evt.sender.send('toast', {
             type: 'error',
-            message: 'Unable to login',
+            message: 'Unable to login'
           })
-        },
+        }
       )
     })
 
@@ -268,7 +290,7 @@ module.exports = class Notablemind {
         lastOpened: Date.now(),
         lastModified: Date.now(),
         size: 1,
-        sync: null, // TODO maybe auto-setup sync if that setting is set? Also once I get more confidant about it :P
+        sync: null // TODO maybe auto-setup sync if that setting is set? Also once I get more confidant about it :P
       }
       this.saveMeta()
       this.broadcast('meta:update', docid, this.meta[docid])
@@ -287,7 +309,12 @@ module.exports = class Notablemind {
     })
 
     ipc.on('doc:import', (evt, docid, filename, data) => {
-      const {meta, docs} = importData(docid, filename, data)
+      const result = importData(docid, filename, data)
+      if (!result) {
+        throw new Error('Invalid data format')
+      }
+      const {meta, docs} = result
+      console.log('imported', meta)
       this.meta[docid] = meta
       const db = this.ensureDocDb(docid)
       return db.bulkDocs({docs}).then(() => meta)
@@ -297,7 +324,7 @@ module.exports = class Notablemind {
       this.plugins.map(plugin => {
         if (!plugin.init) return
         return Promise.resolve(plugin.init(this))
-      }),
+      })
     )
   }
 
@@ -322,7 +349,7 @@ module.exports = class Notablemind {
         this.meta[docid].sync.dirty = true
         this.saveMeta()
         this.broadcast('meta:update', docid, {
-          sync: this.meta[docid].sync,
+          sync: this.meta[docid].sync
         })
         this.bouncyUpdate(docid)
       }
@@ -341,7 +368,7 @@ module.exports = class Notablemind {
       err => {
         this.userProm = null
         throw err
-      },
+      }
     )
     return this.userProm
   }
@@ -350,7 +377,7 @@ module.exports = class Notablemind {
     if (!this.updaters[docid]) {
       this.updaters[docid] = debounce(() => this.doSync(docid), {
         min: 10 * 1000,
-        max: 30 * 1000,
+        max: 30 * 1000
       })
     }
     this.updaters[docid]()
@@ -378,8 +405,8 @@ module.exports = class Notablemind {
           db,
           api: googleSyncApi,
           dirty: this.meta[id].sync.dirty,
-          pullOnly: false,
-        }),
+          pullOnly: false
+        })
       )
       .then(
         contents => {
@@ -390,7 +417,7 @@ module.exports = class Notablemind {
             meta.sync.dirty = false
             this.saveMeta()
             this.broadcast('meta:update', meta.id, {
-              sync: meta.sync,
+              sync: meta.sync
             })
             this.working[id] = false
             return console.log('no push') // didn't need push
@@ -404,14 +431,14 @@ module.exports = class Notablemind {
           this.saveMeta()
           this.broadcast('meta:update', meta.id, {
             sync: meta.sync,
-            lastModified: meta.lastModified,
+            lastModified: meta.lastModified
           })
           this.working[id] = false
         },
         err => {
           console.error('> failed to sync', err)
           this.working[id] = false
-        },
+        }
       )
       .then(() => {
         this.syncPeriodically(id)
@@ -441,7 +468,7 @@ module.exports = class Notablemind {
         live: true,
         since: 'now',
         include_docs: true,
-        attachments: true,
+        attachments: true
       })
       .on('change', change => {
         const id = change.doc._id
@@ -486,7 +513,7 @@ module.exports = class Notablemind {
         // NEED TO UPDATE NOW
         .then(token => google.listFiles(token))
         .then(
-          remoteFiles => (this.processRemoteFiles(remoteFiles), remoteFiles),
+          remoteFiles => (this.processRemoteFiles(remoteFiles), remoteFiles)
         )
     )
   }
@@ -524,9 +551,9 @@ module.exports = class Notablemind {
           return google
             .getRootDirectory(token)
             .then(({id: rootId}) =>
-              google.createFile(token, rootId, {id, data, title}),
+              google.createFile(token, rootId, {id, data, title})
             )
-        }),
+        })
       )
       .then(remoteFiles => {
         const sync = {
@@ -534,8 +561,8 @@ module.exports = class Notablemind {
           owner: {
             me: true,
             email: this.user.email,
-            profile: this.user.profile,
-          },
+            profile: this.user.profile
+          }
         }
         this.meta[id].sync = sync
         this.saveMeta()
@@ -544,7 +571,7 @@ module.exports = class Notablemind {
   }
 
   downloadRemoteFile(
-    file /*: {id: string, name: string, appProperties: {nmId: string}}*/,
+    file /*: {id: string, name: string, appProperties: {nmId: string}}*/
   ) {
     return this.getToken()
       .then(token => google.downloadRemoteFile(token, file))
@@ -556,7 +583,7 @@ module.exports = class Notablemind {
           lastModified: 0,
           lastOpened: Date.now(),
           size: data.docs.length,
-          sync,
+          sync
         }
         this.saveMeta()
         const db = this.ensureDocDb(id)
@@ -567,7 +594,7 @@ module.exports = class Notablemind {
           err => {
             console.error('failed to merge data into new database?')
             throw err
-          },
+          }
         )
       })
   }
@@ -584,7 +611,7 @@ module.exports = class Notablemind {
             return this.ensureDocDb(nmId)
               .bulkDocs({
                 docs: data,
-                new_edits: false,
+                new_edits: false
               })
               .then(() => {
                 this.meta[nmId] = {
@@ -595,14 +622,14 @@ module.exports = class Notablemind {
                   size: data.length,
                   sync: {
                     // TODO fill in
-                  },
+                  }
                 }
                 this.saveMeta()
                 this.broadcast('meta:update', nmId, this.meta[nmId])
               })
           })
-        }),
-      ),
+        })
+      )
     )
   }
 
@@ -644,7 +671,7 @@ module.exports.LOADING = LOADING
 const docActions = {
   set: (db, {id, attr, value, modified}) => {
     return db.upsert(id, doc =>
-      Object.assign({}, doc, {[attr]: value, modified}),
+      Object.assign({}, doc, {[attr]: value, modified})
     )
   },
   setNested: (db, {id, attrs, last, value, modified}) => {
@@ -652,7 +679,7 @@ const docActions = {
       doc = Object.assign({}, doc, {modified})
       const lparent = attrs.reduce(
         (o, a) => (o[a] = Object.assign({}, o[a])),
-        doc,
+        doc
       )
       lparent[last] = value
       return doc
@@ -664,7 +691,7 @@ const docActions = {
       doc = Object.assign({}, doc, {modified})
       const lparent = attrs.reduce(
         (o, a) => (o[a] = Object.assign({}, o[a])),
-        doc,
+        doc
       )
       lparent[last] = Object.assign({}, lparent[last], update)
       return doc
@@ -675,5 +702,5 @@ const docActions = {
   },
   save: (db, {doc}) => db.put(doc), // .then(r => (console.log('save', r), r)),
   saveMany: (db, {docs}) => db.bulkDocs(docs), // .then(r => (console.log('savemany', r), r)),
-  delete: (db, {doc}) => db.remove(doc),
+  delete: (db, {doc}) => db.remove(doc)
 }

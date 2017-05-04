@@ -27,7 +27,7 @@ const findConflictingDocs = (newDocsById, db) => {
       myConflictingRevs.length,
       'definite',
       maybeConflicting.length,
-      'maybe',
+      'maybe'
     )
 
     const prom = maybeConflicting.length === 0
@@ -55,14 +55,14 @@ const findConflictingDocs = (newDocsById, db) => {
           results.forEach(({docs}) =>
             docs.forEach(({ok}) => {
               if (ok) conflictingDocs.push(ok)
-            }),
+            })
           )
           return conflictingDocs
         })
       })
       .then(conflictingDocs => ({
         conflictingDocs,
-        dirty: myConflictingRevs.length || maybeConflicting.length,
+        dirty: myConflictingRevs.length || maybeConflicting.length
       }))
   })
 }
@@ -78,7 +78,7 @@ const mergeDocs = (myDoc, theirDoc) => {
   return Object.assign({}, theirDoc, {
     content: myDoc.content.length > theirDoc.content.length
       ? myDoc.content
-      : theirDoc.content,
+      : theirDoc.content
   })
 }
 
@@ -95,7 +95,7 @@ const mergeDataIntoDatabase = (data /*: SerializedData*/, db) => {
 
   return findConflictingDocs(
     newDocsById,
-    db,
+    db
   ).then(({conflictingDocs, dirty}) => {
     // # Delete docs that will conflict
     return (
@@ -103,9 +103,9 @@ const mergeDataIntoDatabase = (data /*: SerializedData*/, db) => {
         ? db.bulkDocs({
             docs: [
               ...conflictingDocs.map(doc =>
-                Object.assign({}, doc, {_deleted: true}),
-              ),
-            ],
+                Object.assign({}, doc, {_deleted: true})
+              )
+            ]
           })
         : Promise.resolve())
         // # Merge in new data
@@ -117,9 +117,9 @@ const mergeDataIntoDatabase = (data /*: SerializedData*/, db) => {
           return db.bulkDocs({
             docs: [
               ...conflictingDocs.map(doc =>
-                mergeDocs(doc, newDocsById[doc._id]),
-              ),
-            ],
+                mergeDocs(doc, newDocsById[doc._id])
+              )
+            ]
           })
         })
         .then(() => (console.log('from merge, dirty is', dirty), dirty))

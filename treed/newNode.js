@@ -1,11 +1,6 @@
 // @flow
 
-module.exports = (
-  id /*: string*/,
-  parent /*: ?string*/,
-  now /*: number*/,
-  content /*: string*/ = '',
-) => ({
+module.exports = (id, parent, now, content = '') => ({
   _id: id,
   created: now,
   modified: now,

@@ -12,15 +12,15 @@ const getAllDocs = db => {
         docs: rows.map(row => ({id: row.id, rev: row.value.rev})),
         attachments: true, // TODO maybe handle attachments differently
         latest: true,
-        revs: true,
-      }),
+        revs: true
+      })
     )
     .then(({results}) => {
       return flatten(
         results.map(bulkGetInfo =>
           // TODO why would there be multiple docs for an id?
-          bulkGetInfo.docs.map(doc => doc.ok),
-        ),
+          bulkGetInfo.docs.map(doc => doc.ok)
+        )
       ).filter(Boolean)
     })
 }
@@ -30,7 +30,7 @@ const createFileDataWithDocs = docs => {
     type: MIME,
     version: VERSION,
     attachmentMode: 'inline',
-    docs,
+    docs
   }
 }
 

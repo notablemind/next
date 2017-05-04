@@ -53,9 +53,9 @@ const getProfile = token => {
     `https://www.googleapis.com/plus/v1/people/me?key=${googleApiKey}`,
     {
       headers: {
-        Authorization: 'Bearer ' + token.access_token,
-      },
-    },
+        Authorization: 'Bearer ' + token.access_token
+      }
+    }
   )
     .then(res => res.json())
     .then(data => {
@@ -67,7 +67,7 @@ const getProfile = token => {
         name: data.displayName,
         profile: data.image.url,
         email: data.emails[0] && data.emails[0].value,
-        token,
+        token
       }
     })
 }
@@ -82,13 +82,13 @@ const login = (documentsDir /*: string*/) => {
 
 const restoreUser = (documentsDir /*: string*/) => {
   return getSavedData(documentsDir).then(
-    saved => (saved ? getOrRefreshUser(saved, documentsDir) : null),
+    saved => (saved ? getOrRefreshUser(saved, documentsDir) : null)
   )
 }
 
 const getOrRefreshUser = (
   token /*: {expires_at: number, access_token: string, refresh_token: string}*/,
-  documentsDir /*: string*/,
+  documentsDir /*: string*/
 ) => {
   console.log('restoring', token)
   if (token.expires_at > Date.now()) {
@@ -116,7 +116,7 @@ module.exports = Object.assign(
   {
     restoreUser,
     refreshToken,
-    login,
+    login
   },
-  files,
+  files
 )

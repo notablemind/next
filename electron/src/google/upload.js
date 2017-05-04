@@ -51,11 +51,11 @@ const insertFile = (token, config /*: {mimeType: string}*/, data, fields) => {
     {
       headers: {
         Authorization: 'Bearer ' + token.access_token,
-        'Content-Type': 'multipart/mixed; boundary="' + BOUNDARY + '"',
+        'Content-Type': 'multipart/mixed; boundary="' + BOUNDARY + '"'
       },
       method: 'POST',
-      body: makeBody(BOUNDARY, config, config.mimeType, data),
-    },
+      body: makeBody(BOUNDARY, config, config.mimeType, data)
+    }
   ).then(res => res.json())
 }
 

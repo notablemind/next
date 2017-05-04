@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "start": "NODE_ENV=development electron ."
+    "start": "NODE_ENV=development electron .",
+    "alt": "ALT_DOCS=1 NODE_ENV=development electron ."
   },
   "dependencies": {
     "electron": "1.5",

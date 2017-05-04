@@ -20,14 +20,14 @@ var config = {
   authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
   tokenUrl: 'https://www.googleapis.com/oauth2/v4/token',
   useBasicAuthorizationHeader: false,
-  redirectUri: 'http://localhost:4150/',
+  redirectUri: 'http://localhost:4150/'
 }
 
 const scopes = [
   'email',
   'profile',
   'https://www.googleapis.com/auth/drive.file',
-  'https://www.googleapis.com/auth/drive.appdata',
+  'https://www.googleapis.com/auth/drive.appdata'
 ]
 
 const windowParams = {
@@ -36,8 +36,8 @@ const windowParams = {
   'use-content-size': true,
   useContentSize: true,
   webPreferences: {
-    nodeIntegration: false,
-  },
+    nodeIntegration: false
+  }
 }
 
 const getAuthCode = () => {
@@ -50,7 +50,7 @@ const getAuthCode = () => {
       client_id: config.clientId,
       access_type: 'offline',
       prompt: 'consent',
-      scope: scopes.join(' '),
+      scope: scopes.join(' ')
     })
   return new Promise((res, rej) => {
     const win = new BrowserWindow(windowParams)
@@ -87,18 +87,18 @@ const getToken = data => {
     {
       client_id: config.clientId,
       client_secret: config.clientSecret,
-      redirect_uri: config.redirectUri,
+      redirect_uri: config.redirectUri
     },
-    data,
+    data
   )
 
   return fetch(config.tokenUrl, {
     headers: {
       Accept: 'application/json',
-      'Content-type': 'application/x-www-form-urlencoded',
+      'Content-type': 'application/x-www-form-urlencoded'
     },
     method: 'POST',
-    body: qs.stringify(query),
+    body: qs.stringify(query)
   })
     .then(res => res.json())
     .then(data => {
@@ -110,7 +110,7 @@ const getToken = data => {
 const getNewToken = code => {
   return getToken({
     code,
-    grant_type: 'authorization_code',
+    grant_type: 'authorization_code'
   })
 }
 
@@ -123,7 +123,7 @@ const authorize = () =>
 const refresh = (token /*: {refresh_token: string, access_token: string}*/) =>
   getToken({
     refresh_token: token.refresh_token,
-    grant_type: 'refresh_token',
+    grant_type: 'refresh_token'
   }).then(ntoken => {
     if (ntoken.error || !ntoken.access_token) throw new Error(ntoken.error)
     ntoken.refresh_token = token.refresh_token

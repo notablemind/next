@@ -22,7 +22,7 @@ type Api = {
 module.exports = (
   auth,
   syncConfig,
-  {db, api, dirty, pullOnly} /*: ?RemoteFile*/,
+  {db, api, dirty, pullOnly} /*: ?RemoteFile*/
 ) => {
   return api
     .checkRemote(auth, syncConfig)
@@ -38,8 +38,8 @@ module.exports = (
         (console.log('needs', needsPush, dirty), (needsPush || dirty) &&
           !pullOnly)
           ? createFileData(db).then(data =>
-              api.updateContents(auth, syncConfig, data),
+              api.updateContents(auth, syncConfig, data)
             )
-          : null,
+          : null
     )
 }

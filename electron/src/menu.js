@@ -4,17 +4,17 @@ module.exports = ({createNewWindow}) => {
       label: 'Electron',
       submenu: [
         {
-          role: 'about',
+          role: 'about'
         },
         {
-          type: 'separator',
+          type: 'separator'
         },
         {
           role: 'services',
-          submenu: [],
+          submenu: []
         },
         {
-          type: 'separator',
+          type: 'separator'
         },
         /* TODO maybe show b/c people like these?
         {
@@ -31,9 +31,9 @@ module.exports = ({createNewWindow}) => {
         },
         */
         {
-          role: 'quit',
-        },
-      ],
+          role: 'quit'
+        }
+      ]
     },
 
     {
@@ -42,95 +42,95 @@ module.exports = ({createNewWindow}) => {
         {
           label: 'New window',
           accelerator: 'CommandOrControl+N',
-          click: () => createNewWindow(),
-        },
-      ],
+          click: () => createNewWindow()
+        }
+      ]
     },
 
     {
       label: 'Edit',
       submenu: [
         {
-          role: 'undo',
+          role: 'undo'
         },
         {
-          role: 'redo',
+          role: 'redo'
         },
         {
-          type: 'separator',
+          type: 'separator'
         },
         {
-          role: 'cut',
+          role: 'cut'
         },
         {
-          role: 'copy',
+          role: 'copy'
         },
         {
-          role: 'paste',
+          role: 'paste'
         },
         {
-          role: 'pasteandmatchstyle',
+          role: 'pasteandmatchstyle'
         },
         {
-          role: 'delete',
+          role: 'delete'
         },
         {
-          role: 'selectall',
-        },
-      ],
+          role: 'selectall'
+        }
+      ]
     },
 
     {
       label: 'View',
       submenu: [
         {
-          role: 'reload',
+          role: 'reload'
         },
         {
-          role: 'forcereload',
+          role: 'forcereload'
         },
         {
-          role: 'toggledevtools',
+          role: 'toggledevtools'
         },
         {
-          type: 'separator',
+          type: 'separator'
         },
         {
-          role: 'resetzoom',
+          role: 'resetzoom'
         },
         {
-          role: 'zoomin',
+          role: 'zoomin'
         },
         {
-          role: 'zoomout',
+          role: 'zoomout'
         },
         {
-          type: 'separator',
+          type: 'separator'
         },
         {
-          role: 'togglefullscreen',
-        },
-      ],
+          role: 'togglefullscreen'
+        }
+      ]
     },
     {
       role: 'window',
       submenu: [
         {
-          role: 'close',
+          role: 'close'
         },
         {
-          role: 'minimize',
+          role: 'minimize'
         },
         {
-          role: 'zoom',
+          role: 'zoom'
         },
         {
-          type: 'separator',
+          type: 'separator'
         },
         {
-          role: 'front',
-        },
-      ],
+          role: 'front'
+        }
+      ]
     },
     {
       role: 'help',
@@ -139,30 +139,30 @@ module.exports = ({createNewWindow}) => {
           label: 'Learn More',
           click() {
             shell.openExternal('https://electron.atom.io')
-          },
+          }
         },
         {
           label: 'Documentation',
           click() {
             shell.openExternal(
-              `https://github.com/electron/electron/tree/v${process.versions.electron}/docs#readme`,
+              `https://github.com/electron/electron/tree/v${process.versions.electron}/docs#readme`
             )
-          },
+          }
         },
         {
           label: 'Community Discussions',
           click() {
             shell.openExternal('https://discuss.atom.io/c/electron')
-          },
+          }
         },
         {
           label: 'Search Issues',
           click() {
             shell.openExternal('https://github.com/electron/electron/issues')
-          },
-        },
-      ],
-    },
+          }
+        }
+      ]
+    }
   ]
 
   const {Menu} = require('electron')

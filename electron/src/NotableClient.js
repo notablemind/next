@@ -26,7 +26,7 @@ export default class NotableClient extends NotableBase {
 
     setTimeout(
       () => this._onFail(new Error('Timeout waiting for electron')),
-      5 * 1000,
+      5 * 1000
     )
 
     this.remote.on('toast', (evt, data) => this.showToast(data))
@@ -47,7 +47,7 @@ export default class NotableClient extends NotableBase {
       // console.log('got remote update', id, update)
       this.meta[id] = {
         ...this.meta[id],
-        ...update,
+        ...update
       }
       this.notifyMeta()
       this.notifyMetaById(id)
@@ -64,9 +64,9 @@ export default class NotableClient extends NotableBase {
     return docid
   }
 
-  importDoc(data) {
+  importDoc(filename, data) {
     const docid = uuid()
-    return this.prom.send('doc:import', docid, data).then(meta => {
+    return this.prom.send('doc:import', docid, filename, data).then(meta => {
       this.meta[docid] = meta
     })
   }
@@ -93,7 +93,7 @@ export default class NotableClient extends NotableBase {
           id,
           attr,
           value,
-          modified,
+          modified
         })
       },
       setNested(id, attrs, last, value, modified) {
@@ -102,7 +102,7 @@ export default class NotableClient extends NotableBase {
           attrs,
           last,
           value,
-          modified,
+          modified
         })
       },
       updateNested(id, attrs, last, update, modified) {
@@ -111,7 +111,7 @@ export default class NotableClient extends NotableBase {
           attrs,
           last,
           update,
-          modified,
+          modified
         })
       },
       update(id, update, modified) {
@@ -134,7 +134,7 @@ export default class NotableClient extends NotableBase {
       },
       destroy() {
         cleanup()
-      },
+      }
     })
   }
 

@@ -46,7 +46,7 @@ export default class NotableLocal extends NotableBase {
 
   getFileDb(docid) {
     const db = new PouchDB(id ? `doc_${id}` : 'notablemind_user', {
-      adapter: 'idb',
+      adapter: 'idb'
     })
     db.flushAndClose = () => db.close()
     return db

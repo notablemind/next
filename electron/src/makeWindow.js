@@ -18,8 +18,8 @@ const makeWindow = state => {
     height: 800,
     icon: path.join(__dirname, '../icon256.png'),
     webPreferences: {
-      webSecurity: false,
-    },
+      webSecurity: false
+    }
   })
   win.on('closed', function() {
     windows.splice(windows.indexOf(win), 1)
@@ -36,7 +36,7 @@ const makeWindow = state => {
   win.webContents.on('did-fail-load', (event, code, description, url) => {
     console.error('failed to load', url)
     win.webContents.executeJavaScript(
-      `document.body.innerHTML = "<div style='text-align:center;padding:100px'>Failed to load - you need to start the server</div>"`,
+      `document.body.innerHTML = "<div style='text-align:center;padding:100px'>Failed to load - you need to start the server</div>"`
     )
   })
 

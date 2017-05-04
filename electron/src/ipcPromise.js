@@ -11,9 +11,9 @@ module.exports = main => {
           err => {
             evt.sender.send(id, 'error', {
               message: err.message,
-              stack: err.stack,
+              stack: err.stack
             })
-          },
+          }
         )
       })
     },
@@ -30,6 +30,6 @@ module.exports = main => {
         })
         main.send(name, id, ...args)
       })
-    },
+    }
   }
 }

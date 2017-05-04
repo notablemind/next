@@ -41,7 +41,7 @@ module.exports = ({documentsDir, actions}) => {
       console.log('update meta', id, update)
       meta[id] = Object.assign({}, meta[id], update)
       saveFiles()
-    },
+    }
   })
 }
 

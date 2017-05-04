@@ -17,19 +17,18 @@ const makeSettings = data => {
     defaultViews: {
       root: {
         viewType: 'list',
-        settings: {},
-      },
-    },
+        settings: {}
+      }
+    }
   }
 }
 
 const flattenTree = (parent, tree) => {
   return [
-    {
-      ...tree,
+    Object.assign({}, tree, {
       parent,
-      children: tree.children.map(child => child.id),
-    },
+      children: tree.children.map(child => child.id)
+    })
   ].concat(...tree.children.map(flattenTree.bind(null, tree.id)))
 }
 
@@ -46,7 +45,7 @@ const makeDoc = node => {
     plugins: {},
     // TODO import types
     types: {},
-    views: {},
+    views: {}
   }
 }
 
@@ -66,7 +65,7 @@ module.exports = (id, filename, data) => {
     lastModified: data.modified,
     size: data.size,
     created: data.created,
-    sync: null,
+    sync: null
   }
   const settings = makeSettings(data)
   const docs = [settings].concat(flattenTree(null, data.root).map(makeDoc))

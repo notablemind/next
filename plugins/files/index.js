@@ -83,7 +83,7 @@ const plugin = ({nm}): Plugin<*, *> => ({
     title: 'Import file',
     action: () => {
       // TODO maybe have the store manage modals?
-      showModal(onClose => <ImportModal onClose={onClose} />)
+      showModal(onClose => <ImportModal nm={nm} onClose={onClose} />)
     },
   }],
 

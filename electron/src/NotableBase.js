@@ -50,7 +50,7 @@ export default class NotableBase {
   updateMeta(id, update) {
     this.meta[id] = {
       ...this.meta[id],
-      ...update,
+      ...update
     }
     this.notifyMeta()
     this.notifyMetaById(id)

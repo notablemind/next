@@ -7,6 +7,7 @@ export default class ImportModal extends Component {
   constructor() {
     super()
     this.state = {
+      filename: null,
       fileData: null,
     }
   }
@@ -16,6 +17,7 @@ export default class ImportModal extends Component {
         console.log('got', filenames)
         if (filenames.length) {
           this.setState({
+            filename: filenames[0],
             fileData:
               require('fs').readFileSync(filenames[0]),
           })
@@ -25,13 +27,15 @@ export default class ImportModal extends Component {
   }
 
   doImport() {
-    return Promise.resolve()
+    this.setState({importing: true})
+    return this.props.nm.importDoc(this.state.filename, this.state.fileData)
+      .then(docid => (this.setState({importing: false}), docid))
   }
 
-  linkCurrentNode = () => {
+  linkCurrentNode = docid => {
   }
 
-  createNewNode = () => {
+  createNewNode = docid => {
   }
 
   render() {
