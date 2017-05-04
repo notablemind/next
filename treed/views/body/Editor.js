@@ -22,6 +22,7 @@ export default class Editor extends Component {
   state: {
     tmpText: string,
     cancelledChange: boolean,
+    changeSelection: number,
   }
   _unmounted: boolean
   input: any
@@ -30,6 +31,7 @@ export default class Editor extends Component {
     super()
     this.state = {
       tmpText: props.node.content,
+      changeSelection: 0,
       cancelledChange: false,
     }
     this._unmounted = false
@@ -46,6 +48,24 @@ export default class Editor extends Component {
       this.props.keyActions.setContent(this.state.tmpText)
       this.props.actions.normalMode()
     }, 10)
+  }
+
+  moveChangeDown = () => {
+    const {options} = this.getChangeOptions()
+    this.setState(({changeSelection}) => ({
+      changeSelection: changeSelection < options.length - 1
+        ? changeSelection + 1
+        : 0
+    }))
+  }
+
+  moveChangeUp = () => {
+    const {options} = this.getChangeOptions()
+    this.setState(({changeSelection}) => ({
+      changeSelection: changeSelection > 0
+        ? changeSelection - 1
+        : options.length - 1
+    }))
   }
 
   onKeyDown = (e: any) => {
@@ -92,19 +112,38 @@ export default class Editor extends Component {
         }
         break
 
+      case 74: // j
+        if (!e.metaKey) return
+        if (!this.isChanging()) return
+        this.moveChangeDown()
+        break
+      case 75: // k
+        if (!e.metaKey) return
+        if (!this.isChanging()) return
+        this.moveChangeUp()
+        break
+
       case 38: // up
         if (e.shiftKey) return
-        var line = this.input.getCursorLine()
-        if (line !== 1 && line !== 0) return
-        this.props.keyActions.setContent(this.state.tmpText)
-        this.props.keyActions.onUp()
+        if (this.isChanging()) {
+          this.moveChangeUp()
+        } else {
+          var line = this.input.getCursorLine()
+          if (line !== 1 && line !== 0) return
+          this.props.keyActions.setContent(this.state.tmpText)
+          this.props.keyActions.onUp()
+        }
         break
       case 40: // down
         if (e.shiftKey) return
-        var line = this.input.getCursorLine()
-        if (line !== 1 && line !== -1) return
-        this.props.keyActions.setContent(this.state.tmpText)
-        this.props.keyActions.onDown()
+        if (this.isChanging()) {
+          this.moveChangeDown()
+        } else {
+          var line = this.input.getCursorLine()
+          if (line !== 1 && line !== -1) return
+          this.props.keyActions.setContent(this.state.tmpText)
+          this.props.keyActions.onDown()
+        }
         break
       case 39: // right
         if (e.shiftKey) return
@@ -180,7 +219,7 @@ export default class Editor extends Component {
     const {help, options} = this.getChangeOptions()
     if (!options.length) return false
     this.setState({tmpText: ''})
-    options[0].action()
+    options[this.state.changeSelection].action()
     return true
   }
 
@@ -238,6 +277,7 @@ export default class Editor extends Component {
 
   renderChangeList() {
     const {help, options} = this.getChangeOptions()
+    const {changeSelection} = this.state
     return (
       <div
         style={{
@@ -262,13 +302,15 @@ export default class Editor extends Component {
           >
             {help}
           </div>}
-        {options.map(option => (
+        {options.map((option, i) => (
           <div
             style={{
-              padding: '2px 10px',
             }}
             key={option.label}
             onMouseDown={option.action}
+            className={css(styles.option,
+                           i === changeSelection && styles.optionSelected
+                          )}
           >
             {option.label}
           </div>
@@ -304,5 +346,16 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   input: textStyle,
+
+  option: {
+    padding: '2px 10px',
+    cursor: 'pointer',
+    ':hover': {
+      backgroundColor: '#eee',
+    },
+  },
+  optionSelected: {
+    backgroundColor: '#eee',
+  },
 })
 css(styles.input)
