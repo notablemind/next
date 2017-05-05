@@ -22,6 +22,7 @@ type State = {
     pos: {top: number, left: number},
   },
   store: Store,
+  view: {hideCompleted: boolean},
   viewTheme: {
     indentStyle: 'minimal' | 'lines' | 'dots',
     maxWidth: number,

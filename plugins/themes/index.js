@@ -70,6 +70,7 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
         title: 'Set theme: ' + themes[key].title,
         action: (store) => {
           store.actions.setNested('settings', ['plugins', PLUGIN_ID, 'theme'], key)
+          store.emit(store.events.viewTheme())
         },
       }
     }).filter(x => x)
