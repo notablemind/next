@@ -61,9 +61,12 @@ app.get('/api/:id', (req, res) => {
 app.get('/api/:id/*', (req, res) => {
   const {id} = req.params
   const item = req.params[0]
-  const filename =
-  fs.readFile(path.join(jsonBase, itemsById[id].filename + '-contents'), 'utf8', (err, buffer) => {
+  const contents = path.join(jsonBase, itemsById[id].filename + '-contents')
+  console.log('reading contents', contents)
+  fs.readFile(contents, 'utf8', (err, buffer) => {
+    if (err) return (console.log(err), res.send('Failure'))
     fs.readFile(path.join(jsonBase, itemsById[id].filename), 'utf8', (err, metabuffer) => {
+      if (err) return (console.log(err), res.send('Failure'))
       const data = JSON.parse(buffer)
       const meta = JSON.parse(metabuffer).items['/' + item]
       meta.content = data['/' + item]

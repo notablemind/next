@@ -54,6 +54,13 @@ export default class Settings extends Component {
     // TODO I also want to maybe automatically get a session too.
   }
 
+  removeKernel(kernelId) {
+    const kernels = {...this.props.store.db.data.settings.plugins.code.kernels}
+    if (!kernels[kernelId]) return
+    delete kernels[kernelId]
+    this.props.store.actions.setNested('settings', ['plugins', 'code', 'kernels'], kernels)
+  }
+
   renderSources() {
     const {manager} = this.props
     return Object.keys(manager.sources).map(sid => {
@@ -103,6 +110,10 @@ export default class Settings extends Component {
           <div style={{flex: 1}}/>
           {sessions[kernel.id] && sessions[kernel.id].session.isConnected() ?
             'connected' : 'disconnected'}
+            <button onClick={() => this.removeKernel(kernel.id)}>
+              remove
+            </button>
+
         </div>
       ))}
     </div>

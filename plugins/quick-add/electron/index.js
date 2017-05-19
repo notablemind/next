@@ -21,7 +21,8 @@ const openWindow = (nm) => {
     frame: false,
     title: 'Notablemind Quick Add',
   })
-  quickAdd.loadURL('file://' + __dirname + '/doc.html')
+  quickAdd.loadURL('http://localhost:4154')
+  // quickAdd.loadURL('file://' + __dirname + '/doc.html')
   quickAdd.on('close', () => {
     quickAdd = null
   })
