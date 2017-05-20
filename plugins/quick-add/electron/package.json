@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "start": "node server.js",
+    "test": "../../../electron/node_modules/.bin/electron test.js"
+  }
+}
