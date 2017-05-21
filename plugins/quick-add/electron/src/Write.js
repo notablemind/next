@@ -41,12 +41,22 @@ export default class Write extends Component {
     } else if (e.key === 'Enter') {
       if (e.shiftKey) return
       e.preventDefault()
+      e.stopPropagation()
       if (e.metaKey) {
-        console.log('gonna submit right here y know')
+        this.finish(getMostRecent(this.props.nm.meta))
         return
       }
-      this.setState({searching: true})
-      // this.searcher.focus()
+      if (!this.state.searching) {
+        this.setState({searching: true})
+      } else {
+        this.searcher.focus()
+      }
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (!prevState.searching && this.state.searching) {
+      this.props.setSize(500, 500)
     }
   }
 
@@ -74,6 +84,10 @@ export default class Write extends Component {
     }, 100)
   }
 
+  finish = (doc) => {
+    console.log('trying to do things now')
+  }
+
   render() {
     return <div className={css(styles.container)}>
       <div>
@@ -92,8 +106,12 @@ export default class Write extends Component {
       </div>
       {this.state.searching
         ? <DocSearcher
-            docs={[]}
-            // ref={n => this.searcher = n}
+            docs={Object.values(this.props.nm.meta)}
+            onSubmit={doc => this.finish(doc)}
+            onPrev={this.props.onPrev}
+            onNext={this.props.onNext}
+            focusUp={() => this.input.focus()}
+            ref={n => this.searcher = n}
           />
         : <div className={css(styles.explanation)}>
           <div className={css(styles.row)}>
@@ -107,9 +125,23 @@ export default class Write extends Component {
   }
 }
 
+const searchDocs = (docs, text) => {
+  if (!text) return docs.sort((a, b) => a.lastOpened - b.lastOpened)
+  text = text.toLowerCase()
+  return docs
+    .filter(d => d.title.toLowerCase().indexOf(text) !== -1)
+    // TODO fuzzy search
+    .sort((a, b) => a.lastOpened - b.lastOpened)
+}
+
 class DocSearcher extends Component {
-  state = {
-    text: '',
+  constructor({docs}) {
+    super()
+    this.state = {
+      text: '',
+      results: searchDocs(docs, ''),
+      selected: 0,
+    }
   }
 
   componentDidMount() {
@@ -120,6 +152,7 @@ class DocSearcher extends Component {
     this.setState({
       text,
       results: searchDocs(this.props.docs, text),
+      selected: 0,
     })
   }
 
@@ -127,15 +160,53 @@ class DocSearcher extends Component {
     this.input.focus()
   }
 
+  onKeyDown = e => {
+    const {selected, results} = this.state
+    if (e.key === 'ArrowUp' || (e.key === 'k' && e.metaKey)) {
+      this.setState({
+        selected: selected > 0 ? selected - 1 : results.length - 1,
+      })
+    } else if (e.key === 'ArrowDown' || (e.key === 'j' && e.metaKey)) {
+      this.setState({
+        selected: selected < results.length - 1 ? selected + 1 : 0,
+      })
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (e.shiftKey) {
+        this.props.focusUp()
+      } else {
+        this.props.onSubmit(this.state.results[this.state.selected])
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault()
+      if (e.shiftKey) {
+        this.props.onPrev()
+      } else {
+        this.props.onNext()
+      }
+    }
+  }
+
   render() {
     return <div className={css(styles.searcher)}>
       <input
         ref={n => this.input = n}
-        placeholder="Search for a document, or cmd+enter to reuse most recent"
+        placeholder="Search for a target document"
         className={css(styles.input, styles.search)}
         onChange={e => this.setText(e.target.value)}
+        onKeyDown={this.onKeyDown}
       />
       <div className={css(styles.docs)}>
+        {this.state.results.map((doc, i) => (
+          <div
+            className={css(styles.result, i === this.state.selected && styles.selectedResult)}
+            onClick={() => this.props.onSubmit(doc)}
+          >
+            {doc.title}  
+          </div>
+        ))}
+        {!this.state.results.length &&
+          <div className={css(styles.result, styles.empty)}>No results</div>}
       </div>      
     </div>
   }
@@ -170,6 +241,22 @@ const styles = StyleSheet.create({
   search: {
     padding: '7px 10px',
     fontSize: 16,
+  },
+
+  result: {
+    padding: '5px 10px',
+    cursor: 'pointer',
+    ':hover': {
+      backgroundColor: '#eee',
+    }
+  },
+
+  empty: {
+    fontStyle: 'italic',
+  },
+
+  selectedResult: {
+    backgroundColor: '#eee',
   },
 
 })
