@@ -25,6 +25,10 @@ const tabs = [{
 const browserWindow = require('electron').remote.getCurrentWindow()
 
 export default class App extends Component {
+  constructor() {
+    super()
+    browserWindow.on('show', () => this.current && this.current.focus())
+  }
   state = {
     tab: tabs[0],
   }
@@ -54,6 +58,7 @@ export default class App extends Component {
       <div className={css(styles.tabs)}>
       {tabs.map(tab => (
         <div
+          key={tab.id}
           className={css(styles.tab, tab === this.state.tab && styles.selected)}
           onMouseDown={e => {
             e.preventDefault()
@@ -68,6 +73,8 @@ export default class App extends Component {
         onPrev={this.onPrev}
         onNext={this.onNext}
         setSize={(width, height) => browserWindow.setSize(width, height)}
+        cancel={() => browserWindow.hide()}
+        ref={comp => this.current = comp}
         nm={this.nm}
       />
     </div>

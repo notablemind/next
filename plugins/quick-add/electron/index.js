@@ -5,10 +5,10 @@ const newNode = require('../../../treed/newNode')
 
 const PLUGIN_ID = 'quick_add'
 
-let quickAdd = null
+// let quickAdd = null
 
-const openWindow = (nm, options) => {
-  quickAdd = new BrowserWindow(Object.assign({
+const openWindow = (nm, options, onClose) => {
+  const quickAdd = new BrowserWindow(Object.assign({
     width: 500,
     height: 22 + 99 + 5,
     movable: false,
@@ -16,6 +16,7 @@ const openWindow = (nm, options) => {
     // hasShadow: false,
     // useContentSize: true,
     // transparent: true,
+    show: false,
     skipTaskBar: true,
     alwaysOnTop: true,
     frame: false,
@@ -24,11 +25,14 @@ const openWindow = (nm, options) => {
   quickAdd.loadURL('http://localhost:4154')
   // quickAdd.loadURL('file://' + __dirname + '/doc.html')
   quickAdd.on('close', () => {
-    quickAdd = null
+    if (onClose) onClose()
+    // quickAdd = null
   })
   quickAdd.webContents.on('dom-ready', () => {
     quickAdd.webContents.send('meta', nm.meta)
   })
+  quickAdd.on('blur', () => quickAdd.hide())
+  return quickAdd
 }
 
 const addItem = (nm, docid, text) => {
@@ -53,9 +57,13 @@ const plugin = {
 
   init(state, nm) {
     const {globalShortcut} = require('electron')
+    let window = openWindow(nm, {}, () => window = null)
     const success = globalShortcut.register('Super+Ctrl+m', () => {
       console.log('global shortcut triggered!')
-      openWindow(nm)
+      if (window) {
+        window.show()
+      }
+      // openWindow(nm)
     })
     ipcMain.on('quick-add', (event, {text, doc}) => {
       console.log('quicking adding', text, doc)

@@ -51,6 +51,8 @@ export default class Write extends Component {
       } else {
         this.searcher.focus()
       }
+    } else if (e.key === 'Escape') {
+      this.props.cancel()
     }
   }
 
@@ -107,6 +109,7 @@ export default class Write extends Component {
       {this.state.searching
         ? <DocSearcher
             docs={Object.values(this.props.nm.meta)}
+            cancel={this.props.cancel}
             onSubmit={doc => this.finish(doc)}
             onPrev={this.props.onPrev}
             onNext={this.props.onNext}
@@ -126,12 +129,12 @@ export default class Write extends Component {
 }
 
 const searchDocs = (docs, text) => {
-  if (!text) return docs.sort((a, b) => a.lastOpened - b.lastOpened)
+  if (!text) return docs.sort((a, b) => b.lastOpened - a.lastOpened)
   text = text.toLowerCase()
   return docs
     .filter(d => d.title.toLowerCase().indexOf(text) !== -1)
     // TODO fuzzy search
-    .sort((a, b) => a.lastOpened - b.lastOpened)
+    .sort((a, b) => b.lastOpened - a.lastOpened)
 }
 
 class DocSearcher extends Component {
@@ -184,6 +187,8 @@ class DocSearcher extends Component {
       } else {
         this.props.onNext()
       }
+    } else if (e.key === 'Escape') {
+      this.props.cancel()
     }
   }
 
@@ -199,6 +204,7 @@ class DocSearcher extends Component {
       <div className={css(styles.docs)}>
         {this.state.results.map((doc, i) => (
           <div
+            key={doc.id}
             className={css(styles.result, i === this.state.selected && styles.selectedResult)}
             onClick={() => this.props.onSubmit(doc)}
           >
