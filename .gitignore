@@ -13,3 +13,4 @@ plugins/scriptures/server/json
 electron/documents
 electron/doc_backups
 electron/alt_docs
+.vscode

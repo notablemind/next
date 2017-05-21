@@ -38,6 +38,7 @@ module.exports = {
     alias: {
       // treed: path.join(__dirname, '..', '..', 'shared', 'treed'),
     },
+    // extensions: ['.re', '.js', '.ml', '.json'],
   },
 
   externals: {
@@ -68,6 +69,8 @@ module.exports = {
         loader: 'style-loader!css-loader',
         // include: sourceDirectories,
       },
+      // Not ready yet
+      // { test: /\.(re|ml)$/, loader: 'bs-loader' },
     ],
   },
 }

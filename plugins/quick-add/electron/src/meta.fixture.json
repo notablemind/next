@@ -1,0 +1,196 @@
+{
+  "home": {
+    "id": "home",
+    "lastModified": 1491365490336,
+    "lastOpened": 1493872988146,
+    "size": 14,
+    "sync": null,
+    "title": "Home"
+  },
+  "e0f9212e52da18c707f709d644": {
+    "id": "e0f9212e52da18c707f709d644",
+    "title": "awesome",
+    "lastOpened": 1491365542528,
+    "lastModified": 1491365542528,
+    "size": 1,
+    "sync": null
+  },
+  "9ee8d18159b9a0f6525b6b38b7": {
+    "id": "9ee8d18159b9a0f6525b6b38b7",
+    "title": "An Awesome Test File",
+    "lastOpened": 1491365742594,
+    "lastModified": 1491365619582,
+    "size": 1,
+    "sync": null
+  },
+  "1db4c61a5a56b97d30d77a8d08": {
+    "id": "1db4c61a5a56b97d30d77a8d08",
+    "title": "What if I make one now",
+    "lastOpened": 1493907103273,
+    "lastModified": 1491365752431,
+    "size": 10,
+    "sync": null
+  },
+  "bd41728630c5f536a8c272a04e": {
+    "id": "bd41728630c5f536a8c272a04e",
+    "title": "ok just one more",
+    "lastOpened": 1491365816832,
+    "lastModified": 1491365784412,
+    "size": 2,
+    "sync": null
+  },
+  "724090116b0116f3da14b275f3": {
+    "id": "724090116b0116f3da14b275f3",
+    "title": "Structured Editor thoughts",
+    "lastModified": "2017-04-05T17:17:35.344Z",
+    "lastOpened": 1491412600843,
+    "size": 28,
+    "sync": {
+      "remoteFiles": {
+        "contents": {
+          "id": "0B7hd9KSPNPXaVjd2LXRycG1JZDQ",
+          "trashed": false,
+          "appProperties": {
+            "nmType": "contents",
+            "nmId": "724090116b0116f3da14b275f3"
+          },
+          "version": "286686",
+          "createdTime": "2017-04-05T03:01:36.543Z",
+          "modifiedTime": "2017-04-05T17:17:35.344Z",
+          "owners": [
+            {
+              "kind": "drive#user",
+              "displayName": "Jared Forsyth",
+              "photoLink": "https://lh3.googleusercontent.com/-eu97G2y5-Zk/AAAAAAAAAAI/AAAAAAAAFU0/Lrc6qCJ9cEo/s64/photo.jpg",
+              "me": true,
+              "permissionId": "09638566390414588942",
+              "emailAddress": "jabapyth@gmail.com"
+            }
+          ],
+          "ownedByMe": true,
+          "capabilities": {
+            "canAddChildren": false,
+            "canComment": true,
+            "canCopy": true,
+            "canDelete": true,
+            "canDownload": true,
+            "canEdit": true,
+            "canListChildren": false,
+            "canMoveItemIntoTeamDrive": true,
+            "canReadRevisions": true,
+            "canRemoveChildren": false,
+            "canRename": true,
+            "canShare": true,
+            "canTrash": true,
+            "canUntrash": true
+          },
+          "md5Checksum": "c1ee51340aa821a30c8b450df04853ae",
+          "size": "15253",
+          "quotaBytesUsed": "15253",
+          "headRevisionId": "0B7hd9KSPNPXaN1I5TzRTdjhXM3RGS01XaDJMTkNBOUc0d2pZPQ"
+        },
+        "meta": {
+          "id": "0B7hd9KSPNPXaUVpldk11d0Y1VzA",
+          "trashed": false,
+          "appProperties": {
+            "nmType": "meta",
+            "nmId": "724090116b0116f3da14b275f3"
+          },
+          "version": "286438",
+          "createdTime": "2017-04-05T03:01:36.391Z",
+          "modifiedTime": "2017-04-05T03:01:36.391Z",
+          "owners": [
+            {
+              "kind": "drive#user",
+              "displayName": "Jared Forsyth",
+              "photoLink": "https://lh3.googleusercontent.com/-eu97G2y5-Zk/AAAAAAAAAAI/AAAAAAAAFU0/Lrc6qCJ9cEo/s64/photo.jpg",
+              "me": true,
+              "permissionId": "09638566390414588942",
+              "emailAddress": "jabapyth@gmail.com"
+            }
+          ],
+          "ownedByMe": true,
+          "capabilities": {
+            "canAddChildren": false,
+            "canComment": true,
+            "canCopy": true,
+            "canDelete": true,
+            "canDownload": true,
+            "canEdit": true,
+            "canListChildren": false,
+            "canMoveItemIntoTeamDrive": true,
+            "canReadRevisions": true,
+            "canRemoveChildren": false,
+            "canRename": true,
+            "canShare": true,
+            "canTrash": true,
+            "canUntrash": true
+          },
+          "md5Checksum": "9731a45ef79bb3e45e65e2e392c61b30",
+          "size": "35",
+          "quotaBytesUsed": "35",
+          "headRevisionId": "0B7hd9KSPNPXaK1FGOW41MmFuRDJmejBCRG02OUxUQy9CMk44PQ"
+        },
+        "folder": {
+          "id": "0B7hd9KSPNPXaaEVIRTFsNnJwZnc",
+          "trashed": false,
+          "appProperties": {
+            "nmType": "doc",
+            "nmId": "724090116b0116f3da14b275f3"
+          },
+          "version": "286490",
+          "createdTime": "2017-04-05T03:01:35.731Z",
+          "modifiedTime": "2017-04-05T03:01:35.731Z",
+          "owners": [
+            {
+              "kind": "drive#user",
+              "displayName": "Jared Forsyth",
+              "photoLink": "https://lh3.googleusercontent.com/-eu97G2y5-Zk/AAAAAAAAAAI/AAAAAAAAFU0/Lrc6qCJ9cEo/s64/photo.jpg",
+              "me": true,
+              "permissionId": "09638566390414588942",
+              "emailAddress": "jabapyth@gmail.com"
+            }
+          ],
+          "ownedByMe": true,
+          "capabilities": {
+            "canAddChildren": true,
+            "canComment": true,
+            "canCopy": false,
+            "canDelete": true,
+            "canDownload": true,
+            "canEdit": true,
+            "canListChildren": true,
+            "canMoveItemIntoTeamDrive": true,
+            "canReadRevisions": false,
+            "canRemoveChildren": true,
+            "canRename": true,
+            "canShare": true,
+            "canTrash": true,
+            "canUntrash": true
+          },
+          "quotaBytesUsed": "0"
+        }
+      },
+      "lastSynced": 1491413361463,
+      "dirty": false
+    }
+  },
+  "a2718d57c5ca48c59b84c6cd64": {
+    "id": "a2718d57c5ca48c59b84c6cd64",
+    "title": "NotableMind v2",
+    "lastOpened": 1493916992098,
+    "lastModified": 1486871967622,
+    "size": 313,
+    "created": 1481246380832,
+    "sync": null
+  },
+  "1818945f5e9ebf50407c1a6c0b": {
+    "id": "1818945f5e9ebf50407c1a6c0b",
+    "title": "Interviews",
+    "lastOpened": 1493915307224,
+    "lastModified": 1493827753136,
+    "size": 9028,
+    "created": 1466700498285,
+    "sync": null
+  }
+}

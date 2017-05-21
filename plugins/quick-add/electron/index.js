@@ -7,20 +7,20 @@ const PLUGIN_ID = 'quick_add'
 
 let quickAdd = null
 
-const openWindow = (nm) => {
-  quickAdd = new BrowserWindow({
+const openWindow = (nm, options) => {
+  quickAdd = new BrowserWindow(Object.assign({
     width: 500,
-    height: 500,
+    height: 22 + 99 + 5,
     movable: false,
     resizable: false,
-    hasShadow: false,
+    // hasShadow: false,
     // useContentSize: true,
-    transparent: true,
+    // transparent: true,
     skipTaskBar: true,
     alwaysOnTop: true,
     frame: false,
     title: 'Notablemind Quick Add',
-  })
+  }, options))
   quickAdd.loadURL('http://localhost:4154')
   // quickAdd.loadURL('file://' + __dirname + '/doc.html')
   quickAdd.on('close', () => {

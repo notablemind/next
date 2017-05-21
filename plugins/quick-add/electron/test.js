@@ -7,6 +7,8 @@ const plugin = require('./')
 plugin._openWindow({
   meta: {
   }
+}, {
+  alwaysOnTop: false,
 })
 
 })
