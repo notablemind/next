@@ -84,12 +84,27 @@ const plugin = {
       }
     })
     state.ipcPromise.on('full-search', (event, text) => {
+      return nm.search(text).then(results => results.map(({key, score, value}) => {
+        const [docid, id] = key.split(':')
+        return {
+          title: value.content.slice(0, 100),
+          subtitle: nm.meta[docid].title,
+          type: value.type,
+          id: docid,
+          root: id,
+        }
+      })).then(results => {
+        console.log('got search results', results.length)
+        return results
+      }) // TODO sort by score?
+      /*
       return [{
-        title: 'full text',
+        title: 'full text: ' + text,
         id: 'home',
         root: 'root',
         subtitle: 'Home',
       }]
+      */
     })
   },
   _openWindow: openWindow

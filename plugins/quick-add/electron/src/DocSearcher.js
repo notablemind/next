@@ -2,6 +2,7 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
+import Renderer from '../../../../treed/views/body/Renderer'
 import ensureInView from 'treed/ensureInView'
 import ipcPromise from '../../../../electron/src/ipcPromise'
 
@@ -9,6 +10,7 @@ type Result = {
   title: string,
   id: string,
   root: string,
+  type: string,
   subtitle: ?string,
 }
 
@@ -19,7 +21,7 @@ const searchDocs = (docs, text): Array<Result> => {
     .filter(d => d.title.toLowerCase().indexOf(text) !== -1)
     // TODO fuzzy search
     .sort((a, b) => b.lastOpened - a.lastOpened)
-    .map(doc => ({title: doc.title, id: doc.id, root: 'root', subtitle: null}))
+    .map(doc => ({title: doc.title, id: doc.id, root: 'root', subtitle: null, type: ':doc:'}))
 }
 
 const DEBOUNCE = 200
@@ -58,10 +60,12 @@ export default class DocSearcher extends Component {
   }
 
   setText = (text: string) => {
+    const docs = searchDocs(this.props.docs, text)
     this.setState({
       text,
-      results: searchDocs(this.props.docs, text),
-      fullResults: [], // TODO?
+      results: docs,
+      fullResults: docs.length > 0 ? [] : this.state.fullResults,
+      // fullResults: [], // TODO?
       selected: 0,
     })
     this.fullSearch(text)
@@ -69,7 +73,10 @@ export default class DocSearcher extends Component {
 
   fullSearch: (a: string) => void = debounce((text: string) => {
     this.remoteProm.send('full-search', text).then(results => {
+      console.log('full results', results)
       this.setState(state => state.text === text ? {fullResults: results} : {})
+    }, err => {
+      this.setState(state => state.text === text ? {fullResults: []} : {})
     })
   }, DEBOUNCE)
 
@@ -116,7 +123,7 @@ export default class DocSearcher extends Component {
     return <div className={css(styles.searcher)}>
       <input
         ref={n => this.input = n}
-        placeholder="Search for a target document"
+        placeholder="Search by document title or node content"
         className={css(styles.input, styles.search)}
         onChange={e => this.setText(e.target.value)}
         onKeyDown={this.onKeyDown}
@@ -124,12 +131,17 @@ export default class DocSearcher extends Component {
       <div className={css(styles.docs)}>
         {(results.concat(fullResults)).map((doc, i) => (
           <EnsureInView
-            key={doc.id}
+            key={doc.id + ':' + doc.root}
             active={i === selected}
             className={css(styles.result, i === selected && styles.selectedResult)}
             onClick={(e) => this.props.onSubmit(doc, e.metaKey)}
           >
-            {doc.title} {/* TODO subtitle */}
+            {renderItem(doc)}
+            {doc.subtitle && 
+              <div className={css(styles.subtitle)}>
+                {/*{doc.type} ::*/}
+                {doc.subtitle}
+              </div>}
           </EnsureInView>
         ))}
         {!results.length && !fullResults.length &&
@@ -146,7 +158,7 @@ class EnsureInView extends Component {
       ensureInView(this.node, true, 50)
     }
   }
-  
+
   componentDidUpdate(prevProps, prevState) {
     if (!prevProps.active && this.props.active) {
       ensureInView(this.node, true, 50)
@@ -159,9 +171,21 @@ class EnsureInView extends Component {
   }
 }
 
+const renderItem = doc => {
+  if (doc.type === 'code') {
+    return <div className={css(styles.code)}>{doc.title}</div>
+  }
+  return <Renderer content={doc.title} /> // TODO have an icon based on the type
+}
+
 const styles = StyleSheet.create({
   searcher: {
     flex: 1,
+  },
+
+  code: {
+    fontFamily: 'monospace',
+    whiteSpace: 'pre-wrap',
   },
 
   input: {
@@ -181,6 +205,13 @@ const styles = StyleSheet.create({
     ':hover': {
       backgroundColor: '#eee',
     }
+  },
+
+  subtitle: {
+    fontSize: '.8em',
+    fontWeight: 'normal',
+    textAlign: 'right',
+    color: '#66f',
   },
 
   docs: {

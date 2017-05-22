@@ -6,6 +6,7 @@
   "dependencies": {
     "electron": "1.5",
     "leveldown": "^1.6.0",
+    "levi": "^2.1.7",
     "pouchdb": "^6.1.2"
   }
 }

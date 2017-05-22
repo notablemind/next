@@ -71,3 +71,23 @@ body {
     min-height: 0;
 }
 
+
+
+/** markdown stuff **/
+p {
+    margin: 0;
+}
+
+p code {
+    padding: 2px 4px;
+    background-color: #ddd;
+    border-radius: 4px;
+    text-shadow: 1px 1px 0px white;
+    white-space: nowrap;
+}
+
+pre {
+    overflow: auto;
+    margin: 0;
+    padding: 0;
+}

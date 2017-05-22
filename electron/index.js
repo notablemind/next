@@ -52,4 +52,3 @@ app.on('ready', function() {
   // makeWindow(state)
   state.createNewWindow()
 });
-

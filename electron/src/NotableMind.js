@@ -1,4 +1,4 @@
-// @flow
+// @_flow
 
 const {BrowserWindow, WebContents, ipcMain} = require('electron')
 const PouchDB = require('pouchdb')
@@ -12,6 +12,8 @@ const sync = require('./sync')
 const createFileData = require('./createFileData')
 const mergeDataIntoDatabase = require('./mergeDataIntoDatabase')
 const importers = require('./importers')
+const searcher = require('./searcher')
+const loadMeta = require('./loadMeta')
 
 const tryParse = data => {
   try {
@@ -35,25 +37,7 @@ const importData = (id, filename, data) => {
   }
 }
 
-const loadMeta = (documentsDir /*: Meta*/) => {
-  const metaPath = path.join(documentsDir, 'meta.json')
-  try {
-    return JSON.parse(fs.readFileSync(metaPath, 'utf8'))
-  } catch (err) {
-    return {
-      home: {
-        id: 'home',
-        lastModified: Date.now(),
-        lastOpened: Date.now(),
-        size: 1,
-        sync: null,
-        title: 'Home'
-      }
-    }
-  }
-}
-
-/*
+/*:
 
 type FileMeta = {
   id: string,
@@ -145,7 +129,7 @@ const googleSyncApi = {
 }
 
 module.exports = class Notablemind {
-  /*
+  /*:
   documentsDir: string
   plugins: any[]
   pluginState: {[id: string]: {}}
@@ -174,6 +158,8 @@ module.exports = class Notablemind {
     this.updaters = {}
     this.periods = {}
 
+    this.searcher = searcher(this.documentsDir)
+
     this.user = null
     this.userProm = google.restoreUser(this.documentsDir).then(user => {
       if (user) {
@@ -185,6 +171,10 @@ module.exports = class Notablemind {
         this.broadcast('user:status', LOGGED_OUT)
       }
     })
+  }
+
+  search(text/*: string*/) {
+    return this.searcher.search(text)
   }
 
   saveMeta() {
