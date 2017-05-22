@@ -3,6 +3,7 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 // import {comp: Write} from './Write.re'
 import AutoGrowTextarea from './AutoGrowTextarea'
+import ensureInView from 'treed/ensureInView'
 
 let savedText = ''
 
@@ -62,7 +63,7 @@ export default class Write extends Component {
     }
   }
 
-  setText = text => {
+  setText = (text: string) => {
     this.setState({text})
     savedText = text
   }
@@ -74,20 +75,24 @@ export default class Write extends Component {
     }, 10)
   }
 
-  resizeWindow = (diff = 0) => {
+  resizeWindow = (diff: number = 0) => {
     this.props.setSize(500, document.getElementById('container').offsetHeight + diff)
   }
 
   onBlur = () => {
     setTimeout(() => {
       if (!this.unmounted) {
-        console.log('should close plz')
+        // console.log('should close plz')
+        // dunno if I need this actually
       }
     }, 100)
   }
 
-  finish = (doc) => {
+  finish = (doc: {id: string}) => {
     console.log('trying to do things now')
+    this.props.nm.remote.send('quick-add', {text: this.state.text, doc: doc.id})
+    this.setState({searching: false, text: ''})
+    this.props.cancel()
   }
 
   render() {
@@ -118,7 +123,7 @@ export default class Write extends Component {
           />
         : <div className={css(styles.explanation)}>
           <div className={css(styles.row)}>
-            <span className={css(styles.code)}>cmd+enter</span> to add to {getMostRecent(this.props.nm.meta).title}
+            <span className={css(styles.code)}>cmd+enter</span> to add to <span className={css(styles.title)}>{getMostRecent(this.props.nm.meta).title}</span>
             </div>
           <div className={css(styles.row)}>
             <span className={css(styles.code)}>enter</span> to select a target document
@@ -146,6 +151,13 @@ class DocSearcher extends Component {
       selected: 0,
     }
   }
+
+  state: {
+    text: string,
+    results: any[],
+    selected: number
+  }
+  input: any
 
   componentDidMount() {
     this.input.focus()
@@ -203,13 +215,14 @@ class DocSearcher extends Component {
       />
       <div className={css(styles.docs)}>
         {this.state.results.map((doc, i) => (
-          <div
+          <EnsureInView
             key={doc.id}
+            active={i === this.state.selected}
             className={css(styles.result, i === this.state.selected && styles.selectedResult)}
             onClick={() => this.props.onSubmit(doc)}
           >
             {doc.title}  
-          </div>
+          </EnsureInView>
         ))}
         {!this.state.results.length &&
           <div className={css(styles.result, styles.empty)}>No results</div>}
@@ -218,7 +231,31 @@ class DocSearcher extends Component {
   }
 }
 
+class EnsureInView extends Component {
+  node: any
+  componentDidMount() {
+    if (this.props.active) {
+      ensureInView(this.node, true, 50)
+    }
+  }
+  
+  componentDidUpdate(prevProps, prevState) {
+    if (!prevProps.active && this.props.active) {
+      ensureInView(this.node, true, 50)
+    }
+  }
+  
+  render() {
+    const {active, ...props} = this.props
+    return <div {...props} ref={node => this.node = node} />
+  }
+}
+
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+
   input: {
     outline: 'none',
     border: 'none',
@@ -240,8 +277,18 @@ const styles = StyleSheet.create({
     padding: '2px 3px',
   },
 
+  title: {
+    backgroundColor: '#eef',
+    borderRadius: 3,
+    padding: '2px 3px',
+  },
+
   text: {
     fontSize: 20,
+  },
+
+  searcher: {
+    flex: 1,
   },
 
   search: {
@@ -255,6 +302,11 @@ const styles = StyleSheet.create({
     ':hover': {
       backgroundColor: '#eee',
     }
+  },
+
+  docs: {
+    overflow: 'auto',
+    flex: 1,
   },
 
   empty: {

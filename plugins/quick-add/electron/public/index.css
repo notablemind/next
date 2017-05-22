@@ -42,6 +42,10 @@ body {
     /* width: 500px; */
 }
 
+#container {
+    max-height: 500px;
+}
+
 #input {
     padding: 10px 10px;
     border: none;

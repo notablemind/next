@@ -29,10 +29,10 @@ window.addEventListener('wheel', () => {
   clearInterval(scrolling)
 })
 
-const ensureInView = (item, scrollTo = true, margin = 100) => {
+const ensureInView = (item: any, scrollTo: boolean = true, margin: number = 100) => {
   const itemBox = item.getBoundingClientRect()
   const parent = getScrollParent(item)
-  const parentBox = parent === document.body
+  const parentBox = (parent === document.body || parent === document)
     ? {
         top: 0,
         left: 0,

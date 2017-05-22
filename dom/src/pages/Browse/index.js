@@ -123,7 +123,7 @@ export default class Browse extends Component {
       plugins,
       viewTypes,
       'notablemind_user',
-      loadSharedViewData('notablemind_user'),
+      loadSharedViewData('notablemind_user') || {},
     ))
     const userShortcuts = {}
     const globalLayer = makeKeyLayer(

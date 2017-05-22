@@ -20,9 +20,9 @@ import SyncStatus from '../Settings/Sync/Status'
 
 import Icon from 'treed/views/utils/Icon'
 
-import type {Store} from 'treed/types'
+import type {Store, Plugin} from 'treed/types'
 
-const plugins = [
+const plugins: Array<Plugin<any, any>> = [
   require('../../../../plugins/files').default,
   require('../../../../plugins/minimap').default,
   require('../../../../plugins/themes').default,
@@ -164,6 +164,7 @@ class Document extends Component {
     console.log('Document constructor', id)
     this.state = {
       db: null,
+      quick: null,
       treed: null,
       store: null,
       // sharedViewData: loadSharedViewData(props.id),

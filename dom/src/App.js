@@ -32,6 +32,10 @@ export default class App extends Component {
     this.nm = new NotableMind(this.showToast)
   }
 
+  showToast = (config: any) => {
+    console.log('toasty', config)
+  }
+
   componentWillMount() {
     this.nm.init().then(() => this.setState({loading: false}))
   }

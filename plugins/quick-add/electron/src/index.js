@@ -2,13 +2,14 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
+import NotableClient from '../../../../electron/src/NotableClient'
 import Write from './Write'
 // import {comp as Write} from './Write.re'
 
 const Sticky = () => <div>sticky...</div>
 const Open = () => <div>open...</div>
 
-const tabs = [{
+const tabs: Array<{id: string, name: string, component: any}> = [{
   id: 'write',
   name: 'Write',
   component: Write,
@@ -25,15 +26,23 @@ const tabs = [{
 const browserWindow = require('electron').remote.getCurrentWindow()
 
 export default class App extends Component {
+  current: any
+  nm: NotableClient
   constructor() {
     super()
-    browserWindow.on('show', () => this.current && this.current.focus())
+    browserWindow.on('show', () => {
+      if (this.current && this.current.focus) this.current.focus()
+    })
+    browserWindow.on('blur', () => browserWindow.hide())
+    this.nm = new NotableClient(arg => console.log('toasty', arg))
   }
   state = {
     tab: tabs[0],
+    loading: true,
   }
-  nm = {
-    meta: require('./meta.fixture.json'),
+
+  componentDidMount() {
+    this.nm.init().then(() => this.setState({loading: false}))
   }
 
   onPrev = () => {
@@ -53,6 +62,12 @@ export default class App extends Component {
   }
 
   render() {
+    if (this.state.loading) {
+      return <div className={css(styles.container)}>
+        Loading...  
+      </div>
+    }
+
     const Component = this.state.tab.component
     return <div className={css(styles.container)}>
       <div className={css(styles.tabs)}>
@@ -83,6 +98,7 @@ export default class App extends Component {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
   },
 
   tabs: {

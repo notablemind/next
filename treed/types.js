@@ -176,7 +176,7 @@ export type PluginNodeConfig = {|
 export type PluginNodeTypeConfig<T> = {
   title: string,
   newSiblingsShouldCarryType?: boolean,
-  shortcut: string,
+  shortcut?: string,
   render?: ?any,
   defaultNodeConfig?: () => T,
   contextMenu?: (typeData: T, node: Node, store: Store) => ?MenuResult,

@@ -31,7 +31,6 @@ const openWindow = (nm, options, onClose) => {
   quickAdd.webContents.on('dom-ready', () => {
     quickAdd.webContents.send('meta', nm.meta)
   })
-  quickAdd.on('blur', () => quickAdd.hide())
   return quickAdd
 }
 

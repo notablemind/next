@@ -95,28 +95,37 @@ const searchNodes = (data, text) => {
   return nodes.map(node => ({key: node._id, title: node.content, node}))
 }
 
-const searchFiles = (meta, text) => {
-  return Object.values(meta)
+const searchFiles = (meta: {[key: string]: {title: string, id: string}}, text: string) => {
+  return ((Object.values(meta): any): Array<{title: string, id: string}>)
     .filter(meta => fuzzysearch(text, meta.title.toLowerCase()))
     .map(file => ({key: file.id, title: file.title, file}))
 }
 
+type Props = {
+  initial: Tab,
+  // TODO type
+  nm: any,
+  treed: any,
+  store: any,
+  extraCommands: any[],
+  initialTab: Tab,
+  onClose: () => void,
+}
+
+type Result = any // TODO union type {title: string, key: string}
+
 export default class QuickBar extends Component {
-  props: {
-    initial: Tab,
-    nm: any,
-    treed: any,
-    extraCommands: any[],
-    onClose: () => void,
-  }
+  props: Props
   state: {
     tab: Tab,
     commands: any[],
-    results: {title: string, key: string}[],
+    results: Result[],
+    selected: number,
     text: string,
   }
+  node: any
 
-  constructor(props) {
+  constructor(props: Props) {
     super()
     const commands = collectCommands(
       props.treed.enabledPlugins,
@@ -134,6 +143,8 @@ export default class QuickBar extends Component {
       case 'open':
         results = searchFiles(props.nm.meta, '')
         break
+      default:
+        throw new Error('invalid tab')
     }
     this.state = {
       tab: props.initialTab,
@@ -149,7 +160,7 @@ export default class QuickBar extends Component {
     this.node.focus()
   }
 
-  setText(text) {
+  setText(text: string) {
     this.setState({
       text,
       results: this.search(text.toLowerCase(), this.state.tab),
@@ -157,7 +168,7 @@ export default class QuickBar extends Component {
     })
   }
 
-  search(text, tab) {
+  search(text: string, tab: Tab): Result[] {
     switch (tab) {
       case 'command':
         return searchCommands(this.state.commands, text)
@@ -165,10 +176,12 @@ export default class QuickBar extends Component {
         return searchNodes(this.props.treed.db.data, text)
       case 'open':
         return searchFiles(this.props.nm.meta, text)
+      default:
+        throw new Error('unreachable')
     }
   }
 
-  onSelect(i) {
+  onSelect(i: number) {
     switch (this.state.tab) {
       case 'command':
         this.state.results[i].command.action(this.props.store)
