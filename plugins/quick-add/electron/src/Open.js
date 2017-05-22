@@ -28,13 +28,14 @@ export default class Open extends Component {
     this.searcher.focus()
   }
 
-  finish = (doc: any, sticky: boolean) => {
-    this.props.nm.remote.send('quick-open', {doc: doc.id, sticky, root: 'root'})
+  finish = (result: any, sticky: boolean) => {
+    this.props.nm.remote.send('quick-open', {doc: result.id, sticky, root: result.root})
   }
 
   render() {
     return <DocSearcher
       docs={Object.values(this.props.nm.meta)}
+      remote={this.props.nm.remote}
       cancel={this.props.cancel}
       onSubmit={this.finish}
       ref={n => this.searcher = n}

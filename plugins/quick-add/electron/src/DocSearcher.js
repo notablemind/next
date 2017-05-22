@@ -3,58 +3,89 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import ensureInView from 'treed/ensureInView'
+import ipcPromise from '../../../../electron/src/ipcPromise'
 
-const searchDocs = (docs, text) => {
+type Result = {
+  title: string,
+  id: string,
+  root: string,
+  subtitle: ?string,
+}
+
+const searchDocs = (docs, text): Array<Result> => {
   if (!text) return docs.sort((a, b) => b.lastOpened - a.lastOpened)
   text = text.toLowerCase()
   return docs
     .filter(d => d.title.toLowerCase().indexOf(text) !== -1)
     // TODO fuzzy search
     .sort((a, b) => b.lastOpened - a.lastOpened)
+    .map(doc => ({title: doc.title, id: doc.id, root: 'root', subtitle: null}))
+}
+
+const DEBOUNCE = 200
+
+const debounce = <T>(fn: (a: T) => void, time): (a: T) => void => {
+  let tout = null
+  return (arg: T) => {
+    clearTimeout(tout)
+    tout = setTimeout(() => fn(arg), time)
+  }
 }
 
 export default class DocSearcher extends Component {
-  constructor({docs}) {
+  constructor({docs}: any) {
     super()
     this.state = {
       text: '',
       results: searchDocs(docs, ''),
+      fullResults: [],
       selected: 0,
     }
   }
 
   state: {
     text: string,
-    results: any[],
+    results: Result[],
+    fullResults: Result[],
     selected: number
   }
   input: any
+  remoteProm: any
 
   componentDidMount() {
     this.input.focus()
+    this.remoteProm = ipcPromise(this.props.remote)
   }
 
   setText = (text: string) => {
     this.setState({
       text,
       results: searchDocs(this.props.docs, text),
+      fullResults: [], // TODO?
       selected: 0,
     })
+    this.fullSearch(text)
   }
+
+  fullSearch: (a: string) => void = debounce((text: string) => {
+    this.remoteProm.send('full-search', text).then(results => {
+      this.setState(state => state.text === text ? {fullResults: results} : {})
+    })
+  }, DEBOUNCE)
 
   focus = () => {
     this.input.focus()
   }
 
   onKeyDown = (e: KeyboardEvent) => {
-    const {selected, results} = this.state
+    const {selected, results, fullResults} = this.state
     if (e.key === 'ArrowUp' || (e.key === 'k' && e.metaKey)) {
       this.setState({
-        selected: selected > 0 ? selected - 1 : results.length - 1,
+        selected: selected > 0 ? selected - 1 : (results.length + fullResults.length) - 1,
       })
     } else if (e.key === 'ArrowDown' || (e.key === 'j' && e.metaKey)) {
       this.setState({
-        selected: selected < results.length - 1 ? selected + 1 : 0,
+        selected: selected < (results.length + fullResults.length) - 1 ? selected + 1 : 0,
       })
     } else if (e.key === 'Enter') {
       e.preventDefault()
@@ -63,7 +94,10 @@ export default class DocSearcher extends Component {
           this.props.focusUp()
         }
       } else {
-        this.props.onSubmit(this.state.results[this.state.selected], e.metaKey)
+        const result = selected < results.length
+          ? results[selected]
+          : fullResults[selected - results.length]
+        this.props.onSubmit(result, e.metaKey)
       }
     } else if (e.key === 'Tab') {
       e.preventDefault()
@@ -78,6 +112,7 @@ export default class DocSearcher extends Component {
   }
 
   render() {
+    const {results, fullResults, selected} = this.state
     return <div className={css(styles.searcher)}>
       <input
         ref={n => this.input = n}
@@ -87,17 +122,17 @@ export default class DocSearcher extends Component {
         onKeyDown={this.onKeyDown}
       />
       <div className={css(styles.docs)}>
-        {this.state.results.map((doc, i) => (
+        {(results.concat(fullResults)).map((doc, i) => (
           <EnsureInView
             key={doc.id}
-            active={i === this.state.selected}
-            className={css(styles.result, i === this.state.selected && styles.selectedResult)}
+            active={i === selected}
+            className={css(styles.result, i === selected && styles.selectedResult)}
             onClick={(e) => this.props.onSubmit(doc, e.metaKey)}
           >
-            {doc.title}  
+            {doc.title} {/* TODO subtitle */}
           </EnsureInView>
         ))}
-        {!this.state.results.length &&
+        {!results.length && !fullResults.length &&
           <div className={css(styles.result, styles.empty)}>No results</div>}
       </div>      
     </div>

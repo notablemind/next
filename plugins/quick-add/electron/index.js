@@ -34,20 +34,21 @@ const openWindow = (nm, options, onClose) => {
   return quickAdd
 }
 
-const addItem = (nm, docid, text) => {
+const addItem = (nm, docid, rootId, text) => {
   const db = nm.ensureDocDb(docid)
   const start = Date.now()
   const id = uuid()
-  return db.get('root').then(root => {
+  return db.get(rootId).then(root => {
     return db.bulkDocs([
       Object.assign({}, root, {children: root.children.concat([id])}),
-      newNode(id, 'root', start, text),
+      newNode(id, rootId, start, text),
     ])
-  }).then(() => Promise.all([db.get('root'), db.get(id)]))
+  }).then(() => Promise.all([db.get(rootId), db.get(id)]))
   .then(([root, nnode]) => {
     console.log('sending doc change', root, nnode)
     nm.sendDocChange(docid, nnode, null)
     nm.sendDocChange(docid, root, null)
+    return id
   })
 }
 
@@ -62,19 +63,33 @@ const plugin = {
       if (window) {
         window.show()
       }
-      // openWindow(nm)
     })
-    ipcMain.on('quick-add', (event, {text, doc}) => {
-      console.log('quicking adding', text, doc)
+    ipcMain.on('quick-add', (event, {text, doc, root, sticky}) => {
+      console.log('quicking adding', text, doc, root)
       // hmmm so I feel like I need some indirection here anyways
 
-      addItem(nm, doc, text)
+      addItem(nm, doc, root || 'root', text).then(id => {
+        if (sticky) {
+          state.createNewWindow(doc, id, true)
+        }
+      })
+      // TODO if sticky, open a sticky window right there
       // TODO maybe this will be complicated actually tho
     })
     ipcMain.on('quick-open', (event, {doc, root, sticky}) => {
       console.log('quickly opening', doc, root, sticky)
       state.createNewWindow(doc, root, sticky)
-      window.hide()
+      if (window) {
+        window.hide()
+      }
+    })
+    state.ipcPromise.on('full-search', (event, text) => {
+      return [{
+        title: 'full text',
+        id: 'home',
+        root: 'root',
+        subtitle: 'Home',
+      }]
     })
   },
   _openWindow: openWindow

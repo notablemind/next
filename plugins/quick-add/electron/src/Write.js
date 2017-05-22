@@ -11,7 +11,13 @@ const getMostRecent = (meta): any => {
   for (let doc of Object.values(meta)) {
     if (!at || doc.lastOpened > at.lastOpened) at = doc
   }
-  return at
+  if (!at) return null
+  return {
+    title: at.title,
+    id: at.id,
+    root: 'root',
+    subtitle: null,
+  }
 }
 
 export default class Write extends Component {
@@ -97,9 +103,9 @@ export default class Write extends Component {
     }, 100)
   }
 
-  finish = (doc: {id: string}) => {
+  finish = (result: {id: string, root: string}, sticky: boolean) => {
     console.log('trying to do things now')
-    this.props.nm.remote.send('quick-add', {text: this.state.text, doc: doc.id})
+    this.props.nm.remote.send('quick-add', {text: this.state.text, doc: result.id, root: result.root, sticky})
     this.setState({searching: false, text: ''})
     this.props.cancel()
   }
@@ -123,8 +129,9 @@ export default class Write extends Component {
       {this.state.searching
         ? <DocSearcher
             docs={Object.values(this.props.nm.meta)}
+            remote={this.props.nm.remote}
             cancel={this.props.cancel}
-            onSubmit={doc => this.finish(doc)}
+            onSubmit={this.finish}
             focusUp={() => this.input.focus()}
             ref={n => this.searcher = n}
           />

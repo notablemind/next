@@ -5,6 +5,7 @@ const PouchDB = require('pouchdb')
 const electron = require('electron')
 const {ipcMain, app} = electron
 
+const ipcPromise = require('./src/ipcPromise')
 const makeWindow = require('./src/makeWindow')
 const NotableMind = require('./src/NotableMind')
 const setupMenu = require('./src/menu')
@@ -16,6 +17,7 @@ const state = {
   publicDir: path.join(__dirname, 'public'),
   baseDir: __dirname,
   ipcMain,
+  ipcPromise: ipcPromise(ipcMain),
   plugins: {},
   actions: {},
   createNewWindow: () => null,
