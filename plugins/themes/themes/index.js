@@ -38,6 +38,7 @@ export type Theme = {
 const themes = {
   default: require('./default').default,
   blog: require('./blog').default,
+  sticky: require('./sticky').default,
 }
 
 export default themes

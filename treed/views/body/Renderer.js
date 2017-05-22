@@ -18,12 +18,7 @@ type Props = {
 window.rr = remark
 
 const text2react = content => {
-  return remark().use(remarkReact).processSync(content).contents
-  /*
-  return <div dangerouslySetInnerHTML={{
-    __html: render(content)
-  }}/>
-  */
+  return remark().use(remarkReact).use({settings: {breaks: true}}).processSync(content).contents
 }
 
 const Renderer = ({style, content, className}: Props) => {

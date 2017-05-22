@@ -3,8 +3,13 @@ export default {
     node: (globalStore, id) => globalStore.db.data[id],
     nodePluginData: (globalStore, id, pluginId) =>
       globalStore.db.data[id].plugins[pluginId],
-    pluginConfig: (globalStore, pluginId) =>
-      globalStore.db.data.settings.plugins[pluginId],
+    pluginConfig: (globalStore, pluginId) => {
+      const over = globalStore.pluginOverrides[pluginId]
+      if (over) {
+        return over
+      }
+      return globalStore.db.data.settings.plugins[pluginId]
+    },
     pluginState: (globalStore, pluginId) =>
       globalStore.globalState.plugins[pluginId],
     clipboard: globalStore => globalStore.globalState.clipboard,

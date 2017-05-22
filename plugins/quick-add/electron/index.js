@@ -71,6 +71,11 @@ const plugin = {
       addItem(nm, doc, text)
       // TODO maybe this will be complicated actually tho
     })
+    ipcMain.on('quick-open', (event, {doc, root, sticky}) => {
+      console.log('quickly opening', doc, root, sticky)
+      state.createNewWindow(doc, root, sticky)
+      window.hide()
+    })
   },
   _openWindow: openWindow
 }

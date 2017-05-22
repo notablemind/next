@@ -6,12 +6,10 @@ const path = require('path')
 
 const windows = []
 
-const makeWindow = state => {
-  const win = new BrowserWindow({
+const makeWindow = (state/*: any*/, docid/*: string*/ = 'home', root/*: ?string*/ = null, sticky/*: boolean*/ = false) => {
+  console.log('making window', docid, root)
+  const win = new BrowserWindow(Object.assign({
     width: 1200,
-    // skipTaskBar: true,
-    // alwaysOnTop: true,
-    // frame: false,
     titleBarStyle: 'hidden-inset',
     fullscreenable: false,
     title: 'NotableMind',
@@ -19,8 +17,19 @@ const makeWindow = state => {
     icon: path.join(__dirname, '../icon256.png'),
     webPreferences: {
       webSecurity: false
-    }
-  })
+    },
+
+    skipTaskBar: false,
+    alwaysOnTop: false,
+    frame: true,
+  }, sticky ? {
+    titleBarStyle: undefined,
+    frame: false,
+    skipTaskBar: true,
+    alwaysOnTop: true,
+    width: 500,
+    height: 300,
+  } : {}))
   win.on('closed', function() {
     windows.splice(windows.indexOf(win), 1)
   })
@@ -42,10 +51,13 @@ const makeWindow = state => {
 
   const localURL = 'http://localhost:4151'
   const localFile = 'file://' + state.publicDir + '/index.html'
+  let suffix = '#/doc/' + docid
+  if (root) suffix += '/' + root
+  if (sticky) suffix += '?sticky=true'
   if (process.env.NODE_ENV === 'development') {
-    win.loadURL(localURL)
+    win.loadURL(localURL + suffix)
   } else {
-    win.loadURL(localFile)
+    win.loadURL(localFile + suffix)
   }
   windows.push(win)
   return win

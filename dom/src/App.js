@@ -55,6 +55,10 @@ export default class App extends Component {
             path="doc/:id"
             component={props => <Document {...props} nm={this.nm} />}
           />
+          <Route
+            path="doc/:id/:root"
+            component={props => <Document {...props} nm={this.nm} />}
+          />
         </Route>
       </Router>
     )

@@ -20,9 +20,9 @@ import SyncStatus from '../Settings/Sync/Status'
 
 import Icon from 'treed/views/utils/Icon'
 
-import type {Store, Plugin} from 'treed/types'
+import type {Store, Plugin as PluginT} from 'treed/types'
 
-const plugins: Array<Plugin<any, any>> = [
+const plugins: Array<any> = [
   require('../../../../plugins/files').default,
   require('../../../../plugins/minimap').default,
   require('../../../../plugins/themes').default,
@@ -101,8 +101,14 @@ const loadLastViewState = id =>
 const saveLastViewState = (id, data) =>
   (localStorage[viewStateKey(id)] = JSON.stringify(data))
 
-const DocumentPage = ({params, ...props}: any) => (
-  <Document key={params.id || 'root'} id={params.id} {...props} />
+const DocumentPage = ({params, location, ...props}: any) => (
+  <Document
+    key={params.id || 'home'}
+    id={params.id || 'home'}
+    root={params.root}
+    sticky={!!location.search.match(/\bsticky=true\b/)}
+    {...props}
+  />
 )
 export default DocumentPage
 
@@ -121,11 +127,11 @@ const ViewWrapper = withStore({
   state: store => ({
     viewType: store.getters.viewType(),
   }),
-  render({store, viewTypes, viewType}) {
+  render({store, viewTypes, viewType, sticky}) {
     const Component = viewTypes[viewType].Component
     return (
       <div style={{flex: 1}}>
-        <ViewHeader store={store} viewTypes={viewTypes} />
+        {!sticky && <ViewHeader store={store} viewTypes={viewTypes} />}
         <Component store={store} />
       </div>
     )
@@ -180,6 +186,7 @@ class Document extends Component {
   }
 
   componentDidMount() {
+    console.log('INIT', this.props)
     this.props.nm.getFileDb(this.props.id || 'home').then(db => {
       this.setState({db}, () => this.makeTreed('a root you know'))
     })
@@ -314,6 +321,11 @@ class Document extends Component {
         defaultRootContents: title,
         defaultPlugins,
         initialClipboard: window.sharedClipboard,
+        pluginOverrides: this.props.sticky ? {
+          themes: {
+            theme: 'sticky',
+          },
+        } : {},
       },
     ))
     this._unsubs.push(
@@ -338,6 +350,7 @@ class Document extends Component {
       this.onTitleChange(treed.db.data.root.content)
       const viewState = loadLastViewState(this.props.id)
       if (!viewState.viewType) viewState.viewType = 'list'
+      if (this.props.root) viewState.root = this.props.root
       const store = treed.registerView(viewState)
       this._unsubs.push(
         store.on([store.events.serializableState()], () => {
@@ -500,6 +513,17 @@ class Document extends Component {
       traffic = <div style={{flexBasis: 80}} />
     }
 
+    if (this.props.sticky) {
+      return <div className={css(styles.stickyTop)}>
+        <div className={css(styles.closeButton)} onClick={() => window.close()}>
+          <Icon name="ios-close-empty" className={css(styles.homeArrow)} />
+        </div>  
+        <div className={css(styles.title)}>
+          {this.state.store.db.data.root.content}
+        </div>
+      </div>
+    }
+
     const backButton = this.props.id
       ? // TODO if the last doc wasn't home, indicate that
         <div
@@ -555,28 +579,29 @@ class Document extends Component {
       <div className={css(styles.container)}>
         {this.renderHeader()}
         <div className={css(styles.main)}>
-          <Sidebar
+          {!this.props.sticky && <Sidebar
             side="left"
             globalStore={treed.globalStore}
             plugins={treed.enabledPlugins}
-          />
+          />}
           <div className={css(styles.treedContainer) + ' Theme_basic'}>
             <ViewWrapper
               key={'view:' + this.state.tick}
               viewTypes={viewTypes}
+              sticky={this.props.sticky}
               store={this.state.store}
             />
 
             {this.renderActionButtons()}
           </div>
-          <Sidebar
+          {!this.props.sticky && <Sidebar
             side="right"
             globalStore={treed.globalStore}
             plugins={treed.enabledPlugins}
-          />
+          />}
 
           <KeyCompleter treed={treed} />
-          {this.state.quick &&
+          {this.state.quick && !this.props.sticky &&
             <QuickBar
               treed={treed}
               store={this.state.store}
@@ -586,7 +611,7 @@ class Document extends Component {
               initialTab={this.state.quick}
               onClose={() => this.setState({quick: null})}
             />}
-          {this.state.showingSettings &&
+          {this.state.showingSettings && !this.props.sticky &&
             <Settings
               treed={treed}
               nm={this.props.nm}
@@ -615,6 +640,15 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     height: 76 / 2,
     backgroundColor: '#fafafa',
+  },
+
+  stickyTop: {
+    height: 22,
+    WebkitAppRegion: 'drag',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fafafa',
+    fontSize: 12,
   },
 
   title: {
@@ -675,6 +709,16 @@ const styles = StyleSheet.create({
   main: {
     flexDirection: 'row',
     flex: 1,
+  },
+
+  closeButton: {
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    padding: '0 10px',
+    cursor: 'pointer',
+    ':hover': {
+      color: 'red',
+    },
   },
 
   actionButtons: {

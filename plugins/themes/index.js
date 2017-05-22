@@ -53,13 +53,14 @@ type GlobalState = {
   removeKeyLayer: () => void,
 }
 
-const plugin: Plugin<ThemeSettings, GlobalState> = {
+const plugin: any /*Plugin<ThemeSettings, GlobalState>*/ = {
   id: PLUGIN_ID,
   defaultGlobalConfig,
 
   quickActions(store, node) {
     const actions = []
-    const {theme='default', overrides={}} = store.db.data.settings.plugins[PLUGIN_ID] || {}
+    const {theme='default', overrides={}} = store.getters.pluginConfig(PLUGIN_ID) || {}
+    // store.db.data.settings.plugins[PLUGIN_ID] || {}
     return Object.keys(themes).map(key => {
       if (theme === key) return
       return {
@@ -78,7 +79,8 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
 
   getters: {
     viewTheme(store) {
-      const {theme='default', overrides={}} = store.db.data.settings.plugins[PLUGIN_ID] || {}
+      const {theme='default', overrides={}} = store.getters.pluginConfig(PLUGIN_ID) || {}
+      // store.db.data.settings.plugins[PLUGIN_ID] || {}
       const viewTheme = {
         ...(themes[theme] || themes.default).viewStyles[store.state.viewType],
         ...(overrides.viewStyles || {})[store.state.viewType],
@@ -116,8 +118,10 @@ const plugin: Plugin<ThemeSettings, GlobalState> = {
       },
       unsub: globalStore.on([globalStore.events.settingsChanged()], () => {
         // TODO first check if it changed?
+        const config = globalStore.getters.pluginConfig(PLUGIN_ID) || {}
+        // globalStore.db.data.settings.plugins[PLUGIN_ID] || {}
         styleNode.textContent = themeToCss(
-          globalStore.db.data.settings.plugins[PLUGIN_ID],
+          config,
           themes
         )
       }),

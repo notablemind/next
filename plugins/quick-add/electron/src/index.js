@@ -4,19 +4,14 @@ import {css, StyleSheet} from 'aphrodite'
 
 import NotableClient from '../../../../electron/src/NotableClient'
 import Write from './Write'
-// import {comp as Write} from './Write.re'
+import Open from './Open'
 
 const Sticky = () => <div>sticky...</div>
-const Open = () => <div>open...</div>
 
 const tabs: Array<{id: string, name: string, component: any}> = [{
   id: 'write',
   name: 'Write',
   component: Write,
-}, {
-  id: 'sticky',
-  name: 'Sticky note',
-  component: Sticky,
 }, {
   id: 'open',
   name: 'Open',
@@ -43,6 +38,21 @@ export default class App extends Component {
 
   componentDidMount() {
     this.nm.init().then(() => this.setState({loading: false}))
+    document.addEventListener('keydown', this.onKeyDown)
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.onKeyDown)
+  }
+  
+  onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Tab' && e.ctrlKey) {
+      if (e.shiftKey) {
+        this.onPrev()
+      } else {
+        this.onNext()
+      }
+    }
   }
 
   onPrev = () => {
@@ -56,7 +66,7 @@ export default class App extends Component {
   onNext = () => {
     const idx = tabs.indexOf(this.state.tab)
     let tab
-    if (idx === tabs.length - 1) tab = 0
+    if (idx === tabs.length - 1) tab = tabs[0]
     else tab = tabs[idx + 1]
     this.setState({tab})
   }
@@ -85,8 +95,6 @@ export default class App extends Component {
       ))}
       </div>
       <Component
-        onPrev={this.onPrev}
-        onNext={this.onNext}
         setSize={(width, height) => browserWindow.setSize(width, height)}
         cancel={() => browserWindow.hide()}
         ref={comp => this.current = comp}

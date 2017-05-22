@@ -132,11 +132,13 @@ export default class Treed {
       defaultRootContents = '',
       defaultPlugins = [],
       initialClipboard = null,
+      pluginOverrides = {},
     }: {
       sharedViewData: any,
-      defaultRootContents: string,
-      defaultPlugins: Array<string>,
-      initialClipboard: ?{},
+      defaultRootContents?: string,
+      defaultPlugins?: Array<string>,
+      initialClipboard?: ?{},
+      pluginOverrides?: ?any,
     },
   ) {
     this.emitter = new FlushingEmitter()
@@ -236,13 +238,14 @@ export default class Treed {
         this.enabledPlugins = Object.keys(settings.plugins)
           .map(id => this.config.plugins[id])
           .filter(plugin => !!plugin)
-        this.setupGlobalStore(settings.plugins, sharedViewData)
+        this.setupGlobalStore(settings.plugins, sharedViewData, pluginOverrides)
         return Promise.all(
           this.enabledPlugins.map(plugin => {
             if (plugin.init) {
               return Promise.resolve(
                 plugin.init(
-                  settings.plugins[plugin.id] || plugin.defaultGlobalConfig,
+                  this.globalStore.getters.pluginConfig(plugin.id) || plugin.defaultGlobalConfig,
+                  // settings.plugins[plugin.id] || plugin.defaultGlobalConfig,
                   this.globalStore,
                 ),
               ).then(state => {
@@ -257,6 +260,7 @@ export default class Treed {
   setupGlobalStore(
     pluginSettings: {[pluginId: string]: any},
     sharedViewData: *,
+    pluginOverrides: *,
   ) {
     const events = {}
     const args: any = [this.db, events]
@@ -278,6 +282,7 @@ export default class Treed {
       removeListener: (evt, fn) => this.emitter.off(evt, fn),
       viewTypes: this.viewTypes,
       sharedViewData,
+      pluginOverrides,
 
       undo: () => this.emitter.emitMany(this.commands.undo(args)),
       redo: () => this.emitter.emitMany(this.commands.redo(args)),

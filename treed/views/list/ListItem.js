@@ -11,7 +11,7 @@ import Icon from '../utils/Icon'
 import './index.css'
 
 type Props = {
-  indentStyle: 'minimal' | 'lines' | 'dots',
+  indentStyle: 'minimal' | 'lines' | 'dots' | 'sticky',
   [key: any]: any,
 }
 
@@ -108,6 +108,38 @@ export default class ListItem extends Component {
     this.props.store.actions.startDragging(this.props.id)
   }
 
+  renderCollapser() {
+    const {indentStyle} = this.props
+    const isRoot = this.props.store.state.root === this.props.id
+    if (isRoot || this.state.node.children.length === 0) return
+    const collapsed = this.state.isCollapsed
+
+    if (indentStyle === 'minimal') return
+    if (indentStyle === 'lines') {
+      return <div
+        className={
+          css(styles.collapser, collapsed && styles.collapsed) +
+            ' Node_collapser'
+        }
+        onClick={() =>
+          this.props.store.actions.toggleCollapse(this.props.id)}
+      />
+    } else if (indentStyle === 'sticky') {
+      return <div
+        className={
+          css(styles.collapser_sticky, collapsed && styles.collapsed)
+        }
+        onClick={() =>
+          this.props.store.actions.toggleCollapse(this.props.id)}
+      >
+        <Icon
+            name={collapsed ? "ios-arrow-right" : 'ios-arrow-down'}
+        />
+      </div>
+    }
+
+  }
+
   render() {
     if (!this.state.node) {
       return <div>loading...</div>
@@ -141,6 +173,16 @@ export default class ListItem extends Component {
           nodeTypeConfig.containerClassName(this.state.node, this.props.store)
       : ''
 
+    const leftPad = !isRoot &&
+      isMinimal &&
+      this.state.node.children.length > 0 &&
+      <div
+        className={css(styles.leftPad)}
+        style={{width: Math.max(5, 40 - this.props.depth * 8)}}
+        onClick={() =>
+          this.props.store.actions.toggleCollapse(this.props.id)}
+      />
+
     return (
       <div
         className={
@@ -150,15 +192,7 @@ export default class ListItem extends Component {
             containerCls
         }
       >
-        {!isRoot &&
-          isMinimal &&
-          this.state.node.children.length > 0 &&
-          <div
-            className={css(styles.leftPad)}
-            style={{width: Math.max(5, 40 - this.props.depth * 8)}}
-            onClick={() =>
-              this.props.store.actions.toggleCollapse(this.props.id)}
-          />}
+        {leftPad}
         <div
           className={
             css(styles.top, !this.state.editState && styles.topNormal) +
@@ -172,17 +206,7 @@ export default class ListItem extends Component {
             this.props.nodeMap[this.props.id] = node
           }}
         >
-          {!isMinimal &&
-            !isRoot &&
-            this.state.node.children.length > 0 &&
-            <div
-              className={
-                css(styles.collapser, collapsed && styles.collapsed) +
-                  ' Node_collapser'
-              }
-              onClick={() =>
-                this.props.store.actions.toggleCollapse(this.props.id)}
-            />}
+          {this.renderCollapser()}
 
           <Body
             node={this.state.node}
@@ -334,17 +358,33 @@ const styles = StyleSheet.create({
     },
   },
 
-  draggerDragging: {
-    display: 'flex',
+  collapser_sticky: {
+    width: '.7em',
+    alignItems: 'center',
+    // height: '.7em',
+    // borderRadius: '.35em',
+    // backgroundColor: '#ccc',
+    position: 'absolute',
+    top: '.5em',
+    // marginTop: -10,
+    right: '100%',
+    marginRight: 'calc(.30em + 1px)',
+    cursor: 'pointer',
   },
 
-  collapsed: {
-    opacity: 1,
+  draggerDragging: {
+    display: 'flex',
   },
 
   children: {},
 
   children_minimal: {},
+
+  children_sticky: {
+    paddingLeft: '.5em',
+    // borderLeft: '1px solid #eee',
+    marginLeft: '.5em',
+  },
 
   children_lines: {
     paddingLeft: '.7em',

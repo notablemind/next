@@ -24,8 +24,9 @@ type State = {
   store: Store,
   view: {hideCompleted: boolean},
   viewTheme: {
-    indentStyle: 'minimal' | 'lines' | 'dots',
+    indentStyle: 'minimal' | 'lines' | 'dots' | 'sticky',
     maxWidth: number,
+    padding: number,
   },
 }
 type Props = {
@@ -198,7 +199,7 @@ export default class ListView extends Component {
         onDragLeave={this.stopDropping}
         onContextMenu={this.onContextMenu}
       >
-        <div className={css(styles.scroller)}>
+        <div className={css(styles.scroller)} style={{padding: viewTheme.padding || 20}}>
           <div
             className={css(styles.thinWidth)}
             style={{
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch',
     overflow: 'auto',
-    padding: 20,
+    // padding: 20,
   },
 
   thinWidth: {

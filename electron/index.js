@@ -18,6 +18,7 @@ const state = {
   ipcMain,
   plugins: {},
   actions: {},
+  createNewWindow: () => null,
 }
 
 app.on('window-all-closed', function() {
@@ -36,17 +37,17 @@ app.on('ready', function() {
   const nm = new NotableMind([], state.documentsDir)
   nm.init()
 
+  state.createNewWindow = (docid = 'home', root = null, sticky = false) => nm.attachWindow(makeWindow(state, docid, root, sticky))
+
   plugins.forEach(plugin => {
     state.plugins[plugin.id] = plugin.init(state, nm)
   })
 
   setupMenu({
-    createNewWindow: () => {
-      nm.attachWindow(makeWindow(state))
-    },
+    createNewWindow: state.createNewWindow,
   })
 
   // makeWindow(state)
-  nm.attachWindow(makeWindow(state))
+  state.createNewWindow()
 });
 

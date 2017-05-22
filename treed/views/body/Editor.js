@@ -92,7 +92,7 @@ export default class Editor extends Component {
         // I won't allow nested transactions until I see a need for them
         break
       case 13: // enter
-        if (e.shiftKey) return
+        if (e.shiftKey) return e.stopPropagation()
         if (!e.ctrlKey && e.target.value.indexOf('\n') !== -1) return
         if (this.isChanging() && this.changeType()) break
         if (!this.props.keyActions.onEnter) break
