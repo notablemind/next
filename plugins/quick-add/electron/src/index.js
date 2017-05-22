@@ -120,13 +120,14 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
     fontSize: 10,
     fontWeight: 400,
+    backgroundColor: '#eee',
     // textTransform: 'uppercase',
     ':hover': {
-      backgroundColor: '#ddd',
+      backgroundColor: '#f0f0f0',
     },
   },
 
   selected: {
-    backgroundColor: '#eee',
+    backgroundColor: 'white',
   }
 })

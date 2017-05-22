@@ -129,6 +129,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  input: {
+    outline: 'none',
+    border: 'none',
+    padding: 10,
+  },
+
   search: {
     padding: '7px 10px',
     fontSize: 16,
