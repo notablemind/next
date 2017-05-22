@@ -4,6 +4,7 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import fuzzysearch from 'fuzzysearch'
+import ScrollIntoView from 'treed/ScrollIntoView'
 
 type Tab = 'search' | 'command' | 'open'
 
@@ -243,6 +244,7 @@ export default class QuickBar extends Component {
   render() {
     const {selected} = this.state
     return (
+      <div className={css(styles.outer)}>
       <div
         className={css(styles.container)}
         style={{maxHeight: window.innerHeight - 100}}
@@ -258,18 +260,20 @@ export default class QuickBar extends Component {
         />
         <div className={css(styles.results)}>
           {this.state.results.map((result, i) => (
-            <div
+            <ScrollIntoView
               key={result.key}
               onClick={() => this.onSelect(i)}
+              active={i === selected}
               className={css(
                 styles.result,
                 i === selected && styles.resultSelected,
               )}
             >
               {shortn(result.title)}
-            </div>
+            </ScrollIntoView>
           ))}
         </div>
+      </div>
       </div>
     )
   }
@@ -287,12 +291,31 @@ const shortn = (text, len = 100) =>
 const width = 500
 
 const styles = StyleSheet.create({
+  outer: {
+    position: 'absolute',
+    top: 50,
+    left: 10,
+    right: 10,
+    bottom: 50,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    zIndex: 100000,
+  },
+
   container: {
+    flexShrink: 1,
+    maxWidth: width,
+    backgroundColor: 'white',
+    boxShadow: '0 1px 10px rgba(0, 0, 0, 0.5)',
+  },
+
+  _container: {
     top: 50,
     left: '50%',
     width: width,
     marginLeft: -width / 2,
     position: 'absolute',
+
     backgroundColor: 'white',
     boxShadow: '0 1px 10px rgba(0, 0, 0, 0.5)',
     zIndex: 100000,

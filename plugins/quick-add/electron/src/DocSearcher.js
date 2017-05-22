@@ -3,7 +3,8 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import Renderer from '../../../../treed/views/body/Renderer'
-import ensureInView from 'treed/ensureInView'
+// import ensureInView from 'treed/ensureInView'
+import ScrollIntoView from 'treed/ScrollIntoView'
 import ipcPromise from '../../../../electron/src/ipcPromise'
 
 type Result = {
@@ -130,7 +131,7 @@ export default class DocSearcher extends Component {
       />
       <div className={css(styles.docs)}>
         {(results.concat(fullResults)).map((doc, i) => (
-          <EnsureInView
+          <ScrollIntoView
             key={doc.id + ':' + doc.root}
             active={i === selected}
             className={css(styles.result, i === selected && styles.selectedResult)}
@@ -142,32 +143,12 @@ export default class DocSearcher extends Component {
                 {/*{doc.type} ::*/}
                 {doc.subtitle}
               </div>}
-          </EnsureInView>
+          </ScrollIntoView>
         ))}
         {!results.length && !fullResults.length &&
           <div className={css(styles.result, styles.empty)}>No results</div>}
       </div>      
     </div>
-  }
-}
-
-class EnsureInView extends Component {
-  node: any
-  componentDidMount() {
-    if (this.props.active) {
-      ensureInView(this.node, true, 50)
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (!prevProps.active && this.props.active) {
-      ensureInView(this.node, true, 50)
-    }
-  }
-  
-  render() {
-    const {active, ...props} = this.props
-    return <div {...props} ref={node => this.node = node} />
   }
 }
 

@@ -6,6 +6,7 @@ module.exports = (id/*: string*/, parent/*: string*/, now/*: number*/, content/*
   modified: now,
   completed: null,
   parent,
+  trashed: null,
   children: [],
   type: 'normal',
   content,

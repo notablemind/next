@@ -601,7 +601,7 @@ class Document extends Component {
           />}
 
           <KeyCompleter treed={treed} />
-          {this.state.quick && !this.props.sticky &&
+          {this.state.quick &&
             <QuickBar
               treed={treed}
               store={this.state.store}

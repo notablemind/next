@@ -90,6 +90,7 @@ const plugin = {
           title: value.content.slice(0, 100),
           subtitle: nm.meta[docid].title,
           type: value.type,
+          trashed: value.trashed,
           id: docid,
           root: id,
         }

@@ -291,7 +291,10 @@ module.exports = class Notablemind {
     })
 
     ipc.on('doc:action', (evt, action, docid, data) => {
-      return this.processDocAction(action, docid, data)
+      return this.processDocAction(action, docid, data).catch(err => {
+        console.error('failed to process doc action', err)
+        throw err
+      })
     })
 
     ipcMain.on('doc:sync-now', (evt, docid) => {
@@ -351,9 +354,16 @@ module.exports = class Notablemind {
   }
 
   processDocAction(action, docid, data) {
+    console.log('process action', action, docid, data)
     const db = this.ensureDocDb(docid)
-    // console.log('processing doc action', action, docid, data)
-    return docActions[action](db, data).then(res => {
+    if (action === 'saveMany') {
+      this.searcher.batch(docid, data.docs)
+    } else if (action === 'delete') {
+      this.searcher.delete(docid, data.doc._id)
+    }
+    const updateSearch = node => (this.searcher.update(docid, node), node)
+    // const updateSearch = node => node
+    return docActions[action](db, data, updateSearch).then(res => {
       if (this.meta[docid].sync) {
         this.meta[docid].sync.dirty = true
         this.saveMeta()
@@ -365,6 +375,12 @@ module.exports = class Notablemind {
       return res
     })
   }
+
+  /*
+  updateSearchForDocAction(action, docid, data) {
+    return searchDocActions[action](this.searcher, docid, data)
+  }
+  */
 
   login() {
     if (this.userProm) return this.userProm
@@ -419,6 +435,7 @@ module.exports = class Notablemind {
       )
       .then(
         contents => {
+          // TODO update searcher w/ synced results
           console.log('> did the stuff')
           if (!contents) {
             const meta = this.meta[id]
@@ -596,6 +613,7 @@ module.exports = class Notablemind {
         }
         this.saveMeta()
         const db = this.ensureDocDb(id)
+        // TODO search contents
         return mergeDataIntoDatabase(data, db).then(
           () => {
             this.broadcast('meta:update', id, this.meta[id])
@@ -608,8 +626,7 @@ module.exports = class Notablemind {
       })
   }
 
-  setupSyncForRemoteFiles(files /*: any[]*/) {
-    // TODO type file
+  setupSyncForRemoteFiles(files /*: any[]*/) { // TODO type file
     if (!this.userProm) throw new Error('not logged in')
     return this.getToken().then(token =>
       Promise.all(
@@ -678,12 +695,12 @@ module.exports.LOGGED_OUT = LOGGED_OUT
 module.exports.LOADING = LOADING
 
 const docActions = {
-  set: (db, {id, attr, value, modified}) => {
-    return db.upsert(id, doc =>
-      Object.assign({}, doc, {[attr]: value, modified})
+  set: (db, {id, attr, value, modified}, updateSearch) => {
+    return db.upsert(id, doc => 
+      updateSearch(Object.assign({}, doc, {[attr]: value, modified}))
     )
   },
-  setNested: (db, {id, attrs, last, value, modified}) => {
+  setNested: (db, {id, attrs, last, value, modified}, updateSearch) => {
     return db.upsert(id, doc => {
       doc = Object.assign({}, doc, {modified})
       const lparent = attrs.reduce(
@@ -691,10 +708,10 @@ const docActions = {
         doc
       )
       lparent[last] = value
-      return doc
+      return updateSearch(doc)
     })
   },
-  updateNested: (db, {id, attrs, last, update, modified}) => {
+  updateNested: (db, {id, attrs, last, update, modified}, updateSearch) => {
     // console.log('updating nested', id, attrs, last, update, modified)
     return db.upsert(id, doc => {
       doc = Object.assign({}, doc, {modified})
@@ -703,13 +720,13 @@ const docActions = {
         doc
       )
       lparent[last] = Object.assign({}, lparent[last], update)
-      return doc
+      return updateSearch(doc)
     })
   },
-  update: (db, {id, update, modified}) => {
-    return db.upsert(id, doc => Object.assign({}, doc, update, {modified}))
+  update: (db, {id, update, modified}, updateSearch) => {
+    return db.upsert(id, doc => updateSearch(Object.assign({}, doc, update, {modified})))
   },
-  save: (db, {doc}) => db.put(doc), // .then(r => (console.log('save', r), r)),
+  save: (db, {doc}, updateSearch) => db.put(updateSearch(doc)), // .then(r => (console.log('save', r), r)),
   saveMany: (db, {docs}) => db.bulkDocs(docs), // .then(r => (console.log('savemany', r), r)),
   delete: (db, {doc}) => db.remove(doc)
 }
