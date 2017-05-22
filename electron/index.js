@@ -3,7 +3,7 @@
 const path = require('path')
 const PouchDB = require('pouchdb')
 const electron = require('electron')
-const {ipcMain, app} = electron
+const {ipcMain, app, Tray} = electron
 
 const ipcPromise = require('./src/ipcPromise')
 const makeWindow = require('./src/makeWindow')
@@ -27,6 +27,8 @@ app.on('window-all-closed', function() {
   app.quit();
 });
 
+let tray = null
+
 app.on('ready', function() {
   // require('./src/meta')(state);
 
@@ -48,6 +50,9 @@ app.on('ready', function() {
   setupMenu({
     createNewWindow: state.createNewWindow,
   })
+
+  tray = new Tray(path.join(__dirname, '..', 'assets', 'icon_16.png'))
+  tray.setToolTip('Notablemind')
 
   // makeWindow(state)
   state.createNewWindow()
