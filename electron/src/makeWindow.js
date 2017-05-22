@@ -23,10 +23,11 @@ const makeWindow = (state/*: any*/, docid/*: string*/ = 'home', root/*: ?string*
     alwaysOnTop: false,
     frame: true,
   }, sticky ? {
-    titleBarStyle: undefined,
     frame: false,
     skipTaskBar: true,
     alwaysOnTop: true,
+    titleBarStyle: undefined,
+
     width: 500,
     height: 300,
   } : {}))

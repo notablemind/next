@@ -183,6 +183,8 @@ const styles = StyleSheet.create({
   result: {
     padding: '5px 10px',
     cursor: 'pointer',
+    maxHeight: 200,
+    overflow: 'hidden',
     ':hover': {
       backgroundColor: '#eee',
     }

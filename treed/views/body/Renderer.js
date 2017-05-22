@@ -17,8 +17,37 @@ type Props = {
 
 window.rr = remark
 
+
+const processor = remark()
+  .use(remarkReact)
+  .use({settings: {breaks: true}})
+
+const singleLineProcessor = remark()
+  .use(remarkReact)
+  .use({settings: {breaks: true}})
+  .use(disable, {block: ['list', 'atxHeading', 'setextHeading']})
+
+function disable(options) {
+  var proto = this.Parser.prototype;
+  ignore('blockMethods', options.block);
+  ignore('inlineMethods', options.inline);
+
+  function ignore(key, list) {
+    var values = proto[key];
+    var index = -1;
+    var length = list && list.length;
+    var pos;
+    while (++index < length) {
+      pos = values.indexOf(list[index]);
+      if (pos !== -1) {
+        values.splice(pos, 1);
+      }
+    }
+  }
+} 
+
 const text2react = content => {
-  return remark().use(remarkReact).use({settings: {breaks: true}}).processSync(content).contents
+  return (content.indexOf('\n') === -1 ? singleLineProcessor : processor).processSync(content).contents
 }
 
 const Renderer = ({style, content, className}: Props) => {
