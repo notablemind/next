@@ -1,6 +1,6 @@
 'use strict'
 
-const {BrowserWindow} = require('electron')
+const {BrowserWindow, app} = require('electron')
 const open = require('open')
 const path = require('path')
 
@@ -32,7 +32,10 @@ const makeWindow = (state/*: any*/, docid/*: string*/ = 'home', root/*: ?string*
     height: 300,
   } : {}))
   win.on('closed', function() {
-    windows.splice(windows.indexOf(win), 1)
+    // if (!sticky) {
+      windows.splice(windows.indexOf(win), 1)
+      if (windows.length === 0) app.dock.hide()
+    // }
   })
   win.webContents.on('will-navigate', (event, url) => {
     if (url.indexOf(localURL) === 0) return
@@ -60,7 +63,10 @@ const makeWindow = (state/*: any*/, docid/*: string*/ = 'home', root/*: ?string*
   } else {
     win.loadURL(localFile + suffix)
   }
-  windows.push(win)
+  // if (!sticky) {
+    if (windows.length === 0) app.dock.show()
+    windows.push(win)
+  // }
   return win
 }
 
