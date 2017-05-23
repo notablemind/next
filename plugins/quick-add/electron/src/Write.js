@@ -9,7 +9,7 @@ let savedText = ''
 const getMostRecent = (meta): any => {
   let at = null
   for (let doc of Object.values(meta)) {
-    if (!at || doc.lastOpened > at.lastOpened) at = doc
+    if (!at || doc.lastModified > at.lastModified) at = doc
   }
   if (!at) return null
   return {

@@ -16,12 +16,12 @@ type Result = {
 }
 
 const searchDocs = (docs, text): Array<Result> => {
-  if (!text) return docs.sort((a, b) => b.lastOpened - a.lastOpened)
+  if (!text) return docs.sort((a, b) => b.lastModified - a.lastModified)
   text = text.toLowerCase()
   return docs
     .filter(d => d.title.toLowerCase().indexOf(text) !== -1)
     // TODO fuzzy search
-    .sort((a, b) => b.lastOpened - a.lastOpened)
+    .sort((a, b) => b.lastModified - a.lastModified)
     .map(doc => ({title: doc.title, id: doc.id, root: 'root', subtitle: null, type: ':doc:'}))
 }
 

@@ -247,7 +247,6 @@ export default class QuickBar extends Component {
       <div className={css(styles.outer)}>
       <div
         className={css(styles.container)}
-        style={{maxHeight: window.innerHeight - 100}}
       >
         <input
           ref={node => (this.node = node)}
@@ -303,10 +302,16 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    flexShrink: 1,
-    maxWidth: width,
     backgroundColor: 'white',
     boxShadow: '0 1px 10px rgba(0, 0, 0, 0.5)',
+    flex: 1,
+    width,
+
+    '@media(max-width: 520px)': {
+      // maxWidth: width,
+      alignSelf: 'stretch',
+      width: 'auto',
+    }
   },
 
   _container: {

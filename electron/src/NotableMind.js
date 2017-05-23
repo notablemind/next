@@ -354,7 +354,7 @@ module.exports = class Notablemind {
   }
 
   processDocAction(action, docid, data) {
-    console.log('process action', action, docid, data)
+    // console.log('process action', action, docid, data)
     const db = this.ensureDocDb(docid)
     if (action === 'saveMany') {
       this.searcher.batch(docid, data.docs)
@@ -364,13 +364,20 @@ module.exports = class Notablemind {
     const updateSearch = node => (this.searcher.update(docid, node), node)
     // const updateSearch = node => node
     return docActions[action](db, data, updateSearch).then(res => {
+      this.meta[docid].lastModified = Date.now()
       if (this.meta[docid].sync) {
         this.meta[docid].sync.dirty = true
         this.saveMeta()
         this.broadcast('meta:update', docid, {
-          sync: this.meta[docid].sync
+          sync: this.meta[docid].sync,
+          lastModified: this.meta[docid].lastModified,
         })
         this.bouncyUpdate(docid)
+      } else {
+        this.saveMeta()
+        this.broadcast('meta:update', docid, {
+          lastModified: this.meta[docid].lastModified
+        })
       }
       return res
     })
@@ -468,6 +475,8 @@ module.exports = class Notablemind {
       )
       .then(() => {
         this.syncPeriodically(id)
+      }, err => {
+        console.error('failing in  things', err)
       })
   }
 
@@ -512,15 +521,16 @@ module.exports = class Notablemind {
     const cleanup = () => {
       if (cleanedUp) return
       cleanedUp = true
+      changes.cancel()
       delete this.docConnections[docid][chanid]
       if (!Object.keys(this.docConnections[docid]).length) {
         delete this.docConnections[docid]
       }
-      changes.cancel()
     }
 
     sender.on('destroyed', cleanup)
     sender.on('devtools-reload-page', cleanup)
+    BrowserWindow.fromWebContents(sender).on('close', cleanup)
 
     return db
       .allDocs({include_docs: true, attachments: true})
@@ -635,6 +645,7 @@ module.exports = class Notablemind {
           return google.contentsForFile(token, file.id).then(data => {
             // TODO impl
             return this.ensureDocDb(nmId)
+              // TODO setup full text search
               .bulkDocs({
                 docs: data,
                 new_edits: false
@@ -675,12 +686,15 @@ module.exports = class Notablemind {
 
   attachWindow(browserWindow /*: BrowserWindow*/) {
     const id = browserWindow.id
-    this.windows[browserWindow.id] = browserWindow
-    browserWindow.on('closed', () => {
-      delete this.windows[id]
-    })
     const contents = browserWindow.webContents
-    this.contents[contents.id] = contents
+    const cid = contents.id
+    this.windows[browserWindow.id] = browserWindow
+    this.contents[cid] = contents
+    browserWindow.on('closed', () => {
+      console.log('closed', id)
+      delete this.windows[id]
+      delete this.contents[cid]
+    })
   }
 
   // managing file metadata
