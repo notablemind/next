@@ -44,7 +44,7 @@ export default class App extends Component {
   componentWillUnmount() {
     document.removeEventListener('keydown', this.onKeyDown)
   }
-  
+
   onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Tab' && e.ctrlKey) {
       if (e.shiftKey) {
@@ -52,6 +52,15 @@ export default class App extends Component {
       } else {
         this.onNext()
       }
+    }
+    if (e.key === 'w' && e.metaKey) {
+      this.setState({tab: tabs[0]})
+      e.preventDefault()
+      e.stopPropagation()
+    } else if (e.key === 'o' && e.metaKey) {
+      this.setState({tab: tabs[1]})
+      e.preventDefault()
+      e.stopPropagation()
     }
   }
 
@@ -123,7 +132,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
     // textTransform: 'uppercase',
     ':hover': {
-      backgroundColor: '#f0f0f0',
+      backgroundColor: '#fafafa',
     },
   },
 
