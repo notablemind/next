@@ -35,19 +35,22 @@ const openWindow = (nm, options, onClose) => {
 }
 
 const addItem = (nm, docid, rootId, text) => {
+  console.log('adding to', docid)
   const db = nm.ensureDocDb(docid)
   const start = Date.now()
   const id = uuid()
   return db.get(rootId).then(root => {
     return db.bulkDocs([
-      Object.assign({}, root, {children: root.children.concat([id])}),
+      Object.assign({}, root, {children: root.children.concat([id]), modified: Date.now()}),
       newNode(id, rootId, start, text),
     ])
-  }).then(() => Promise.all([db.get(rootId), db.get(id)]))
-  .then(([root, nnode]) => {
-    console.log('sending doc change', root, nnode)
-    nm.sendDocChange(docid, nnode, null)
-    nm.sendDocChange(docid, root, null)
+  })
+  // .then(() => Promise.all([db.get(rootId), db.get(id)]))
+  // .then(([root, nnode]) => {
+  .then(() => {
+    // console.log('sending doc change', root, nnode)
+    // nm.sendDocChange(docid, nnode, null)
+    // nm.sendDocChange(docid, root, null)
     return id
   })
 }

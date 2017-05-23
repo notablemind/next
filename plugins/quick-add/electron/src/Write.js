@@ -61,6 +61,9 @@ export default class Write extends Component {
       this.goToSearch()
     } else if (e.key === 'Escape') {
       this.props.cancel()
+    } else if (e.key === 's' && e.metaKey) {
+      // TODO get `home` from settings as "scratchTarget"
+      this.finish({id: 'home', root: 'root'}, true)
     }
   }
 
@@ -138,7 +141,11 @@ export default class Write extends Component {
         : <div className={css(styles.explanation)}>
           <div className={css(styles.row)}>
             <span className={css(styles.code)}>cmd+enter</span> to add to <span className={css(styles.title)}>{getMostRecent(this.props.nm.meta).title}</span>
-            </div>
+          </div>
+          <div className={css(styles.row)}>
+            {/* TODO get scratch doc */}
+            <span className={css(styles.code)}>cmd+s</span> to add to <span className={css(styles.title)}>Home</span> & open sticky note
+          </div>
           <div className={css(styles.row)}>
             <span className={css(styles.code)}>enter</span> to select a target document
             </div>
