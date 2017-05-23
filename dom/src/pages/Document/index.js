@@ -397,7 +397,7 @@ class Document extends Component {
   }
 
   onNavigate = (fileid: string) => {
-    hashHistory.push('/doc/' + fileid)
+    hashHistory.push('/doc/' + fileid + (this.props.sticky ? '?sticky=true' : ''))
   }
 
   onSetPlugins = (ids: string[]) => {
