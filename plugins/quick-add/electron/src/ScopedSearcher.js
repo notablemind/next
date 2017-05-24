@@ -42,25 +42,24 @@ export default class DocSearcher extends Component {
   }
 
   fullSearch: (a: string) => void = debounce((text: string) => {
-    if (!text.length) return this.setState({fullResults: []})
     this.remoteProm.send('full-search', text).catch(() => [])
       .then(fullResults => this.setState(
         state => state.text === text ? {fullResults} : {}
       ))
   }, DEBOUNCE)
 
-  onSubmit = (result, sticky) => {
-    this.props.onSubmit(result, sticky)
-    this.setState({text: '', results: [], fullResults: []})
-  }
-
   render() {
     return <Searcher
       ref={n => this.searcher = n}
       placeholder="Search by document title or node content"
       onChange={this.onChange}
-      onSubmit={this.props.onSubmit}
       results={this.state.results.concat(this.state.fullResults)}
     />
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+})

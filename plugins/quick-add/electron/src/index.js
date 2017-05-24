@@ -61,6 +61,8 @@ export default class App extends Component {
       this.setState({tab: tabs[1]})
       e.preventDefault()
       e.stopPropagation()
+    } else if (e.key === 'Escape') {
+      browserWindow.hide()
     }
   }
 

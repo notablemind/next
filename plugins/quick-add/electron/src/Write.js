@@ -77,7 +77,7 @@ export default class Write extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (!prevState.searching && this.state.searching) {
-      this.props.setSize(500, 500)
+      // this.props.setSize(500, 500)
     }
   }
 
@@ -94,7 +94,7 @@ export default class Write extends Component {
   }
 
   resizeWindow = (diff: number = 0) => {
-    this.props.setSize(500, document.getElementById('container').offsetHeight + diff)
+    // this.props.setSize(500, document.getElementById('container').offsetHeight + diff)
   }
 
   onBlur = () => {

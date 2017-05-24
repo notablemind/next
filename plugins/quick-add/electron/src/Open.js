@@ -30,6 +30,8 @@ export default class Open extends Component {
 
   finish = (result: any, sticky: boolean) => {
     this.props.nm.remote.send('quick-open', {doc: result.id, sticky, root: result.root})
+    savedText = ''
+    this.setState({text: ''})
   }
 
   render() {
