@@ -1,14 +1,10 @@
 
 import React, {Component} from 'react'
-import {css, StyleSheet} from 'aphrodite'
 
-import ipcPromise from '../../../../electron/src/ipcPromise'
 import Searcher from './Searcher'
-import {searchDocs, debounce} from './searching'
+import {searchDocs} from './searching'
 
 import type {Result} from './Searcher'
-
-const DEBOUNCE = 200
 
 export default class DocSearcher extends Component {
   constructor({docs}: any) {
@@ -16,14 +12,12 @@ export default class DocSearcher extends Component {
     this.state = {
       text: '',
       results: searchDocs(docs, ''),
-      fullResults: [],
     }
   }
 
   state: {
     text: string,
     results: Result[],
-    fullResults: Result[],
   }
   remoteProm: any
 
@@ -37,30 +31,21 @@ export default class DocSearcher extends Component {
   onChange = text => {
     const results = searchDocs(this.props.docs, text)
     this.setState({text, results})
-    // fullResults: docs.length > 0 ? [] : this.state.fullResults,
-    this.fullSearch(text)
   }
-
-  fullSearch: (a: string) => void = debounce((text: string) => {
-    if (!text.length) return this.setState({fullResults: []})
-    this.remoteProm.send('full-search', text).catch(() => [])
-      .then(fullResults => this.setState(
-        state => state.text === text ? {fullResults} : {}
-      ))
-  }, DEBOUNCE)
 
   onSubmit = (result, sticky) => {
     this.props.onSubmit(result, sticky)
-    this.setState({text: '', results: [], fullResults: []})
+    this.setState({text: '', results: []})
   }
 
   render() {
     return <Searcher
       ref={n => this.searcher = n}
-      placeholder="Search by document title or node content"
+      placeholder="Select target document"
       onChange={this.onChange}
       onSubmit={this.props.onSubmit}
-      results={this.state.results.concat(this.state.fullResults)}
+      focusUp={this.props.focusUp}
+      results={this.state.results}
     />
   }
 }

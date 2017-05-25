@@ -21,9 +21,22 @@ module.exports = documentsDir => {
     delete(id, nid) {
       return db.del(id + ':' + nid)
     },
-    search(text) {
-      if (text.length < 3) return Promise.resolve([]) // ignore smaller than 3 characters
-      return new Promise((res, rej) => db.searchStream(text, {expansions: 10}).toArray(res))
+    search(text, docid = null) {
+      if (!text.length) {
+        const opts = {limit: 30}
+        if (docid) {
+          opts.gt = docid + ':'
+          opts.lt = docid + ':~'
+        }
+        return new Promise((res, rej) => db.readStream(opts).toArray(res))
+      }
+      // if (text.length < 3) return Promise.resolve([]) // ignore smaller than 3 characters
+      const opts = {expansions: 10, limit: 30}
+      if (docid) {
+        opts.gt = docid + ':'
+        opts.lt = docid + ':~'
+      }
+      return new Promise((res, rej) => db.searchStream(text, opts).toArray(res))
     },
     importDb(docid, nmdb) {
       return nmdb.allDocs({include_docs: true}).then(({rows}) => {

@@ -162,10 +162,11 @@ class Document extends Component {
     tick: number,
     overlayState: ?OverlayState,
     quick: ?('search' | 'open' | 'command'),
+    alwaysOnTop: boolean,
   }
   _unsubs: Array<() => void>
 
-  constructor({id, userSession}: any) {
+  constructor({id, userSession, sticky}: any) {
     super()
     console.log('Document constructor', id)
     this.state = {
@@ -180,6 +181,7 @@ class Document extends Component {
       showingSyncSettings: false,
       tick: 0,
       overlayState: null,
+      alwaysOnTop: sticky,
       // panesSetup,
     }
     this._unsubs = []
@@ -195,6 +197,15 @@ class Document extends Component {
     window.addEventListener('paste', this.onPaste)
     window.addEventListener('drop', this.onDrop)
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (ELECTRON) {
+      if (prevState.alwaysOnTop !== this.state.alwaysOnTop) {
+        require('electron').remote.getCurrentWindow().setAlwaysOnTop(this.state.alwaysOnTop)
+      }
+    }
+  }
+  
 
   goBack = () => {
     if (this.state.treed) {
@@ -521,6 +532,15 @@ class Document extends Component {
         <div className={css(styles.title)}>
           {this.state.store.db.data.root.content}
         </div>
+        <div className={css(styles.pinButton)} onClick={() => {
+          this.setState({alwaysOnTop: !this.state.alwaysOnTop})
+        }}>
+          <Icon name="pin" className={css(
+            styles.pinButton,
+            this.state.alwaysOnTop && styles.pinButtonActive,
+            !this.state.alwaysOnTop && styles.pinButtonInactive,
+          )} />
+        </div>  
       </div>
     }
 
@@ -704,6 +724,25 @@ const styles = StyleSheet.create({
   homeArrow: {
     marginRight: 5,
     height: 13,
+  },
+
+  pinButton: {
+    color: '#aaa',
+    padding: '0 5px',
+  },
+
+  pinButtonActive: {
+    color: '#0af',
+    transform: 'rotate(30deg)',
+    ':hover': {
+      transform: 'rotate(0deg)',
+    }
+  },
+
+  pinButtonInactive: {
+    ':hover': {
+      transform: 'rotate(30deg)',
+    }
   },
 
   main: {

@@ -2,7 +2,7 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 // import {comp: Write} from './Write.re'
-import DocSearcher from './DocSearcher'
+import BothSearcher from './BothSearcher'
 
 let savedText = ''
 
@@ -35,7 +35,7 @@ export default class Open extends Component {
   }
 
   render() {
-    return <DocSearcher
+    return <BothSearcher
       docs={Object.values(this.props.nm.meta)}
       remote={this.props.nm.remote}
       cancel={this.props.cancel}

@@ -74,14 +74,17 @@ export default class Searcher extends Component {
     const {selected} = this.state
     const {placeholder, results} = this.props
     return <div className={css(styles.searcher)}>
-      <input
-        value={this.props.text}
-        ref={n => this.input = n}
-        placeholder={placeholder}
-        className={css(styles.input, styles.search)}
-        onChange={e => this.setText(e.target.value)}
-        onKeyDown={this.onKeyDown}
-      />
+      <div style={{flexDirection: 'row'}}>
+        {this.props.inputLeft}
+        <input
+          value={this.props.text}
+          ref={n => this.input = n}
+          placeholder={placeholder}
+          className={css(styles.input, styles.search)}
+          onChange={e => this.setText(e.target.value)}
+          onKeyDown={this.onKeyDown}
+        />
+      </div>
       <div className={css(styles.docs)}>
         {results.map((doc, i) => (
           <ScrollIntoView
@@ -124,6 +127,7 @@ const styles = StyleSheet.create({
   input: {
     outline: 'none',
     border: 'none',
+    flex: 1,
     padding: 10,
   },
 

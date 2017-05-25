@@ -173,8 +173,8 @@ module.exports = class Notablemind {
     })
   }
 
-  search(text/*: string*/) {
-    return this.searcher.search(text)
+  search(text/*: string*/, doc/*: ?string*/ = null) {
+    return this.searcher.search(text, doc)
   }
 
   saveMeta() {

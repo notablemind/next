@@ -2,7 +2,8 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 import AutoGrowTextarea from './AutoGrowTextarea'
-import DocSearcher from './DocSearcher'
+// import BothSearcher from './BothSearcher'
+import AltSearcher from './AltSearcher'
 
 let savedText = ''
 
@@ -23,7 +24,6 @@ const getMostRecent = (meta): any => {
 export default class Write extends Component {
   state = {
     text: savedText,
-    searching: false,
   }
   unmounted = false
   input: {focus: () => void}
@@ -68,17 +68,7 @@ export default class Write extends Component {
   }
 
   goToSearch() {
-    if (!this.state.searching) {
-      this.setState({searching: true})
-    } else {
-      this.searcher.focus()
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (!prevState.searching && this.state.searching) {
-      // this.props.setSize(500, 500)
-    }
+    this.searcher.focus()
   }
 
   setText = (text: string) => {
@@ -109,28 +99,37 @@ export default class Write extends Component {
   finish = (result: {id: string, root: string}, sticky: boolean) => {
     console.log('trying to do things now')
     this.props.nm.remote.send('quick-add', {text: this.state.text, doc: result.id, root: result.root, sticky})
-    this.setState({searching: false, text: ''})
+    this.setState({text: ''})
     this.props.cancel()
+  }
+
+  renderInput() {
+    return <AutoGrowTextarea
+      onChange={e => this.setText(e.target.value)}
+      onBlur={this.onBlur}
+      ref={input => this.input = input}
+      value={this.state.text}
+      onKeyDown={this.onKeyDown}
+      placeholder="Write something"
+      className={css(styles.input, styles.text)}
+    />
   }
 
   render() {
     return <div className={css(styles.container)}>
       <div>
-        <AutoGrowTextarea
-          onChange={e => this.setText(e.target.value)}
-          onHeightChange={(height, prevHeight) => {
-            this.resizeWindow(height - prevHeight)
-          }}
-          onBlur={this.onBlur}
-          ref={input => this.input = input}
-          value={this.state.text}
-          onKeyDown={this.onKeyDown}
-          placeholder="Write something"
-          className={css(styles.input, styles.text)}
-        />
+        {this.renderInput()}
       </div>
-      {this.state.searching
-        ? <DocSearcher
+      <AltSearcher 
+        docs={Object.values(this.props.nm.meta)}
+        remote={this.props.nm.remote}
+        cancel={this.props.cancel}
+        onSubmit={this.finish}
+        focusUp={() => this.input.focus()}
+        ref={n => this.searcher = n}
+      />
+      {/*{this.state.searching
+        ? <BothSearcher
             docs={Object.values(this.props.nm.meta)}
             remote={this.props.nm.remote}
             cancel={this.props.cancel}
@@ -143,13 +142,13 @@ export default class Write extends Component {
             <span className={css(styles.code)}>cmd+enter</span> to add to <span className={css(styles.title)}>{getMostRecent(this.props.nm.meta).title}</span>
           </div>
           <div className={css(styles.row)}>
-            {/* TODO get scratch doc */}
             <span className={css(styles.code)}>cmd+s</span> to add to <span className={css(styles.title)}>Home</span> & open sticky note
           </div>
           <div className={css(styles.row)}>
             <span className={css(styles.code)}>enter</span> to select a target document
             </div>
           </div>}
+        */}
     </div>
   }
 }

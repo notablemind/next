@@ -44,15 +44,7 @@ const addItem = (nm, docid, rootId, text) => {
       Object.assign({}, root, {children: root.children.concat([id]), modified: Date.now()}),
       newNode(id, rootId, start, text),
     ])
-  })
-  // .then(() => Promise.all([db.get(rootId), db.get(id)]))
-  // .then(([root, nnode]) => {
-  .then(() => {
-    // console.log('sending doc change', root, nnode)
-    // nm.sendDocChange(docid, nnode, null)
-    // nm.sendDocChange(docid, root, null)
-    return id
-  })
+  }).then(() => id)
 }
 
 const plugin = {
@@ -86,32 +78,30 @@ const plugin = {
         window.hide()
       }
     })
+    state.ipcPromise.on('doc-search', (event, {text, docid}) => {
+      return nm.search(text, docid).then(
+        results => results.map(convertResult(null))
+      ) // TODO sort by score?
+    })
     state.ipcPromise.on('full-search', (event, text) => {
-      return nm.search(text).then(results => results.map(({key, score, value}) => {
-        const [docid, id] = key.split(':')
-        return {
-          title: value.content.slice(0, 100),
-          subtitle: nm.meta[docid].title,
-          type: value.type,
-          trashed: value.trashed,
-          id: docid,
-          root: id,
-        }
-      })).then(results => {
-        console.log('got search results', results.length)
-        return results
-      }) // TODO sort by score?
-      /*
-      return [{
-        title: 'full text: ' + text,
-        id: 'home',
-        root: 'root',
-        subtitle: 'Home',
-      }]
-      */
+      return nm.search(text).then(
+        results => results.map(convertResult(nm.meta))
+      ) // TODO sort by score?
     })
   },
   _openWindow: openWindow
+}
+
+const convertResult = meta => ({key, score, value}) => {
+  const [docid, id] = key.split(':')
+  return {
+    title: value.content.slice(0, 100),
+    subtitle: meta[docid].title,
+    type: value.type,
+    trashed: value.trashed,
+    id: docid,
+    root: id,
+  }
 }
 
 module.exports = plugin
