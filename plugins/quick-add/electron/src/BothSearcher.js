@@ -5,6 +5,7 @@ import {css, StyleSheet} from 'aphrodite'
 import ipcPromise from '../../../../electron/src/ipcPromise'
 import Searcher from './Searcher'
 import {searchDocs, debounce} from './searching'
+import Shortcuts from './Shortcuts'
 
 import type {Result} from './Searcher'
 
@@ -54,10 +55,18 @@ export default class BothSearcher extends Component {
     this.setState({text: '', results: [], fullResults: []})
   }
 
+  shortcuts() {
+    return <Shortcuts cuts={[
+      ['enter', 'Open document in new window'],
+      ['cmd+s, cmd+enter', 'Open document in sticky note'],
+    ]} />
+  }
+
   render() {
     return <Searcher
       ref={n => this.searcher = n}
       placeholder="Search by document title or node content"
+      subtext={this.shortcuts()}
       onChange={this.onChange}
       onSubmit={this.props.onSubmit}
       focusUp={this.props.focusUp}

@@ -10,7 +10,8 @@ const PLUGIN_ID = 'quick_add'
 const openWindow = (nm, options, onClose) => {
   const quickAdd = new BrowserWindow(Object.assign({
     width: 500,
-    height: 22 + 99 + 5,
+    height: 500,
+    // height: 22 + 99 + 5,
     movable: false,
     resizable: false,
     // hasShadow: false,
@@ -57,6 +58,8 @@ const plugin = {
       console.log('global shortcut triggered!')
       if (window) {
         window.show()
+      } else {
+        window = openWindow(nm, {}, () => window = null)
       }
     })
     ipcMain.on('quick-add', (event, {text, doc, root, sticky}) => {
@@ -80,12 +83,12 @@ const plugin = {
     })
     state.ipcPromise.on('doc-search', (event, {text, docid}) => {
       return nm.search(text, docid).then(
-        results => results.map(convertResult(null))
+        results => results.map(convertResult(null)).filter(m => !m.trashed)
       ) // TODO sort by score?
     })
     state.ipcPromise.on('full-search', (event, text) => {
       return nm.search(text).then(
-        results => results.map(convertResult(nm.meta))
+        results => results.map(convertResult(nm.meta)).filter(m => !m.trashed)
       ) // TODO sort by score?
     })
   },
@@ -96,7 +99,7 @@ const convertResult = meta => ({key, score, value}) => {
   const [docid, id] = key.split(':')
   return {
     title: value.content.slice(0, 100),
-    subtitle: meta[docid].title,
+    subtitle: meta ? meta[docid].title : null,
     type: value.type,
     trashed: value.trashed,
     id: docid,

@@ -360,6 +360,7 @@ class Document extends Component {
     treed.ready.then(() => {
       this.onTitleChange(treed.db.data.root.content)
       const viewState = loadLastViewState(this.props.id)
+      viewState.root = 'root' // ignore saved spot for the moment.
       if (!viewState.viewType) viewState.viewType = 'list'
       if (this.props.root) viewState.root = this.props.root
       const store = treed.registerView(viewState)
@@ -524,15 +525,20 @@ class Document extends Component {
       traffic = <div style={{flexBasis: 80}} />
     }
 
-    if (this.props.sticky) {
+    if (ELECTRON && this.props.sticky) {
       return <div className={css(styles.stickyTop)}>
         <div className={css(styles.closeButton)} onClick={() => window.close()}>
-          <Icon name="ios-close-empty" className={css(styles.homeArrow)} />
+          <Icon name="ios-close-empty" />
+        </div>  
+        <div className={css(styles.minButton)} onClick={() => {
+          require('electron').remote.getCurrentWindow().minimize()
+        }}>
+          <Icon name="ios-arrow-down" />
         </div>  
         <div className={css(styles.title)}>
           {this.state.store.db.data.root.content}
         </div>
-        <div className={css(styles.pinButton)} onClick={() => {
+        <div className={css(styles.pinButtonWrapper)} onClick={() => {
           this.setState({alwaysOnTop: !this.state.alwaysOnTop})
         }}>
           <Icon name="pin" className={css(
@@ -582,7 +588,24 @@ class Document extends Component {
   extraCommands() {
     const config = viewTypes[this.state.store.state.viewType]
     const viewActions = config.quickActions ? config.quickActions(this.state.store, this.state.store.getters.activeNode()) : []
+    const electronCommands = []
+    if (ELECTRON) {
+      electronCommands.push({
+        id: 'sticky_toggle',
+        title: this.props.sticky
+          ? 'Convert from sticky note to full window'
+          : 'Convert to sticky note',
+        action: () => {
+          require('electron').ipcRenderer.send('toggle-sticky', {
+            docid: this.props.id,
+            sticky: !this.props.sticky,
+            root: this.state.store.state.root,
+          })
+        }
+      })
+    }
     return this.quickCommands
+      .concat(electronCommands)
       .concat(makeViewTypeQuickActions(viewTypes, this.setViewType))
       .concat(viewActions)
   }
@@ -654,6 +677,7 @@ const styles = StyleSheet.create({
 
   top: {
     WebkitAppRegion: 'drag',
+    WebkitUserSelect: 'none',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
@@ -665,6 +689,7 @@ const styles = StyleSheet.create({
   stickyTop: {
     height: 22,
     WebkitAppRegion: 'drag',
+    WebkitUserSelect: 'none',
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fafafa',
@@ -726,9 +751,12 @@ const styles = StyleSheet.create({
     height: 13,
   },
 
+  pinButtonWrapper: {
+  },
+
   pinButton: {
     color: '#aaa',
-    padding: '0 5px',
+    padding: '0 10px',
   },
 
   pinButtonActive: {
@@ -753,10 +781,20 @@ const styles = StyleSheet.create({
   closeButton: {
     alignSelf: 'stretch',
     justifyContent: 'center',
-    padding: '0 10px',
+    padding: '0 5px 0 10px',
     cursor: 'pointer',
     ':hover': {
       color: 'red',
+    },
+  },
+
+  minButton: {
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    padding: '0 10px 0 5px',
+    cursor: 'pointer',
+    ':hover': {
+      color: '#0af',
     },
   },
 

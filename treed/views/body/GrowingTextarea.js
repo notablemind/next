@@ -18,6 +18,8 @@ export default class GrowingTextarea extends Component {
 
   componentDidMount() {
     this.resize()
+    this.shadow.style.position = 'absolute'
+    this.textarea.style.setProperty('display', 'block', 'important')
     window.addEventListener('resize', this.resize)
     this._prevHeight = null
   }
@@ -163,11 +165,14 @@ const styles = StyleSheet.create({
     // fontSize: '1em',
     overflow: 'hidden',
     // fontFamily: 'sans-serif',
+  
+    display: 'none',
   },
 
   shadow: {
+    // position: 'absolute',
+
     whiteSpace: 'pre-wrap',
-    position: 'absolute',
     // fontFamily: 'sans-serif',
     width: '100%',
     top: 0,

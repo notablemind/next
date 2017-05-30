@@ -44,6 +44,7 @@ body {
 
 #container {
     max-height: 500px;
+    flex: 1;
 }
 
 #input {
@@ -90,4 +91,74 @@ pre {
     overflow: auto;
     margin: 0;
     padding: 0;
+}
+
+@font-face {
+    font-family:ionicons;
+    font-style:normal;
+    font-weight:normal;
+    src:url("./fonts/ionicons.woff") format("woff");
+}
+
+@font-face {
+    font-family:OpenSans;
+    font-style:normal;
+    font-weight:200;
+    src:url("./fonts/options/Open_Sans/OpenSans-Light.ttf");
+}
+
+@font-face {
+    font-family:OpenSans;
+    font-style:normal;
+    font-weight:normal;
+    src:url("./fonts/options/Open_Sans/OpenSans-Regular.ttf");
+}
+
+@font-face {
+    font-family:OpenSans;
+    font-style:normal;
+    font-weight:600;
+    src:url("./fonts/options/Open_Sans/OpenSans-Semibold.ttf");
+}
+
+@font-face {
+    font-family:OpenSans;
+    font-style:normal;
+    font-weight:700;
+    src:url("./fonts/options/Open_Sans/OpenSans-Bold.ttf");
+}
+
+@font-face {
+    font-family:OpenSans;
+    font-style:normal;
+    font-weight:800;
+    src:url("./fonts/options/Open_Sans/OpenSans-ExtraBold.ttf");
+}
+
+@font-face {
+    font-family: 'LinuxLibertine'; /* normal */
+    src: url('./fonts/options/linux_libertine/LinLibertine_R.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'LinuxLibertine'; /* italic */
+    src: url('./fonts/options/linux_libertine/LinLibertine_RI.ttf');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'LinuxLibertine'; /* bold */
+    src: url('./fonts/options/linux_libertine/LinLibertine_RB.ttf');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'LinuxLibertine'; /* bold italic */
+    src: url('./fonts/options/linux_libertine/LinLibertine_RBI.ttf');
+    font-weight: bold;
+    font-style: italic;
 }

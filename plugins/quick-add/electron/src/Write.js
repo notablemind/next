@@ -34,7 +34,7 @@ export default class Write extends Component {
   }
 
   focus() {
-    this.input.focus()
+    this.input.focus('change')
   }
 
   onKeyDown = e => {
@@ -77,7 +77,7 @@ export default class Write extends Component {
   }
 
   componentDidMount() {
-    this.input.focus()
+    this.input.focus('change')
     setTimeout(() => {
       this.resizeWindow()
     }, 10)
@@ -125,7 +125,7 @@ export default class Write extends Component {
         remote={this.props.nm.remote}
         cancel={this.props.cancel}
         onSubmit={this.finish}
-        focusUp={() => this.input.focus()}
+        focusUp={() => this.input.focus('change')}
         ref={n => this.searcher = n}
       />
       {/*{this.state.searching
@@ -134,7 +134,7 @@ export default class Write extends Component {
             remote={this.props.nm.remote}
             cancel={this.props.cancel}
             onSubmit={this.finish}
-            focusUp={() => this.input.focus()}
+            focusUp={() => this.input.focus('change')}
             ref={n => this.searcher = n}
           />
         : <div className={css(styles.explanation)}>

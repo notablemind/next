@@ -3,7 +3,7 @@
 const path = require('path')
 const PouchDB = require('pouchdb')
 const electron = require('electron')
-const {ipcMain, app, Tray} = electron
+const {ipcMain, app, Tray, BrowserWindow} = electron
 
 const ipcPromise = require('./src/ipcPromise')
 const makeWindow = require('./src/makeWindow')
@@ -42,6 +42,11 @@ app.on('ready', function() {
   nm.init()
 
   state.createNewWindow = (docid = 'home', root = null, sticky = false) => nm.attachWindow(makeWindow(state, docid, root, sticky))
+
+  ipcMain.on('toggle-sticky', (evt, {docid, sticky, root}) => {
+    BrowserWindow.fromWebContents(evt.sender).close()
+    state.createNewWindow(docid, root, sticky)
+  })
 
   plugins.forEach(plugin => {
     state.plugins[plugin.id] = plugin.init(state, nm)

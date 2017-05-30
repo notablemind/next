@@ -6,12 +6,13 @@ import {css, StyleSheet} from 'aphrodite'
 import ipcPromise from '../../../../electron/src/ipcPromise'
 import Searcher from './Searcher'
 import {searchDocs, debounce} from './searching'
+import Shortcuts from './Shortcuts'
 
 import type {Result} from './Searcher'
 
 const DEBOUNCE = 200
 
-export default class DocSearcher extends Component {
+export default class AltSearcher extends Component {
   constructor({docs}: any) {
     super()
     this.state = {
@@ -51,33 +52,61 @@ export default class DocSearcher extends Component {
   }
 
   fullSearch: (a: string) => void = debounce((text: string) => {
+    const plainResult = {
+      ...this.state.selectedDoc,
+      title: '*Document root*',
+    }
     // if (!text.length) return this.setState({results: []})
     this.remoteProm.send('doc-search', {docid: this.state.selectedDoc.id, text}).catch(() => [])
       .then(results => this.setState(
-        state => state.text === text ? {results} : {}
+        state => state.text === text ? {results: [plainResult].concat(results)} : {}
       ))
   }, DEBOUNCE)
+
+  shortcuts() {
+    return this.state.selectedDoc
+      ? [
+        ['enter', 'add as child of selected node'],
+        ['cmd+s, cmd+enter', 'add & open sticky note'],
+      ]
+      : [
+        ['enter', 'search within document'],
+        ['cmd+enter', 'add as child of document root'],
+        ['cmd+s', 'add & open sticky note'],
+      ]
+  }
+
+  resetDoc = () => {
+    this.setState({selectedDoc: null, text: '', results: searchDocs(this.props.docs, '')})
+  }
 
   render() {
     return <Searcher
       ref={n => this.searcher = n}
-      inputLeft={this.state.selectedDoc &&
+      inputLeft={
+        this.state.selectedDoc &&
         <div className={css(styles.titlePreview)}>{this.state.selectedDoc.title}</div>
-        }
+      }
+      subtext={<Shortcuts cuts={this.shortcuts()} />}
       placeholder={this.state.selectedDoc
         ? 'Search within doc'
         : "Select target document"}
       onChange={this.onChange}
       text={this.state.text}
-      onSubmit={(result, sticky) => {
-        if (this.state.selectedDoc || sticky) {
-          return this.props.onSubmit(result, sticky)
+      onBackspace={() => {
+        if (this.state.selectedDoc) {
+          this.resetDoc()
+        }
+      }}
+      onSubmit={(result, cmdKey, cmdS) => {
+        if (this.state.selectedDoc || cmdKey) {
+          return this.props.onSubmit(result, this.state.selectedDoc ? cmdKey : cmdS)
         }
         this.setState({selectedDoc: result, text: '', results: []})
         this.fullSearch('')
       }}
       focusUp={() => this.state.selectedDoc
-        ? this.setState({selectedDoc: null, text: '', results: searchDocs(this.props.docs, '')})
+        ? this.resetDoc()
         : this.props.focusUp()}
       results={this.state.results}
     />
@@ -98,5 +127,5 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
     // flexDirection: 'row',
     // justifyContent: 'center',    
-  }
+  },
 })

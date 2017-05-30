@@ -2,7 +2,8 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
-import Renderer from '../../../../treed/views/body/Renderer'
+import Icon from 'treed/views/utils/Icon'
+import Renderer from 'treed/views/body/Renderer'
 import ScrollIntoView from 'treed/ScrollIntoView'
 
 export type Result = {
@@ -38,6 +39,8 @@ export default class Searcher extends Component {
 
   focus = () => {
     this.input.focus()
+    this.input.selectionStart = 0
+    this.input.selectionEnd = this.input.value.length
   }
 
   onKeyDown = (e: KeyboardEvent) => {
@@ -67,12 +70,17 @@ export default class Searcher extends Component {
       } else {
         // this.props.onNext()
       }
+    } else if (e.key === 's' && e.metaKey) {
+      e.preventDefault()
+      this.props.onSubmit(results[selected], true, true)
+    } else if (e.key === 'Backspace' && !e.target.value) {
+      this.props.onBackspace && this.props.onBackspace()
     }
   }
 
   render() {
     const {selected} = this.state
-    const {placeholder, results} = this.props
+    const {placeholder, results, subtext} = this.props
     return <div className={css(styles.searcher)}>
       <div style={{flexDirection: 'row'}}>
         {this.props.inputLeft}
@@ -103,20 +111,47 @@ export default class Searcher extends Component {
         {!results.length &&
           <div className={css(styles.result, styles.empty)}>No results</div>}
       </div>
+      {subtext}
     </div>
   }
 }
 
 const renderItem = doc => {
+  let content
   if (doc.type === 'code') {
-    return <div className={css(styles.code)}>{doc.title}</div>
+    content = <div className={css(styles.code)}>{doc.title}</div>
+  } else {
+    content = <Renderer content={doc.title} /> // TODO have an icon based on the type
   }
-  return <Renderer content={doc.title} /> // TODO have an icon based on the type
+  const icon = (doc.type === ':doc:' || (!doc.type && doc.lastOpened))
+    ? 'document-text'
+    : 'ios-arrow-right'
+  // console.log(doc.type, doc)
+  return <div className={css(styles.titleRow)}>
+    {icon
+      ? <Icon
+          className={css(styles.titleIcon)}
+          name={icon}
+        />
+      : null}
+    {content}
+  </div>
 }
 
 const styles = StyleSheet.create({
   searcher: {
     flex: 1,
+  },
+
+  titleRow: {
+    flexDirection: 'row',
+  },
+
+  titleIcon: {
+    fontSize: 16,
+    lineHeight: '26px',
+    marginRight: 5,
+    color: '#66f',
   },
 
   code: {
@@ -160,6 +195,8 @@ const styles = StyleSheet.create({
 
   empty: {
     fontStyle: 'italic',
+    flex: 1,
+    maxHeight: 'auto',
   },
 
   selectedResult: {
