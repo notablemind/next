@@ -3,20 +3,22 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import NotableClient from '../../../../electron/src/NotableClient'
-import Write from './Write'
-import Open from './Open'
+import NewWrite from './NewWrite'
+// import Write from './Write'
+// import Open from './Open'
+// TODO add other tabs "Track" and "???"
 
 const Sticky = () => <div>sticky...</div>
 
 const tabs: Array<{id: string, name: string, component: any}> = [{
   id: 'write',
   name: 'Write',
-  component: Write,
-}, {
+  component: NewWrite,
+}/*, {
   id: 'open',
   name: 'Open',
   component: Open,
-}]
+}*/]
 
 const browserWindow = require('electron').remote.getCurrentWindow()
 

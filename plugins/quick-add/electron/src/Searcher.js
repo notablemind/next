@@ -54,7 +54,24 @@ export default class Searcher extends Component {
       this.setState({
         selected: selected < results.length - 1 ? selected + 1 : 0,
       })
-    } else if (e.key === 'Enter') {
+    } else if (e.key === 'Tab') {
+      e.preventDefault()
+      if (e.shiftKey && this.props.focusUp) {
+        this.props.focusUp()
+      } else {
+        // this.props.onNext()
+      }
+    } else if (e.key === 'Backspace' && !e.target.value) {
+      this.props.onBackspace && this.props.onBackspace()
+    } else {
+      const submission = this.props.submissionKey(e)
+      if (submission) {
+        e.preventDefault()
+        e.stopPropagation()
+        this.props.onSubmit(submission, results[selected])
+      }
+    }
+    /* else if (e.key === 'Enter') {
       e.preventDefault()
       if (e.shiftKey) {
         if (this.props.focusUp) {
@@ -63,19 +80,10 @@ export default class Searcher extends Component {
       } else {
         this.props.onSubmit(results[selected], e.metaKey)
       }
-    } else if (e.key === 'Tab') {
-      e.preventDefault()
-      if (e.shiftKey && this.props.focusUp) {
-        this.props.focusUp()
-      } else {
-        // this.props.onNext()
-      }
     } else if (e.key === 's' && e.metaKey) {
       e.preventDefault()
       this.props.onSubmit(results[selected], true, true)
-    } else if (e.key === 'Backspace' && !e.target.value) {
-      this.props.onBackspace && this.props.onBackspace()
-    }
+    }*/
   }
 
   render() {
@@ -99,7 +107,7 @@ export default class Searcher extends Component {
             key={doc.id + ':' + doc.root}
             active={i === selected}
             className={css(styles.result, i === selected && styles.selectedResult)}
-            onClick={(e) => this.props.onSubmit(doc, e.metaKey)}
+            onClick={(e) => this.props.onSubmit(e.metaKey ? 'meta-click' : 'click', doc)}
           >
             {renderItem(doc)}
             {doc.subtitle && 

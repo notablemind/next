@@ -50,13 +50,13 @@ export default class BothSearcher extends Component {
       ))
   }, DEBOUNCE)
 
-  onSubmit = (result, sticky) => {
-    this.props.onSubmit(result, sticky)
+  onSubmit = (type, result) => {
+    this.props.onSubmit(type, result, this.state.text)
     this.setState({text: '', results: [], fullResults: []})
   }
 
   shortcuts() {
-    return <Shortcuts cuts={[
+    return <Shortcuts cuts={this.props.shortcuts || [
       ['enter', 'Open document in new window'],
       ['cmd+s, cmd+enter', 'Open document in sticky note'],
     ]} />
@@ -68,8 +68,9 @@ export default class BothSearcher extends Component {
       placeholder="Search by document title or node content"
       subtext={this.shortcuts()}
       onChange={this.onChange}
-      onSubmit={this.props.onSubmit}
+      onSubmit={this.onSubmit}
       focusUp={this.props.focusUp}
+      submissionKey={this.props.submissionKey}
       results={this.state.results.concat(this.state.fullResults)}
     />
   }
