@@ -1,0 +1,13 @@
+<!doctype html>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" href="./favicon.png">
+<title>Notablemind</title>
+<link rel="stylesheet" href="./styles.css">
+<body>
+    <div id="root"></div>
+    <script>
+window.connectionFail = () => document.getElementById('root').innerHTML =
+'Failed to load the javascript'
+    </script>
+    <script src="./bundle.js" onerror="connectionFail()"></script>
