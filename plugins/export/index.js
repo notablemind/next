@@ -4,6 +4,24 @@ import type {Plugin} from 'treed/types'
 
 const PLUGIN_ID = 'export'
 
+let lastSavedName = null
+let lastRoot = null
+
+const doSave = ELECTRON ? (text) => {
+  require('electron').remote.dialog.showSaveDialog({
+    title: "Save as",
+  }, filename => {
+    if (!filename) return
+    lastSavedName = filename
+    require('fs').writeFileSync(filename, text)
+  })
+} : () => alert('not impl yet')
+
+const doSaveAgain = ELECTRON ? (text) => {
+  if (!lastSavedName) return doSave(text)
+  require('fs').writeFileSync(lastSavedName, text)
+} : () => alert('not impl yet')
+
 const doCopy = ELECTRON ? (text) => {
   // TODO make web compatible
   const {clipboard} = require('electron')
@@ -42,6 +60,7 @@ const exporters = {
 
   markdownDocument(node, store) {
     return walk(node._id, store.db.data, (node, level, walk) => {
+      if (node.type !== 'todo' && node.completed) return ''
       if (node.type === 'header') {
         return head(level + 1) + ' ' + node.content + '\n\n' + node.children.map(walk).join('\n\n')
       } else if (node.type === 'orderedList') {
@@ -52,10 +71,21 @@ const exporters = {
         return node.content + '\n\n' + node.children.map(
           id => '- ' + walk(id).replace(/\n/, '\n  ')
         ).join('\n')
+      } else if (node.type === 'code') {
+        return '```' + (node.types.code.language) + '\n' + node.content + '\n```'
+      } else if (node.type === 'note') {
+        return '> ' + node.content /* TODO get children too */
+      } else if (node.type === 'info') {
+        return '> ' + node.content /* TODO get children too */
       } else {
         return node.content + (node.children.length ? '\n\n' + node.children.map(walk).join('\n\n') : '')
       }
     })
+  },
+
+  notablemindDocument(id, store) {
+    const tree = store.db.cloneTree(id)
+    return JSON.stringify(tree, null, 2)
   },
 }
 
@@ -68,6 +98,19 @@ const plugin: Plugin<void, void> = {
       id: 'export_markdown_list',
       action: () => {
         doCopy(exporters.markdownList(node, store))
+      },
+    }, {
+      title: 'Export to disk',
+      id: 'export_to_disk',
+      action: () => {
+        lastRoot = node._id
+        doSave(exporters.notablemindDocument(node._id, store))
+      },
+    }, {
+      title: 'Re-export to disk',
+      id: 'reexport_to_disk',
+      action: () => {
+        doSaveAgain(exporters.notablemindDocument(lastRoot || node._id, store))
       },
     }, {
       title: 'Export Markdown document',

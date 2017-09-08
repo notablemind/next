@@ -32,10 +32,8 @@ const makeWindow = (state/*: any*/, docid/*: string*/ = 'home', root/*: ?string*
     height: 300,
   } : {}))
   win.on('closed', function() {
-    // if (!sticky) {
       windows.splice(windows.indexOf(win), 1)
       if (windows.length === 0) app.dock.hide()
-    // }
   })
   win.webContents.on('will-navigate', (event, url) => {
     if (url.indexOf(localURL) === 0) return

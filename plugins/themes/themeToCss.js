@@ -104,6 +104,7 @@ const globalStylesToCss = (override={}, base={}) => {
     styleToRules('.Node_body.Header', {...base.header, ...override.header}),
     styleToSimpleRule('.Node_rendered p code', {...base.inlineCode, ...override.inlineCode}),
     styleToSimpleRule('.Node_rendered pre code', {...base.code, ...override.code}),
+    // styleToSimpleRule('.Node_container_code', {fontSize: (base.code || {}).fontSize}),
     styleToSimpleRule('.Node_rendered p a', {...base.link, ...override.link}),
   ].join('\n\n')
 }

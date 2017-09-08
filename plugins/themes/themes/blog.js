@@ -12,14 +12,17 @@ const header1 = {
 
 const header2 = {
   fontSize: 1.3,
+  color: '#05a',
 }
 
 const header3 = {
   fontSize: 1.1,
+  fontWeight: 'normal',
 }
 
 const header4 = {
   fontSize: 1.0,
+  fontStyle: 'italic',
 }
 
 const theme: ThemeSettings = {
@@ -69,12 +72,21 @@ const theme: ThemeSettings = {
   types: {
     note: {
       container: {
-        backgroundColor: '#ddd',
+        color: '#777',
+        // backgroundColor: '#eee',
         borderLeft: '5px solid #aaa',
         paddingLeft: '10px',
+        fontSize: 0.9
       },
       body: {
-        fontWeight: 'bold',
+        fontStyle: 'italic',
+        // fontWeight: 'bold',
+      },
+    },
+
+    code: {
+      container: {
+        fontSize: 0.6,
       },
     },
   },

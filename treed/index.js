@@ -460,12 +460,16 @@ export default class Treed {
   }
 
   setupActionsAndGetters(store: Store, viewTypeConfig: ViewTypeConfig) {
-    Object.keys(viewTypeConfig.getters).forEach(key => {
-      store.getters[key] = viewTypeConfig.getters[key].bind(null, store)
-    })
-    Object.keys(viewTypeConfig.actions).forEach(key => {
-      store.actions[key] = viewTypeConfig.actions[key].bind(null, store)
-    })
+    if (viewTypeConfig.getters) {
+      Object.keys(viewTypeConfig.getters).forEach(key => {
+        store.getters[key] = viewTypeConfig.getters[key].bind(null, store)
+      })
+    }
+    if (viewTypeConfig.actions) {
+      Object.keys(viewTypeConfig.actions).forEach(key => {
+        store.actions[key] = viewTypeConfig.actions[key].bind(null, store)
+      })
+    }
     this.enabledPlugins.forEach(plugin => {
       const {actions, getters, events} = plugin
       if (actions) {

@@ -105,9 +105,13 @@ export default class CodeEditor extends Component {
   componentDidMount() {
     const {node} = this.props
     const {text} = this.state
+    let mode = node.types.code.language
+    if (mode === 'reason') {
+      mode = 'rust'
+    }
     this.cm = CM(this.node, {
       value: text,
-      mode: node.types.code.language,
+      mode,
       lineNumbers: text.split('\n').length >= 10,
         // TODO update options as things change
       ...this.options,

@@ -1,7 +1,7 @@
 // @flow
 
-const {googleClientId} = require('../../../shared/config.json')
-const {googleClientSecret} = require('../../../shared/secret.json')
+const {googleClientId} = require('../config.json')
+const {googleClientSecret} = require('../secret.json')
 
 const qs = require('querystring')
 const {parse: urlParse} = require('url')

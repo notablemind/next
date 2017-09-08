@@ -52,7 +52,7 @@ export default class Manager {
     this.listeners = {}
     this.sources = makeSources(sources, config.sources)
     this.kernelSessions = {}
-    this.displayLanguages = ['javascript', 'python', 'swift'] // TODO maybe allow ppl to just enter their own?
+    this.displayLanguages = ['javascript', 'python', 'swift', 'reason', 'ocaml', 'clojure', 'bash', 'json', 'plain'] // TODO maybe allow ppl to just enter their own?
     // Probably want an autocomplete actually
     // TODO listen to settings changes
     // this._unsub = store.

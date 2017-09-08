@@ -76,29 +76,53 @@ const searchCommands = (commands, text) => {
   )
 }
 
-const walk = (id, data, fn) => {
-  if (fn(data[id])) return true
-  const stopped = data[id].children.some(child => walk(child, data, fn))
+const walk = (id, data, depth, fn) => {
+  if (fn(data[id], depth)) return true
+  const stopped = data[id].children.some(child => walk(child, data, depth + 1, fn))
   return stopped
 }
 
 window.fuzzysearch = fuzzysearch
 
 const searchNodes = (data, text) => {
-  const max = 15
+  const max = 20
+  const exactNodes = []
   const nodes = []
   // TODO maybe do BFS instead of DFS
-  walk('root', data, node => {
-    if (!fuzzysearch(text, node.content.toLowerCase())) return
-    nodes.push(node)
-    return nodes.length > max
+  walk('root', data, 0, (node, depth) => {
+    if (!text) {
+      exactNodes.push([depth, 0, node.content.length > 200 ? 1 : 0, node.content, node, node.content])
+      return exactNodes.length > max
+    }
+    const haystack = node.content.toLowerCase()
+    const index = haystack.indexOf(text)
+    if (index !== -1) {
+      exactNodes.push([depth, index, node.content.length > 200 ? 1 : 0, node.content, node, node.content.replace(text, '*' + text + '*')])
+      return exactNodes.length > max
+    }
+    if (!fuzzysearch(text, haystack)) return
+    nodes.push([depth, 0, node.content.length > 200 ? 1 : 0, node.content, node])
+    // return nodes.length > max
   })
-  return nodes.map(node => ({key: node._id, title: node.content, node}))
+  console.log('search', nodes)
+  return exactNodes.sort()
+  .map(([_, __, ___, ____, node, title]) => (
+    {key: node._id, title: title, node}))
+  .concat(nodes.sort().map(([_, __, ___, ____, node]) => (
+    {key: node._id, title: node.content, node})))
 }
 
 const searchFiles = (meta: {[key: string]: {title: string, id: string}}, text: string) => {
   return ((Object.values(meta): any): Array<{title: string, id: string}>)
     .filter(meta => fuzzysearch(text, meta.title.toLowerCase()))
+    .sort((a, b) => {
+      const ai = a.title.toLowerCase().indexOf(text)
+      const bi = b.title.toLowerCase().indexOf(text)
+      if (ai === -1 && bi === -1) return 0
+      if (ai === -1) return 1
+      if (bi === -1) return -1
+      return ai - bi
+    })
     .map(file => ({key: file.id, title: file.title, file}))
 }
 

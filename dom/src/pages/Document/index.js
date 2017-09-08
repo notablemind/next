@@ -52,6 +52,7 @@ const viewTypes = {
   whiteboard: require('treed/views/whiteboard').default,
   search: require('treed/views/search').default,
   trash: require('treed/views/trash').default,
+  // presentation: require('treed/views/presentation').default,
 }
 
 const activeButtons = [] // ['date:newEntry']
@@ -205,7 +206,7 @@ class Document extends Component {
       }
     }
   }
-  
+
 
   goBack = () => {
     if (this.state.treed) {
@@ -529,12 +530,12 @@ class Document extends Component {
       return <div className={css(styles.stickyTop)}>
         <div className={css(styles.closeButton)} onClick={() => window.close()}>
           <Icon name="ios-close-empty" />
-        </div>  
+        </div>
         <div className={css(styles.minButton)} onClick={() => {
           require('electron').remote.getCurrentWindow().minimize()
         }}>
           <Icon name="ios-arrow-down" />
-        </div>  
+        </div>
         <div className={css(styles.title)}>
           {this.state.store.db.data.root.content}
         </div>
@@ -546,7 +547,7 @@ class Document extends Component {
             this.state.alwaysOnTop && styles.pinButtonActive,
             !this.state.alwaysOnTop && styles.pinButtonInactive,
           )} />
-        </div>  
+        </div>
       </div>
     }
 

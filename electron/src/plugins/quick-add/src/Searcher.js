@@ -71,19 +71,6 @@ export default class Searcher extends Component {
         this.props.onSubmit(submission, results[selected])
       }
     }
-    /* else if (e.key === 'Enter') {
-      e.preventDefault()
-      if (e.shiftKey) {
-        if (this.props.focusUp) {
-          this.props.focusUp()
-        }
-      } else {
-        this.props.onSubmit(results[selected], e.metaKey)
-      }
-    } else if (e.key === 's' && e.metaKey) {
-      e.preventDefault()
-      this.props.onSubmit(results[selected], true, true)
-    }*/
   }
 
   render() {

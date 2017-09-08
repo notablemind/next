@@ -10,9 +10,11 @@ const sourceDirectories = [
   path.join(__dirname, '..', '..', 'node_modules', 'treed'),
 ]
 
+const PROD = process.env.NODE_ENV === 'production';
+
 module.exports = {
   devtool: 'cheap-module-source-map',
-  entry: [
+  entry: PROD ? path.join(__dirname, '..', 'src') : [
     // NOTE: in prod mode, I'll ditch the react-hot-loader, and I can also
     // (maybe) ditch transform-es2015-classes...
     // I want to be able to dev just for latest chrome :P
@@ -21,7 +23,9 @@ module.exports = {
     path.join(__dirname, '..', 'src'),
   ],
   output: {
-    path: path.join(__dirname, '..', 'public'),
+    path: process.env.ELECTRON
+      ? path.join(__dirname, '..', '..', 'electron', 'public')
+      : path.join(__dirname, '..', 'public'),
     filename: 'bundle.js',
     publicPath: '/',
   },
@@ -30,7 +34,7 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
     new webpack.DefinePlugin({
-      DEV: process.env.NODE_ENV !== 'production',
+      DEV: !PROD,
       ELECTRON: !!process.env.ELECTRON,
     }),
   ],

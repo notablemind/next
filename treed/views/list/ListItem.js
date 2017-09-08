@@ -89,7 +89,9 @@ export default class ListItem extends Component {
 
   ensureInView = () => {
     // TODO if this height change moves us ~off the screen, then do sth about it
-    ensureInView(this._div, this.state.activeIsJump, 100)
+    if (this._div.offsetHeight < window.innerHeight * .75) {
+      ensureInView(this._div, this.state.activeIsJump, 100)
+    }
   }
 
   onContextMenu = (e: any) => {

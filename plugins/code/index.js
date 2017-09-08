@@ -19,6 +19,8 @@ const walk = (id, data, fn) => {
   data[id].children.forEach(id => walk(id, data, fn))
 }
 
+let mostRecentLanguage = 'javascript'
+
 const plugin: Plugin<*, *> = {
   id: PLUGIN_ID,
   title: 'Code',
@@ -145,7 +147,7 @@ const plugin: Plugin<*, *> = {
         return {
           lastRun: null,
           kernelId: null,
-          language: 'javascript', // TODO have a better way of defining that
+          language: mostRecentLanguage, // TODO have a better way of defining that
         }
       },
     },
@@ -180,7 +182,7 @@ const plugin: Plugin<*, *> = {
         return {
           lastRun: null,
           kernelId: null,
-          language: 'javascript', // TODO have a better way of defining that
+          language: mostRecentLanguage, // TODO have a better way of defining that
         }
       },
 

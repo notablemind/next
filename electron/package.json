@@ -1,12 +1,19 @@
 {
+  "name": "NotableMind",
   "scripts": {
     "start": "NODE_ENV=development electron .",
+    "prod": "NODE_ENV=production electron .",
+    "build": "./build.sh",
     "alt": "ALT_DOCS=1 NODE_ENV=development electron ."
   },
   "dependencies": {
-    "electron": "1.5",
+    "electron": "^1.7.6",
+    "electron-packager": "^9.0.1",
+    "isomorphic-fetch": "^2.2.1",
     "leveldown": "^1.6.0",
     "levi": "^2.1.7",
-    "pouchdb": "^6.1.2"
+    "open": "^0.0.5",
+    "pouchdb": "^6.1.2",
+    "pouchdb-upsert": "^2.2.0"
   }
 }

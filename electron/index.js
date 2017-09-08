@@ -4,6 +4,7 @@ const path = require('path')
 const PouchDB = require('pouchdb')
 const electron = require('electron')
 const {ipcMain, app, Tray, BrowserWindow} = electron
+const fs = require('fs')
 
 const ipcPromise = require('./src/ipcPromise')
 const makeWindow = require('./src/makeWindow')
@@ -23,6 +24,10 @@ const state = {
   createNewWindow: () => null,
 }
 
+if (!fs.existsSync(state.documentsDir)) {
+  fs.mkdirSync(state.documentsDir)
+}
+
 app.on('window-all-closed', function() {
   app.quit();
 });
@@ -33,8 +38,8 @@ app.on('ready', function() {
   // require('./src/meta')(state);
 
   const plugins = [
-    require('../plugins/quick-add/electron'),
-    require('../plugins/code/sources/electron/back'),
+    // require('./src/plugins/quick-add/electron'),
+    // require('./src/plugins/code/sources/electron/back'),
     // require('../dom/src/pages/Document/Sync/electron'),
   ]
 
@@ -56,7 +61,7 @@ app.on('ready', function() {
     createNewWindow: state.createNewWindow,
   })
 
-  tray = new Tray(path.join(__dirname, '..', 'assets', 'icon_16.png'))
+  tray = new Tray(path.join(__dirname, 'icon_16.png'))
   tray.setToolTip('Notablemind')
 
   // makeWindow(state)

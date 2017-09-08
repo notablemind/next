@@ -21,6 +21,19 @@ const header3 = {
   italic: true,
 }
 
+const header4 = {
+  fontSize: 1.0,
+  fontWeight: 'normal',
+  color: '#5385ff',
+  italic: false,
+}
+
+const header5 = {
+  fontSize: 0.9,
+  fontWeight: 'normal',
+  italic: true,
+}
+
 const theme: Theme = {
   title: 'Default',
 
@@ -28,6 +41,8 @@ const theme: Theme = {
     header1,
     header2,
     header3,
+    header4,
+    header5,
   ],
 
   global: {
@@ -43,7 +58,7 @@ const theme: Theme = {
     },
   },
 
-  individualStyles: defaultIndividualStyles({header1, header2, header3}),
+  individualStyles: defaultIndividualStyles({header1, header2, header3, header4, header5}),
 
   viewStyles: {
   },

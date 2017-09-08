@@ -4,7 +4,7 @@ const fetch = require('isomorphic-fetch')
 const path = require('path')
 const fs = require('fs')
 
-const {googleApiKey} = require('../../../shared/secret.json')
+const {googleApiKey} = require('../secret.json')
 const googleLogin = require('./login')
 const files = require('./files')
 
