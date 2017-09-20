@@ -5,22 +5,13 @@ import {css, StyleSheet} from 'aphrodite'
 
 import './menu.less'
 
-import type {MenuItem} from '../../types'
+// import type {MenuItem: MenuItemT} from '../../types'
 import isDomAncestor from '../utils/isDomAncestor'
 
 export default class ContextMenu extends Component {
-  constructor() {
-    super()
-    this.state = {
-      offX: 5,
-      offY: 5,
-    }
-  }
-
+  state = {selected: null}
   componentDidMount() {
     window.addEventListener('mousedown', this.closer, true)
-    const box = this._node.getBoundingClientRect()
-    // TODO set offX / offY if needed
   }
 
   componentWillUnmount() {
@@ -36,23 +27,55 @@ export default class ContextMenu extends Component {
   }
 
   render() {
-    return (
-      <div
-        className={css(styles.container)}
-        style={{
-          top: this.props.pos.top + this.state.offY,
-          left: this.props.pos.left + this.state.offX,
-        }}
-        ref={n => (this._node = n)}
-      >
-        {renderMenu(this.props.onClose, this.props.menu)}
-      </div>
-    )
+    const {menu, onClose} = this.props
+    const {selected} = this.state
+    return <div
+      ref={n => this._node = n}
+      className={css(styles.container)}
+      style={{
+        top: this.props.pos.top,
+        left: this.props.pos.left,
+      }}
+    >
+      <InWindow className={css(styles.menu)}>
+        {menu.map((item, i) => (
+          <MenuItem
+            selected={i === selected}
+            onHover={() => this.setState({selected: i})}
+            onClose={onClose}
+            item={item}
+            key={i}
+          />
+        ))}
+      </InWindow>
+    </div>
   }
 }
 
-const renderItem = (onClose, item, i) => (
-  <div className={'menu__item ' + css(styles.item)} key={i}>
+class SubMenu extends Component {
+  state = {selected: null}
+
+  render() {
+    const {menu, onClose} = this.props
+    const {selected} = this.state
+    return <InWindow
+      className={css(styles.menu, styles.subChildren)}
+    >
+      {menu.map((item, i) => (
+        <MenuItem
+          selected={i === selected}
+          onHover={() => this.setState({selected: i})}
+          onClose={onClose}
+          item={item}
+          key={i}
+        />
+      ))}
+    </InWindow>
+  }
+}
+
+const MenuItem = ({item, onHover, selected, onClose}) => (
+  <div className={css(styles.item)}>
     <div
       onMouseDown={
         item.action && !item.disabled
@@ -66,8 +89,10 @@ const renderItem = (onClose, item, i) => (
       }
       className={css(
         styles.itemTop,
+        selected && styles.itemSelected,
         item.action && !item.disabled && styles.clickableItem,
       )}
+      onMouseOver={onHover}
     >
       <div
         className={css(styles.text, item.disabled && styles.itemTextDisabled)}
@@ -95,19 +120,33 @@ const renderItem = (onClose, item, i) => (
           </div>
         : null}
     </div>
-    {item.children
-      ? <div className={'menu__children ' + css(styles.subChildren)}>
+    {selected && item.children
+      ? /*<div className={css(styles.subChildren)}>
           {renderMenu(onClose, item.children)}
-        </div>
+        </div>*/
+        <SubMenu menu={item.children} onClose={onClose} />
       : null}
   </div>
 )
 
-const renderMenu = (onClose, items) => (
-  <div className={css(styles.menu)}>
-    {items.map(renderItem.bind(null, onClose))}
-  </div>
-)
+class InWindow extends Component {
+  state = {offY: 0}
+  componentDidMount() {
+    const box = this.node.getBoundingClientRect()
+    if (box.bottom > window.innerHeight) {
+      console.log('bottom', box.bottom, window.innerHeight)
+      this.setState({
+        offY: window.innerHeight - box.bottom - 15,
+      })
+    }
+  }
+
+  render() {
+    return <div ref={n => this.node = n} {...this.props} style={{
+      marginTop: this.state.offY,
+    }} />
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -146,15 +185,20 @@ const styles = StyleSheet.create({
 
   childMarker: {
     color: '#aaa',
+    marginLeft: 5,
   },
 
   item: {
     position: 'relative',
     backgroundColor: 'white',
 
-    ':hover': {
-      backgroundColor: '#eef',
-    },
+    // ':hover': {
+    //   backgroundColor: '#eef',
+    // },
+  },
+
+  itemSelected: {
+    backgroundColor: '#eef',
   },
 
   clickableItem: {
