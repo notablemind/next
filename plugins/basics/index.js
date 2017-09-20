@@ -59,7 +59,14 @@ const plugin: Plugin<void, void> = {
       newSiblingsShouldCarryType: false,
       shortcut: 'q',
 
-      render: null, // TODO make this
+      render: props => {
+        return <div className={css(styles.noteBody)}>
+          <Icon
+            name="quote"
+            className={css(styles.quoteIcon)} />
+          <Content {...props} style={{flex: 1}}/>
+        </div>
+      }, // TODO make this too
     },
 
     note: {
@@ -115,6 +122,12 @@ const styles = StyleSheet.create({
 
   noteIcon: {
     lineHeight: 1.5,
+    padding: '4px 5px',
+  },
+
+  quoteIcon: {
+    // lineHeight: 1.5,
+    fontSize: '90%',
     padding: '4px 5px',
   },
 

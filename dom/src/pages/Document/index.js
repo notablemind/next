@@ -623,7 +623,7 @@ class Document extends Component {
       <div className={css(styles.container)}>
         {this.renderHeader()}
         <div className={css(styles.main)}>
-          {!this.props.sticky && <Sidebar
+          {false && /** TODO make this configurable **/ !this.props.sticky && <Sidebar
             side="left"
             globalStore={treed.globalStore}
             plugins={treed.enabledPlugins}
@@ -638,7 +638,7 @@ class Document extends Component {
 
             {this.renderActionButtons()}
           </div>
-          {!this.props.sticky && <Sidebar
+          {false && /** TODO make this config **/ !this.props.sticky && <Sidebar
             side="right"
             globalStore={treed.globalStore}
             plugins={treed.enabledPlugins}
