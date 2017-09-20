@@ -11,12 +11,14 @@ const makeWindow = require('./src/makeWindow')
 const NotableMind = require('./src/NotableMind')
 const setupMenu = require('./src/menu')
 
+const userData = app.getPath('userData')
 const state = {
-  documentsDir: process.env.ALT_DOCS
-    ? path.join(__dirname, 'alt_docs')
-    : path.join(__dirname, 'documents'),
+  documentsDir: 
+    process.env.ALT_DOCS
+    ? path.join(userData, 'alt_docs')
+    : path.join(userData, 'documents'),
   publicDir: path.join(__dirname, 'public'),
-  baseDir: __dirname,
+  baseDir: userData,
   ipcMain,
   ipcPromise: ipcPromise(ipcMain),
   plugins: {},

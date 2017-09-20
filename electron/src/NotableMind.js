@@ -380,6 +380,9 @@ module.exports = class Notablemind {
         })
       }
       return res
+    }).catch(err => {
+      console.error('Failed to rpocess doc action!!', err)
+      console.error(err)
     })
   }
 
@@ -521,7 +524,9 @@ module.exports = class Notablemind {
     const cleanup = () => {
       if (cleanedUp) return
       cleanedUp = true
-      changes.cancel()
+      if (changes) {
+        changes.cancel()
+      }
       delete this.docConnections[docid][chanid]
       if (!Object.keys(this.docConnections[docid]).length) {
         delete this.docConnections[docid]

@@ -27,32 +27,38 @@ const plugins: Array<any> = [
   require('../../../../plugins/minimap').default,
   require('../../../../plugins/themes').default,
   require('../../../../plugins/todos/dom').default,
-  require('../../../../plugins/image/dom').default,
+  // TODO get image attachments working again :/
+  // require('../../../../plugins/image/dom').default,
   require('../../../../plugins/date/dom').default,
-  require('../../../../plugins/scriptures').default,
   require('../../../../plugins/tags').default,
-  require('../../../../plugins/browser').default,
   require('../../../../plugins/export').default,
   require('../../../../plugins/basics').default,
   require('../../../../plugins/code').default,
   require('../../../../plugins/text-actions').default,
-  require('../../../../plugins/debug').default,
   require('../../../../plugins/ratings').default,
 ]
 
-const optionalPlugins = ['scriptures', 'browser']
+if (DEV) {
+  plugins.push(
+    require('../../../../plugins/debug').default,
+    require('../../../../plugins/scriptures').default,
+    require('../../../../plugins/browser').default,
+  )
+}
+
+const optionalPlugins = ['scriptures', 'browser', 'code', 'ratings']
 const defaultPlugins = plugins
   .map(pl => pl.id)
   .filter(id => optionalPlugins.indexOf(id) === -1)
-// const defaultPlugins = ['minimap', 'themes', 'todos', 'image', 'date', 'tags']
-// const alwaysPlugins = ['files', 'themes', 'todos', 'image']
 
 const viewTypes = {
   list: require('treed/views/list').default,
   whiteboard: require('treed/views/whiteboard').default,
-  search: require('treed/views/search').default,
   trash: require('treed/views/trash').default,
-  // presentation: require('treed/views/presentation').default,
+}
+if (DEV) {
+  viewTypes.search = require('treed/views/search').default
+  // viewTypes.presentation = require('treed/views/presentation').default
 }
 
 const activeButtons = [] // ['date:newEntry']
@@ -568,7 +574,7 @@ class Document extends Component {
       <div className={css(styles.top)}>
         {traffic}
         {backButton}
-        <Icon name="ios-trash-outline" className={css(styles.trashcan)} />
+        {/* <Icon name="ios-trash-outline" className={css(styles.trashcan)} /> */}
         <div className={css(styles.title)}>
           {this.state.store.db.data.root.content}
         </div>

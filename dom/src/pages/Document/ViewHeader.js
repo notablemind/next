@@ -27,7 +27,7 @@ const ViewHeader = withStore({
     <div className={css(styles.container)}>
 
       <div className={css(styles.buttons)}>
-        {viewType !== defaultViewType &&
+        {viewType !== defaultViewType && viewType !== 'search' && viewType !== 'trash' &&
           <button
             className={css(styles.setDefaultButton)}
             onClick={() => store.actions.setDefaultView({viewType, ...rest})}
