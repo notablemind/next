@@ -268,14 +268,15 @@ export default class QuickBar extends Component {
   render() {
     const {selected} = this.state
     return (
-      <div className={css(styles.outer)}>
+      <div className={css(styles.outer)} onMouseDown={this.props.onClose}>
       <div
         className={css(styles.container)}
+        onMouseDown={e => e.stopPropagation()}
       >
         <input
           ref={node => (this.node = node)}
           onKeyDown={this.onKeyDown}
-          onBlur={this.props.onClose}
+          // onBlur={this.props.onClose}
           value={this.state.text}
           onChange={e => this.setText(e.target.value)}
           placeholder={placeholders[this.state.tab]}
@@ -316,10 +317,11 @@ const width = 500
 const styles = StyleSheet.create({
   outer: {
     position: 'absolute',
-    top: 50,
-    left: 10,
-    right: 10,
-    bottom: 50,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: '50px 10px',
     alignItems: 'center',
     justifyContent: 'flex-start',
     zIndex: 100000,
@@ -359,6 +361,10 @@ const styles = StyleSheet.create({
 
   result: {
     padding: '5px 10px',
+    cursor: 'pointer',
+    ':hover': {
+      backgroundColor: '#f5f5f5',
+    }
   },
 
   resultSelected: {
