@@ -75,6 +75,7 @@ export default class NotableClient extends NotableBase {
       this.meta[docid] = meta
       console.log('got meta back', meta)
       this.notifyMeta()
+      return docid
     })
   }
 

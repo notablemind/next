@@ -336,8 +336,10 @@ module.exports = class Notablemind {
         console.log(file)
         throw new Error('wat not aa local file')
       }
-      console.log('removing')
+      console.log('removing', file)
       delete this.meta[file]
+      clearTimeout(this.periods[file])
+      delete this.periods[file]
       this.saveMeta()
       this.broadcast('meta:delete', file)
       return this.ensureDocDb(file).destroy()
@@ -433,6 +435,11 @@ module.exports = class Notablemind {
     console.log('want to do a sync', this.working[id], !!this.user)
     if (!this.online || !this.user || this.working[id])
       return console.log('but not ready')
+    if (!this.meta[id]) {
+      clearTimeout(this.periods[id])
+      delete this.periods[id]
+      return
+    }
     if (!this.meta[id].sync) return console.log('but no meta.sync')
     clearTimeout(this.periods[id])
     const db = this.ensureDocDb(id)
