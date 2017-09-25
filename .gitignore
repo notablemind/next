@@ -10,8 +10,9 @@ titles.json
 plugins/scriptures/server/files
 plugins/scriptures/server/html
 plugins/scriptures/server/json
-electron/documents
-electron/doc_backups
-electron/alt_docs
+old
 .vscode
 releases
+dom/public/bundle.js
+dom/public/bundle.js.map
+plugins/scriptures/server/files.tgz

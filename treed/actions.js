@@ -674,23 +674,6 @@ const actions = {
         pid,
         ix,
       })
-
-      /*
-      const nid = uuid()
-      const oldType = store.db.data[id].type
-      const nodeType = store.plugins.nodeTypes[oldType]
-      const type = nodeType.newSiblingsShouldCarryType ?
-        oldType : 'normal'
-      const types = nodeType.newSiblingsShouldCarryType && nodeType.defaultNodeConfig ?
-        {[oldType]: nodeType.defaultNodeConfig()} : {}
-      const views = viewData ? {[store.state.viewType]: viewData} : {}
-      store.execute({
-        type: 'create',
-        args: {id: nid, pid, ix: idx, data: {content, type, types, views}},
-      }, id, nid)
-      store.actions.editStart(nid)
-      return nid
-      */
     },
 
     createAfter(

@@ -4,6 +4,12 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 export default class ImportModal extends Component {
+  props: {
+    nm: *, // NotableClient
+    store: *, // Store thing
+    onClose: () => void,
+  }
+
   constructor() {
     super()
     this.state = {
@@ -11,6 +17,7 @@ export default class ImportModal extends Component {
       fileData: null,
     }
   }
+
   componentDidMount() {
     if (ELECTRON) {
       require('electron').remote.dialog.showOpenDialog({}, filenames => {
@@ -33,9 +40,11 @@ export default class ImportModal extends Component {
   }
 
   linkCurrentNode = docid => {
+    this.props.store.actions.makeNodeFile(this.props.store.state.active, docid)
   }
 
   createNewNode = docid => {
+    this.props.store.actions.createNewFileNode(docid)
   }
 
   render() {

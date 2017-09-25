@@ -23,17 +23,21 @@ const tryParse = data => {
 
 // TODO in order to handle binary formats, I'll want to pass a buffer around
 const importData = (id, filename, data) => {
-  const json = tryParse(data)
+  const json = tryParse(data.toString('utf8'))
   if (json) {
+    console.log('was json')
     for (let importer of importers.json) {
       const result = importer(id, filename, json)
       if (result) return result
     }
+    console.log('but nothing worked')
   } else {
+    console.log('not json tho')
     for (let importer of importers.text) {
       const result = importer(id, filename, data)
       if (result) return result
     }
+    console.log('and nothing worked')
   }
 }
 

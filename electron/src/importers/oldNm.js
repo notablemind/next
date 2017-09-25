@@ -4,7 +4,7 @@ const makeCodeSettings = settings => {
 
 const makeSettings = data => {
   const plugins = {}
-  if (data.plugins.itreed) {
+  if (data.plugins && data.plugins.itreed) {
     plugins.code = makeCodeSettings(data.plugins.itreed)
   }
   return {
@@ -64,8 +64,9 @@ module.exports = (id, filename, data) => {
   if (
     typeof data.root !== 'object' ||
     typeof data.title !== 'string' ||
-    typeof data.windows !== 'object' ||
-    typeof data.id !== 'string'
+    typeof data.root.id !== 'string'
+    // typeof data.windows !== 'object' ||
+    // typeof data.id !== 'string'
   ) {
     return
   }
@@ -73,7 +74,7 @@ module.exports = (id, filename, data) => {
     id: id,
     title: data.title,
     lastOpened: data.opened,
-    lastModified: data.modified,
+    lastModified: Date.now(),
     size: data.size,
     created: data.created,
     sync: null

@@ -41,7 +41,10 @@ export default class DocumentSettings extends Component {
           initialTab={initialTab}
           sections={{
             'This document': ['Plugins', ...Object.keys(pluginSettings)],
-            Global: ['Files & Sync', 'Keyboard Shortcuts'],
+            Global: [
+              'Files & Sync',
+              'Keyboard Shortcuts',
+            ],
           }}
           tabs={{
             // want sync interval, etc.

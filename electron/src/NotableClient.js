@@ -73,6 +73,8 @@ export default class NotableClient extends NotableBase {
     const docid = uuid()
     return this.prom.send('doc:import', docid, filename, data).then(meta => {
       this.meta[docid] = meta
+      console.log('got meta back', meta)
+      this.notifyMeta()
     })
   }
 

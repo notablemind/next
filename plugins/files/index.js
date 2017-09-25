@@ -83,13 +83,18 @@ const plugin = ({nm}): Plugin<*, *> => ({
     title: 'Import file',
     action: () => {
       // TODO maybe have the store manage modals?
-      showModal(onClose => <ImportModal nm={nm} onClose={onClose} />)
+      showModal(onClose => <ImportModal store={store} nm={nm} onClose={onClose} />)
     },
   }],
 
   actions: {
     createFileForNode(store, id, title) {
       const docid = nm.createDoc(title)
+      store.actions.makeNodeFile(id, docid)
+    },
+
+    createNewFileNode(store, docid) {
+      const id = store.actions.createAfterNormal()
       store.actions.makeNodeFile(id, docid)
     },
 
@@ -139,8 +144,8 @@ const plugin = ({nm}): Plugin<*, *> => ({
         const name = tmpText.slice(fstop[0].length)
         const needle = name.toLowerCase()
         const available = name.trim()
-          ? Object.keys(nm.meta)
-          : Object.keys(nm.meta).filter(k => nm.meta[k].title.toLowerCase().indexOf(needle) !== -1)
+          ? Object.keys(nm.meta).filter(k => nm.meta[k].title.toLowerCase().indexOf(needle) !== -1)
+          : Object.keys(nm.meta)
         return {
           help: 'Type a file name',
           options: [{
