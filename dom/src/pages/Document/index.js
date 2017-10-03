@@ -36,6 +36,7 @@ const plugins: Array<any> = [
   require('../../../../plugins/code').default,
   require('../../../../plugins/text-actions').default,
   require('../../../../plugins/ratings').default,
+  require('../../../../plugins/planner').default,
 ]
 
 if (DEV) {
@@ -46,7 +47,7 @@ if (DEV) {
   )
 }
 
-const optionalPlugins = ['scriptures', 'browser', 'code', 'ratings']
+const optionalPlugins = ['scriptures', 'browser', 'code', 'ratings', 'planner']
 const defaultPlugins = plugins
   .map(pl => pl.id)
   .filter(id => optionalPlugins.indexOf(id) === -1)

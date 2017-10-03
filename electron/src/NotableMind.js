@@ -574,6 +574,7 @@ module.exports = class Notablemind {
     let changed = false
     const remotesById = {}
     remoteFiles.forEach(file => (remotesById[file.appProperties.nmId] = file))
+    const newRemoteFiles = [];
     Object.keys(this.meta).forEach(id => {
       const meta = this.meta[id]
       if (meta.sync && !remotesById[id]) {
@@ -583,11 +584,31 @@ module.exports = class Notablemind {
         this.broadcast('meta:update', id, {sync: null})
         // this.notifyMetaById(id)
       } else if (!meta.sync && remotesById[id]) {
-        console.error('found a file I was not expecting')
-        // TODO process this well, populate sync n stuff
-        fail
+        console.error('found a file I was not expecting', id)
+        newRemoteFiles.push(id)
       }
     })
+    if (newRemoteFiles.length) {
+      this.getToken()
+      .then(token => {
+        return Promise.all(newRemoteFiles.map(id => google.getRemoteFiles(token, id).then(remoteFiles => {
+          const meta = this.meta[id]
+          meta.sync = {
+            remoteFiles,
+            owner: {
+              me: true,
+              email: this.user.email,
+              profile: this.user.profile,
+            }
+          }
+          this.broadcast('meta:update', id, {sync: meta.sync})
+        }, err => {
+          console.log('unable to get files for', id)
+        }))).then(() => {
+          this.saveMeta()
+        })
+      })
+    }
     if (changed) {
       this.saveMeta()
     }

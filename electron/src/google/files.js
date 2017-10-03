@@ -51,13 +51,15 @@ const listFiles = (token /*: {access_token: string}*/) => {
   })
 }
 
-const findDoc = (token, id) => {
+const findByType = (token, id, type) => {
   return queryFiles(token, {
     pageSize: 1,
     fields: 'files(id, name, appProperties, version, size, trashed)',
-    q: `appProperties has { key='nmId' and value='${id}' } and appProperties has { key='nmType' and value='doc' }`
+    q: `appProperties has { key='nmId' and value='${id}' } and appProperties has { key='nmType' and value='${type}' }`
   }).then(files => (files.length ? files[0] : null))
 }
+
+const findDoc = (token, id) => findByType(token, id, 'doc')
 
 const findFilesForId = (token, id) => {
   return queryFiles(token, {
@@ -189,6 +191,14 @@ const createFile = (
   })
 }
 
+const getRemoteFiles = (token /*: {access_token: string}*/, id /*: string*/) => {
+  return Promise.all([
+    findDoc(token, id),
+    findByType(token, id, 'contents'),
+    findByType(token, id, 'meta'),
+  ]).then(([folder, contents, meta]) => ({folder, contents, meta}))
+}
+
 const contentsForFile = (
   token /*: {access_token: string}*/,
   file /*: {id: string}*/
@@ -231,6 +241,7 @@ module.exports = {
   listFiles,
   createFile,
   getRootDirectory,
+  getRemoteFiles,
 
   downloadRemoteFile,
   metaForFile,

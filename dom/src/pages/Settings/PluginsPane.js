@@ -44,7 +44,7 @@ export default class PluginsPane extends Component {
         <div className={css(styles.title)}>
           Enabled plugins
         </div>
-        {optionalPlugins.map(id => (
+        {optionalPlugins.filter(id => !!treed.config.plugins[id]).map(id => (
           <label
             key={id}
             className={css(
