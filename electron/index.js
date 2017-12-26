@@ -23,6 +23,7 @@ const state = {
   ipcPromise: ipcPromise(ipcMain),
   plugins: {},
   actions: {},
+  tray: null,
   createNewWindow: () => null,
 }
 
@@ -55,16 +56,18 @@ app.on('ready', function() {
     state.createNewWindow(docid, root, sticky)
   })
 
-  plugins.forEach(plugin => {
-    state.plugins[plugin.id] = plugin.init(state, nm)
-  })
-
   setupMenu({
     createNewWindow: state.createNewWindow,
   })
 
   tray = new Tray(path.join(__dirname, 'icon_16.png'))
   tray.setToolTip('Notablemind')
+
+  state.tray = tray
+
+  plugins.forEach(plugin => {
+    state.plugins[plugin.id] = plugin.init(state, nm)
+  })
 
   // makeWindow(state)
   state.createNewWindow()

@@ -3,6 +3,8 @@
   "scripts": {
     "start": "NODE_ENV=development electron .",
     "prod": "NODE_ENV=production electron .",
+    "quick": "cd src/plugins/quick-add && NODE_ENV=production npm run build",
+    "js": "ELECTRON=1 NODE_ENV=production ../node_modules/.bin/webpack --config ../dom/scripts/webpack.config.js",
     "build": "./build.sh",
     "alt": "ALT_DOCS=1 NODE_ENV=development electron ."
   },

@@ -91,6 +91,14 @@ const plugin = {
         results => results.map(convertResult(nm.meta)).filter(m => !m.trashed)
       ) // TODO sort by score?
     })
+
+    state.tray.on('click', () => {
+      if (window) {
+        window.show()
+      } else {
+        window = openWindow(nm, {}, () => window = null)
+      }
+    })
   },
   _openWindow: openWindow
 }

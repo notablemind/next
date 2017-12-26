@@ -28,13 +28,13 @@ export default class NewWrite extends Component {
       case 'meta-click':
       case 'open-sticky':
         return this.open(result, true)
-      case 'new-item':
-        console.log('here we are', text, type, result)
-        return this.setState({newText: text})
-      case 'add-to-scratch':
-        return this.addToScratch(text, false)
-      case 'sticky-scratch':
-        return this.addToScratch(text, true)
+      // case 'new-item':
+      //   console.log('here we are', text, type, result)
+      //   return this.setState({newText: text})
+      // case 'add-to-scratch':
+      //   return this.addToScratch(text, false)
+      // case 'sticky-scratch':
+      //   return this.addToScratch(text, true)
       case 'drill-down':
         // TODO
     }
@@ -60,11 +60,11 @@ export default class NewWrite extends Component {
   }
 
   mainShortcuts = [
-    ['cmd+o', 'open a new window'],
+    ['enter, cmd+o', 'open a new window'],
     ['cmd+s', 'open a sticky note'],
-    ['cmd+enter', 'create a new node with text, and select target'],
-    ['cmd+a', 'add to scratch document'],
-    ['cmd+p', 'open a sticky note in scratch document'],
+    // ['cmd+enter', 'create a new node with text, and select target'],
+    // ['cmd+a', 'add to scratch document'],
+    // ['cmd+p', 'open a sticky note in scratch document'],
   ]
 
   secondSubmissionKey = e => {
