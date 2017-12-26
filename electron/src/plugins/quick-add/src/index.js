@@ -2,7 +2,7 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
-import NotableClient from '../../../../electron/src/NotableClient'
+import NotableClient from '../../../NotableClient'
 import NewWrite from './NewWrite'
 // import Write from './Write'
 // import Open from './Open'
@@ -87,7 +87,7 @@ export default class App extends Component {
   render() {
     if (this.state.loading) {
       return <div className={css(styles.container)}>
-        Loading...  
+        Loading...
       </div>
     }
 

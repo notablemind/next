@@ -2,7 +2,7 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
-import ipcPromise from '../../../../electron/src/ipcPromise'
+import ipcPromise from '../../../ipcPromise'
 import Searcher from './Searcher'
 import {searchDocs, debounce} from './searching'
 import Shortcuts from './Shortcuts'

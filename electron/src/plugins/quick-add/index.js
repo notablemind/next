@@ -1,7 +1,7 @@
 
 const {BrowserWindow, ipcMain} = require('electron')
-const uuid = require('../../../treed/uuid')
-const newNode = require('../../../treed/newNode')
+const uuid = require('../../../../treed/uuid')
+const newNode = require('../../../../treed/newNode')
 
 const PLUGIN_ID = 'quick_add'
 

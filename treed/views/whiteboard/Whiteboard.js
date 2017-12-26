@@ -160,7 +160,17 @@ export default class Whiteboard extends Component {
   onWheel = (e: any) => {
     e.preventDefault()
     e.stopPropagation()
-    this.setPos(this.state.view.x - e.deltaX, this.state.view.y - e.deltaY)
+    if (this.state.view.x === 0 && this.state.view.y === 0) {
+      // make it a little sticky
+      if (Math.abs(e.deltaX) < 3 && Math.abs(e.deltaY) < 3) {
+        return // skip that
+      }
+    }
+    let nx = this.state.view.x - e.deltaX;
+    let ny = this.state.view.y - e.deltaY
+    if (Math.abs(nx) < 3) nx = 0
+    if (Math.abs(ny) < 3) ny = 0
+    this.setPos(nx, ny)
     // this.updateViewState()
   }
 
@@ -347,8 +357,8 @@ export default class Whiteboard extends Component {
   onDblClick = (e: any) => {
     if (e.target !== this.relative) return
     const box = this.relative.getBoundingClientRect()
-    const x = e.clientX - box.left + this.state.view.x
-    const y = e.clientY - box.top + this.state.view.y
+    const x = e.clientX - box.left - this.state.view.x
+    const y = e.clientY - box.top - this.state.view.y
     console.warn('TODO create a new node')
     const viewData = {x, y}
     let nid = this.props.store.actions.createLastChild(

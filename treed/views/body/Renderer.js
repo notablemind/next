@@ -44,9 +44,11 @@ function disable(options) {
       }
     }
   }
-} 
+}
 
 const text2react = content => {
+  // Double-break means I want a real break here folks
+  content = content.replace(/\n\n/g, '\n****\n')
   return (content.indexOf('\n') === -1 ? singleLineProcessor : processor).processSync(content).contents
 }
 

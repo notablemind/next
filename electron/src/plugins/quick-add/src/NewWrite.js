@@ -20,9 +20,12 @@ export default class NewWrite extends Component {
   }
 
   onSubmit = (type, result, text) => {
+    console.log('onSubmit', type, result, text)
     switch (type) {
+      case 'click':
       case 'open':
         return this.open(result, false)
+      case 'meta-click':
       case 'open-sticky':
         return this.open(result, true)
       case 'new-item':
@@ -40,10 +43,10 @@ export default class NewWrite extends Component {
   mainSubmissionKey = e => {
     console.log(e.key)
     if (!e.metaKey) {
-      if (e.key === 'Enter') {
-        console.log('here')
-        return 'drill-down'
-      }
+      // if (e.key === 'Enter') {
+      //   console.log('here')
+      //   return 'drill-down'
+      // }
       return
     }
     switch (e.key) {

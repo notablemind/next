@@ -118,6 +118,7 @@ const dumpNode = (root: string, nodes: any, keepIds: boolean) => {
     _id: keepIds ? root : null,
     parent: keepIds ? nodes[root].parent : null,
     _rev: null, // TODO maybe hang onto the rev, so that I can restore deleted ones? hmm maybe not though - what about undo?
+    content: nodes[root].content, // shown here explicitly for ordering
     children: nodes[root].children.map(id => dumpNode(id, nodes, keepIds)),
   }
 }

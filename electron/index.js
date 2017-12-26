@@ -13,7 +13,7 @@ const setupMenu = require('./src/menu')
 
 const userData = app.getPath('userData')
 const state = {
-  documentsDir: 
+  documentsDir:
     process.env.ALT_DOCS
     ? path.join(userData, 'alt_docs')
     : path.join(userData, 'documents'),
@@ -40,7 +40,7 @@ app.on('ready', function() {
   // require('./src/meta')(state);
 
   const plugins = [
-    // require('./src/plugins/quick-add/electron'),
+    require('./src/plugins/quick-add'),
     // require('./src/plugins/code/sources/electron/back'),
     // require('../dom/src/pages/Document/Sync/electron'),
   ]

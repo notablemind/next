@@ -192,8 +192,8 @@ export default class WhiteboardNode extends Component {
 
   onWheel = (evt: any) => {
     if (!this.state.height) return
-    return evt.stopPropagation()
-    if (!evt.deltaX) {
+    if (evt.deltaY) {
+      return evt.stopPropagation()
       if (evt.deltaY < 0) {
         if (this.childrenNode.scrollTop > 0) {
           evt.stopPropagation()

@@ -1,7 +1,7 @@
 const path = require('path')
 
 process.env.ELECTRON = true
-const config = require('../../../dom/scripts/webpack.config.js')
+const config = require('../../../../dom/scripts/webpack.config.js')
 config.entry = [
   'react-hot-loader/patch',
   'webpack-hot-middleware/client',
