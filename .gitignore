@@ -18,3 +18,4 @@ dom/public/bundle.js.map
 plugins/scriptures/server/files.tgz
 plugins/scriptures/server/english.db
 router/index.js
+electron/src/plugins/quick-add/public/bundle.*

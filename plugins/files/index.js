@@ -75,6 +75,9 @@ const plugin = ({nm}): Plugin<*, *> => ({
       if (nm.meta[documentId].title !== globalStore.db.data.root.content) {
         globalStore.actions.set('root', 'content', nm.meta[documentId].title)
       }
+      return globalStore.on(['node:root'], () => {
+        console.log('the root node changed, we should rename the files folkssssss', globalStore.db.data.root.content)
+      })
     }
   },
 
@@ -162,6 +165,7 @@ const plugin = ({nm}): Plugin<*, *> => ({
         return {
           // When null, that means the file hasn't been created.
           // It'll be created when you click on it.
+          // UPDATE that's totally not what happens. When you create a file via the slash handler, we get an id
           fileid: null,
         }
       },

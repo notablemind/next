@@ -43,10 +43,11 @@ export default class NewWrite extends Component {
   mainSubmissionKey = e => {
     console.log(e.key)
     if (!e.metaKey) {
-      // if (e.key === 'Enter') {
-      //   console.log('here')
-      //   return 'drill-down'
-      // }
+      if (e.key === 'Enter') {
+        return 'open'
+        // console.log('here')
+        // return 'drill-down'
+      }
       return
     }
     switch (e.key) {

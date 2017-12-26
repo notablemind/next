@@ -1,7 +1,7 @@
 
 const {BrowserWindow, ipcMain} = require('electron')
-const uuid = require('../../../../treed/uuid')
-const newNode = require('../../../../treed/newNode')
+const uuid = require('./src/uuid')
+const newNode = require('./src/newNode')
 
 const PLUGIN_ID = 'quick_add'
 
@@ -23,8 +23,8 @@ const openWindow = (nm, options, onClose) => {
     frame: false,
     title: 'Notablemind Quick Add',
   }, options))
-  quickAdd.loadURL('http://localhost:4154')
-  // quickAdd.loadURL('file://' + __dirname + '/doc.html')
+  // quickAdd.loadURL('http://localhost:4154')
+  quickAdd.loadURL('file://' + __dirname + '/public/index.html')
   quickAdd.on('close', () => {
     if (onClose) onClose()
     // quickAdd = null

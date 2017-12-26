@@ -97,7 +97,7 @@ export default class Searcher extends Component {
             onClick={(e) => this.props.onSubmit(e.metaKey ? 'meta-click' : 'click', doc)}
           >
             {renderItem(doc)}
-            {doc.subtitle && 
+            {doc.subtitle &&
               <div className={css(styles.subtitle)}>
                 {doc.subtitle}
               </div>}

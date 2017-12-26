@@ -1,6 +1,7 @@
 {
   "scripts": {
     "start": "node server.js",
+    "build": "../../../../node_modules/.bin/webpack",
     "test": "../../../electron/node_modules/.bin/electron test.js"
   }
 }

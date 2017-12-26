@@ -52,7 +52,7 @@ export default class BothSearcher extends Component {
 
   onSubmit = (type, result) => {
     this.props.onSubmit(type, result, this.state.text)
-    this.setState({text: '', results: [], fullResults: []})
+    this.setState({text: '', results: searchDocs(docs, ''), fullResults: []})
   }
 
   shortcuts() {
